@@ -13,8 +13,7 @@ const LanguageContext = createContext<LanguageContextType | null>(null);
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>(() => {
     const stored = localStorage.getItem('takhayal-lang');
-    if (stored === 'en' || stored === 'ar') return stored as Language;
-    return 'ar' as Language;
+    return (stored === 'ar' ? 'ar' : 'en') as Language;
   });
 
   const setLang = useCallback((newLang: Language) => {
