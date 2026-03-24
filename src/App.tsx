@@ -10,6 +10,7 @@ import Pricing from "./pages/Pricing";
 import ToolPage from "./pages/ToolPage";
 import ToolsDirectory from "./pages/ToolsDirectory";
 import Community from "./pages/Community";
+import Templates from "./pages/Templates";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
