@@ -8,6 +8,7 @@ import PortalHome from "./pages/PortalHome";
 import Canvas from "./pages/Canvas";
 import Pricing from "./pages/Pricing";
 import ToolPage from "./pages/ToolPage";
+import ToolsDirectory from "./pages/ToolsDirectory";
 import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
 
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/home" element={<PortalHome />} />
             <Route path="/studio" element={<Canvas />} />
             <Route path="/pricing" element={<Pricing />} />
+            <Route path="/tools" element={<ToolsDirectory />} />
             <Route path="/tools/:toolId" element={<ToolPage />} />
             <Route path="/community" element={<Community />} />
             <Route path="*" element={<NotFound />} />
