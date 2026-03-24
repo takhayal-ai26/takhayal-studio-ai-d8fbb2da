@@ -1,8 +1,9 @@
 import { useApp, NavPage } from '@/context/AppContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Logo } from '@/components/Logo';
-import { Flame, Menu, X, Crown } from 'lucide-react';
-import { useState } from 'react';
+import { Flame, Menu, X, Crown, ChevronDown, Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2 } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
+import { TOOLS } from '@/data/tools';
 
 const navItems: { id: NavPage | 'pricing'; label: string; route: string }[] = [
   { id: 'home', label: 'Home', route: '/home' },
@@ -18,6 +19,19 @@ export function TopNavbar() {
   const location = useLocation();
   const initials = userName ? userName.slice(0, 2).toUpperCase() : 'U';
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [toolsOpen, setToolsOpen] = useState(false);
+  const toolsRef = useRef<HTMLDivElement>(null);
+
+  // Close tools dropdown on outside click
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (toolsRef.current && !toolsRef.current.contains(e.target as Node)) {
+        setToolsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, []);
 
   const isActive = (item: typeof navItems[0]) => {
     if (item.id === 'home') return location.pathname === '/home';
@@ -25,8 +39,11 @@ export function TopNavbar() {
     return activePage === item.id && location.pathname === '/studio';
   };
 
+  const isToolsActive = location.pathname.startsWith('/tools');
+
   const handleNav = (item: typeof navItems[0]) => {
     setMobileOpen(false);
+    setToolsOpen(false);
     if (item.id !== 'pricing') setActivePage(item.id as NavPage);
     navigate(item.route);
   };
@@ -59,13 +76,62 @@ export function TopNavbar() {
               )}
             </button>
           ))}
+
+          {/* Tools dropdown */}
+          <div ref={toolsRef} className="relative">
+            <button
+              onClick={() => setToolsOpen(!toolsOpen)}
+              className={`relative px-4 h-16 text-[13px] font-medium transition-colors flex items-center gap-1 ${
+                isToolsActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              Tools
+              <ChevronDown size={12} className={`transition-transform duration-200 ${toolsOpen ? 'rotate-180' : ''}`} />
+              {isToolsActive && (
+                <span className="absolute bottom-0 left-4 right-4 h-[2px] bg-primary rounded-full" />
+              )}
+            </button>
+
+            {/* Dropdown panel */}
+            {toolsOpen && (
+              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-[340px] bg-card border border-border rounded-xl shadow-2xl shadow-black/40 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
+                <div className="p-2">
+                  <span className="px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium">Image Tools</span>
+                  <div className="mt-1 space-y-0.5">
+                    {TOOLS.map(tool => {
+                      const Icon = tool.icon;
+                      return (
+                        <button
+                          key={tool.id}
+                          onClick={() => {
+                            setToolsOpen(false);
+                            navigate(tool.route);
+                          }}
+                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors hover:bg-primary/[0.06] group ${
+                            location.pathname === tool.route ? 'bg-primary/[0.08]' : ''
+                          }`}
+                        >
+                          <div className="w-8 h-8 rounded-lg bg-primary/[0.1] flex items-center justify-center flex-shrink-0 group-hover:bg-primary/[0.15] transition-colors">
+                            <Icon size={14} className="text-primary" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <span className="text-[13px] font-medium text-foreground block">{tool.name}</span>
+                            <span className="text-[11px] text-muted-foreground">{tool.shortDesc}</span>
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Right: State-dependent */}
         <div className="hidden md:flex items-center gap-3 flex-shrink-0">
           {isAuthenticated ? (
             <>
-              {/* Credits pill */}
               <div className={`flex items-center gap-2 px-3 py-1.5 bg-card border rounded-lg transition-colors ${
                 lowCredits ? 'border-primary/50' : 'border-surface-border'
               }`}>
@@ -74,8 +140,6 @@ export function TopNavbar() {
                   {credits} credits
                 </span>
               </div>
-
-              {/* Upgrade or Pro badge */}
               {plan === 'free' ? (
                 <button
                   onClick={() => navigate('/pricing')}
@@ -89,8 +153,6 @@ export function TopNavbar() {
                   Pro
                 </span>
               )}
-
-              {/* Avatar */}
               <button
                 onClick={logout}
                 className="w-8 h-8 rounded-full bg-card border border-surface-border flex items-center justify-center text-xs font-medium text-foreground hover:border-primary transition-colors"
@@ -134,7 +196,7 @@ export function TopNavbar() {
 
       {/* Mobile overlay */}
       {mobileOpen && (
-        <div className="fixed inset-0 z-40 bg-background pt-16 flex flex-col md:hidden">
+        <div className="fixed inset-0 z-40 bg-background pt-16 flex flex-col md:hidden overflow-y-auto">
           <div className="flex flex-col p-6 gap-1">
             {navItems.map(item => (
               <button
@@ -149,6 +211,32 @@ export function TopNavbar() {
                 {item.label}
               </button>
             ))}
+
+            {/* Mobile Tools section */}
+            <div className="mt-2 mb-1">
+              <span className="px-4 text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium">Tools</span>
+            </div>
+            {TOOLS.map(tool => {
+              const Icon = tool.icon;
+              return (
+                <button
+                  key={tool.id}
+                  onClick={() => {
+                    setMobileOpen(false);
+                    navigate(tool.route);
+                  }}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
+                    location.pathname === tool.route
+                      ? 'text-foreground bg-primary/[0.08]'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-card'
+                  }`}
+                >
+                  <Icon size={14} className="text-primary" />
+                  <span className="text-[15px] font-medium">{tool.name}</span>
+                </button>
+              );
+            })}
+
             {!isAuthenticated && (
               <button
                 onClick={() => { setMobileOpen(false); navigate('/pricing'); }}

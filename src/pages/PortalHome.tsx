@@ -202,7 +202,44 @@ export default function PortalHome() {
             </div>
           </section>
 
-          {/* ── Section 6: Quick Templates ── */}
+          {/* ── Section 6: Image Tools ── */}
+          <section className="mb-10">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-[15px] font-medium text-foreground">Image Tools</h2>
+              <button
+                onClick={() => navigate('/tools/generate')}
+                className="text-[12px] text-primary font-medium hover:underline flex items-center gap-1"
+              >
+                See all <ArrowRight size={12} />
+              </button>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+              {toolsData.map(tool => {
+                const Icon = tool.icon;
+                return (
+                  <button
+                    key={tool.id}
+                    onClick={() => navigate(tool.route)}
+                    className="group relative rounded-xl overflow-hidden border border-border hover:border-primary transition-all hover:scale-[1.03] aspect-[4/5]"
+                  >
+                    <img src={tool.image} alt={tool.name} className="w-full h-full object-cover" loading="lazy" width={400} height={500} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
+                    <div className="absolute top-3 left-3">
+                      <div className="w-7 h-7 rounded-lg bg-primary/[0.2] backdrop-blur-sm flex items-center justify-center">
+                        <Icon size={13} className="text-primary" />
+                      </div>
+                    </div>
+                    <div className="absolute bottom-0 left-0 right-0 p-3">
+                      <span className="text-[13px] font-medium text-foreground block">{tool.name}</span>
+                      <span className="text-[11px] text-muted-foreground">{tool.shortDesc}</span>
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </section>
+
+          {/* ── Section 7: Quick Templates ── */}
           <section className="mb-12 pb-4">
             <h2 className="text-[15px] font-medium text-foreground mb-4">Quick Templates</h2>
             <div className="flex flex-wrap gap-2">
