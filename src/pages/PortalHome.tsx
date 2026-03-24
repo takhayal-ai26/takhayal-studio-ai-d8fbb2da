@@ -229,6 +229,53 @@ export default function PortalHome() {
             </div>
           </section>
 
+          {/* ── Community Works Teaser ── */}
+          <section className="mt-6 mb-14">
+            <div className="flex items-end justify-between mb-5">
+              <div>
+                <h2 className="text-lg font-medium text-foreground">Community Works</h2>
+                <p className="text-[13px] text-muted-foreground mt-1">See what creators are making with Takhayal</p>
+              </div>
+              <button
+                onClick={() => navigate('/community')}
+                className="text-[12px] text-primary font-medium hover:underline flex items-center gap-1 group"
+              >
+                Explore Community <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+            <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
+              {[
+                { img: 'https://picsum.photos/seed/cw-fashion/400/550', prompt: 'High-end fashion editorial, modern modest style' },
+                { img: 'https://picsum.photos/seed/cw-product/400/360', prompt: 'Luxury perfume bottle, dramatic studio lighting' },
+                { img: 'https://picsum.photos/seed/cw-food/400/480', prompt: 'Artisan coffee flat lay, warm morning light' },
+                { img: 'https://picsum.photos/seed/cw-cinema/400/420', prompt: 'Cinematic portrait, volumetric fog, moody tones' },
+                { img: 'https://picsum.photos/seed/cw-logo/400/400', prompt: 'Premium 3D logo mockup, golden metallic finish' },
+                { img: 'https://picsum.photos/seed/cw-arch/400/520', prompt: 'Modern villa exterior, blue sky, lush garden' },
+              ].map((item, i) => (
+                <button
+                  key={i}
+                  onClick={() => navigate('/community')}
+                  className="group relative w-full rounded-2xl overflow-hidden break-inside-avoid block"
+                >
+                  <img src={item.img} alt={item.prompt} className="w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]" loading="lazy" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <p className="text-[11px] text-foreground/80 line-clamp-1">{item.prompt}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className="text-center mt-8">
+              <p className="text-[13px] text-muted-foreground mb-4">Explore more from the community</p>
+              <button
+                onClick={() => navigate('/community')}
+                className="h-10 px-6 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:brightness-110 transition-all group inline-flex items-center gap-2"
+              >
+                Go to Community
+                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+          </section>
 
         </div>
       </div>
