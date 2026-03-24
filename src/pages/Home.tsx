@@ -25,7 +25,7 @@ export default function Home() {
   const handleTemplate = (name: string) => {
     setPrompt(TEMPLATE_PROMPTS[name]);
     setSelectedTemplate(name);
-    navigate('/canvas');
+    navigate('/studio');
   };
 
   const handleStartCreating = () => {
@@ -43,7 +43,7 @@ export default function Home() {
               onClick={handleStartCreating}
               className="h-10 px-5 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/70 transition-colors"
             >
-              Go to Canvas
+              Go to Studio
             </button>
           ) : (
             <>
@@ -153,7 +153,7 @@ export default function Home() {
           onClick={handleStartCreating}
           className="h-12 px-8 rounded-lg bg-primary text-primary-foreground text-[15px] font-medium hover:bg-ember-hover transition-colors"
         >
-          Go to Canvas
+          Go to Studio
         </button>
       </section>
 

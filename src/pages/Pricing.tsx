@@ -78,14 +78,14 @@ const Pricing = () => {
       if (!isAuthenticated) {
         openAuthModal('signup');
       } else {
-        navigate('/canvas');
+        navigate('/studio');
       }
     } else {
       if (!isAuthenticated) {
         openAuthModal('signup');
       } else {
         // Mock upgrade — in real app would go to Stripe
-        navigate('/canvas');
+        navigate('/studio');
       }
     }
   };
