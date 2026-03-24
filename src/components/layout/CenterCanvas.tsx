@@ -103,7 +103,7 @@ export function CenterCanvas() {
         </div>
 
         {/* Variations row */}
-        <div className="w-full max-w-[640px] flex gap-2 mt-3">
+        <div className="w-full max-w-[900px] flex gap-2 mt-3">
           {Array.from({ length: 4 }).map((_, i) => {
             const img = generatedImages[i];
             const isActive = i === currentImageIndex;
