@@ -1,8 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { TEMPLATE_PROMPTS, useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { TopNavbar } from '@/components/layout/TopNavbar';
-import { AuthModal } from '@/components/AuthModal';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { TOOLS } from '@/data/tools';
@@ -76,9 +74,7 @@ export default function PortalHome() {
     : masonryImages.filter(m => m.cat === activeCategory);
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-background">
-      <TopNavbar />
-      <div className="flex-1 pt-16 overflow-y-auto">
+    <div className="flex-1 pt-16 overflow-y-auto">
 
         {/* ── Section 1: Featured Carousel ── */}
         <section className="relative w-full overflow-hidden">
@@ -249,9 +245,7 @@ export default function PortalHome() {
             </div>
           </section>
 
-        </div>
       </div>
-      <AuthModal />
     </div>
   );
 }

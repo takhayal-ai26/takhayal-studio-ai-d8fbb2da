@@ -1,6 +1,4 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { TopNavbar } from '@/components/layout/TopNavbar';
-import { AuthModal } from '@/components/AuthModal';
 import { TOOLS } from '@/data/tools';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -24,15 +22,11 @@ export default function ToolPage() {
 
   if (!tool) {
     return (
-      <div className="min-h-screen bg-background">
-        <TopNavbar />
-        <div className="pt-16 flex items-center justify-center h-screen">
-          <div className="text-center">
-            <h1 className="text-2xl font-light text-foreground mb-2">{t.toolPage.toolNotFound}</h1>
-            <button onClick={() => navigate('/home')} className="text-primary text-sm hover:underline">{t.toolPage.backToHome}</button>
-          </div>
+      <div className="pt-16 flex items-center justify-center h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-light text-foreground mb-2">{t.toolPage.toolNotFound}</h1>
+          <button onClick={() => navigate('/home')} className="text-primary text-sm hover:underline">{t.toolPage.backToHome}</button>
         </div>
-        <AuthModal />
       </div>
     );
   }
@@ -51,9 +45,7 @@ export default function ToolPage() {
   const Icon = tool.icon;
 
   return (
-    <div className="min-h-screen bg-background">
-      <TopNavbar />
-      <div className="pt-16">
+    <div className="flex-1 pt-16">
         <section className="relative w-full overflow-hidden" style={{ minHeight: '480px' }}>
           <img src={tool.image} alt={tool.name} className="absolute inset-0 w-full h-full object-cover" width={800} height={600} />
           <div className={`absolute inset-0 bg-gradient-to-${isRTL ? 'l' : 'r'} from-background via-background/80 to-transparent`} />
@@ -140,8 +132,6 @@ export default function ToolPage() {
             </button>
           </div>
         </section>
-      </div>
-      <AuthModal />
     </div>
   );
 }

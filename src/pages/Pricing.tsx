@@ -1,8 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { TopNavbar } from '@/components/layout/TopNavbar';
-import { AuthModal } from '@/components/AuthModal';
 import { Check, Flame, Zap, Image, Sparkles, Clock } from 'lucide-react';
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
@@ -48,9 +46,7 @@ const Pricing = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-background">
-      <TopNavbar />
-      <div className="flex-1 pt-16 overflow-y-auto">
+    <div className="flex-1 pt-16 overflow-y-auto">
         <section className="pt-20 pb-16 px-6 text-center">
           <h1 className="text-[42px] md:text-[52px] font-extralight text-foreground leading-tight">{t.pricing.title}</h1>
           <p className="text-[16px] text-muted-foreground mt-4 max-w-md mx-auto font-light">{t.pricing.subtitle}</p>
@@ -114,8 +110,6 @@ const Pricing = () => {
             ))}
           </Accordion>
         </section>
-      </div>
-      <AuthModal />
     </div>
   );
 };

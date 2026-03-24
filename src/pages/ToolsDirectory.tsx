@@ -1,5 +1,3 @@
-import { TopNavbar } from '@/components/layout/TopNavbar';
-import { AuthModal } from '@/components/AuthModal';
 import { TOOLS } from '@/data/tools';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useNavigate } from 'react-router-dom';
@@ -16,9 +14,7 @@ export default function ToolsDirectory() {
   );
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-background">
-      <TopNavbar />
-      <div className="flex-1 pt-16 overflow-y-auto">
+    <div className="flex-1 pt-16 overflow-y-auto">
         <section className="max-w-6xl mx-auto px-5 md:px-8 pt-10 pb-8">
           <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
             <div>
@@ -69,8 +65,6 @@ export default function ToolsDirectory() {
             </div>
           )}
         </section>
-      </div>
-      <AuthModal />
     </div>
   );
 }

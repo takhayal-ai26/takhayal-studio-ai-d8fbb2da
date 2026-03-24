@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppProvider } from "@/context/AppContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
+import { AppLayout } from "@/components/layout/AppLayout";
 import Home from "./pages/Home";
 import PortalHome from "./pages/PortalHome";
 import Canvas from "./pages/Canvas";
@@ -44,13 +45,17 @@ const App = () => (
           <BrowserRouter>
             <Routes>
               <Route path="/" element={<Home />} />
-              <Route path="/home" element={<PortalHome />} />
-              <Route path="/studio" element={<Canvas />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/tools" element={<ToolsDirectory />} />
-              <Route path="/tools/:toolId" element={<ToolPage />} />
-              <Route path="/community" element={<Community />} />
-              <Route path="/templates" element={<Templates />} />
+
+              {/* Portal pages share persistent navbar */}
+              <Route element={<AppLayout />}>
+                <Route path="/home" element={<PortalHome />} />
+                <Route path="/studio" element={<Canvas />} />
+                <Route path="/pricing" element={<Pricing />} />
+                <Route path="/tools" element={<ToolsDirectory />} />
+                <Route path="/tools/:toolId" element={<ToolPage />} />
+                <Route path="/community" element={<Community />} />
+                <Route path="/templates" element={<Templates />} />
+              </Route>
 
               {/* Admin Panel */}
               <Route path="/admin" element={<AdminLayout />}>
