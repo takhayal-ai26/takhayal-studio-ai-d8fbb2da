@@ -6,10 +6,10 @@ import { useState } from 'react';
 
 const navItems: { id: NavPage | 'pricing'; label: string; route: string }[] = [
   { id: 'home', label: 'Home', route: '/home' },
-  { id: 'canvas', label: 'Canvas', route: '/canvas' },
-  { id: 'gallery', label: 'Gallery', route: '/canvas' },
-  { id: 'templates', label: 'Templates', route: '/canvas' },
-  { id: 'credits', label: 'Credits', route: '/canvas' },
+  { id: 'canvas', label: 'Studio', route: '/studio' },
+  { id: 'gallery', label: 'Gallery', route: '/studio' },
+  { id: 'templates', label: 'Templates', route: '/studio' },
+  { id: 'credits', label: 'Credits', route: '/studio' },
 ];
 
 export function TopNavbar() {
