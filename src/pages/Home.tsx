@@ -29,11 +29,7 @@ export default function Home() {
   };
 
   const handleStartCreating = () => {
-    if (isAuthenticated) {
-      navigate('/canvas');
-    } else {
-      openAuthModal('signup');
-    }
+    navigate('/canvas');
   };
 
   return (

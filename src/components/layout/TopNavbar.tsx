@@ -24,12 +24,8 @@ export function TopNavbar() {
 
   const handleNav = (item: typeof navItems[0]) => {
     setMobileOpen(false);
-    if (item.id === 'home') {
-      navigate('/');
-    } else {
-      setActivePage(item.id);
-      if (location.pathname !== '/canvas') navigate('/canvas');
-    }
+    setActivePage(item.id);
+    if (location.pathname !== '/canvas') navigate('/canvas');
   };
 
   return (
