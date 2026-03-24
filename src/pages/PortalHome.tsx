@@ -190,42 +190,69 @@ export default function PortalHome() {
             </div>
           </section>
 
-          {/* ── Section 4: Category Filter ── */}
-          <section className="mb-6">
-            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+          {/* ── Section: Inspiration Templates ── */}
+          <section className="mb-12">
+            {/* Header */}
+            <div className="flex items-end justify-between mb-6">
+              <div>
+                <h2 className="text-xl md:text-2xl font-light text-foreground">Start from something powerful</h2>
+                <p className="text-[13px] text-muted-foreground mt-1.5">Ready-made prompts designed to help you create stunning visuals instantly</p>
+              </div>
+              <button
+                onClick={() => navigate('/templates')}
+                className="hidden md:flex items-center gap-1.5 text-[12px] text-primary font-medium hover:underline group"
+              >
+                Explore all templates <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+              </button>
+            </div>
+
+            {/* Category pills */}
+            <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide">
               {categories.map(cat => (
                 <button
                   key={cat}
                   onClick={() => setActiveCategory(cat)}
-                  className={`flex-shrink-0 px-4 py-1.5 rounded-full text-[13px] font-medium border transition-colors ${
+                  className={`flex-shrink-0 px-5 py-2 rounded-full text-[13px] font-medium transition-all duration-300 ${
                     activeCategory === cat
-                      ? 'bg-primary/[0.15] border-primary text-primary'
-                      : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/20'
+                      ? 'bg-primary text-primary-foreground shadow-[0_0_16px_hsl(var(--primary)/0.3)]'
+                      : 'bg-card/60 border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20'
                   }`}
                 >
                   {cat}
                 </button>
               ))}
             </div>
-          </section>
 
-          {/* ── Section 5: Masonry Feed ── */}
-          <section className="mb-10">
+            {/* Masonry grid */}
             <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
               {filteredMasonry.map((item, i) => (
                 <button
                   key={i}
                   onClick={() => goToCanvas(item.prompt, item.template)}
-                  className="group relative w-full rounded-xl overflow-hidden border border-border hover:border-primary transition-colors break-inside-avoid block"
+                  className="group relative w-full rounded-2xl overflow-hidden break-inside-avoid block"
                 >
-                  <img src={item.image} alt={item.prompt} className="w-full object-cover" loading="lazy" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end justify-between gap-2">
-                    <p className="text-[11px] text-foreground/80 line-clamp-2 flex-1">{item.prompt}</p>
-                    <span className="flex-shrink-0 h-7 px-3 rounded-md bg-primary text-primary-foreground text-[11px] font-medium flex items-center">Use</span>
+                  <img src={item.image} alt={item.prompt} className="w-full object-cover transition-transform duration-700 group-hover:scale-[1.06]" loading="lazy" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
+                    <p className="text-[12px] text-foreground/90 line-clamp-1 mb-2">{item.prompt}</p>
+                    <span className="inline-flex items-center gap-1 h-7 px-3 rounded-md bg-primary text-primary-foreground text-[11px] font-medium">
+                      Use <ArrowRight size={10} />
+                    </span>
                   </div>
                 </button>
               ))}
+            </div>
+
+            {/* Bottom CTA */}
+            <div className="text-center mt-8">
+              <p className="text-[13px] text-muted-foreground mb-3">Need more inspiration?</p>
+              <button
+                onClick={() => navigate('/templates')}
+                className="h-10 px-6 rounded-lg border border-border text-foreground text-[13px] font-medium hover:border-primary hover:text-primary transition-all group inline-flex items-center gap-2"
+              >
+                Explore Templates
+                <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+              </button>
             </div>
           </section>
 
