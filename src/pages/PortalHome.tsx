@@ -3,7 +3,7 @@ import { TEMPLATE_PROMPTS, useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
-import { TOOLS } from '@/data/tools';
+import { useTools } from '@/hooks/useTools';
 
 import toolGenerate from '@/assets/tools/tool-generate.jpg';
 import toolUpscale from '@/assets/tools/tool-upscale.jpg';
@@ -15,8 +15,6 @@ const toolImages: Record<string, string> = {
   'generate': toolGenerate, 'upscale': toolUpscale, 'logo': toolLogo,
   'remove-bg': toolRemovebg, 'enhance': toolEnhance,
 };
-
-const toolsData = TOOLS;
 
 const featuredItems = [
   { image: 'https://picsum.photos/seed/feat-cinema/800/450', labelKey: 'cinematicAd', prompt: 'Cinematic product advertisement, dramatic studio lighting, dark moody tones, volumetric fog, 4K commercial quality', template: 'Product Shot' },
@@ -44,6 +42,7 @@ export default function PortalHome() {
   const navigate = useNavigate();
   const { setPrompt, setSelectedTemplate, setActivePage } = useApp();
   const { t, isRTL } = useLanguage();
+  const { tools: toolsData } = useTools();
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState('All');
 
