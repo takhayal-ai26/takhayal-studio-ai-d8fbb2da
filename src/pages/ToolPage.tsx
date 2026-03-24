@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { TopNavbar } from '@/components/layout/TopNavbar';
-import { AuthModal } from '@/components/AuthModal';
+import { TOOLS } from '@/data/tools';
 import { TOOLS } from '@/data/tools';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
