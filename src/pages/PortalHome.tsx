@@ -133,38 +133,6 @@ export default function PortalHome() {
             </button>
           </section>
 
-          {/* ── Section 3: What do you want to create ── */}
-          <section className="mb-10">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-[15px] font-medium text-foreground">What do you want to create?</h2>
-              <div className="hidden sm:flex gap-1">
-                <button onClick={() => scrollCreate(-1)} className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors">
-                  <ChevronLeft size={16} />
-                </button>
-                <button onClick={() => scrollCreate(1)} className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors">
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
-            <div ref={scrollRef} className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
-              {createCards.map(card => (
-                <button
-                  key={card.name}
-                  onClick={() => goToCanvas(TEMPLATE_PROMPTS[card.template] || '', card.template)}
-                  className="group flex-shrink-0 w-[180px] sm:w-[200px] relative rounded-xl overflow-hidden border border-border hover:border-primary transition-all hover:scale-[1.03]"
-                >
-                  <div className="aspect-[4/5]">
-                    <img src={card.image} alt={card.name} className="w-full h-full object-cover" loading="lazy" />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 flex items-center justify-between">
-                    <span className="text-[13px] font-medium text-foreground">{card.name}</span>
-                    <ArrowRight size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
-                  </div>
-                </button>
-              ))}
-            </div>
-          </section>
 
           {/* ── Section 4: Category Filter ── */}
           <section className="mb-6">
