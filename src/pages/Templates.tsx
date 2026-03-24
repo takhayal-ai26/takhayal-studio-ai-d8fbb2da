@@ -1,6 +1,6 @@
 import { TopNavbar } from '@/components/layout/TopNavbar';
 import { AuthModal } from '@/components/AuthModal';
-import TemplatesView from '@/components/views/TemplatesView';
+import { TemplatesView } from '@/components/views/TemplatesView';
 
 export default function Templates() {
   return (

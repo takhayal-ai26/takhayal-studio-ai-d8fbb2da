@@ -29,6 +29,7 @@ const App = () => (
             <Route path="/tools" element={<ToolsDirectory />} />
             <Route path="/tools/:toolId" element={<ToolPage />} />
             <Route path="/community" element={<Community />} />
+            <Route path="/templates" element={<Templates />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
