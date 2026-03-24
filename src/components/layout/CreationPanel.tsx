@@ -90,7 +90,7 @@ export function CreationPanel() {
 
   return (
     <aside ref={panelRef} className="w-[340px] xl:w-[380px] flex flex-col bg-background flex-shrink-0 overflow-visible relative z-30">
-      <div className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto overflow-x-visible p-4 space-y-3 scrollbar-thin">
 
         {/* === 1. Prompt Card === */}
         <div className="rounded-2xl bg-card/80 backdrop-blur-sm p-4 border border-border/10">
