@@ -4,6 +4,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppProvider } from "@/context/AppContext";
 import Home from "./pages/Home";
+import PortalHome from "./pages/PortalHome";
 import Canvas from "./pages/Canvas";
 import NotFound from "./pages/NotFound";
 
