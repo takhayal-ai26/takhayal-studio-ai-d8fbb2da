@@ -55,7 +55,7 @@ export function TopNavbar() {
 
         {/* Center: Nav links (desktop) */}
         <div className="hidden md:flex items-center gap-0.5 mx-auto">
-          {navItems.map(item => (
+          {navItems.filter(item => !(isAuthenticated && item.id === 'pricing')).map(item => (
             <button
               key={item.id}
               onClick={() => handleNav(item)}
