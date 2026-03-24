@@ -1,5 +1,4 @@
 import { useApp } from '@/context/AppContext';
-import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 import { useState, useCallback, useEffect } from 'react';

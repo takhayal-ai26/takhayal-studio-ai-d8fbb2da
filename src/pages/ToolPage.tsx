@@ -1,6 +1,5 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { TOOLS } from '@/data/tools';
-import { TOOLS } from '@/data/tools';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { ArrowRight, Upload, Coins, Sparkles } from 'lucide-react';
