@@ -179,7 +179,7 @@ export function CreationPanel() {
                 <p className="text-[12px] text-primary/70">{activeModel.name}</p>
               </div>
             </div>
-            <ChevronDown size={16} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === 'model' ? 'rotate-180' : ''}`} />
+             <ChevronDown size={16} className={`text-muted-foreground transition-transform duration-200 rotate-180 ${openDropdown === 'model' ? 'rotate-0' : ''}`} />
           </button>
 
           {openDropdown === 'model' && (
@@ -230,7 +230,7 @@ export function CreationPanel() {
                   <p className="text-[14px] font-medium text-foreground">{aspectRatio}</p>
                 </div>
               </div>
-              <ChevronDown size={14} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === 'size' ? 'rotate-180' : ''}`} />
+               <ChevronDown size={14} className={`text-muted-foreground transition-transform duration-200 rotate-180 ${openDropdown === 'size' ? 'rotate-0' : ''}`} />
             </button>
 
             {openDropdown === 'size' && (
@@ -275,7 +275,7 @@ export function CreationPanel() {
                   <p className="text-[14px] font-medium text-foreground">{selectedResolution}</p>
                 </div>
               </div>
-              <ChevronDown size={14} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === 'resolution' ? 'rotate-180' : ''}`} />
+               <ChevronDown size={14} className={`text-muted-foreground transition-transform duration-200 rotate-180 ${openDropdown === 'resolution' ? 'rotate-0' : ''}`} />
             </button>
 
             {openDropdown === 'resolution' && (
