@@ -1,10 +1,10 @@
 import { useApp, NavPage } from '@/context/AppContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Logo } from '@/components/Logo';
-import { Flame, Menu, X } from 'lucide-react';
+import { Flame, Menu, X, Crown } from 'lucide-react';
 import { useState } from 'react';
 
-const navItems: { id: NavPage; label: string; route: string }[] = [
+const navItems: { id: NavPage | 'pricing'; label: string; route: string }[] = [
   { id: 'home', label: 'Home', route: '/home' },
   { id: 'canvas', label: 'Canvas', route: '/canvas' },
   { id: 'gallery', label: 'Gallery', route: '/canvas' },
@@ -13,7 +13,7 @@ const navItems: { id: NavPage; label: string; route: string }[] = [
 ];
 
 export function TopNavbar() {
-  const { activePage, setActivePage, credits, userName, isAuthenticated, openAuthModal, logout } = useApp();
+  const { activePage, setActivePage, credits, userName, isAuthenticated, plan, openAuthModal, logout } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
   const initials = userName ? userName.slice(0, 2).toUpperCase() : 'U';
@@ -21,14 +21,17 @@ export function TopNavbar() {
 
   const isActive = (item: typeof navItems[0]) => {
     if (item.id === 'home') return location.pathname === '/home';
+    if (item.id === 'pricing') return location.pathname === '/pricing';
     return activePage === item.id && location.pathname === '/canvas';
   };
 
   const handleNav = (item: typeof navItems[0]) => {
     setMobileOpen(false);
-    setActivePage(item.id);
+    if (item.id !== 'pricing') setActivePage(item.id as NavPage);
     navigate(item.route);
   };
+
+  const lowCredits = credits <= 5 && credits > 0;
 
   return (
     <>
@@ -58,14 +61,36 @@ export function TopNavbar() {
           ))}
         </div>
 
-        {/* Right: Auth-dependent */}
+        {/* Right: State-dependent */}
         <div className="hidden md:flex items-center gap-3 flex-shrink-0">
           {isAuthenticated ? (
             <>
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-card border border-surface-border rounded-lg">
-                <Flame size={14} className="text-primary" />
-                <span className="text-[13px] font-medium text-foreground">{credits} credits</span>
+              {/* Credits pill */}
+              <div className={`flex items-center gap-2 px-3 py-1.5 bg-card border rounded-lg transition-colors ${
+                lowCredits ? 'border-primary/50' : 'border-surface-border'
+              }`}>
+                <Flame size={14} className={lowCredits ? 'text-primary animate-pulse' : 'text-primary'} />
+                <span className={`text-[13px] font-medium ${lowCredits ? 'text-primary' : 'text-foreground'}`}>
+                  {credits} credits
+                </span>
               </div>
+
+              {/* Upgrade or Pro badge */}
+              {plan === 'free' ? (
+                <button
+                  onClick={() => navigate('/pricing')}
+                  className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:bg-ember-hover transition-colors"
+                >
+                  Upgrade
+                </button>
+              ) : (
+                <span className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/[0.1] border border-primary/20 rounded-lg text-[12px] font-medium text-primary">
+                  <Crown size={12} />
+                  Pro
+                </span>
+              )}
+
+              {/* Avatar */}
               <button
                 onClick={logout}
                 className="w-8 h-8 rounded-full bg-card border border-surface-border flex items-center justify-center text-xs font-medium text-foreground hover:border-primary transition-colors"
@@ -76,6 +101,12 @@ export function TopNavbar() {
             </>
           ) : (
             <>
+              <button
+                onClick={() => navigate('/pricing')}
+                className="text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2"
+              >
+                Pricing
+              </button>
               <button
                 onClick={() => openAuthModal('login')}
                 className="text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2"
@@ -118,6 +149,14 @@ export function TopNavbar() {
                 {item.label}
               </button>
             ))}
+            {!isAuthenticated && (
+              <button
+                onClick={() => { setMobileOpen(false); navigate('/pricing'); }}
+                className="text-left px-4 py-3 rounded-lg text-[15px] font-medium text-muted-foreground hover:text-foreground hover:bg-card"
+              >
+                Pricing
+              </button>
+            )}
           </div>
           <div className="mt-auto p-6 border-t border-surface-border">
             {isAuthenticated ? (
@@ -125,8 +164,13 @@ export function TopNavbar() {
                 <div className="w-8 h-8 rounded-full bg-card border border-surface-border flex items-center justify-center text-xs font-medium text-foreground">
                   {initials}
                 </div>
-                <span className="text-[13px] text-muted-foreground">{userName}</span>
-                <div className="ml-auto flex items-center gap-2 px-3 py-1.5 bg-card border border-surface-border rounded-lg">
+                <div className="flex-1">
+                  <span className="text-[13px] text-foreground block">{userName}</span>
+                  <span className="text-[11px] text-muted-foreground">{plan === 'pro' ? 'Pro' : 'Free'}</span>
+                </div>
+                <div className={`flex items-center gap-2 px-3 py-1.5 bg-card border rounded-lg ${
+                  lowCredits ? 'border-primary/50' : 'border-surface-border'
+                }`}>
                   <Flame size={14} className="text-primary" />
                   <span className="text-[13px] font-medium text-foreground">{credits}</span>
                 </div>

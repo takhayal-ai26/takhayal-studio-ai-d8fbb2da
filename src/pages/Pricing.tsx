@@ -61,7 +61,7 @@ const faqs = [
   },
   {
     q: 'What happens when I run out of credits?',
-    a: 'You'll be prompted to upgrade or wait for your monthly reset (Pro users). Free users can upgrade to continue.',
+    a: "You'll be prompted to upgrade or wait for your monthly reset (Pro users). Free users can upgrade to continue.",
   },
   {
     q: 'Do you offer refunds?',
