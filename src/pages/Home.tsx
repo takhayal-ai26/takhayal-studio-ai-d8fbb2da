@@ -102,37 +102,51 @@ export default function Home() {
         </div>
       </header>
 
-      {/* ━━━ HERO (kept + enhanced) ━━━ */}
-      <section className="relative flex flex-col items-center justify-center text-center px-6 pt-40 pb-24 md:pt-48 md:pb-32">
-        {/* Soft glow */}
+      {/* ━━━ HERO ━━━ */}
+      <section className="relative flex flex-col items-center justify-center text-center px-6 pt-44 pb-28 md:pt-52 md:pb-36">
+        {/* Multi-layer glow */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-primary/[0.06] rounded-full blur-[120px]" />
+          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-primary/[0.07] rounded-full blur-[150px]" />
+          <div className="absolute top-2/3 left-1/3 w-[300px] h-[300px] bg-primary/[0.04] rounded-full blur-[100px]" />
+          <div className="absolute top-1/2 right-1/4 w-[200px] h-[200px] bg-primary/[0.03] rounded-full blur-[80px]" />
         </div>
 
-        <span className="relative inline-flex items-center px-4 py-1.5 rounded-full bg-primary/[0.12] border border-primary/30 text-primary text-[13px] font-medium mb-6 animate-fade-in">
+        {/* Decorative grid lines */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[0.03]">
+          <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)', backgroundSize: '80px 80px' }} />
+        </div>
+
+        <span className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/[0.12] border border-primary/30 text-primary text-[13px] font-medium mb-8 animate-fade-in">
+          <Sparkles size={14} />
           Arabic-first Creative AI Studio
         </span>
-        <h1 className="relative text-4xl md:text-6xl font-extralight text-foreground leading-tight max-w-[760px] animate-fade-in" style={{ animationDelay: '100ms' }}>
+        <h1 className="relative text-5xl md:text-7xl font-extralight text-foreground leading-[1.1] max-w-[800px] animate-fade-in" style={{ animationDelay: '100ms' }}>
           Turn your ideas into{' '}
           <br className="hidden md:block" />
-          professional visuals
+          <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">professional visuals</span>
         </h1>
-        <p className="relative text-base md:text-lg font-light text-muted-foreground mt-5 max-w-md animate-fade-in" style={{ animationDelay: '200ms' }}>
-          Create ads, content, and visuals in seconds using AI
+        <p className="relative text-base md:text-lg font-light text-muted-foreground mt-6 max-w-lg animate-fade-in" style={{ animationDelay: '200ms' }}>
+          Create ads, content, and visuals in seconds using AI — designed for Arabic-first creators
         </p>
-        <div className="relative flex items-center gap-3 mt-9 animate-fade-in" style={{ animationDelay: '300ms' }}>
+        <div className="relative flex items-center gap-4 mt-10 animate-fade-in" style={{ animationDelay: '300ms' }}>
           <button
             onClick={handleStartCreating}
-            className="group h-12 px-7 rounded-lg bg-primary text-primary-foreground text-[15px] font-medium hover:brightness-90 transition-all hover:shadow-[0_0_30px_rgba(245,81,48,0.3)]"
+            className="group h-13 px-8 rounded-xl bg-primary text-primary-foreground text-[15px] font-medium hover:brightness-110 transition-all duration-300 hover:shadow-[0_0_40px_rgba(245,81,48,0.35)] hover:scale-[1.02]"
           >
             Start Creating
+            <ArrowRight size={16} className="inline ml-2 group-hover:translate-x-1 transition-transform" />
           </button>
           <button
             onClick={() => document.getElementById('create-anything')?.scrollIntoView({ behavior: 'smooth' })}
-            className="h-12 px-7 rounded-lg border border-muted text-foreground text-[15px] font-medium hover:bg-card transition-colors inline-flex items-center gap-2"
+            className="h-13 px-8 rounded-xl border border-muted/60 text-foreground text-[15px] font-medium hover:bg-card hover:border-muted transition-all duration-300 inline-flex items-center gap-2"
           >
-            Explore <ArrowRight size={16} />
+            Explore
           </button>
+        </div>
+
+        {/* Trusted by line */}
+        <div className="relative mt-16 animate-fade-in" style={{ animationDelay: '500ms' }}>
+          <p className="text-[12px] text-muted-foreground/50 uppercase tracking-[0.2em]">Trusted by 10,000+ creators across MENA</p>
         </div>
       </section>
 
