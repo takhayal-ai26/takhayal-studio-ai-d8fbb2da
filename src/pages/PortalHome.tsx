@@ -4,6 +4,9 @@ import { TopNavbar } from '@/components/layout/TopNavbar';
 import { AuthModal } from '@/components/AuthModal';
 import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import { TOOLS } from '@/data/tools';
+
+const toolsData = TOOLS;
 
 /* ─── Data ─── */
 
