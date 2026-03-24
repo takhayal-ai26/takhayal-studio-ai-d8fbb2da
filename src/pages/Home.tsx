@@ -1,8 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { TEMPLATE_PROMPTS, useApp } from '@/context/AppContext';
 import { Sparkles, LayoutTemplate, Globe } from 'lucide-react';
-import { TopNavbar } from '@/components/layout/TopNavbar';
 import { AuthModal } from '@/components/AuthModal';
+import { Logo } from '@/components/Logo';
 
 const exampleImages = [
   { url: 'https://picsum.photos/seed/perfume/400/400', prompt: 'Luxury perfume ad, dramatic lighting, dark background' },
@@ -34,14 +34,42 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-background text-foreground">
-      <TopNavbar />
+      {/* Minimal floating top strip */}
+      <header className="absolute top-0 left-0 right-0 z-50 h-[60px] flex items-center justify-between px-6 md:px-10">
+        <Logo size="small" />
+        <div className="flex items-center gap-3">
+          {isAuthenticated ? (
+            <button
+              onClick={handleStartCreating}
+              className="h-10 px-5 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/70 transition-colors"
+            >
+              Go to Canvas
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => openAuthModal('login')}
+                className="text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2"
+              >
+                Log in
+              </button>
+              <button
+                onClick={() => openAuthModal('signup')}
+                className="h-10 px-5 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/70 transition-colors"
+              >
+                Sign up
+              </button>
+            </>
+          )}
+        </div>
+      </header>
 
-      {/* Hero */}
-      <section className="flex flex-col items-center text-center px-6 pt-32 pb-20 md:pt-36 md:pb-28">
+      {/* Hero — centered */}
+      <section className="flex flex-col items-center justify-center text-center px-6 pt-40 pb-20 md:pt-44 md:pb-28">
         <span className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/[0.15] border border-primary text-primary text-[13px] font-medium mb-6">
           Arabic-first Creative AI Studio
         </span>
-        <h1 className="text-4xl md:text-5xl font-extralight text-foreground leading-tight max-w-2xl">
+        <h1 className="text-4xl md:text-5xl font-extralight text-foreground leading-tight max-w-[720px]">
           Turn your ideas into{' '}
           <br className="hidden md:block" />
           professional visuals
@@ -52,7 +80,7 @@ export default function Home() {
         <div className="flex items-center gap-3 mt-8">
           <button
             onClick={handleStartCreating}
-            className="h-12 px-7 rounded-lg bg-primary text-primary-foreground text-[15px] font-medium hover:bg-ember-hover transition-colors"
+            className="h-12 px-7 rounded-lg bg-primary text-primary-foreground text-[15px] font-medium hover:bg-primary/70 transition-colors"
           >
             Start Creating
           </button>
