@@ -133,22 +133,6 @@ export function CreationPanel() {
             )}
           </div>
 
-          {/* Quick templates */}
-          <div className="flex flex-wrap gap-1.5 mt-3">
-            {QUICK_TEMPLATES.map(t => (
-              <button
-                key={t}
-                onClick={() => handleQuickTemplate(t)}
-                className={`px-3 py-1.5 rounded-full text-[11px] font-medium transition-all duration-150 border ${
-                  selectedTemplate && selectedTemplate.startsWith(t)
-                    ? 'bg-primary/12 text-primary border-primary/25'
-                    : 'bg-muted/15 text-muted-foreground hover:text-foreground border-border/10 hover:border-primary/20 hover:bg-primary/5'
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
         </div>
 
         {/* === 2. Upload Card === */}
