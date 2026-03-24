@@ -17,14 +17,6 @@ const featuredItems = [
   { image: 'https://picsum.photos/seed/feat-realestate/800/450', label: 'Architecture', prompt: 'Luxury real estate ad, modern building, blue sky, professional architectural photography, premium feel', template: 'Real Estate' },
 ];
 
-const createCards = [
-  { name: 'Product Ad', image: 'https://picsum.photos/seed/create-prod/400/500', template: 'Product Shot' },
-  { name: 'Instagram Post', image: 'https://picsum.photos/seed/create-insta/400/500', template: 'Reels Cover' },
-  { name: 'Fashion', image: 'https://picsum.photos/seed/create-fashion/400/500', template: 'Fashion' },
-  { name: 'Real Estate', image: 'https://picsum.photos/seed/create-real/400/500', template: 'Real Estate' },
-  { name: 'Restaurant', image: 'https://picsum.photos/seed/create-food/400/500', template: 'Restaurant' },
-  { name: 'Medical', image: 'https://picsum.photos/seed/create-med/400/500', template: 'Medical' },
-];
 
 const categories = ['All', 'Ads', 'Social', 'Fashion', 'Products', 'Food', 'Architecture'];
 
@@ -50,7 +42,7 @@ export default function PortalHome() {
   const { setPrompt, setSelectedTemplate, setActivePage, userName } = useApp();
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState('All');
-  const scrollRef = useRef<HTMLDivElement>(null);
+  
 
   /* auto-advance carousel */
   useEffect(() => {
@@ -69,9 +61,6 @@ export default function PortalHome() {
     ? masonryImages
     : masonryImages.filter(m => m.cat === activeCategory);
 
-  const scrollCreate = (dir: number) => {
-    scrollRef.current?.scrollBy({ left: dir * 260, behavior: 'smooth' });
-  };
 
   return (
     <div className="flex flex-col min-h-screen w-full bg-background">
@@ -133,38 +122,6 @@ export default function PortalHome() {
             </button>
           </section>
 
-          {/* ── Section 3: What do you want to create ── */}
-          <section className="mb-10">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-[15px] font-medium text-foreground">What do you want to create?</h2>
-              <div className="hidden sm:flex gap-1">
-                <button onClick={() => scrollCreate(-1)} className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors">
-                  <ChevronLeft size={16} />
-                </button>
-                <button onClick={() => scrollCreate(1)} className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors">
-                  <ChevronRight size={16} />
-                </button>
-              </div>
-            </div>
-            <div ref={scrollRef} className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
-              {createCards.map(card => (
-                <button
-                  key={card.name}
-                  onClick={() => goToCanvas(TEMPLATE_PROMPTS[card.template] || '', card.template)}
-                  className="group flex-shrink-0 w-[180px] sm:w-[200px] relative rounded-xl overflow-hidden border border-border hover:border-primary transition-all hover:scale-[1.03]"
-                >
-                  <div className="aspect-[4/5]">
-                    <img src={card.image} alt={card.name} className="w-full h-full object-cover" loading="lazy" />
-                  </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 flex items-center justify-between">
-                    <span className="text-[13px] font-medium text-foreground">{card.name}</span>
-                    <ArrowRight size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
-                  </div>
-                </button>
-              ))}
-            </div>
-          </section>
 
           {/* ── Section 4: Category Filter ── */}
           <section className="mb-6">
