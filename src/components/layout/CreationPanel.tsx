@@ -294,12 +294,17 @@ export function CreationPanel() {
 
       {/* === 5. Generate Button === */}
       <div className="flex-shrink-0 p-4 border-t border-border/5">
-        {credits <= 5 && credits > 0 && (
-          <p className="text-[12px] text-primary font-medium text-center mb-2 animate-pulse flex items-center justify-center gap-1.5">
-            <Zap size={12} />
-            Only {credits} credits left
-          </p>
-        )}
+        <div className="flex items-center justify-between mb-2.5">
+          <span className="text-[11px] text-muted-foreground">
+            {credits} credits remaining · ~{Math.floor(credits / cost)} images
+          </span>
+          {credits <= 5 && credits > 0 && (
+            <span className="text-[11px] text-primary font-medium flex items-center gap-1 animate-pulse">
+              <Zap size={10} />
+              Low credits
+            </span>
+          )}
+        </div>
         <button
           onClick={generate}
           disabled={!canGenerate}
