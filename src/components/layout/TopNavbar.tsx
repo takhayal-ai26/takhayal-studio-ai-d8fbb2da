@@ -5,6 +5,7 @@ import { Flame, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 const navItems: { id: NavPage; label: string; route: string }[] = [
+  { id: 'home', label: 'Home', route: '/home' },
   { id: 'canvas', label: 'Canvas', route: '/canvas' },
   { id: 'gallery', label: 'Gallery', route: '/canvas' },
   { id: 'templates', label: 'Templates', route: '/canvas' },
@@ -19,13 +20,14 @@ export function TopNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (item: typeof navItems[0]) => {
+    if (item.id === 'home') return location.pathname === '/home';
     return activePage === item.id && location.pathname === '/canvas';
   };
 
   const handleNav = (item: typeof navItems[0]) => {
     setMobileOpen(false);
     setActivePage(item.id);
-    if (location.pathname !== '/canvas') navigate('/canvas');
+    navigate(item.route);
   };
 
   return (
