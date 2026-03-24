@@ -1,5 +1,4 @@
-import { TopNavbar } from '@/components/layout/TopNavbar';
-import { AuthModal } from '@/components/AuthModal';
+import { TOOLS } from '@/data/tools';
 import { TOOLS } from '@/data/tools';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useNavigate } from 'react-router-dom';
