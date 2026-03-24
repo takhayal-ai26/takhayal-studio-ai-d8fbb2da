@@ -22,8 +22,8 @@ const Canvas = () => {
       default:
         return (
           <div className="flex flex-1 overflow-hidden">
-            <InspirationFeed />
             <CreationPanel />
+            <InspirationFeed />
           </div>
         );
     }
