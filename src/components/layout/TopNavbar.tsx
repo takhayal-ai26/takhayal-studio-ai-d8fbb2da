@@ -1,15 +1,17 @@
 import { useApp, NavPage } from '@/context/AppContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Logo } from '@/components/Logo';
-import { Flame, Menu, X, Crown, ChevronDown, Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2 } from 'lucide-react';
-import { useState, useRef, useEffect } from 'react';
-import { TOOLS } from '@/data/tools';
+import { Flame, Menu, X, Crown } from 'lucide-react';
+import { useState } from 'react';
 
-const navItems: { id: string; label: string; route: string }[] = [
-  { id: 'canvas', label: 'Studio', route: '/studio' },
+const navItems: { id: string; label: string; route: string; studioPage?: NavPage }[] = [
+  { id: 'home', label: 'Home', route: '/home' },
+  { id: 'studio', label: 'Studio', route: '/studio', studioPage: 'canvas' },
+  { id: 'tools', label: 'Tools', route: '/tools' },
   { id: 'community', label: 'Community', route: '/community' },
-  { id: 'gallery', label: 'Gallery', route: '/studio' },
-  { id: 'templates', label: 'Templates', route: '/studio' },
+  { id: 'gallery', label: 'Gallery', route: '/studio', studioPage: 'gallery' },
+  { id: 'templates', label: 'Templates', route: '/studio', studioPage: 'templates' },
+  { id: 'credits', label: 'Credits', route: '/studio', studioPage: 'credits' },
 ];
 
 export function TopNavbar() {
@@ -18,33 +20,15 @@ export function TopNavbar() {
   const location = useLocation();
   const initials = userName ? userName.slice(0, 2).toUpperCase() : 'U';
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [toolsOpen, setToolsOpen] = useState(false);
-  const toolsRef = useRef<HTMLDivElement>(null);
-
-  // Close tools dropdown on outside click
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (toolsRef.current && !toolsRef.current.contains(e.target as Node)) {
-        setToolsOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, []);
 
   const isActive = (item: typeof navItems[0]) => {
-    if (item.id === 'community') return location.pathname === '/community';
-    if (item.id === 'pricing') return location.pathname === '/pricing';
-    if (item.route === '/studio') return activePage === item.id && location.pathname === '/studio';
-    return location.pathname === item.route;
+    if (item.studioPage) return location.pathname === '/studio' && activePage === item.studioPage;
+    return location.pathname === item.route || (item.route !== '/' && location.pathname.startsWith(item.route));
   };
-
-  const isToolsActive = location.pathname.startsWith('/tools');
 
   const handleNav = (item: typeof navItems[0]) => {
     setMobileOpen(false);
-    setToolsOpen(false);
-    if (item.route === '/studio') setActivePage(item.id as NavPage);
+    if (item.studioPage) setActivePage(item.studioPage);
     navigate(item.route);
   };
 
@@ -59,12 +43,12 @@ export function TopNavbar() {
         </div>
 
         {/* Center: Nav links (desktop) */}
-        <div className="hidden md:flex items-center gap-1 mx-auto">
+        <div className="hidden md:flex items-center gap-0.5 mx-auto">
           {navItems.map(item => (
             <button
               key={item.id}
               onClick={() => handleNav(item)}
-              className={`relative px-4 h-16 text-[13px] font-medium transition-colors ${
+              className={`relative px-3.5 h-16 text-[13px] font-medium transition-colors ${
                 isActive(item)
                   ? 'text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
@@ -72,60 +56,10 @@ export function TopNavbar() {
             >
               {item.label}
               {isActive(item) && (
-                <span className="absolute bottom-0 left-4 right-4 h-[2px] bg-primary rounded-full" />
+                <span className="absolute bottom-0 left-3.5 right-3.5 h-[2px] bg-primary rounded-full" />
               )}
             </button>
           ))}
-
-          {/* Tools dropdown */}
-          <div ref={toolsRef} className="relative">
-            <button
-              onClick={() => setToolsOpen(!toolsOpen)}
-              className={`relative px-4 h-16 text-[13px] font-medium transition-colors flex items-center gap-1 ${
-                isToolsActive ? 'text-foreground' : 'text-muted-foreground hover:text-foreground'
-              }`}
-            >
-              Tools
-              <ChevronDown size={12} className={`transition-transform duration-200 ${toolsOpen ? 'rotate-180' : ''}`} />
-              {isToolsActive && (
-                <span className="absolute bottom-0 left-4 right-4 h-[2px] bg-primary rounded-full" />
-              )}
-            </button>
-
-            {/* Dropdown panel */}
-            {toolsOpen && (
-              <div className="absolute top-full left-1/2 -translate-x-1/2 mt-1 w-[340px] bg-card border border-border rounded-xl shadow-2xl shadow-black/40 overflow-hidden animate-in fade-in slide-in-from-top-2 duration-200">
-                <div className="p-2">
-                  <span className="px-3 py-1.5 text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium">Image Tools</span>
-                  <div className="mt-1 space-y-0.5">
-                    {TOOLS.map(tool => {
-                      const Icon = tool.icon;
-                      return (
-                        <button
-                          key={tool.id}
-                          onClick={() => {
-                            setToolsOpen(false);
-                            navigate(tool.route);
-                          }}
-                          className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-colors hover:bg-primary/[0.06] group ${
-                            location.pathname === tool.route ? 'bg-primary/[0.08]' : ''
-                          }`}
-                        >
-                          <div className="w-8 h-8 rounded-lg bg-primary/[0.1] flex items-center justify-center flex-shrink-0 group-hover:bg-primary/[0.15] transition-colors">
-                            <Icon size={14} className="text-primary" />
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <span className="text-[13px] font-medium text-foreground block">{tool.name}</span>
-                            <span className="text-[11px] text-muted-foreground">{tool.shortDesc}</span>
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
         </div>
 
         {/* Right: State-dependent */}
@@ -211,32 +145,6 @@ export function TopNavbar() {
                 {item.label}
               </button>
             ))}
-
-            {/* Mobile Tools section */}
-            <div className="mt-2 mb-1">
-              <span className="px-4 text-[10px] uppercase tracking-widest text-muted-foreground/60 font-medium">Tools</span>
-            </div>
-            {TOOLS.map(tool => {
-              const Icon = tool.icon;
-              return (
-                <button
-                  key={tool.id}
-                  onClick={() => {
-                    setMobileOpen(false);
-                    navigate(tool.route);
-                  }}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
-                    location.pathname === tool.route
-                      ? 'text-foreground bg-primary/[0.08]'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-card'
-                  }`}
-                >
-                  <Icon size={14} className="text-primary" />
-                  <span className="text-[15px] font-medium">{tool.name}</span>
-                </button>
-              );
-            })}
-
             {!isAuthenticated && (
               <button
                 onClick={() => { setMobileOpen(false); navigate('/pricing'); }}
