@@ -22,7 +22,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const isRTL = lang === 'ar';
-  const t = translations[lang];
+  const t = translations[lang] as any;
 
   // Update document attributes
   useEffect(() => {
