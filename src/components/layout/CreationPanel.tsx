@@ -165,7 +165,7 @@ export function CreationPanel() {
                 <p className="text-[12px] text-muted-foreground">{activeModel.name}</p>
               </div>
             </div>
-            <ChevronRight size={16} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === 'model' ? 'rotate-90' : ''}`} />
+            <ChevronRight size={16} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === 'model' ? 'rotate-180' : ''}`} />
           </button>
 
           {/* Popover — positioned to the LEFT of the trigger */}
@@ -215,7 +215,7 @@ export function CreationPanel() {
                   <p className="text-[14px] font-medium text-foreground">{aspectRatio}</p>
                 </div>
               </div>
-              <ChevronRight size={14} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === 'size' ? 'rotate-90' : ''}`} />
+              <ChevronRight size={14} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === 'size' ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Popover — positioned to the LEFT */}
@@ -259,7 +259,7 @@ export function CreationPanel() {
                   <p className="text-[14px] font-medium text-foreground">{selectedResolution}</p>
                 </div>
               </div>
-              <ChevronRight size={14} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === 'resolution' ? 'rotate-90' : ''}`} />
+              <ChevronRight size={14} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === 'resolution' ? 'rotate-180' : ''}`} />
             </button>
 
             {/* Popover — positioned to the LEFT */}
