@@ -1,16 +1,53 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+import { useApp } from '@/context/AppContext';
+import { Sidebar } from '@/components/layout/Sidebar';
+import { CenterCanvas } from '@/components/layout/CenterCanvas';
+import { RightPanel } from '@/components/layout/RightPanel';
+import { AuthModal } from '@/components/AuthModal';
+import { GalleryView } from '@/components/views/GalleryView';
+import { CreditsView } from '@/components/views/CreditsView';
+import { SettingsView } from '@/components/views/SettingsView';
+import { TemplatesView } from '@/components/views/TemplatesView';
+import { toast } from '@/hooks/use-toast';
+import { useEffect, useRef } from 'react';
 
-// IMPORTANT: Fully REPLACE this with your own code
-const PlaceholderIndex = () => {
-  // PLACEHOLDER: Replace this entire return statement with the user's app.
-  // The inline background color is intentionally not part of the design system.
+const Index = () => {
+  const { activePage, isAuthenticated } = useApp();
+  const hasWelcomed = useRef(false);
+
+  useEffect(() => {
+    if (isAuthenticated && !hasWelcomed.current) {
+      hasWelcomed.current = true;
+      toast({
+        title: 'Welcome to Takhayal ✓',
+        description: 'You have 10 free credits to start',
+      });
+    }
+  }, [isAuthenticated]);
+
+  const renderContent = () => {
+    switch (activePage) {
+      case 'gallery': return <GalleryView />;
+      case 'credits': return <CreditsView />;
+      case 'settings': return <SettingsView />;
+      case 'templates': return <TemplatesView />;
+      case 'studio':
+      default:
+        return (
+          <>
+            <CenterCanvas />
+            <RightPanel />
+          </>
+        );
+    }
+  };
+
   return (
-    <div className="flex min-h-screen items-center justify-center" style={{ backgroundColor: '#fcfbf8' }}>
-      <img data-lovable-blank-page-placeholder="REMOVE_THIS" src="/placeholder.svg" alt="Your app will live here!" />
+    <div className="flex min-h-screen w-full bg-background">
+      <Sidebar />
+      {renderContent()}
+      <AuthModal />
     </div>
   );
 };
-
-const Index = PlaceholderIndex;
 
 export default Index;
