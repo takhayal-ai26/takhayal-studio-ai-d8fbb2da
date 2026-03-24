@@ -1,161 +1,338 @@
 import { useNavigate } from 'react-router-dom';
-import { TEMPLATE_PROMPTS, useApp } from '@/context/AppContext';
-import { Sparkles, LayoutTemplate, Globe } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
+import { Sparkles, Wand2, ArrowRight, Zap, Globe, Layers, ImageIcon, Maximize, Eraser, PenTool, Star } from 'lucide-react';
 import { AuthModal } from '@/components/AuthModal';
 import { Logo } from '@/components/Logo';
+import { useState, useEffect, useRef } from 'react';
 
-const exampleImages = [
-  { url: 'https://picsum.photos/seed/perfume/400/400', prompt: 'Luxury perfume ad, dramatic lighting, dark background' },
-  { url: 'https://picsum.photos/seed/ramadan-ad/400/400', prompt: 'Cinematic Ramadan ad, golden lantern, warm glow' },
-  { url: 'https://picsum.photos/seed/fashion-kw/400/400', prompt: 'High-end fashion ad, modern modest style, editorial' },
+import categoryProduct from '@/assets/landing/category-product.jpg';
+import categorySocial from '@/assets/landing/category-social.jpg';
+import categoryLogos from '@/assets/landing/category-logos.jpg';
+import categoryPosters from '@/assets/landing/category-posters.jpg';
+import categoryFashion from '@/assets/landing/category-fashion.jpg';
+import categoryFood from '@/assets/landing/category-food.jpg';
+import beforeAfter from '@/assets/landing/before-after.jpg';
+
+const categories = [
+  { title: 'Product Ads', image: categoryProduct },
+  { title: 'Social Media', image: categorySocial },
+  { title: 'Logos', image: categoryLogos },
+  { title: 'Posters', image: categoryPosters },
+  { title: 'Fashion', image: categoryFashion },
+  { title: 'Food & Restaurant', image: categoryFood },
 ];
 
-const featureStrip = [
-  { icon: Globe, title: 'Arabic-first', desc: 'Built for the MENA market' },
-  { icon: Sparkles, title: 'Best AI models', desc: 'State-of-the-art generation' },
-  { icon: LayoutTemplate, title: 'Templates ready', desc: '10+ industry-specific prompts' },
+const steps = [
+  { icon: PenTool, title: 'Describe your idea', desc: 'Write a simple prompt or pick a template' },
+  { icon: Wand2, title: 'Choose a style', desc: 'Select from cinematic, minimal, editorial & more' },
+  { icon: Zap, title: 'Generate instantly', desc: 'Get 4 premium variations in seconds' },
 ];
 
-const templatePills = ['Ramadan', 'Eid', 'Product Shot', 'Fashion', 'Restaurant', 'Real Estate'];
+const tools = [
+  { icon: ImageIcon, title: 'Generate Image', desc: 'Create unique images from text', route: '/tools/generate' },
+  { icon: Maximize, title: 'Upscale Image', desc: 'Increase resolution instantly', route: '/tools/upscale' },
+  { icon: Eraser, title: 'Remove Background', desc: 'Remove background in one click', route: '/tools/remove-bg' },
+  { icon: PenTool, title: 'Create Logo', desc: 'Design clean, modern logos', route: '/tools/logo' },
+  { icon: Star, title: 'Enhance Image', desc: 'Improve quality and sharpness', route: '/tools/enhance' },
+];
+
+const whyCards = [
+  { icon: Globe, title: 'Arabic-first AI', desc: 'Built natively for Arabic prompts and MENA aesthetics' },
+  { icon: Layers, title: 'Built for MENA businesses', desc: 'Templates and styles tailored for the region' },
+  { icon: Sparkles, title: 'Commercial-ready visuals', desc: 'Output quality ready for ads and campaigns' },
+  { icon: Zap, title: 'No design skills needed', desc: 'From idea to professional visual in seconds' },
+];
+
+function useScrollReveal() {
+  const ref = useRef<HTMLDivElement>(null);
+  const [visible, setVisible] = useState(false);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setVisible(true); }, { threshold: 0.15 });
+    obs.observe(el);
+    return () => obs.disconnect();
+  }, []);
+  return { ref, visible };
+}
+
+function Section({ children, className = '' }: { children: React.ReactNode; className?: string }) {
+  const { ref, visible } = useScrollReveal();
+  return (
+    <div ref={ref} className={`transition-all duration-700 ${visible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'} ${className}`}>
+      {children}
+    </div>
+  );
+}
 
 export default function Home() {
   const navigate = useNavigate();
-  const { setPrompt, setSelectedTemplate, isAuthenticated, openAuthModal } = useApp();
-
-  const handleTemplate = (name: string) => {
-    setPrompt(TEMPLATE_PROMPTS[name]);
-    setSelectedTemplate(name);
-    navigate('/studio');
-  };
+  const { isAuthenticated, openAuthModal } = useApp();
+  const [sliderPos, setSliderPos] = useState(50);
+  const sliderRef = useRef<HTMLDivElement>(null);
+  const dragging = useRef(false);
 
   const handleStartCreating = () => {
-    navigate('/home');
+    if (isAuthenticated) navigate('/home');
+    else openAuthModal('signup');
+  };
+
+  const handleSliderMove = (clientX: number) => {
+    if (!sliderRef.current || !dragging.current) return;
+    const rect = sliderRef.current.getBoundingClientRect();
+    const pct = Math.max(5, Math.min(95, ((clientX - rect.left) / rect.width) * 100));
+    setSliderPos(pct);
   };
 
   return (
-    <div className="min-h-screen bg-background text-foreground">
-      {/* Minimal floating top strip */}
+    <div className="min-h-screen bg-background text-foreground overflow-x-hidden">
+      {/* Floating top bar */}
       <header className="absolute top-0 left-0 right-0 z-50 h-[60px] flex items-center justify-between px-6 md:px-10">
         <Logo size="small" />
         <div className="flex items-center gap-3">
           {isAuthenticated ? (
-            <button
-              onClick={handleStartCreating}
-              className="h-10 px-5 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/70 transition-colors"
-            >
+            <button onClick={() => navigate('/home')} className="h-10 px-5 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:brightness-90 transition-all">
               Go to Studio
             </button>
           ) : (
             <>
-              <button
-                onClick={() => openAuthModal('login')}
-                className="text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2"
-              >
-                Log in
-              </button>
-              <button
-                onClick={() => openAuthModal('signup')}
-                className="h-10 px-5 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/70 transition-colors"
-              >
-                Sign up
-              </button>
+              <button onClick={() => openAuthModal('login')} className="text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2">Log in</button>
+              <button onClick={() => openAuthModal('signup')} className="h-10 px-5 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:brightness-90 transition-all">Sign up</button>
             </>
           )}
         </div>
       </header>
 
-      {/* Hero — centered */}
-      <section className="flex flex-col items-center justify-center text-center px-6 pt-40 pb-20 md:pt-44 md:pb-28">
-        <span className="inline-flex items-center px-4 py-1.5 rounded-full bg-primary/[0.15] border border-primary text-primary text-[13px] font-medium mb-6">
+      {/* ━━━ HERO (kept + enhanced) ━━━ */}
+      <section className="relative flex flex-col items-center justify-center text-center px-6 pt-40 pb-24 md:pt-48 md:pb-32">
+        {/* Soft glow */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] bg-primary/[0.06] rounded-full blur-[120px]" />
+        </div>
+
+        <span className="relative inline-flex items-center px-4 py-1.5 rounded-full bg-primary/[0.12] border border-primary/30 text-primary text-[13px] font-medium mb-6 animate-fade-in">
           Arabic-first Creative AI Studio
         </span>
-        <h1 className="text-4xl md:text-5xl font-extralight text-foreground leading-tight max-w-[720px]">
+        <h1 className="relative text-4xl md:text-6xl font-extralight text-foreground leading-tight max-w-[760px] animate-fade-in" style={{ animationDelay: '100ms' }}>
           Turn your ideas into{' '}
           <br className="hidden md:block" />
           professional visuals
         </h1>
-        <p className="text-base font-light text-muted-foreground mt-4 max-w-md">
+        <p className="relative text-base md:text-lg font-light text-muted-foreground mt-5 max-w-md animate-fade-in" style={{ animationDelay: '200ms' }}>
           Create ads, content, and visuals in seconds using AI
         </p>
-        <div className="flex items-center gap-3 mt-8">
+        <div className="relative flex items-center gap-3 mt-9 animate-fade-in" style={{ animationDelay: '300ms' }}>
           <button
             onClick={handleStartCreating}
-            className="h-12 px-7 rounded-lg bg-primary text-primary-foreground text-[15px] font-medium hover:bg-primary/70 transition-colors"
+            className="group h-12 px-7 rounded-lg bg-primary text-primary-foreground text-[15px] font-medium hover:brightness-90 transition-all hover:shadow-[0_0_30px_rgba(245,81,48,0.3)]"
           >
             Start Creating
           </button>
-          <a
-            href="#examples"
-            className="h-12 px-7 rounded-lg border border-surface-border text-foreground text-[15px] font-medium hover:bg-card transition-colors inline-flex items-center"
+          <button
+            onClick={() => document.getElementById('create-anything')?.scrollIntoView({ behavior: 'smooth' })}
+            className="h-12 px-7 rounded-lg border border-muted text-foreground text-[15px] font-medium hover:bg-card transition-colors inline-flex items-center gap-2"
           >
-            Explore Examples
-          </a>
+            Explore <ArrowRight size={16} />
+          </button>
         </div>
       </section>
 
-      {/* Live Demo */}
-      <section id="examples" className="px-6 md:px-12 pb-20 md:pb-28">
-        <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            {exampleImages.map((img, i) => (
-              <div
-                key={i}
-                className="group bg-card border border-surface-border rounded-xl overflow-hidden hover:border-primary transition-all duration-200 hover:scale-[1.02]"
-              >
-                <div className="aspect-square overflow-hidden">
-                  <img src={img.url} alt={img.prompt} className="w-full h-full object-cover" loading="lazy" />
+      {/* ━━━ CREATE ANYTHING ━━━ */}
+      <section id="create-anything" className="px-6 md:px-12 pb-28 md:pb-36">
+        <Section>
+          <div className="max-w-6xl mx-auto">
+            <div className="text-center mb-14">
+              <h2 className="text-3xl md:text-4xl font-light text-foreground">Create anything in seconds</h2>
+              <p className="text-muted-foreground mt-3 text-base">From ads to social content, everything starts with an idea</p>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5">
+              {categories.map((cat, i) => (
+                <button
+                  key={cat.title}
+                  onClick={() => navigate('/studio')}
+                  className="group relative aspect-[3/4] rounded-2xl overflow-hidden"
+                  style={{ animationDelay: `${i * 80}ms` }}
+                >
+                  <img src={cat.image} alt={cat.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]" loading="lazy" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-primary/[0.08]" />
+                  <div className="absolute bottom-0 left-0 right-0 p-5">
+                    <span className="text-[15px] md:text-lg font-medium text-foreground">{cat.title}</span>
+                  </div>
+                </button>
+              ))}
+            </div>
+          </div>
+        </Section>
+      </section>
+
+      {/* ━━━ HOW IT WORKS ━━━ */}
+      <section className="px-6 md:px-12 pb-28 md:pb-36">
+        <Section>
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-16">
+              <h2 className="text-3xl md:text-4xl font-light text-foreground">From idea to image in seconds</h2>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+              {steps.map((step, i) => (
+                <div key={step.title} className="relative text-center group">
+                  {/* Connector line */}
+                  {i < steps.length - 1 && (
+                    <div className="hidden md:block absolute top-10 left-[60%] w-[80%] h-px bg-gradient-to-r from-muted-foreground/20 to-transparent" />
+                  )}
+                  <div className="relative mx-auto w-20 h-20 rounded-2xl bg-card border border-muted flex items-center justify-center mb-5 group-hover:border-primary/40 transition-colors">
+                    <div className="absolute inset-0 rounded-2xl bg-primary/[0.06] opacity-0 group-hover:opacity-100 transition-opacity" />
+                    <step.icon size={28} className="text-primary relative" />
+                  </div>
+                  <span className="text-[11px] font-medium text-primary/60 uppercase tracking-widest mb-2 block">Step {i + 1}</span>
+                  <h3 className="text-lg font-medium text-foreground mb-2">{step.title}</h3>
+                  <p className="text-[13px] text-muted-foreground leading-relaxed max-w-[240px] mx-auto">{step.desc}</p>
                 </div>
-                <div className="p-4">
-                  <span className="text-[11px] font-medium text-primary/80 uppercase tracking-wider">Example</span>
-                  <p className="text-[13px] text-muted-foreground mt-1 line-clamp-2">{img.prompt}</p>
+              ))}
+            </div>
+          </div>
+        </Section>
+      </section>
+
+      {/* ━━━ BEFORE / AFTER ━━━ */}
+      <section className="px-6 md:px-12 pb-28 md:pb-36">
+        <Section>
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-14">
+              <h2 className="text-3xl md:text-4xl font-light text-foreground">See the transformation</h2>
+              <p className="text-muted-foreground mt-3 text-base">Drag to compare before and after</p>
+            </div>
+            <div
+              ref={sliderRef}
+              className="relative aspect-[2/1] rounded-2xl overflow-hidden cursor-col-resize select-none border border-muted"
+              onMouseDown={() => { dragging.current = true; }}
+              onMouseUp={() => { dragging.current = false; }}
+              onMouseLeave={() => { dragging.current = false; }}
+              onMouseMove={(e) => handleSliderMove(e.clientX)}
+              onTouchStart={() => { dragging.current = true; }}
+              onTouchEnd={() => { dragging.current = false; }}
+              onTouchMove={(e) => handleSliderMove(e.touches[0].clientX)}
+            >
+              {/* After (full) */}
+              <img src={beforeAfter} alt="After enhancement" className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
+              {/* Before (clipped) */}
+              <div className="absolute inset-0 overflow-hidden" style={{ width: `${sliderPos}%` }}>
+                <img src={beforeAfter} alt="Before enhancement" className="absolute inset-0 w-full h-full object-cover blur-sm brightness-75" style={{ width: `${100 / (sliderPos / 100)}%`, maxWidth: 'none' }} loading="lazy" />
+                <div className="absolute inset-0 bg-black/20" />
+              </div>
+              {/* Slider handle */}
+              <div className="absolute top-0 bottom-0" style={{ left: `${sliderPos}%`, transform: 'translateX(-50%)' }}>
+                <div className="w-px h-full bg-foreground/80" />
+                <div className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 w-10 h-10 rounded-full bg-foreground/90 flex items-center justify-center shadow-lg">
+                  <ArrowRight size={14} className="text-background rotate-180 -ml-0.5" />
+                  <ArrowRight size={14} className="text-background -ml-1" />
                 </div>
               </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Quick Start Templates */}
-      <section className="px-6 md:px-12 pb-20 md:pb-28">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-xl font-medium text-foreground mb-6">Quick Start Templates</h2>
-          <div className="flex flex-wrap justify-center gap-3">
-            {templatePills.map(t => (
-              <button
-                key={t}
-                onClick={() => handleTemplate(t)}
-                className="px-5 py-2 rounded-full bg-card border border-surface-border text-[13px] font-medium text-foreground hover:border-primary hover:text-primary transition-colors"
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Feature Strip */}
-      <section className="px-6 md:px-12 pb-20 md:pb-28">
-        <div className="max-w-4xl mx-auto grid grid-cols-1 sm:grid-cols-3 gap-6">
-          {featureStrip.map(f => (
-            <div key={f.title} className="bg-card border border-surface-border rounded-xl p-6 text-center">
-              <f.icon size={24} className="text-primary mx-auto mb-3" />
-              <h3 className="text-[15px] font-medium text-foreground">{f.title}</h3>
-              <p className="text-[13px] text-muted-foreground mt-1">{f.desc}</p>
+              {/* Labels */}
+              <span className="absolute top-4 left-4 text-[11px] font-medium text-foreground/70 uppercase tracking-wider bg-black/40 px-3 py-1 rounded-full">Before</span>
+              <span className="absolute top-4 right-4 text-[11px] font-medium text-foreground/70 uppercase tracking-wider bg-black/40 px-3 py-1 rounded-full">After</span>
             </div>
-          ))}
-        </div>
+          </div>
+        </Section>
       </section>
 
-      {/* CTA */}
-      <section className="px-6 md:px-12 pb-24 md:pb-32 text-center">
-        <h2 className="text-2xl font-light text-foreground mb-6">Start creating your first image</h2>
-        <button
-          onClick={handleStartCreating}
-          className="h-12 px-8 rounded-lg bg-primary text-primary-foreground text-[15px] font-medium hover:bg-ember-hover transition-colors"
-        >
-          Go to Studio
-        </button>
+      {/* ━━━ TOOLS ━━━ */}
+      <section className="px-6 md:px-12 pb-28 md:pb-36">
+        <Section>
+          <div className="max-w-6xl mx-auto">
+            <div className="flex items-end justify-between mb-12">
+              <div>
+                <h2 className="text-3xl md:text-4xl font-light text-foreground">Everything you need to create</h2>
+                <p className="text-muted-foreground mt-3 text-base">Powerful AI tools, one platform</p>
+              </div>
+              <button onClick={() => navigate('/tools')} className="hidden md:flex items-center gap-2 text-[13px] font-medium text-primary hover:text-primary/80 transition-colors">
+                See all tools <ArrowRight size={14} />
+              </button>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {tools.map((tool) => (
+                <button
+                  key={tool.title}
+                  onClick={() => navigate(tool.route)}
+                  className="group relative bg-card border border-muted rounded-2xl p-6 text-left hover:border-primary/30 transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div className="absolute inset-0 rounded-2xl bg-primary/[0.03] opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-xl bg-primary/[0.1] flex items-center justify-center mb-4 group-hover:bg-primary/[0.15] transition-colors">
+                      <tool.icon size={22} className="text-primary" />
+                    </div>
+                    <h3 className="text-[15px] font-medium text-foreground mb-1.5">{tool.title}</h3>
+                    <p className="text-[13px] text-muted-foreground">{tool.desc}</p>
+                    <ArrowRight size={16} className="text-muted-foreground mt-4 group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                  </div>
+                </button>
+              ))}
+            </div>
+            <button onClick={() => navigate('/tools')} className="md:hidden mt-6 flex items-center gap-2 text-[13px] font-medium text-primary mx-auto">
+              See all tools <ArrowRight size={14} />
+            </button>
+          </div>
+        </Section>
       </section>
+
+      {/* ━━━ WHY TAKHAYAL ━━━ */}
+      <section className="px-6 md:px-12 pb-28 md:pb-36">
+        <Section>
+          <div className="max-w-5xl mx-auto">
+            <div className="text-center mb-14">
+              <h2 className="text-3xl md:text-4xl font-light text-foreground">Built for creators in the region</h2>
+              <p className="text-muted-foreground mt-3 text-base">Designed for Arabic-first businesses and creators</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {whyCards.map((card) => (
+                <div
+                  key={card.title}
+                  className="group bg-card/60 border border-muted rounded-2xl p-7 hover:border-primary/20 transition-all duration-300"
+                >
+                  <div className="w-11 h-11 rounded-xl bg-primary/[0.1] flex items-center justify-center mb-4 group-hover:bg-primary/[0.15] transition-colors">
+                    <card.icon size={20} className="text-primary" />
+                  </div>
+                  <h3 className="text-[15px] font-medium text-foreground mb-2">{card.title}</h3>
+                  <p className="text-[13px] text-muted-foreground leading-relaxed">{card.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </Section>
+      </section>
+
+      {/* ━━━ FINAL CTA ━━━ */}
+      <section className="relative px-6 md:px-12 pb-28 md:pb-36">
+        <Section>
+          <div className="relative max-w-3xl mx-auto text-center py-16">
+            {/* Glow */}
+            <div className="absolute inset-0 pointer-events-none">
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[250px] bg-primary/[0.06] rounded-full blur-[100px]" />
+            </div>
+            <h2 className="relative text-3xl md:text-4xl font-light text-foreground mb-4">Start creating your first image</h2>
+            <p className="relative text-muted-foreground mb-9 text-base">No design skills required. Just describe and generate.</p>
+            <div className="relative flex items-center justify-center gap-3">
+              <button
+                onClick={handleStartCreating}
+                className="h-13 px-8 rounded-lg bg-primary text-primary-foreground text-[15px] font-medium hover:brightness-90 transition-all hover:shadow-[0_0_30px_rgba(245,81,48,0.3)]"
+              >
+                Start Creating
+              </button>
+              <button
+                onClick={() => navigate('/studio')}
+                className="h-13 px-8 rounded-lg border border-muted text-foreground text-[15px] font-medium hover:bg-card transition-colors"
+              >
+                Explore Templates
+              </button>
+            </div>
+          </div>
+        </Section>
+      </section>
+
+      {/* Footer line */}
+      <footer className="border-t border-muted px-6 py-8 text-center">
+        <p className="text-[12px] text-muted-foreground">© 2024 Takhayal.ai — All rights reserved</p>
+      </footer>
 
       <AuthModal />
     </div>
