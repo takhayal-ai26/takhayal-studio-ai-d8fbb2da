@@ -2,9 +2,23 @@ import { useNavigate } from 'react-router-dom';
 import { TEMPLATE_PROMPTS, useApp } from '@/context/AppContext';
 import { TopNavbar } from '@/components/layout/TopNavbar';
 import { AuthModal } from '@/components/AuthModal';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { TOOLS } from '@/data/tools';
+
+import toolGenerate from '@/assets/tools/tool-generate.jpg';
+import toolUpscale from '@/assets/tools/tool-upscale.jpg';
+import toolLogo from '@/assets/tools/tool-logo.jpg';
+import toolRemovebg from '@/assets/tools/tool-removebg.jpg';
+import toolEnhance from '@/assets/tools/tool-enhance.jpg';
+
+const toolImages: Record<string, string> = {
+  'generate': toolGenerate,
+  'upscale': toolUpscale,
+  'logo': toolLogo,
+  'remove-bg': toolRemovebg,
+  'enhance': toolEnhance,
+};
 
 const toolsData = TOOLS;
 
@@ -122,6 +136,59 @@ export default function PortalHome() {
             </button>
           </section>
 
+          {/* ── Section 3: Image Tools Strip ── */}
+          <section className="my-8">
+            <div className="rounded-2xl bg-card/40 border border-border overflow-hidden">
+              <div className="flex flex-col lg:flex-row">
+                {/* Left intro block */}
+                <div className="relative flex-shrink-0 lg:w-[300px] p-8 lg:p-10 flex flex-col justify-center">
+                  <div className="absolute inset-0 opacity-[0.06]" style={{ background: 'radial-gradient(ellipse at 30% 50%, hsl(var(--primary)), transparent 70%)' }} />
+                  <div className="relative">
+                    <Sparkles size={18} className="text-primary mb-4 opacity-70" />
+                    <h2 className="text-2xl md:text-3xl font-extralight text-foreground leading-tight">
+                      What will you<br />
+                      <span className="text-primary font-light">create today?</span>
+                    </h2>
+                    <p className="text-[13px] text-muted-foreground mt-4 leading-relaxed max-w-[240px]">
+                      Explore powerful image tools built to help you generate, enhance, and edit visuals in seconds.
+                    </p>
+                    <button
+                      onClick={() => navigate('/tools')}
+                      className="mt-6 inline-flex items-center gap-2 h-10 px-5 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:brightness-110 transition-all group"
+                    >
+                      Explore all tools
+                      <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Right tool strip */}
+                <div className="flex-1 overflow-x-auto scrollbar-hide">
+                  <div className="flex gap-3 p-4 lg:p-5 min-w-max">
+                    {toolsData.map(tool => {
+                      const img = toolImages[tool.id] || tool.image;
+                      return (
+                        <button
+                          key={tool.id}
+                          onClick={() => navigate(tool.route)}
+                          className="group relative flex-shrink-0 w-[180px] md:w-[200px] aspect-[3/4] rounded-2xl overflow-hidden hover:scale-[1.03] transition-all duration-500"
+                        >
+                          <img src={img} alt={tool.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.08]" loading="lazy" width={200} height={267} />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                          <div className="absolute inset-0 bg-primary/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                          <div className="absolute bottom-0 left-0 right-0 p-4">
+                            <span className="text-[14px] font-medium text-foreground block">{tool.name}</span>
+                            <span className="text-[11px] text-foreground/50 mt-0.5 block">{tool.shortDesc}</span>
+                            <ArrowRight size={13} className="text-primary mt-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300" />
+                          </div>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </section>
 
           {/* ── Section 4: Category Filter ── */}
           <section className="mb-6">
@@ -159,43 +226,6 @@ export default function PortalHome() {
                   </div>
                 </button>
               ))}
-            </div>
-          </section>
-
-          {/* ── Section 6: Image Tools ── */}
-          <section className="mb-10">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-[15px] font-medium text-foreground">Image Tools</h2>
-              <button
-                onClick={() => navigate('/tools/generate')}
-                className="text-[12px] text-primary font-medium hover:underline flex items-center gap-1"
-              >
-                See all <ArrowRight size={12} />
-              </button>
-            </div>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-              {toolsData.map(tool => {
-                const Icon = tool.icon;
-                return (
-                  <button
-                    key={tool.id}
-                    onClick={() => navigate(tool.route)}
-                    className="group relative rounded-xl overflow-hidden border border-border hover:border-primary transition-all hover:scale-[1.03] aspect-[4/5]"
-                  >
-                    <img src={tool.image} alt={tool.name} className="w-full h-full object-cover" loading="lazy" width={400} height={500} />
-                    <div className="absolute inset-0 bg-gradient-to-t from-background via-background/30 to-transparent" />
-                    <div className="absolute top-3 left-3">
-                      <div className="w-7 h-7 rounded-lg bg-primary/[0.2] backdrop-blur-sm flex items-center justify-center">
-                        <Icon size={13} className="text-primary" />
-                      </div>
-                    </div>
-                    <div className="absolute bottom-0 left-0 right-0 p-3">
-                      <span className="text-[13px] font-medium text-foreground block">{tool.name}</span>
-                      <span className="text-[11px] text-muted-foreground">{tool.shortDesc}</span>
-                    </div>
-                  </button>
-                );
-              })}
             </div>
           </section>
 
