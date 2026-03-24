@@ -170,7 +170,7 @@ export function CreationPanel() {
 
           {/* Popover — positioned to the LEFT of the trigger */}
           {openDropdown === 'model' && (
-            <div className="absolute right-full top-0 mr-3 w-[260px] bg-card border border-border/20 rounded-2xl p-2 shadow-2xl shadow-black/40 z-50 animate-fade-in">
+            <div className="absolute left-full top-0 ml-3 w-[260px] bg-card border border-border/20 rounded-2xl p-2 shadow-2xl shadow-black/40 z-50 animate-fade-in">
               <p className="text-[11px] text-muted-foreground/50 uppercase tracking-wider font-medium px-3 pt-2 pb-2">Select model</p>
               {MODELS.map(m => {
                 const Icon = m.icon;
