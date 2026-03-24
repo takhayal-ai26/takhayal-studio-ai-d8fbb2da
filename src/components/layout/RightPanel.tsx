@@ -43,7 +43,7 @@ export function RightPanel() {
   };
 
   return (
-    <aside className="hidden lg:flex flex-col w-[320px] min-h-screen border-l border-border bg-background flex-shrink-0">
+    <aside className="hidden lg:flex flex-col w-[320px] border-l border-surface-border/50 bg-background flex-shrink-0">
       {/* Header */}
       <div className="px-4 py-3 border-b border-border">
         <span className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider">Settings</span>

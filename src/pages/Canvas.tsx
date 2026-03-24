@@ -1,5 +1,5 @@
 import { useApp } from '@/context/AppContext';
-import { Sidebar } from '@/components/layout/Sidebar';
+import { TopNavbar } from '@/components/layout/TopNavbar';
 import { CenterCanvas } from '@/components/layout/CenterCanvas';
 import { RightPanel } from '@/components/layout/RightPanel';
 import { AuthModal } from '@/components/AuthModal';
@@ -42,9 +42,11 @@ const Canvas = () => {
   };
 
   return (
-    <div className="flex min-h-screen w-full bg-background">
-      <Sidebar />
-      {renderContent()}
+    <div className="flex flex-col min-h-screen w-full bg-background">
+      <TopNavbar />
+      <div className="flex flex-1 pt-16">
+        {renderContent()}
+      </div>
       <AuthModal />
     </div>
   );

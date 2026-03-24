@@ -133,7 +133,7 @@ export function CenterCanvas() {
 
         {/* Bottom action bar */}
         {hasImages && (
-          <div className="w-full max-w-[640px] flex justify-end gap-2.5 mt-4">
+          <div className="w-full max-w-[900px] flex justify-end gap-2.5 mt-4">
             <button
               onClick={generate}
               className="h-9 px-4 rounded-lg border border-surface-border text-foreground text-[13px] font-medium flex items-center gap-2 hover:bg-card transition-colors"
