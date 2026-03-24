@@ -22,7 +22,7 @@ export function TopNavbar() {
   const isActive = (item: typeof navItems[0]) => {
     if (item.id === 'home') return location.pathname === '/home';
     if (item.id === 'pricing') return location.pathname === '/pricing';
-    return activePage === item.id && location.pathname === '/canvas';
+    return activePage === item.id && location.pathname === '/studio';
   };
 
   const handleNav = (item: typeof navItems[0]) => {

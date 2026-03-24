@@ -59,7 +59,7 @@ export default function PortalHome() {
     setPrompt(prompt);
     setSelectedTemplate(template);
     setActivePage('canvas');
-    navigate('/canvas');
+    navigate('/studio');
   };
 
   const filteredMasonry = activeCategory === 'All'

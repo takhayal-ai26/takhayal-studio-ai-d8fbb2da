@@ -85,7 +85,7 @@ const Pricing = () => {
         openAuthModal('signup');
       } else {
         // Mock upgrade — in real app would go to Stripe
-        navigate('/canvas');
+        navigate('/studio');
       }
     }
   };

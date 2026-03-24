@@ -25,7 +25,7 @@ export default function Home() {
   const handleTemplate = (name: string) => {
     setPrompt(TEMPLATE_PROMPTS[name]);
     setSelectedTemplate(name);
-    navigate('/canvas');
+    navigate('/studio');
   };
 
   const handleStartCreating = () => {
