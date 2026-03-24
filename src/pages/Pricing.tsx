@@ -57,7 +57,7 @@ const faqs = [
   },
   {
     q: 'Can I cancel anytime?',
-    a: 'Yes. Cancel anytime from your account settings. You'll keep access until the end of your billing period.',
+    a: "Yes. Cancel anytime from your account settings. You'll keep access until the end of your billing period.",
   },
   {
     q: 'What happens when I run out of credits?',
