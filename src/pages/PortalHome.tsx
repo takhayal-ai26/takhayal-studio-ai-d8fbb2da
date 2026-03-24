@@ -2,92 +2,158 @@ import { useNavigate } from 'react-router-dom';
 import { TEMPLATE_PROMPTS, useApp } from '@/context/AppContext';
 import { TopNavbar } from '@/components/layout/TopNavbar';
 import { AuthModal } from '@/components/AuthModal';
-import { ArrowRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useState, useRef, useEffect } from 'react';
 
-const quickStartCards = [
-  { name: 'Product Ad', image: 'https://picsum.photos/seed/product-ad/400/300', template: 'Product Shot' },
-  { name: 'Instagram Post', image: 'https://picsum.photos/seed/insta-post/400/300', template: 'Reels Cover' },
-  { name: 'Ramadan', image: 'https://picsum.photos/seed/ramadan-qs/400/300', template: 'Ramadan' },
-  { name: 'Fashion', image: 'https://picsum.photos/seed/fashion-qs/400/300', template: 'Fashion' },
-  { name: 'Real Estate', image: 'https://picsum.photos/seed/realestate-qs/400/300', template: 'Real Estate' },
-  { name: 'Restaurant', image: 'https://picsum.photos/seed/restaurant-qs/400/300', template: 'Restaurant' },
+/* ─── Data ─── */
+
+const featuredItems = [
+  { image: 'https://picsum.photos/seed/feat-cinema/800/450', label: 'Cinematic Ad', prompt: 'Cinematic product advertisement, dramatic studio lighting, dark moody tones, volumetric fog, 4K commercial quality', template: 'Product Shot' },
+  { image: 'https://picsum.photos/seed/feat-fashion/800/450', label: 'Fashion Editorial', prompt: 'High-end fashion editorial, modern modest style, soft diffused lighting, clean background, editorial quality', template: 'Fashion' },
+  { image: 'https://picsum.photos/seed/feat-ramadan/800/450', label: 'Ramadan Campaign', prompt: 'Warm cinematic Ramadan ad, golden lantern, crescent moon, deep purple and gold palette, soft volumetric lighting', template: 'Ramadan' },
+  { image: 'https://picsum.photos/seed/feat-realestate/800/450', label: 'Architecture', prompt: 'Luxury real estate ad, modern building, blue sky, professional architectural photography, premium feel', template: 'Real Estate' },
 ];
 
-const trendingItems = [
-  { image: 'https://picsum.photos/seed/trend1/300/300', prompt: 'Luxury perfume ad, dramatic lighting, dark background', template: 'Product Shot' },
-  { image: 'https://picsum.photos/seed/trend2/300/300', prompt: 'Cinematic Ramadan ad, golden lantern, warm glow', template: 'Ramadan' },
-  { image: 'https://picsum.photos/seed/trend3/300/300', prompt: 'High-end fashion ad, modern modest style, editorial', template: 'Fashion' },
-  { image: 'https://picsum.photos/seed/trend4/300/300', prompt: 'Appetizing restaurant ad, professional food photography', template: 'Restaurant' },
-  { image: 'https://picsum.photos/seed/trend5/300/300', prompt: 'Luxury real estate ad, modern building, blue sky', template: 'Real Estate' },
-  { image: 'https://picsum.photos/seed/trend6/300/300', prompt: 'Clean medical clinic ad, trustworthy atmosphere', template: 'Medical' },
+const createCards = [
+  { name: 'Product Ad', image: 'https://picsum.photos/seed/create-prod/400/500', template: 'Product Shot' },
+  { name: 'Instagram Post', image: 'https://picsum.photos/seed/create-insta/400/500', template: 'Reels Cover' },
+  { name: 'Fashion', image: 'https://picsum.photos/seed/create-fashion/400/500', template: 'Fashion' },
+  { name: 'Real Estate', image: 'https://picsum.photos/seed/create-real/400/500', template: 'Real Estate' },
+  { name: 'Restaurant', image: 'https://picsum.photos/seed/create-food/400/500', template: 'Restaurant' },
+  { name: 'Medical', image: 'https://picsum.photos/seed/create-med/400/500', template: 'Medical' },
+];
+
+const categories = ['All', 'Ads', 'Social', 'Fashion', 'Products', 'Food', 'Architecture'];
+
+const masonryImages = [
+  { image: 'https://picsum.photos/seed/m1/400/600', prompt: 'Luxury perfume ad, dramatic side lighting, dark background, elegant glass bottle', template: 'Product Shot', cat: 'Products' },
+  { image: 'https://picsum.photos/seed/m2/400/400', prompt: 'Trendy streetwear fashion shoot, urban backdrop, bold colors', template: 'Fashion', cat: 'Fashion' },
+  { image: 'https://picsum.photos/seed/m3/400/500', prompt: 'Golden hour restaurant scene, appetizing table spread, warm ambiance', template: 'Restaurant', cat: 'Food' },
+  { image: 'https://picsum.photos/seed/m4/400/350', prompt: 'Minimalist tech product floating, clean gradient background, 3D render', template: 'Product Shot', cat: 'Products' },
+  { image: 'https://picsum.photos/seed/m5/400/550', prompt: 'Cinematic Ramadan greeting, lanterns and stars, cinematic depth of field', template: 'Ramadan', cat: 'Ads' },
+  { image: 'https://picsum.photos/seed/m6/400/450', prompt: 'Instagram story design, bold typography, vibrant gradient, social media', template: 'Reels Cover', cat: 'Social' },
+  { image: 'https://picsum.photos/seed/m7/400/380', prompt: 'Modern villa exterior, blue sky, lush garden, architectural photography', template: 'Real Estate', cat: 'Architecture' },
+  { image: 'https://picsum.photos/seed/m8/400/520', prompt: 'Haute couture fashion editorial, flowing fabric, studio lighting', template: 'Fashion', cat: 'Fashion' },
+  { image: 'https://picsum.photos/seed/m9/400/440', prompt: 'Eid celebration ad, festive colors, joyful atmosphere, commercial quality', template: 'Eid', cat: 'Ads' },
+  { image: 'https://picsum.photos/seed/m10/400/480', prompt: 'Artisan coffee flat lay, latte art, warm morning light, overhead shot', template: 'Restaurant', cat: 'Food' },
+  { image: 'https://picsum.photos/seed/m11/400/360', prompt: 'Clean skincare product on marble, soft shadows, premium aesthetic', template: 'Product Shot', cat: 'Products' },
+  { image: 'https://picsum.photos/seed/m12/400/550', prompt: 'National Day parade scene, flags and fireworks, patriotic celebration', template: 'National Day', cat: 'Ads' },
 ];
 
 const templatePills = Object.keys(TEMPLATE_PROMPTS);
 
 export default function PortalHome() {
   const navigate = useNavigate();
-  const { setPrompt, setSelectedTemplate, setActivePage, gallery, userName } = useApp();
+  const { setPrompt, setSelectedTemplate, setActivePage, userName } = useApp();
+  const [carouselIndex, setCarouselIndex] = useState(0);
+  const [activeCategory, setActiveCategory] = useState('All');
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const handleQuickStart = (template: string) => {
-    const prompt = TEMPLATE_PROMPTS[template];
-    if (prompt) {
-      setPrompt(prompt);
-      setSelectedTemplate(template);
-    }
-    setActivePage('canvas');
-    navigate('/canvas');
-  };
+  /* auto-advance carousel */
+  useEffect(() => {
+    const t = setInterval(() => setCarouselIndex(i => (i + 1) % featuredItems.length), 5000);
+    return () => clearInterval(t);
+  }, []);
 
-  const handleTrending = (prompt: string, template: string) => {
+  const goToCanvas = (prompt: string, template: string) => {
     setPrompt(prompt);
     setSelectedTemplate(template);
     setActivePage('canvas');
     navigate('/canvas');
   };
 
-  const handleTemplatePill = (name: string) => {
-    const prompt = TEMPLATE_PROMPTS[name];
-    if (prompt) {
-      setPrompt(prompt);
-      setSelectedTemplate(name);
-    }
-    setActivePage('canvas');
-    navigate('/canvas');
-  };
+  const filteredMasonry = activeCategory === 'All'
+    ? masonryImages
+    : masonryImages.filter(m => m.cat === activeCategory);
 
-  const recentImages = gallery.slice(0, 6);
+  const scrollCreate = (dir: number) => {
+    scrollRef.current?.scrollBy({ left: dir * 260, behavior: 'smooth' });
+  };
 
   return (
     <div className="flex flex-col min-h-screen w-full bg-background">
       <TopNavbar />
       <div className="flex-1 pt-16 overflow-y-auto">
-        <div className="max-w-6xl mx-auto px-5 md:px-8 py-8 md:py-10">
 
-          {/* Header — compact, no hero */}
-          <div className="mb-8">
-            <h1 className="text-xl font-medium text-foreground">
-              {userName ? `Welcome back, ${userName}` : 'Start creating'}
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">Choose a starting point</p>
+        {/* ── Section 1: Featured Carousel ── */}
+        <section className="relative w-full overflow-hidden">
+          <div
+            className="flex transition-transform duration-500 ease-out"
+            style={{ transform: `translateX(-${carouselIndex * 100}%)` }}
+          >
+            {featuredItems.map((item, i) => (
+              <div key={i} className="w-full flex-shrink-0 relative aspect-[21/9] min-h-[260px] max-h-[400px]">
+                <img src={item.image} alt={item.label} className="w-full h-full object-cover" loading={i === 0 ? 'eager' : 'lazy'} />
+                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+                <div className="absolute bottom-0 left-0 right-0 p-6 md:p-10">
+                  <span className="text-[11px] uppercase tracking-widest text-primary font-medium">Featured</span>
+                  <h2 className="text-2xl md:text-3xl font-extralight text-foreground mt-1">{item.label}</h2>
+                  <button
+                    onClick={() => goToCanvas(item.prompt, item.template)}
+                    className="mt-4 h-10 px-5 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:opacity-80 transition-opacity"
+                  >
+                    Try this style
+                  </button>
+                </div>
+              </div>
+            ))}
           </div>
+          {/* dots */}
+          <div className="absolute bottom-4 right-6 flex gap-1.5">
+            {featuredItems.map((_, i) => (
+              <button
+                key={i}
+                onClick={() => setCarouselIndex(i)}
+                className={`w-2 h-2 rounded-full transition-colors ${i === carouselIndex ? 'bg-primary' : 'bg-foreground/20'}`}
+              />
+            ))}
+          </div>
+        </section>
 
-          {/* Section 1: Quick Start */}
+        <div className="max-w-7xl mx-auto px-5 md:px-8">
+
+          {/* ── Section 2: Seasonal Banner ── */}
+          <section className="my-8">
+            <button
+              onClick={() => goToCanvas(TEMPLATE_PROMPTS['Ramadan'], 'Ramadan')}
+              className="group w-full relative h-36 md:h-44 rounded-xl overflow-hidden border border-border hover:border-primary transition-colors"
+            >
+              <img src="https://picsum.photos/seed/banner-ramadan/1200/400" alt="Ramadan Campaign" className="w-full h-full object-cover" loading="lazy" />
+              <div className="absolute inset-0 bg-gradient-to-r from-background/90 via-background/50 to-transparent" />
+              <div className="absolute inset-0 flex flex-col justify-center px-6 md:px-10">
+                <span className="text-[11px] uppercase tracking-widest text-primary font-medium">Seasonal</span>
+                <h3 className="text-xl md:text-2xl font-extralight text-foreground mt-1">Ramadan Campaign Ideas</h3>
+                <span className="mt-3 inline-flex items-center gap-1 text-[13px] text-primary font-medium group-hover:gap-2 transition-all">
+                  Try this style <ArrowRight size={14} />
+                </span>
+              </div>
+            </button>
+          </section>
+
+          {/* ── Section 3: What do you want to create ── */}
           <section className="mb-10">
-            <h2 className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider mb-4">Quick Start</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {quickStartCards.map((card) => (
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-[15px] font-medium text-foreground">What do you want to create?</h2>
+              <div className="hidden sm:flex gap-1">
+                <button onClick={() => scrollCreate(-1)} className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors">
+                  <ChevronLeft size={16} />
+                </button>
+                <button onClick={() => scrollCreate(1)} className="w-8 h-8 rounded-full border border-border flex items-center justify-center text-muted-foreground hover:text-foreground hover:border-foreground/20 transition-colors">
+                  <ChevronRight size={16} />
+                </button>
+              </div>
+            </div>
+            <div ref={scrollRef} className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide snap-x snap-mandatory">
+              {createCards.map(card => (
                 <button
                   key={card.name}
-                  onClick={() => handleQuickStart(card.template)}
-                  className="group relative aspect-[4/3] rounded-xl overflow-hidden border border-border hover:border-primary transition-colors"
+                  onClick={() => goToCanvas(TEMPLATE_PROMPTS[card.template] || '', card.template)}
+                  className="group flex-shrink-0 w-[180px] sm:w-[200px] relative rounded-xl overflow-hidden border border-border hover:border-primary transition-all hover:scale-[1.03]"
                 >
-                  <img
-                    src={card.image}
-                    alt={card.name}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                  <div className="aspect-[4/5]">
+                    <img src={card.image} alt={card.name} className="w-full h-full object-cover" loading="lazy" />
+                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-transparent to-transparent" />
                   <div className="absolute bottom-0 left-0 right-0 p-3 flex items-center justify-between">
                     <span className="text-[13px] font-medium text-foreground">{card.name}</span>
                     <ArrowRight size={14} className="text-muted-foreground group-hover:text-primary transition-colors" />
@@ -97,52 +163,53 @@ export default function PortalHome() {
             </div>
           </section>
 
-          {/* Section 2: Recent Creations */}
-          {recentImages.length > 0 && (
-            <section className="mb-10">
-              <h2 className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider mb-4">Recent creations</h2>
-              <div className="grid grid-cols-3 sm:grid-cols-6 gap-2">
-                {recentImages.map((img) => (
-                  <button
-                    key={img.id}
-                    onClick={() => handleTrending(img.prompt, img.template || '')}
-                    className="aspect-square rounded-lg overflow-hidden border border-border hover:border-primary transition-colors"
-                  >
-                    <img src={img.url} alt={img.prompt} className="w-full h-full object-cover" loading="lazy" />
-                  </button>
-                ))}
-              </div>
-            </section>
-          )}
+          {/* ── Section 4: Category Filter ── */}
+          <section className="mb-6">
+            <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+              {categories.map(cat => (
+                <button
+                  key={cat}
+                  onClick={() => setActiveCategory(cat)}
+                  className={`flex-shrink-0 px-4 py-1.5 rounded-full text-[13px] font-medium border transition-colors ${
+                    activeCategory === cat
+                      ? 'bg-primary/[0.15] border-primary text-primary'
+                      : 'border-border text-muted-foreground hover:text-foreground hover:border-foreground/20'
+                  }`}
+                >
+                  {cat}
+                </button>
+              ))}
+            </div>
+          </section>
 
-          {/* Section 3: Trending / Popular Ideas */}
+          {/* ── Section 5: Masonry Feed ── */}
           <section className="mb-10">
-            <h2 className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider mb-4">Popular ideas</h2>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-              {trendingItems.map((item, i) => (
+            <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
+              {filteredMasonry.map((item, i) => (
                 <button
                   key={i}
-                  onClick={() => handleTrending(item.prompt, item.template)}
-                  className="group relative aspect-square rounded-xl overflow-hidden border border-border hover:border-primary transition-colors"
+                  onClick={() => goToCanvas(item.prompt, item.template)}
+                  className="group relative w-full rounded-xl overflow-hidden border border-border hover:border-primary transition-colors break-inside-avoid block"
                 >
-                  <img src={item.image} alt={item.prompt} className="w-full h-full object-cover" loading="lazy" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <p className="text-[11px] text-foreground/80 line-clamp-2">{item.prompt}</p>
+                  <img src={item.image} alt={item.prompt} className="w-full object-cover" loading="lazy" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-background/80 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
+                  <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end justify-between gap-2">
+                    <p className="text-[11px] text-foreground/80 line-clamp-2 flex-1">{item.prompt}</p>
+                    <span className="flex-shrink-0 h-7 px-3 rounded-md bg-primary text-primary-foreground text-[11px] font-medium flex items-center">Use</span>
                   </div>
                 </button>
               ))}
             </div>
           </section>
 
-          {/* Section 4: Template Pills */}
-          <section className="mb-10">
-            <h2 className="text-[13px] font-medium text-muted-foreground uppercase tracking-wider mb-4">Templates</h2>
+          {/* ── Section 6: Quick Templates ── */}
+          <section className="mb-12 pb-4">
+            <h2 className="text-[15px] font-medium text-foreground mb-4">Quick Templates</h2>
             <div className="flex flex-wrap gap-2">
-              {templatePills.map((name) => (
+              {templatePills.map(name => (
                 <button
                   key={name}
-                  onClick={() => handleTemplatePill(name)}
+                  onClick={() => goToCanvas(TEMPLATE_PROMPTS[name], name)}
                   className="px-4 py-2 rounded-full bg-card border border-border text-[13px] font-medium text-foreground hover:border-primary hover:text-primary transition-colors"
                 >
                   {name}
