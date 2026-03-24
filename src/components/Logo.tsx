@@ -29,7 +29,7 @@ export function Logo({ size = 'default' }: { size?: 'small' | 'default' | 'large
 export function LogoMark({ size = 28 }: { size?: number }) {
   const { lang } = useLanguage();
   if (lang === 'ar') {
-    return <img src={logoFullAr} alt="تخيّل" style={{ height: size * 1.785 }} className="w-auto" />;
+    return <img src={logoFullAr} alt="تخيّل" style={{ height: size * 3.035 }} className="w-auto" />;
   }
   return <img src={logoMark} alt="Takhayal" width={size} height={size} />;
 }
