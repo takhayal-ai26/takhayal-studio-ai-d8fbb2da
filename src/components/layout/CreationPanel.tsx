@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { Upload, ChevronDown, Sparkles, X, Coins, Image as ImageIcon, Box, Cpu, Maximize } from 'lucide-react';
-import { useApp, TEMPLATE_PROMPTS, AspectRatio, Quality } from '@/context/AppContext';
+import { Upload, ChevronDown, Sparkles, X, Coins, Box, Cpu, Maximize, Image as ImageIcon } from 'lucide-react';
+import { useApp, TEMPLATE_PROMPTS, AspectRatio } from '@/context/AppContext';
 
 const MODELS = [
   { id: 'seedream', name: 'Seedream 5 Lite', desc: 'Fast, creative outputs', icon: Sparkles },
@@ -28,7 +28,6 @@ export function CreationPanel() {
     aspectRatio, setAspectRatio, quality, setQuality,
     enhancePrompt, setEnhancePrompt,
     generate, isGenerating, credits, getCreditCost,
-    generatedImages, currentImageIndex, setCurrentImageIndex,
   } = useApp();
 
   const [selectedModel, setSelectedModel] = useState('seedream');
@@ -37,8 +36,6 @@ export function CreationPanel() {
 
   const cost = getCreditCost();
   const canGenerate = prompt.trim().length > 0 && !isGenerating && credits >= cost;
-  const currentImage = generatedImages[currentImageIndex];
-  const hasImages = generatedImages.length > 0;
   const activeModel = MODELS.find(m => m.id === selectedModel) || MODELS[0];
 
   const toggleDropdown = (key: OpenDropdown) => {
@@ -78,45 +75,6 @@ export function CreationPanel() {
     <aside className="w-[340px] xl:w-[380px] flex flex-col bg-background flex-shrink-0 overflow-hidden">
       <div className="flex-1 overflow-y-auto p-4 space-y-3">
 
-        {/* === Generated image preview === */}
-        {hasImages && currentImage && (
-          <div className="rounded-2xl bg-card overflow-hidden">
-            <div className="relative aspect-square">
-              <img src={currentImage.url} alt={currentImage.prompt} className="w-full h-full object-cover animate-fade-in" />
-            </div>
-            <div className="flex gap-1.5 p-2">
-              {generatedImages.slice(0, 4).map((img, i) => (
-                <button
-                  key={img.id}
-                  onClick={() => setCurrentImageIndex(i)}
-                  className={`flex-1 h-12 rounded-lg overflow-hidden border-[1.5px] transition-colors ${
-                    i === currentImageIndex ? 'border-primary' : 'border-transparent hover:border-muted-foreground/30'
-                  }`}
-                >
-                  <img src={img.url} alt="" className="w-full h-full object-cover" />
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* === Loading state === */}
-        {isGenerating && (
-          <div className="rounded-2xl bg-card aspect-square animate-shimmer flex items-center justify-center">
-            <div className="flex flex-col items-center gap-2">
-              <div className="w-5 h-5 border-2 border-primary border-t-transparent rounded-full animate-spin" />
-              <span className="text-xs text-muted-foreground">Generating...</span>
-            </div>
-          </div>
-        )}
-
-        {/* === Empty preview === */}
-        {!hasImages && !isGenerating && (
-          <div className="rounded-2xl bg-card border border-border/30 aspect-[4/3] flex flex-col items-center justify-center">
-            <ImageIcon size={32} className="text-muted-foreground/20 mb-2" />
-            <p className="text-xs text-muted-foreground/40">Your creation appears here</p>
-          </div>
-        )}
 
         {/* === 1. Prompt Card === */}
         <div className="rounded-2xl bg-card p-4">
