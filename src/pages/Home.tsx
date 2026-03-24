@@ -118,6 +118,14 @@ export default function Home() {
               filter: 'blur(100px)',
             }}
           />
+          {/* Ambient breathing glow */}
+          <div
+            className="absolute top-[40%] left-[48%] -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] rounded-full animate-[heroBreathe_8s_ease-in-out_infinite]"
+            style={{
+              background: 'radial-gradient(circle, hsl(var(--primary) / 0.35) 0%, hsl(var(--primary) / 0.12) 35%, transparent 70%)',
+              filter: 'blur(120px)',
+            }}
+          />
         </div>
 
         {/* Decorative grid lines */}
