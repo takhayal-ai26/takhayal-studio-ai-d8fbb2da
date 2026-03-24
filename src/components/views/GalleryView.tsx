@@ -65,7 +65,7 @@ export function GalleryView() {
                   <div className="flex gap-2">
                     <button className="text-foreground hover:text-primary transition-colors"><Download size={16} /></button>
                     <button
-                      onClick={() => { setPrompt(img.prompt); setActivePage('studio'); }}
+                      onClick={() => { setPrompt(img.prompt); setActivePage('canvas'); }}
                       className="text-foreground hover:text-primary transition-colors"
                     >
                       <RefreshCw size={16} />
