@@ -19,7 +19,6 @@ export function TopNavbar() {
   const [mobileOpen, setMobileOpen] = useState(false);
 
   const isActive = (item: typeof navItems[0]) => {
-    if (item.id === 'home') return location.pathname === '/';
     return activePage === item.id && location.pathname === '/canvas';
   };
 
