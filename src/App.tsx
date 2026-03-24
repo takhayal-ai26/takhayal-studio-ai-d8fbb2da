@@ -10,6 +10,7 @@ import Pricing from "./pages/Pricing";
 import ToolPage from "./pages/ToolPage";
 import ToolsDirectory from "./pages/ToolsDirectory";
 import Community from "./pages/Community";
+import Templates from "./pages/Templates";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -28,6 +29,7 @@ const App = () => (
             <Route path="/tools" element={<ToolsDirectory />} />
             <Route path="/tools/:toolId" element={<ToolPage />} />
             <Route path="/community" element={<Community />} />
+            <Route path="/templates" element={<Templates />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
