@@ -255,16 +255,18 @@ export default function Home() {
       </section>
 
       {/* ━━━ TOOLS ━━━ */}
-      <section className="px-6 md:px-12 pb-28 md:pb-36">
+      <section className="relative px-6 md:px-12 pb-32 md:pb-40">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-px bg-gradient-to-r from-transparent via-muted/40 to-transparent" />
         <Section>
-          <div className="max-w-6xl mx-auto">
-            <div className="flex items-end justify-between mb-12">
+          <div className="max-w-6xl mx-auto pt-8">
+            <div className="flex items-end justify-between mb-14">
               <div>
-                <h2 className="text-3xl md:text-4xl font-light text-foreground">Everything you need to create</h2>
+                <span className="text-[11px] font-medium text-primary uppercase tracking-[0.2em] mb-4 block">AI Tools</span>
+                <h2 className="text-3xl md:text-5xl font-light text-foreground">Everything you need to create</h2>
                 <p className="text-muted-foreground mt-3 text-base">Powerful AI tools, one platform</p>
               </div>
-              <button onClick={() => navigate('/tools')} className="hidden md:flex items-center gap-2 text-[13px] font-medium text-primary hover:text-primary/80 transition-colors">
-                See all tools <ArrowRight size={14} />
+              <button onClick={() => navigate('/tools')} className="hidden md:flex items-center gap-2 text-[13px] font-medium text-primary hover:text-primary/80 transition-colors group">
+                See all tools <ArrowRight size={14} className="group-hover:translate-x-1 transition-transform" />
               </button>
             </div>
             <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory -mx-6 px-6 md:-mx-0 md:px-0">
@@ -272,16 +274,19 @@ export default function Home() {
                 <button
                   key={tool.title}
                   onClick={() => navigate(tool.route)}
-                  className="group relative flex-shrink-0 w-[280px] md:w-[320px] bg-card border border-muted rounded-2xl p-6 text-left hover:border-primary/30 transition-all duration-300 snap-start"
+                  className="group relative flex-shrink-0 w-[260px] md:w-[280px] bg-card/50 border border-muted/50 rounded-2xl p-6 text-left hover:border-primary/30 hover:bg-card/80 transition-all duration-500 snap-start"
                 >
-                  <div className="absolute inset-0 rounded-2xl bg-primary/[0.03] opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <div className="absolute inset-0 rounded-2xl bg-primary/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="relative">
-                    <div className="w-11 h-11 rounded-xl bg-primary/[0.12] border border-primary/20 flex items-center justify-center mb-16 group-hover:bg-primary/[0.18] transition-colors">
-                      <tool.icon size={20} className="text-primary" />
+                    <div className="w-12 h-12 rounded-xl bg-primary/[0.12] border border-primary/15 flex items-center justify-center mb-14 group-hover:bg-primary/[0.18] group-hover:shadow-[0_0_20px_rgba(245,81,48,0.1)] transition-all duration-500">
+                      <tool.icon size={20} className="text-primary" strokeWidth={1.5} />
                     </div>
                     <h3 className="text-[15px] font-medium text-foreground mb-1.5">{tool.title}</h3>
-                    <p className="text-[13px] text-muted-foreground mb-4">{tool.desc}</p>
-                    <ArrowRight size={16} className="text-muted-foreground group-hover:text-primary group-hover:translate-x-1 transition-all" />
+                    <p className="text-[13px] text-muted-foreground mb-5">{tool.desc}</p>
+                    <div className="flex items-center gap-1.5 text-[12px] text-primary/70 group-hover:text-primary transition-colors">
+                      <span>Try now</span>
+                      <ArrowRight size={12} className="group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </div>
                 </button>
               ))}
