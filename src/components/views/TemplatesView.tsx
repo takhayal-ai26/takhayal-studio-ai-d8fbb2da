@@ -8,7 +8,7 @@ export function TemplatesView() {
   const handleUse = (name: string, prompt: string) => {
     setPrompt(prompt);
     setSelectedTemplate(name);
-    setActivePage('studio');
+    setActivePage('canvas');
   };
 
   return (

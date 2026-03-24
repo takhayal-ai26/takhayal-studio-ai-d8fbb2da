@@ -10,7 +10,7 @@ import { TemplatesView } from '@/components/views/TemplatesView';
 import { toast } from '@/hooks/use-toast';
 import { useEffect, useRef } from 'react';
 
-const Index = () => {
+const Canvas = () => {
   const { activePage, isAuthenticated } = useApp();
   const hasWelcomed = useRef(false);
 
@@ -30,7 +30,7 @@ const Index = () => {
       case 'credits': return <CreditsView />;
       case 'settings': return <SettingsView />;
       case 'templates': return <TemplatesView />;
-      case 'studio':
+      case 'canvas':
       default:
         return (
           <>
@@ -50,4 +50,4 @@ const Index = () => {
   );
 };
 
-export default Index;
+export default Canvas;

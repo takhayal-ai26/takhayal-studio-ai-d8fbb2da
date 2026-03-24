@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 
-export type NavPage = 'studio' | 'gallery' | 'templates' | 'credits' | 'settings';
+export type NavPage = 'home' | 'canvas' | 'gallery' | 'templates' | 'credits' | 'settings';
 export type AspectRatio = '1:1' | '9:16' | '16:9' | '4:5';
 export type Quality = 'standard' | 'hd';
 
@@ -69,7 +69,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userName, setUserName] = useState('');
   const [userEmail, setUserEmail] = useState('');
-  const [activePage, setActivePage] = useState<NavPage>('studio');
+  const [activePage, setActivePage] = useState<NavPage>('canvas');
   const [credits, setCredits] = useState(10);
   const [prompt, setPrompt] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
@@ -107,7 +107,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsGenerating(true);
     setCredits(prev => prev - cost);
 
-    // Mock generation with placeholder images
     setTimeout(() => {
       const newImages: GeneratedImage[] = Array.from({ length: 4 }, (_, i) => ({
         id: `${Date.now()}-${i}`,

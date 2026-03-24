@@ -13,7 +13,7 @@ export function GalleryView() {
         <h2 className="text-xl font-medium text-foreground">No images yet</h2>
         <p className="text-sm text-muted-foreground mt-2">Start creating in the Studio</p>
         <button
-          onClick={() => setActivePage('studio')}
+          onClick={() => setActivePage('canvas')}
           className="mt-6 h-10 px-6 bg-primary hover:bg-ember-hover text-primary-foreground rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
         >
           Go to Studio <ArrowRight size={16} />
@@ -65,7 +65,7 @@ export function GalleryView() {
                   <div className="flex gap-2">
                     <button className="text-foreground hover:text-primary transition-colors"><Download size={16} /></button>
                     <button
-                      onClick={() => { setPrompt(img.prompt); setActivePage('studio'); }}
+                      onClick={() => { setPrompt(img.prompt); setActivePage('canvas'); }}
                       className="text-foreground hover:text-primary transition-colors"
                     >
                       <RefreshCw size={16} />
