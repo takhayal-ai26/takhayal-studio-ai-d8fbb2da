@@ -229,21 +229,6 @@ export default function PortalHome() {
             </div>
           </section>
 
-          {/* ── Section 7: Quick Templates ── */}
-          <section className="mb-12 pb-4">
-            <h2 className="text-[15px] font-medium text-foreground mb-4">Quick Templates</h2>
-            <div className="flex flex-wrap gap-2">
-              {templatePills.map(name => (
-                <button
-                  key={name}
-                  onClick={() => goToCanvas(TEMPLATE_PROMPTS[name], name)}
-                  className="px-4 py-2 rounded-full bg-card border border-border text-[13px] font-medium text-foreground hover:border-primary hover:text-primary transition-colors"
-                >
-                  {name}
-                </button>
-              ))}
-            </div>
-          </section>
 
         </div>
       </div>
