@@ -65,7 +65,7 @@ export function CenterCanvas() {
 
       {/* Main output card */}
       <div className="flex-1 flex flex-col items-center">
-        <div className={`w-full max-w-[640px] ${aspectRatioMap[aspectRatio]} bg-card rounded-xl border border-surface-border relative overflow-hidden`}>
+        <div className={`w-full max-w-[900px] ${aspectRatioMap[aspectRatio]} bg-card rounded-xl border border-surface-border relative overflow-hidden`}>
           {isGenerating ? (
             <div className="absolute inset-0 animate-shimmer flex items-center justify-center">
               <div className="flex flex-col items-center gap-3">
