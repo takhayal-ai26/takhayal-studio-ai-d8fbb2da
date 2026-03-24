@@ -46,9 +46,7 @@ export default function ToolPage() {
   const Icon = tool.icon;
 
   return (
-    <div className="min-h-screen bg-background">
-      <TopNavbar />
-      <div className="pt-16">
+    <div className="flex-1 pt-16">
         <section className="relative w-full overflow-hidden" style={{ minHeight: '480px' }}>
           <img src={tool.image} alt={tool.name} className="absolute inset-0 w-full h-full object-cover" width={800} height={600} />
           <div className={`absolute inset-0 bg-gradient-to-${isRTL ? 'l' : 'r'} from-background via-background/80 to-transparent`} />
