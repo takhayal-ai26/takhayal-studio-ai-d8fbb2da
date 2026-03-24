@@ -1,8 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { TopNavbar } from '@/components/layout/TopNavbar';
-import { AuthModal } from '@/components/AuthModal';
+import { Check, Flame, Zap, Image, Sparkles, Clock } from 'lucide-react';
 import { Check, Flame, Zap, Image, Sparkles, Clock } from 'lucide-react';
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
