@@ -87,6 +87,20 @@
   background: hsl(0 1% 26%);
 }
 
+/* Hero gradient wave */
+@keyframes heroWave {
+  0%, 100% { transform: translateX(0%) scale(1); }
+  25% { transform: translateX(10%) scale(1.05); }
+  50% { transform: translateX(-5%) scale(0.95); }
+  75% { transform: translateX(8%) scale(1.02); }
+}
+
+@keyframes heroWave2 {
+  0%, 100% { transform: translateX(0%) scale(1.02); }
+  30% { transform: translateX(-12%) scale(0.98); }
+  60% { transform: translateX(6%) scale(1.06); }
+}
+
 /* Shimmer animation */
 @keyframes shimmer {
   0% { background-position: -200% 0; }
