@@ -1,7 +1,7 @@
 import { useApp } from '@/context/AppContext';
 import { TopNavbar } from '@/components/layout/TopNavbar';
-import { CenterCanvas } from '@/components/layout/CenterCanvas';
-import { RightPanel } from '@/components/layout/RightPanel';
+import { InspirationFeed } from '@/components/layout/InspirationFeed';
+import { CreationPanel } from '@/components/layout/CreationPanel';
 import { AuthModal } from '@/components/AuthModal';
 import { GalleryView } from '@/components/views/GalleryView';
 import { CreditsView } from '@/components/views/CreditsView';
@@ -20,18 +20,18 @@ const Canvas = () => {
       case 'canvas':
       default:
         return (
-          <>
-            <CenterCanvas />
-            <RightPanel />
-          </>
+          <div className="flex flex-1 overflow-hidden">
+            <InspirationFeed />
+            <CreationPanel />
+          </div>
         );
     }
   };
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-background">
+    <div className="flex flex-col h-screen w-full bg-background">
       <TopNavbar />
-      <div className="flex flex-1 pt-16">
+      <div className="flex flex-1 pt-16 overflow-hidden">
         {renderContent()}
       </div>
       <AuthModal />
