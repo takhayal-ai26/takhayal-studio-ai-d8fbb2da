@@ -246,9 +246,7 @@ export default function PortalHome() {
             </div>
           </section>
 
-        </div>
       </div>
-      <AuthModal />
     </div>
   );
 }
