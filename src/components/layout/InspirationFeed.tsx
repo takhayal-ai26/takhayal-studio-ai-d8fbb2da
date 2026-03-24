@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { useApp, TEMPLATE_PROMPTS } from '@/context/AppContext';
+import { Download, RefreshCw } from 'lucide-react';
 
 const CATEGORIES = ['All', 'Ads', 'Social', 'Fashion', 'Products', 'Food', 'Architecture'] as const;
 
@@ -19,7 +20,11 @@ const FEED_ITEMS = [
 ];
 
 export function InspirationFeed() {
-  const { setPrompt, setSelectedTemplate } = useApp();
+  const {
+    setPrompt, setSelectedTemplate,
+    generatedImages, currentImageIndex, setCurrentImageIndex,
+    isGenerating, generate,
+  } = useApp();
   const [activeCategory, setActiveCategory] = useState<string>('All');
 
   const filtered = activeCategory === 'All'
@@ -31,9 +36,70 @@ export function InspirationFeed() {
     setSelectedTemplate(null);
   };
 
+  const hasImages = generatedImages.length > 0;
+  const currentImage = generatedImages[currentImageIndex];
+
+  // Show result view after generation
+  if (hasImages || isGenerating) {
+    return (
+      <div className="flex-1 flex flex-col overflow-hidden border-r border-border/50">
+        <div className="flex-1 flex flex-col items-center justify-center p-6">
+          {isGenerating ? (
+            <div className="w-full max-w-[640px] aspect-square rounded-2xl bg-card animate-shimmer flex items-center justify-center">
+              <div className="flex flex-col items-center gap-3">
+                <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                <span className="text-sm text-muted-foreground">Generating...</span>
+              </div>
+            </div>
+          ) : currentImage ? (
+            <>
+              <div className="w-full max-w-[640px] rounded-2xl overflow-hidden">
+                <img
+                  src={currentImage.url}
+                  alt={currentImage.prompt}
+                  className="w-full object-cover animate-fade-in"
+                />
+              </div>
+
+              {/* Variations */}
+              <div className="w-full max-w-[640px] flex gap-2 mt-3">
+                {generatedImages.slice(0, 4).map((img, i) => (
+                  <button
+                    key={img.id}
+                    onClick={() => setCurrentImageIndex(i)}
+                    className={`flex-1 h-16 rounded-xl overflow-hidden border-[1.5px] transition-colors ${
+                      i === currentImageIndex ? 'border-primary' : 'border-border/50 hover:border-muted-foreground/40'
+                    }`}
+                  >
+                    <img src={img.url} alt="" className="w-full h-full object-cover" />
+                  </button>
+                ))}
+              </div>
+
+              {/* Actions */}
+              <div className="w-full max-w-[640px] flex justify-end gap-2.5 mt-4">
+                <button
+                  onClick={generate}
+                  className="h-9 px-4 rounded-xl border border-border/50 text-foreground text-[13px] font-medium flex items-center gap-2 hover:bg-card transition-colors"
+                >
+                  <RefreshCw size={14} />
+                  Regenerate
+                </button>
+                <button className="h-9 px-4 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium flex items-center gap-2 hover:brightness-90 transition-all">
+                  <Download size={14} />
+                  Download
+                </button>
+              </div>
+            </>
+          ) : null}
+        </div>
+      </div>
+    );
+  }
+
+  // Default: inspiration feed
   return (
     <div className="flex-1 flex flex-col overflow-hidden border-r border-border/50">
-      {/* Header */}
       <div className="flex-shrink-0 px-5 pt-5 pb-3">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Explore ideas</p>
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
@@ -53,7 +119,6 @@ export function InspirationFeed() {
         </div>
       </div>
 
-      {/* Masonry feed */}
       <div className="flex-1 overflow-y-auto px-5 pb-5">
         <div className="columns-2 lg:columns-3 gap-3 space-y-3">
           {filtered.map((item, i) => (
