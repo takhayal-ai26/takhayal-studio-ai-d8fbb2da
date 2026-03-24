@@ -42,7 +42,7 @@ export default function PortalHome() {
   const { setPrompt, setSelectedTemplate, setActivePage, userName } = useApp();
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState('All');
-  const scrollRef = useRef<HTMLDivElement>(null);
+  
 
   /* auto-advance carousel */
   useEffect(() => {
