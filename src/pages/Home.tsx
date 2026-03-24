@@ -291,24 +291,29 @@ export default function Home() {
       </section>
 
       {/* ━━━ WHY TAKHAYAL ━━━ */}
-      <section className="px-6 md:px-12 pb-28 md:pb-36">
+      <section className="relative px-6 md:px-12 pb-32 md:pb-40">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-px bg-gradient-to-r from-transparent via-muted/40 to-transparent" />
         <Section>
-          <div className="max-w-5xl mx-auto">
-            <div className="text-center mb-14">
-              <h2 className="text-3xl md:text-4xl font-light text-foreground">Built for creators in the region</h2>
-              <p className="text-muted-foreground mt-3 text-base">Designed for Arabic-first businesses and creators</p>
+          <div className="max-w-5xl mx-auto pt-8">
+            <div className="text-center mb-16">
+              <span className="text-[11px] font-medium text-primary uppercase tracking-[0.2em] mb-4 block">Why Takhayal</span>
+              <h2 className="text-3xl md:text-5xl font-light text-foreground">Built for creators in the region</h2>
+              <p className="text-muted-foreground mt-4 text-base">Designed for Arabic-first businesses and creators</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {whyCards.map((card) => (
                 <div
                   key={card.title}
-                  className="group bg-card/60 border border-muted rounded-2xl p-7 hover:border-primary/20 transition-all duration-300"
+                  className="group relative bg-card/40 border border-muted/50 rounded-2xl p-8 hover:border-primary/25 hover:bg-card/60 transition-all duration-500"
                 >
-                  <div className="w-11 h-11 rounded-xl bg-primary/[0.1] flex items-center justify-center mb-4 group-hover:bg-primary/[0.15] transition-colors">
-                    <card.icon size={20} className="text-primary" />
+                  <div className="absolute inset-0 rounded-2xl bg-primary/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="relative">
+                    <div className="w-12 h-12 rounded-xl bg-primary/[0.1] border border-primary/15 flex items-center justify-center mb-5 group-hover:bg-primary/[0.15] group-hover:shadow-[0_0_20px_rgba(245,81,48,0.1)] transition-all duration-500">
+                      <card.icon size={20} className="text-primary" strokeWidth={1.5} />
+                    </div>
+                    <h3 className="text-base font-medium text-foreground mb-2">{card.title}</h3>
+                    <p className="text-[13px] text-muted-foreground leading-relaxed">{card.desc}</p>
                   </div>
-                  <h3 className="text-[15px] font-medium text-foreground mb-2">{card.title}</h3>
-                  <p className="text-[13px] text-muted-foreground leading-relaxed">{card.desc}</p>
                 </div>
               ))}
             </div>
