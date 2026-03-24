@@ -75,9 +75,7 @@ export default function PortalHome() {
     : masonryImages.filter(m => m.cat === activeCategory);
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-background">
-      <TopNavbar />
-      <div className="flex-1 pt-16 overflow-y-auto">
+    <div className="flex-1 pt-16 overflow-y-auto">
 
         {/* ── Section 1: Featured Carousel ── */}
         <section className="relative w-full overflow-hidden">

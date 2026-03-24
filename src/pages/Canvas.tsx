@@ -1,8 +1,6 @@
 import { useApp } from '@/context/AppContext';
-import { TopNavbar } from '@/components/layout/TopNavbar';
 import { InspirationFeed } from '@/components/layout/InspirationFeed';
 import { CreationPanel } from '@/components/layout/CreationPanel';
-import { AuthModal } from '@/components/AuthModal';
 import { UpgradeModal } from '@/components/UpgradeModal';
 import { GalleryView } from '@/components/views/GalleryView';
 import { CreditsView } from '@/components/views/CreditsView';
@@ -30,14 +28,12 @@ const Canvas = () => {
   };
 
   return (
-    <div className="flex flex-col h-screen w-full bg-background">
-      <TopNavbar />
+    <>
       <div className="flex flex-1 min-h-0 pt-16 overflow-visible">
         {renderContent()}
       </div>
-      <AuthModal />
       <UpgradeModal />
-    </div>
+    </>
   );
 };
 
