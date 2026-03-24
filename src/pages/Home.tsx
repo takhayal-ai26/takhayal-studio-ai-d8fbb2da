@@ -341,17 +341,17 @@ export default function Home() {
               <Sparkles size={24} className="text-primary mx-auto mb-6 opacity-60" />
               <h2 className="text-3xl md:text-5xl font-light text-foreground mb-5">Start creating your first image</h2>
               <p className="text-muted-foreground mb-10 text-base max-w-md mx-auto">No design skills required. Just describe and generate.</p>
-              <div className="flex items-center justify-center gap-5">
+              <div className="flex items-center justify-center gap-4">
                 <button
                   onClick={handleStartCreating}
-                  className="group h-14 md:h-16 px-10 md:px-14 rounded-full bg-primary text-primary-foreground text-base md:text-lg font-medium hover:brightness-110 transition-all duration-300 hover:shadow-[0_0_50px_rgba(245,81,48,0.4)] hover:scale-[1.02]"
+                  className="group h-12 md:h-14 px-8 md:px-10 rounded-full bg-primary text-primary-foreground text-[15px] md:text-base font-medium hover:brightness-110 transition-all duration-300 hover:shadow-[0_0_40px_rgba(245,81,48,0.35)] hover:scale-[1.02]"
                 >
                   Start Creating
-                  <ArrowRight size={18} className="inline ml-2.5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight size={16} className="inline ml-2 group-hover:translate-x-1 transition-transform" />
                 </button>
                 <button
                   onClick={() => navigate('/templates')}
-                  className="h-14 md:h-16 px-10 md:px-14 rounded-full border border-muted/60 text-foreground text-base md:text-lg font-medium hover:bg-card hover:border-muted transition-all duration-300"
+                  className="h-12 md:h-14 px-8 md:px-10 rounded-full border border-muted/60 text-foreground text-[15px] md:text-base font-medium hover:bg-card hover:border-muted transition-all duration-300"
                 >
                   Explore Templates
                 </button>
