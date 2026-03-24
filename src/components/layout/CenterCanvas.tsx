@@ -31,12 +31,12 @@ export function CenterCanvas() {
   }, [generate]);
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen p-4 md:p-6 pb-20 md:pb-6 overflow-y-auto">
+    <div className="flex-1 flex flex-col p-4 md:p-6 pb-20 md:pb-6 overflow-y-auto">
       {/* Top bar */}
       <div className="flex items-center justify-between mb-5 h-10 flex-shrink-0">
         <div>
           <h1 className="text-xl font-medium text-foreground">Canvas</h1>
-          <p className="text-[12px] text-muted-foreground">Generate visuals</p>
+          <p className="text-[12px] text-secondary-text">Generate visuals</p>
         </div>
         <div className="flex items-center gap-2.5">
           <div className="hidden sm:flex items-center gap-1.5">
