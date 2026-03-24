@@ -29,7 +29,7 @@ export default function Home() {
   };
 
   const handleStartCreating = () => {
-    navigate('/canvas');
+    navigate('/home');
   };
 
   return (
