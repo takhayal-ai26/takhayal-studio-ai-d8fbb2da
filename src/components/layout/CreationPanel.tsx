@@ -148,7 +148,7 @@ export function CreationPanel() {
           <span className="text-[11px] text-muted-foreground/40">JPG / PNG up to 10MB</span>
         </button>
 
-        {/* === 3. Model Selector — popover goes LEFT === */}
+        {/* === 3. Model Selector — popover goes UP === */}
         <div className="relative">
           <button
             onClick={() => toggleDropdown('model')}
@@ -165,12 +165,11 @@ export function CreationPanel() {
                 <p className="text-[12px] text-muted-foreground">{activeModel.name}</p>
               </div>
             </div>
-            <ChevronRight size={16} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === 'model' ? 'rotate-180' : ''}`} />
+            <ChevronRight size={16} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === 'model' ? 'rotate-[-90deg]' : ''}`} />
           </button>
 
-          {/* Popover — positioned to the LEFT of the trigger */}
           {openDropdown === 'model' && (
-            <div className="absolute left-full top-0 ml-3 w-[260px] bg-card border border-border/20 rounded-2xl p-2 shadow-2xl shadow-black/40 z-50 animate-fade-in">
+            <div className="absolute left-0 right-0 bottom-full mb-3 bg-card border border-border/20 rounded-2xl p-2 shadow-2xl shadow-black/40 z-50 animate-fade-in max-h-[320px] overflow-y-auto">
               <p className="text-[11px] text-muted-foreground/50 uppercase tracking-wider font-medium px-3 pt-2 pb-2">Select model</p>
               {MODELS.map(m => {
                 const Icon = m.icon;
@@ -198,9 +197,8 @@ export function CreationPanel() {
           )}
         </div>
 
-        {/* === 4. Size + Resolution row — popovers go LEFT === */}
+        {/* === 4. Size + Resolution row — popovers go UP === */}
         <div className="flex gap-3">
-          {/* Size */}
           <div className="relative flex-1">
             <button
               onClick={() => toggleDropdown('size')}
@@ -215,12 +213,11 @@ export function CreationPanel() {
                   <p className="text-[14px] font-medium text-foreground">{aspectRatio}</p>
                 </div>
               </div>
-              <ChevronRight size={14} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === 'size' ? 'rotate-180' : ''}`} />
+              <ChevronRight size={14} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === 'size' ? 'rotate-[-90deg]' : ''}`} />
             </button>
 
-            {/* Popover — positioned to the LEFT */}
             {openDropdown === 'size' && (
-              <div className="absolute left-full bottom-0 ml-3 w-[220px] bg-card border border-border/20 rounded-2xl p-2 shadow-2xl shadow-black/40 z-50 animate-fade-in">
+              <div className="absolute left-0 right-0 bottom-full mb-3 bg-card border border-border/20 rounded-2xl p-2 shadow-2xl shadow-black/40 z-50 animate-fade-in">
                 <p className="text-[11px] text-muted-foreground/50 uppercase tracking-wider font-medium px-3 pt-2 pb-2">Aspect ratio</p>
                 {SIZES.map(s => {
                   const isActive = aspectRatio === s.value;
@@ -244,7 +241,6 @@ export function CreationPanel() {
             )}
           </div>
 
-          {/* Resolution */}
           <div className="relative flex-1">
             <button
               onClick={() => toggleDropdown('resolution')}
@@ -259,12 +255,11 @@ export function CreationPanel() {
                   <p className="text-[14px] font-medium text-foreground">{selectedResolution}</p>
                 </div>
               </div>
-              <ChevronRight size={14} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === 'resolution' ? 'rotate-180' : ''}`} />
+              <ChevronRight size={14} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === 'resolution' ? 'rotate-[-90deg]' : ''}`} />
             </button>
 
-            {/* Popover — positioned to the LEFT */}
             {openDropdown === 'resolution' && (
-              <div className="absolute left-full bottom-0 ml-3 w-[200px] bg-card border border-border/20 rounded-2xl p-2 shadow-2xl shadow-black/40 z-50 animate-fade-in">
+              <div className="absolute left-0 right-0 bottom-full mb-3 bg-card border border-border/20 rounded-2xl p-2 shadow-2xl shadow-black/40 z-50 animate-fade-in">
                 <p className="text-[11px] text-muted-foreground/50 uppercase tracking-wider font-medium px-3 pt-2 pb-2">Select quality</p>
                 {RESOLUTIONS.map(r => {
                   const isActive = selectedResolution === r.value;
