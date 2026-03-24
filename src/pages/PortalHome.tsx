@@ -42,6 +42,7 @@ export default function PortalHome() {
   const navigate = useNavigate();
   const { setPrompt, setSelectedTemplate, setActivePage } = useApp();
   const { t, isRTL } = useLanguage();
+  const { tools: toolsData } = useTools();
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState('All');
 
