@@ -3,7 +3,7 @@ import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, CreditCard, Wrench, Cpu, FileText,
   Layers, Shield, Image, BarChart3, LifeBuoy, Bell, Plug,
-  Lock, Settings, ChevronLeft, ChevronRight, LogOut
+  Lock, Settings, ChevronLeft, ChevronRight, LogOut, Languages
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -24,6 +24,7 @@ const NAV_ITEMS = [
   { label: 'Notifications', icon: Bell, path: '/admin/notifications' },
   { label: 'Integrations', icon: Plug, path: '/admin/integrations' },
   { label: 'Roles & Permissions', icon: Lock, path: '/admin/roles' },
+  { label: 'Translations', icon: Languages, path: '/admin/translations' },
   { label: 'Settings', icon: Settings, path: '/admin/settings' },
 ];
 

@@ -31,6 +31,7 @@ import AdminNotifications from "./pages/admin/AdminNotifications";
 import AdminIntegrations from "./pages/admin/AdminIntegrations";
 import AdminRoles from "./pages/admin/AdminRoles";
 import AdminSettings from "./pages/admin/AdminSettings";
+import AdminTranslations from "./pages/admin/AdminTranslations";
 
 const queryClient = new QueryClient();
 
@@ -68,6 +69,7 @@ const App = () => (
                 <Route path="integrations" element={<AdminIntegrations />} />
                 <Route path="roles" element={<AdminRoles />} />
                 <Route path="settings" element={<AdminSettings />} />
+                <Route path="translations" element={<AdminTranslations />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />
