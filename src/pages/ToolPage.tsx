@@ -23,15 +23,11 @@ export default function ToolPage() {
 
   if (!tool) {
     return (
-      <div className="min-h-screen bg-background">
-        <TopNavbar />
-        <div className="pt-16 flex items-center justify-center h-screen">
-          <div className="text-center">
-            <h1 className="text-2xl font-light text-foreground mb-2">{t.toolPage.toolNotFound}</h1>
-            <button onClick={() => navigate('/home')} className="text-primary text-sm hover:underline">{t.toolPage.backToHome}</button>
-          </div>
+      <div className="pt-16 flex items-center justify-center h-screen">
+        <div className="text-center">
+          <h1 className="text-2xl font-light text-foreground mb-2">{t.toolPage.toolNotFound}</h1>
+          <button onClick={() => navigate('/home')} className="text-primary text-sm hover:underline">{t.toolPage.backToHome}</button>
         </div>
-        <AuthModal />
       </div>
     );
   }
