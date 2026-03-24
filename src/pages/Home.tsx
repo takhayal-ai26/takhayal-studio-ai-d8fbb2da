@@ -322,36 +322,51 @@ export default function Home() {
       </section>
 
       {/* ━━━ FINAL CTA ━━━ */}
-      <section className="relative px-6 md:px-12 pb-28 md:pb-36">
+      <section className="relative px-6 md:px-12 pb-32 md:pb-40">
         <Section>
-          <div className="relative max-w-3xl mx-auto text-center py-16">
-            {/* Glow */}
+          <div className="relative max-w-4xl mx-auto text-center py-20 md:py-24">
+            {/* Multi-layer glow */}
             <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[250px] bg-primary/[0.06] rounded-full blur-[100px]" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[300px] bg-primary/[0.08] rounded-full blur-[120px]" />
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[200px] h-[200px] bg-primary/[0.05] rounded-full blur-[60px]" />
             </div>
-            <h2 className="relative text-3xl md:text-4xl font-light text-foreground mb-4">Start creating your first image</h2>
-            <p className="relative text-muted-foreground mb-9 text-base">No design skills required. Just describe and generate.</p>
-            <div className="relative flex items-center justify-center gap-3">
-              <button
-                onClick={handleStartCreating}
-                className="h-13 px-8 rounded-lg bg-primary text-primary-foreground text-[15px] font-medium hover:brightness-90 transition-all hover:shadow-[0_0_30px_rgba(245,81,48,0.3)]"
-              >
-                Start Creating
-              </button>
-              <button
-                onClick={() => navigate('/studio')}
-                className="h-13 px-8 rounded-lg border border-muted text-foreground text-[15px] font-medium hover:bg-card transition-colors"
-              >
-                Explore Templates
-              </button>
+            {/* Decorative border */}
+            <div className="absolute inset-0 rounded-3xl border border-muted/30 bg-card/20" />
+            <div className="relative">
+              <Sparkles size={24} className="text-primary mx-auto mb-6 opacity-60" />
+              <h2 className="text-3xl md:text-5xl font-light text-foreground mb-5">Start creating your first image</h2>
+              <p className="text-muted-foreground mb-10 text-base max-w-md mx-auto">No design skills required. Just describe and generate.</p>
+              <div className="flex items-center justify-center gap-4">
+                <button
+                  onClick={handleStartCreating}
+                  className="group h-13 px-9 rounded-xl bg-primary text-primary-foreground text-[15px] font-medium hover:brightness-110 transition-all duration-300 hover:shadow-[0_0_40px_rgba(245,81,48,0.35)] hover:scale-[1.02]"
+                >
+                  Start Creating
+                  <ArrowRight size={16} className="inline ml-2 group-hover:translate-x-1 transition-transform" />
+                </button>
+                <button
+                  onClick={() => navigate('/templates')}
+                  className="h-13 px-9 rounded-xl border border-muted/60 text-foreground text-[15px] font-medium hover:bg-card hover:border-muted transition-all duration-300"
+                >
+                  Explore Templates
+                </button>
+              </div>
             </div>
           </div>
         </Section>
       </section>
 
-      {/* Footer line */}
-      <footer className="border-t border-muted px-6 py-8 text-center">
-        <p className="text-[12px] text-muted-foreground">© 2024 Takhayal.ai — All rights reserved</p>
+      {/* Footer */}
+      <footer className="border-t border-muted/30 px-6 py-10 text-center">
+        <div className="max-w-5xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
+          <Logo size="small" />
+          <p className="text-[12px] text-muted-foreground">© 2025 Takhayal.ai — All rights reserved</p>
+          <div className="flex items-center gap-6">
+            <button onClick={() => navigate('/pricing')} className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">Pricing</button>
+            <button onClick={() => navigate('/tools')} className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">Tools</button>
+            <button onClick={() => navigate('/community')} className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">Community</button>
+          </div>
+        </div>
       </footer>
 
       <AuthModal />
