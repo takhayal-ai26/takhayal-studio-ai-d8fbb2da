@@ -49,8 +49,13 @@ interface AppState {
   generatedImages: GeneratedImage[];
   currentImageIndex: number;
   gallery: GeneratedImage[];
+  authModalOpen: boolean;
+  authModalTab: 'login' | 'signup';
   login: (email: string, name?: string) => void;
   logout: () => void;
+  openAuthModal: (tab?: 'login' | 'signup') => void;
+  closeAuthModal: () => void;
+  requireAuth: (action: () => void) => void;
   setActivePage: (page: NavPage) => void;
   setPrompt: (prompt: string) => void;
   setSelectedTemplate: (template: string | null) => void;
@@ -81,12 +86,15 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [gallery, setGallery] = useState<GeneratedImage[]>([]);
+  const [authModalOpen, setAuthModalOpen] = useState(false);
+  const [authModalTab, setAuthModalTab] = useState<'login' | 'signup'>('signup');
 
   const login = useCallback((email: string, name?: string) => {
     setIsAuthenticated(true);
     setUserEmail(email);
     setUserName(name || email.split('@')[0]);
     setCredits(10);
+    setAuthModalOpen(false);
   }, []);
 
   const logout = useCallback(() => {
@@ -95,12 +103,35 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setUserEmail('');
   }, []);
 
+  const openAuthModal = useCallback((tab: 'login' | 'signup' = 'signup') => {
+    setAuthModalTab(tab);
+    setAuthModalOpen(true);
+  }, []);
+
+  const closeAuthModal = useCallback(() => {
+    setAuthModalOpen(false);
+  }, []);
+
+  const requireAuth = useCallback((action: () => void) => {
+    if (isAuthenticated) {
+      action();
+    } else {
+      setAuthModalTab('signup');
+      setAuthModalOpen(true);
+    }
+  }, [isAuthenticated]);
+
   const getCreditCost = useCallback(() => {
     return quality === 'hd' ? 4 : 2;
   }, [quality]);
 
   const generate = useCallback(() => {
     if (!prompt.trim() || isGenerating) return;
+    if (!isAuthenticated) {
+      setAuthModalTab('signup');
+      setAuthModalOpen(true);
+      return;
+    }
     const cost = quality === 'hd' ? 4 : 2;
     if (credits < cost) return;
 
@@ -123,14 +154,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setGallery(prev => [...newImages, ...prev]);
       setIsGenerating(false);
     }, 2500);
-  }, [prompt, isGenerating, credits, quality, selectedTemplate, selectedStyle, aspectRatio]);
+  }, [prompt, isGenerating, isAuthenticated, credits, quality, selectedTemplate, selectedStyle, aspectRatio]);
 
   return (
     <AppContext.Provider value={{
       isAuthenticated, userName, userEmail, activePage, credits,
       prompt, selectedTemplate, selectedStyle, aspectRatio, quality,
       enhancePrompt, isGenerating, generatedImages, currentImageIndex, gallery,
-      login, logout, setActivePage, setPrompt, setSelectedTemplate,
+      authModalOpen, authModalTab,
+      login, logout, openAuthModal, closeAuthModal, requireAuth,
+      setActivePage, setPrompt, setSelectedTemplate,
       setSelectedStyle, setAspectRatio, setQuality, setEnhancePrompt,
       setCurrentImageIndex, generate, getCreditCost,
     }}>

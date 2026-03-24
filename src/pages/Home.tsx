@@ -2,6 +2,7 @@ import { useNavigate } from 'react-router-dom';
 import { TEMPLATE_PROMPTS, useApp } from '@/context/AppContext';
 import { Sparkles, LayoutTemplate, Globe } from 'lucide-react';
 import { TopNavbar } from '@/components/layout/TopNavbar';
+import { AuthModal } from '@/components/AuthModal';
 
 const exampleImages = [
   { url: 'https://picsum.photos/seed/perfume/400/400', prompt: 'Luxury perfume ad, dramatic lighting, dark background' },
@@ -19,12 +20,20 @@ const templatePills = ['Ramadan', 'Eid', 'Product Shot', 'Fashion', 'Restaurant'
 
 export default function Home() {
   const navigate = useNavigate();
-  const { setPrompt, setSelectedTemplate } = useApp();
+  const { setPrompt, setSelectedTemplate, isAuthenticated, openAuthModal } = useApp();
 
   const handleTemplate = (name: string) => {
     setPrompt(TEMPLATE_PROMPTS[name]);
     setSelectedTemplate(name);
     navigate('/canvas');
+  };
+
+  const handleStartCreating = () => {
+    if (isAuthenticated) {
+      navigate('/canvas');
+    } else {
+      openAuthModal('signup');
+    }
   };
 
   return (
@@ -46,7 +55,7 @@ export default function Home() {
         </p>
         <div className="flex items-center gap-3 mt-8">
           <button
-            onClick={() => navigate('/canvas')}
+            onClick={handleStartCreating}
             className="h-12 px-7 rounded-lg bg-primary text-primary-foreground text-[15px] font-medium hover:bg-ember-hover transition-colors"
           >
             Start Creating
@@ -117,12 +126,14 @@ export default function Home() {
       <section className="px-6 md:px-12 pb-24 md:pb-32 text-center">
         <h2 className="text-2xl font-light text-foreground mb-6">Start creating your first image</h2>
         <button
-          onClick={() => navigate('/canvas')}
+          onClick={handleStartCreating}
           className="h-12 px-8 rounded-lg bg-primary text-primary-foreground text-[15px] font-medium hover:bg-ember-hover transition-colors"
         >
           Go to Canvas
         </button>
       </section>
+
+      <AuthModal />
     </div>
   );
 }
