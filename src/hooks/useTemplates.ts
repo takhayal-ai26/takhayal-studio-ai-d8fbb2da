@@ -14,8 +14,8 @@ export interface FrontendTemplate {
 
 export function useTemplates() {
   const { templates: adminTemplates } = useAdminTemplatesStore();
-  const { language } = useLanguage();
-  const isAr = language === 'ar';
+  const { lang } = useLanguage();
+  const isAr = lang === 'ar';
 
   const templates: FrontendTemplate[] = adminTemplates
     .filter(t => t.active)

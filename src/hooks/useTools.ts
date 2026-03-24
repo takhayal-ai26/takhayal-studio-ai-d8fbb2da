@@ -13,8 +13,8 @@ const iconLookup: Record<string, LucideIcon> = {
  */
 export function useTools() {
   const { tools: adminTools } = useAdminToolsStore();
-  const { language } = useLanguage();
-  const isAr = language === 'ar';
+  const { lang } = useLanguage();
+  const isAr = lang === 'ar';
 
   // Merge admin data with static tool definitions (for images, options, examples)
   const tools: ToolDef[] = adminTools
