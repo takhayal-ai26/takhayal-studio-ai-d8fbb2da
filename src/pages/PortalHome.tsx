@@ -17,14 +17,6 @@ const featuredItems = [
   { image: 'https://picsum.photos/seed/feat-realestate/800/450', label: 'Architecture', prompt: 'Luxury real estate ad, modern building, blue sky, professional architectural photography, premium feel', template: 'Real Estate' },
 ];
 
-const createCards = [
-  { name: 'Product Ad', image: 'https://picsum.photos/seed/create-prod/400/500', template: 'Product Shot' },
-  { name: 'Instagram Post', image: 'https://picsum.photos/seed/create-insta/400/500', template: 'Reels Cover' },
-  { name: 'Fashion', image: 'https://picsum.photos/seed/create-fashion/400/500', template: 'Fashion' },
-  { name: 'Real Estate', image: 'https://picsum.photos/seed/create-real/400/500', template: 'Real Estate' },
-  { name: 'Restaurant', image: 'https://picsum.photos/seed/create-food/400/500', template: 'Restaurant' },
-  { name: 'Medical', image: 'https://picsum.photos/seed/create-med/400/500', template: 'Medical' },
-];
 
 const categories = ['All', 'Ads', 'Social', 'Fashion', 'Products', 'Food', 'Architecture'];
 
