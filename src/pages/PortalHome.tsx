@@ -2,9 +2,23 @@ import { useNavigate } from 'react-router-dom';
 import { TEMPLATE_PROMPTS, useApp } from '@/context/AppContext';
 import { TopNavbar } from '@/components/layout/TopNavbar';
 import { AuthModal } from '@/components/AuthModal';
-import { ArrowRight, ChevronLeft, ChevronRight } from 'lucide-react';
+import { ArrowRight, ChevronLeft, ChevronRight, Sparkles } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { TOOLS } from '@/data/tools';
+
+import toolGenerate from '@/assets/tools/tool-generate.jpg';
+import toolUpscale from '@/assets/tools/tool-upscale.jpg';
+import toolLogo from '@/assets/tools/tool-logo.jpg';
+import toolRemovebg from '@/assets/tools/tool-removebg.jpg';
+import toolEnhance from '@/assets/tools/tool-enhance.jpg';
+
+const toolImages: Record<string, string> = {
+  'generate': toolGenerate,
+  'upscale': toolUpscale,
+  'logo': toolLogo,
+  'remove-bg': toolRemovebg,
+  'enhance': toolEnhance,
+};
 
 const toolsData = TOOLS;
 
