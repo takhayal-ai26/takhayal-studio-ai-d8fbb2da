@@ -151,14 +151,15 @@ export default function Home() {
       </section>
 
       {/* ━━━ CREATE ANYTHING ━━━ */}
-      <section id="create-anything" className="px-6 md:px-12 pb-28 md:pb-36">
+      <section id="create-anything" className="px-6 md:px-12 pb-32 md:pb-40">
         <Section>
           <div className="max-w-6xl mx-auto">
-            <div className="text-center mb-14">
-              <h2 className="text-3xl md:text-4xl font-light text-foreground">Create anything in seconds</h2>
-              <p className="text-muted-foreground mt-3 text-base">From ads to social content, everything starts with an idea</p>
+            <div className="text-center mb-16">
+              <span className="text-[11px] font-medium text-primary uppercase tracking-[0.2em] mb-4 block">What you can create</span>
+              <h2 className="text-3xl md:text-5xl font-light text-foreground">Create anything in seconds</h2>
+              <p className="text-muted-foreground mt-4 text-base max-w-md mx-auto">From ads to social content, everything starts with an idea</p>
             </div>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-5">
+            <div className="grid grid-cols-2 md:grid-cols-3 gap-3 md:gap-4">
               {categories.map((cat, i) => (
                 <button
                   key={cat.title}
@@ -166,11 +167,12 @@ export default function Home() {
                   className="group relative aspect-[3/4] rounded-2xl overflow-hidden"
                   style={{ animationDelay: `${i * 80}ms` }}
                 >
-                  <img src={cat.image} alt={cat.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]" loading="lazy" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-primary/[0.08]" />
-                  <div className="absolute bottom-0 left-0 right-0 p-5">
-                    <span className="text-[15px] md:text-lg font-medium text-foreground">{cat.title}</span>
+                  <img src={cat.image} alt={cat.title} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.08]" loading="lazy" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-black/10" />
+                  <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 bg-primary/[0.1]" />
+                  <div className="absolute bottom-0 left-0 right-0 p-5 md:p-6">
+                    <span className="text-sm md:text-lg font-medium text-foreground">{cat.title}</span>
+                    <ArrowRight size={14} className="text-foreground/0 group-hover:text-foreground/60 transition-all duration-300 mt-2 group-hover:translate-x-1" />
                   </div>
                 </button>
               ))}
