@@ -13,7 +13,7 @@ export function GalleryView() {
         <h2 className="text-xl font-medium text-foreground">No images yet</h2>
         <p className="text-sm text-muted-foreground mt-2">Start creating in the Studio</p>
         <button
-          onClick={() => setActivePage('studio')}
+          onClick={() => setActivePage('canvas')}
           className="mt-6 h-10 px-6 bg-primary hover:bg-ember-hover text-primary-foreground rounded-lg text-sm font-medium flex items-center gap-2 transition-colors"
         >
           Go to Studio <ArrowRight size={16} />
