@@ -5,7 +5,6 @@ import { Flame, Menu, X } from 'lucide-react';
 import { useState } from 'react';
 
 const navItems: { id: NavPage; label: string; route: string }[] = [
-  { id: 'home', label: 'Home', route: '/' },
   { id: 'canvas', label: 'Canvas', route: '/canvas' },
   { id: 'gallery', label: 'Gallery', route: '/canvas' },
   { id: 'templates', label: 'Templates', route: '/canvas' },
