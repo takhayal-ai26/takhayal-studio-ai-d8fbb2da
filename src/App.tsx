@@ -8,6 +8,7 @@ import PortalHome from "./pages/PortalHome";
 import Canvas from "./pages/Canvas";
 import Pricing from "./pages/Pricing";
 import ToolPage from "./pages/ToolPage";
+import Community from "./pages/Community";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -24,6 +25,7 @@ const App = () => (
             <Route path="/studio" element={<Canvas />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/tools/:toolId" element={<ToolPage />} />
+            <Route path="/community" element={<Community />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

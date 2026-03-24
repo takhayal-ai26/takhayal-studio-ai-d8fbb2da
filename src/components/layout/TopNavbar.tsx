@@ -5,12 +5,11 @@ import { Flame, Menu, X, Crown, ChevronDown, Sparkles, ArrowUpCircle, Hexagon, S
 import { useState, useRef, useEffect } from 'react';
 import { TOOLS } from '@/data/tools';
 
-const navItems: { id: NavPage | 'pricing'; label: string; route: string }[] = [
-  { id: 'home', label: 'Home', route: '/home' },
+const navItems: { id: string; label: string; route: string }[] = [
   { id: 'canvas', label: 'Studio', route: '/studio' },
+  { id: 'community', label: 'Community', route: '/community' },
   { id: 'gallery', label: 'Gallery', route: '/studio' },
   { id: 'templates', label: 'Templates', route: '/studio' },
-  { id: 'credits', label: 'Credits', route: '/studio' },
 ];
 
 export function TopNavbar() {
