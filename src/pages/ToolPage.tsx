@@ -1,16 +1,17 @@
 import { useParams, useNavigate } from 'react-router-dom';
-import { TOOLS } from '@/data/tools';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { ArrowRight, Upload, Coins, Sparkles } from 'lucide-react';
 import { useState } from 'react';
+import { useTools } from '@/hooks/useTools';
 
 export default function ToolPage() {
   const { toolId } = useParams();
   const navigate = useNavigate();
   const { requireAuth } = useApp();
   const { t, isRTL } = useLanguage();
-  const tool = TOOLS.find(t => t.id === toolId);
+  const { tools } = useTools();
+  const tool = tools.find(t => t.id === toolId);
 
   const [inputValue, setInputValue] = useState('');
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>(() => {

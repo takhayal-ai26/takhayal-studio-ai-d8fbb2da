@@ -1,15 +1,16 @@
-import { TOOLS } from '@/data/tools';
-import { useLanguage } from '@/i18n/LanguageContext';
 import { useNavigate } from 'react-router-dom';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useState } from 'react';
 import { Search } from 'lucide-react';
+import { useTools } from '@/hooks/useTools';
 
 export default function ToolsDirectory() {
   const navigate = useNavigate();
   const { t } = useLanguage();
+  const { tools } = useTools();
   const [search, setSearch] = useState('');
 
-  const filtered = TOOLS.filter(t =>
+  const filtered = tools.filter(t =>
     !search || t.name.toLowerCase().includes(search.toLowerCase()) || t.shortDesc.toLowerCase().includes(search.toLowerCase())
   );
 

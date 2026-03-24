@@ -1,38 +1,23 @@
-import { TEMPLATE_PROMPTS, useApp } from '@/context/AppContext';
+import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useState } from 'react';
 import { Search, ArrowRight, Sparkles } from 'lucide-react';
-
-interface TemplateDef { name: string; prompt: string; image: string; description: string; tags: string[]; category: string; featured?: boolean; }
-
-const TEMPLATES: TemplateDef[] = [
-  { name: 'Ramadan Campaign', prompt: TEMPLATE_PROMPTS['Ramadan'], image: 'https://picsum.photos/seed/tpl-ramadan/600/400', description: 'Warm cinematic Ramadan visuals with golden lanterns', tags: ['Ads', 'Seasonal', '16:9'], category: 'Ramadan', featured: true },
-  { name: 'Product Shot', prompt: TEMPLATE_PROMPTS['Product Shot'], image: 'https://picsum.photos/seed/tpl-product/600/400', description: 'Clean studio product photography with sharp details', tags: ['Product', '1:1', 'Commercial'], category: 'Product', featured: true },
-  { name: 'Reels Cover', prompt: TEMPLATE_PROMPTS['Reels Cover'], image: 'https://picsum.photos/seed/tpl-reels/600/400', description: 'Bold vertical covers for Instagram Reels', tags: ['Social', '9:16', 'Trendy'], category: 'Social', featured: true },
-  { name: 'Eid Celebration', prompt: TEMPLATE_PROMPTS['Eid'], image: 'https://picsum.photos/seed/tpl-eid/600/400', description: 'Vibrant festive Eid designs with joyful energy', tags: ['Ads', 'Seasonal'], category: 'Eid' },
-  { name: 'National Day', prompt: TEMPLATE_PROMPTS['National Day'], image: 'https://picsum.photos/seed/tpl-national/600/400', description: 'Patriotic modern designs with national colors', tags: ['Ads', 'Seasonal'], category: 'Eid' },
-  { name: 'Sale & Offers', prompt: TEMPLATE_PROMPTS['Sale/Offers'], image: 'https://picsum.photos/seed/tpl-sale/600/400', description: 'Eye-catching promotional and sale graphics', tags: ['Ads', 'Commercial'], category: 'Product' },
-  { name: 'Fashion Editorial', prompt: TEMPLATE_PROMPTS['Fashion'], image: 'https://picsum.photos/seed/tpl-fashion/600/400', description: 'High-end fashion with editorial lighting', tags: ['Fashion', 'Editorial'], category: 'Fashion' },
-  { name: 'Real Estate', prompt: TEMPLATE_PROMPTS['Real Estate'], image: 'https://picsum.photos/seed/tpl-realestate/600/400', description: 'Luxury property ads with architectural beauty', tags: ['Real Estate', 'Commercial'], category: 'Real Estate' },
-  { name: 'Restaurant', prompt: TEMPLATE_PROMPTS['Restaurant'], image: 'https://picsum.photos/seed/tpl-restaurant/600/400', description: 'Appetizing food photography for restaurants', tags: ['Food', 'Social'], category: 'Restaurant' },
-  { name: 'Medical Clinic', prompt: TEMPLATE_PROMPTS['Medical'], image: 'https://picsum.photos/seed/tpl-medical/600/400', description: 'Clean trustworthy healthcare designs', tags: ['Medical', 'Professional'], category: 'Medical' },
-];
-
-const CATEGORIES = ['All', 'Ramadan', 'Eid', 'Product', 'Social', 'Fashion', 'Real Estate', 'Restaurant', 'Medical'];
+import { useTemplates, FrontendTemplate } from '@/hooks/useTemplates';
 
 export function TemplatesView() {
   const { setPrompt, setSelectedTemplate, setActivePage } = useApp();
   const { t, isRTL } = useLanguage();
+  const { templates, categories } = useTemplates();
   const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
 
-  const handleUse = (tpl: TemplateDef) => { setPrompt(tpl.prompt); setSelectedTemplate(tpl.name); setActivePage('canvas'); };
-  const filtered = TEMPLATES.filter(tpl => {
+  const handleUse = (tpl: FrontendTemplate) => { setPrompt(tpl.prompt); setSelectedTemplate(tpl.name); setActivePage('canvas'); };
+  const filtered = templates.filter(tpl => {
     const matchCategory = activeCategory === 'All' || tpl.category === activeCategory;
     const matchSearch = !search || tpl.name.toLowerCase().includes(search.toLowerCase()) || tpl.tags.some(tag => tag.toLowerCase().includes(search.toLowerCase()));
     return matchCategory && matchSearch;
   });
-  const featured = TEMPLATES.filter(tpl => tpl.featured);
+  const featured = templates.filter(tpl => tpl.featured);
 
   return (
     <div className="flex-1 overflow-y-auto pb-20 md:pb-6">
@@ -46,11 +31,11 @@ export function TemplatesView() {
       </div>
       <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border/50 px-5 md:px-8 py-2.5">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide">
-          {CATEGORIES.map(cat => (<button key={cat} onClick={() => setActiveCategory(cat)} className={`flex-shrink-0 px-4 py-1.5 rounded-full text-[12px] font-medium transition-all duration-200 ${activeCategory === cat ? 'bg-primary text-primary-foreground' : 'bg-card border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20'}`}>{cat}</button>))}
+          {categories.map(cat => (<button key={cat} onClick={() => setActiveCategory(cat)} className={`flex-shrink-0 px-4 py-1.5 rounded-full text-[12px] font-medium transition-all duration-200 ${activeCategory === cat ? 'bg-primary text-primary-foreground' : 'bg-card border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20'}`}>{cat}</button>))}
         </div>
       </div>
       <div className="px-5 md:px-8">
-        {activeCategory === 'All' && !search && (
+        {activeCategory === 'All' && !search && featured.length > 0 && (
           <section className="mt-6 mb-8">
             <div className="flex items-center gap-2 mb-4"><Sparkles size={14} className="text-primary" /><span className="text-[13px] font-medium text-foreground">{t.templatesView.featured}</span></div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
