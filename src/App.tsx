@@ -14,6 +14,24 @@ import Community from "./pages/Community";
 import Templates from "./pages/Templates";
 import NotFound from "./pages/NotFound";
 
+// Admin
+import AdminLayout from "./components/admin/AdminLayout";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminUsers from "./pages/admin/AdminUsers";
+import AdminBilling from "./pages/admin/AdminBilling";
+import AdminTools from "./pages/admin/AdminTools";
+import AdminModels from "./pages/admin/AdminModels";
+import AdminTemplates from "./pages/admin/AdminTemplates";
+import AdminContent from "./pages/admin/AdminContent";
+import AdminCommunity from "./pages/admin/AdminCommunity";
+import AdminMedia from "./pages/admin/AdminMedia";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminSupport from "./pages/admin/AdminSupport";
+import AdminNotifications from "./pages/admin/AdminNotifications";
+import AdminIntegrations from "./pages/admin/AdminIntegrations";
+import AdminRoles from "./pages/admin/AdminRoles";
+import AdminSettings from "./pages/admin/AdminSettings";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -32,6 +50,26 @@ const App = () => (
               <Route path="/tools/:toolId" element={<ToolPage />} />
               <Route path="/community" element={<Community />} />
               <Route path="/templates" element={<Templates />} />
+
+              {/* Admin Panel */}
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="users" element={<AdminUsers />} />
+                <Route path="billing" element={<AdminBilling />} />
+                <Route path="tools" element={<AdminTools />} />
+                <Route path="models" element={<AdminModels />} />
+                <Route path="templates" element={<AdminTemplates />} />
+                <Route path="content" element={<AdminContent />} />
+                <Route path="community" element={<AdminCommunity />} />
+                <Route path="media" element={<AdminMedia />} />
+                <Route path="analytics" element={<AdminAnalytics />} />
+                <Route path="support" element={<AdminSupport />} />
+                <Route path="notifications" element={<AdminNotifications />} />
+                <Route path="integrations" element={<AdminIntegrations />} />
+                <Route path="roles" element={<AdminRoles />} />
+                <Route path="settings" element={<AdminSettings />} />
+              </Route>
+
               <Route path="*" element={<NotFound />} />
             </Routes>
           </BrowserRouter>
