@@ -6,7 +6,7 @@ export function Logo({ size = 'default' }: { size?: 'small' | 'default' | 'large
   const { lang } = useLanguage();
   const imgSize = size === 'small' ? 24 : size === 'large' ? 40 : 28;
   const textSize = size === 'small' ? 'text-sm' : size === 'large' ? 'text-xl' : 'text-lg';
-  const arHeight = size === 'small' ? 20 : size === 'large' ? 34 : 24;
+  const arHeight = size === 'small' ? 30 : size === 'large' ? 51 : 36;
 
   if (lang === 'ar') {
     return (
