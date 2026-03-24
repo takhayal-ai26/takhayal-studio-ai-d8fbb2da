@@ -43,7 +43,7 @@ export default function Home() {
               onClick={handleStartCreating}
               className="h-10 px-5 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:bg-primary/70 transition-colors"
             >
-              Go to Canvas
+              Go to Studio
             </button>
           ) : (
             <>
