@@ -32,7 +32,7 @@ const Canvas = () => {
   return (
     <div className="flex flex-col h-screen w-full bg-background">
       <TopNavbar />
-      <div className="flex flex-1 pt-16 overflow-hidden">
+      <div className="flex flex-1 min-h-0 pt-16 overflow-visible">
         {renderContent()}
       </div>
       <AuthModal />
