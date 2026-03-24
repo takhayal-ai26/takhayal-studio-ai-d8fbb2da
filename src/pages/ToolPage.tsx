@@ -133,8 +133,6 @@ export default function ToolPage() {
             </button>
           </div>
         </section>
-      </div>
-      <AuthModal />
     </div>
   );
 }

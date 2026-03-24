@@ -65,8 +65,6 @@ export default function ToolsDirectory() {
             </div>
           )}
         </section>
-      </div>
-      <AuthModal />
     </div>
   );
 }
