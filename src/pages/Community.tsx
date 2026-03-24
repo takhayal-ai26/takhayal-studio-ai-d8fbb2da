@@ -85,8 +85,7 @@ export default function Community() {
   }, []);
 
   return (
-    <div className="flex flex-col min-h-screen w-full bg-background">
-      <TopNavbar />
+    <div className="flex-1 pt-16 overflow-y-auto" onScroll={handleScroll}>
       <div className="flex-1 pt-16 overflow-y-auto" onScroll={handleScroll}>
         <section className="text-center px-5 pt-12 pb-8 animate-fade-in">
           <span className="text-[11px] uppercase tracking-[0.2em] text-primary font-medium">{t.community.label}</span>
