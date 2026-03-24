@@ -7,22 +7,9 @@ import { GalleryView } from '@/components/views/GalleryView';
 import { CreditsView } from '@/components/views/CreditsView';
 import { SettingsView } from '@/components/views/SettingsView';
 import { TemplatesView } from '@/components/views/TemplatesView';
-import { toast } from '@/hooks/use-toast';
-import { useEffect, useRef } from 'react';
 
 const Canvas = () => {
-  const { activePage, isAuthenticated } = useApp();
-  const hasWelcomed = useRef(false);
-
-  useEffect(() => {
-    if (isAuthenticated && !hasWelcomed.current) {
-      hasWelcomed.current = true;
-      toast({
-        title: 'Welcome to Takhayal ✓',
-        description: 'You have 10 free credits to start',
-      });
-    }
-  }, [isAuthenticated]);
+  const { activePage } = useApp();
 
   const renderContent = () => {
     switch (activePage) {

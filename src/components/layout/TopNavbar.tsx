@@ -13,7 +13,7 @@ const navItems: { id: NavPage; label: string; route: string }[] = [
 ];
 
 export function TopNavbar() {
-  const { activePage, setActivePage, credits, userName } = useApp();
+  const { activePage, setActivePage, credits, userName, isAuthenticated, openAuthModal, logout } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
   const initials = userName ? userName.slice(0, 2).toUpperCase() : 'U';
@@ -62,15 +62,38 @@ export function TopNavbar() {
           ))}
         </div>
 
-        {/* Right: Credits + Avatar (desktop) */}
+        {/* Right: Auth-dependent */}
         <div className="hidden md:flex items-center gap-3 flex-shrink-0">
-          <div className="flex items-center gap-2 px-3 py-1.5 bg-card border border-surface-border rounded-lg">
-            <Flame size={14} className="text-primary" />
-            <span className="text-[13px] font-medium text-foreground">{credits} credits</span>
-          </div>
-          <div className="w-8 h-8 rounded-full bg-card border border-surface-border flex items-center justify-center text-xs font-medium text-foreground">
-            {initials}
-          </div>
+          {isAuthenticated ? (
+            <>
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-card border border-surface-border rounded-lg">
+                <Flame size={14} className="text-primary" />
+                <span className="text-[13px] font-medium text-foreground">{credits} credits</span>
+              </div>
+              <button
+                onClick={logout}
+                className="w-8 h-8 rounded-full bg-card border border-surface-border flex items-center justify-center text-xs font-medium text-foreground hover:border-primary transition-colors"
+                title="Log out"
+              >
+                {initials}
+              </button>
+            </>
+          ) : (
+            <>
+              <button
+                onClick={() => openAuthModal('login')}
+                className="text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2"
+              >
+                Log in
+              </button>
+              <button
+                onClick={() => openAuthModal('signup')}
+                className="h-10 px-4 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:bg-ember-hover transition-colors"
+              >
+                Sign up
+              </button>
+            </>
+          )}
         </div>
 
         {/* Mobile: Menu button */}
@@ -101,16 +124,33 @@ export function TopNavbar() {
             ))}
           </div>
           <div className="mt-auto p-6 border-t border-surface-border">
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-full bg-card border border-surface-border flex items-center justify-center text-xs font-medium text-foreground">
-                {initials}
+            {isAuthenticated ? (
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-card border border-surface-border flex items-center justify-center text-xs font-medium text-foreground">
+                  {initials}
+                </div>
+                <span className="text-[13px] text-muted-foreground">{userName}</span>
+                <div className="ml-auto flex items-center gap-2 px-3 py-1.5 bg-card border border-surface-border rounded-lg">
+                  <Flame size={14} className="text-primary" />
+                  <span className="text-[13px] font-medium text-foreground">{credits}</span>
+                </div>
               </div>
-              <span className="text-[13px] text-muted-foreground">{userName || 'Guest'}</span>
-              <div className="ml-auto flex items-center gap-2 px-3 py-1.5 bg-card border border-surface-border rounded-lg">
-                <Flame size={14} className="text-primary" />
-                <span className="text-[13px] font-medium text-foreground">{credits}</span>
+            ) : (
+              <div className="flex gap-3">
+                <button
+                  onClick={() => { setMobileOpen(false); openAuthModal('login'); }}
+                  className="flex-1 h-11 rounded-lg border border-surface-border text-foreground text-[14px] font-medium"
+                >
+                  Log in
+                </button>
+                <button
+                  onClick={() => { setMobileOpen(false); openAuthModal('signup'); }}
+                  className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground text-[14px] font-medium"
+                >
+                  Sign up
+                </button>
               </div>
-            </div>
+            )}
           </div>
         </div>
       )}
