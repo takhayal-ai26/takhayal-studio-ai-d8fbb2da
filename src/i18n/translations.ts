@@ -654,9 +654,10 @@ export const translations = {
   },
 } as const;
 
-// Deep type that makes all values string
 type DeepStringify<T> = {
-  [K in keyof T]: T[K] extends object ? DeepStringify<T[K]> : string;
+  [K in keyof T]: T[K] extends readonly (infer U)[]
+    ? U extends object ? DeepStringify<U>[] : string[]
+    : T[K] extends object ? DeepStringify<T[K]> : string;
 };
 
 export type TranslationKeys = DeepStringify<typeof translations['en']>;
