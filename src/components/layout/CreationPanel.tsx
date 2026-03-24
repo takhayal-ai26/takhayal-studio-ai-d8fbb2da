@@ -29,7 +29,6 @@ export function CreationPanel() {
     enhancePrompt, setEnhancePrompt,
     generate, isGenerating, credits, getCreditCost,
   } = useApp();
-  } = useApp();
 
   const [selectedModel, setSelectedModel] = useState('seedream');
   const [selectedResolution, setSelectedResolution] = useState<string>('2K');
@@ -37,8 +36,7 @@ export function CreationPanel() {
 
   const cost = getCreditCost();
   const canGenerate = prompt.trim().length > 0 && !isGenerating && credits >= cost;
-  const currentImage = generatedImages[currentImageIndex];
-  const hasImages = generatedImages.length > 0;
+  const activeModel = MODELS.find(m => m.id === selectedModel) || MODELS[0];
   const activeModel = MODELS.find(m => m.id === selectedModel) || MODELS[0];
 
   const toggleDropdown = (key: OpenDropdown) => {
