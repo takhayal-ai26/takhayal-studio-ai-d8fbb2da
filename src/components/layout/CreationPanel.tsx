@@ -247,6 +247,11 @@ export function CreationPanel() {
 
       {/* === 5. Generate Button === */}
       <div className="flex-shrink-0 p-4">
+        {credits <= 5 && credits > 0 && (
+          <p className="text-[12px] text-primary font-medium text-center mb-2">
+            Only {credits} credits left
+          </p>
+        )}
         <button
           onClick={generate}
           disabled={!canGenerate}

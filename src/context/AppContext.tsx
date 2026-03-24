@@ -3,6 +3,7 @@ import React, { createContext, useContext, useState, useCallback, ReactNode } fr
 export type NavPage = 'home' | 'canvas' | 'gallery' | 'templates' | 'credits' | 'settings';
 export type AspectRatio = '1:1' | '9:16' | '16:9' | '4:5';
 export type Quality = 'standard' | 'hd';
+export type UserPlan = 'free' | 'pro';
 
 export interface GeneratedImage {
   id: string;
@@ -39,6 +40,7 @@ interface AppState {
   userEmail: string;
   activePage: NavPage;
   credits: number;
+  plan: UserPlan;
   prompt: string;
   selectedTemplate: string | null;
   selectedStyle: string | null;
@@ -51,10 +53,13 @@ interface AppState {
   gallery: GeneratedImage[];
   authModalOpen: boolean;
   authModalTab: 'login' | 'signup';
+  upgradeModalOpen: boolean;
   login: (email: string, name?: string) => void;
   logout: () => void;
   openAuthModal: (tab?: 'login' | 'signup') => void;
   closeAuthModal: () => void;
+  openUpgradeModal: () => void;
+  closeUpgradeModal: () => void;
   requireAuth: (action: () => void) => void;
   setActivePage: (page: NavPage) => void;
   setPrompt: (prompt: string) => void;
@@ -76,6 +81,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [userEmail, setUserEmail] = useState('');
   const [activePage, setActivePage] = useState<NavPage>('canvas');
   const [credits, setCredits] = useState(10);
+  const [plan, setPlan] = useState<UserPlan>('free');
   const [prompt, setPrompt] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
@@ -88,12 +94,13 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [gallery, setGallery] = useState<GeneratedImage[]>([]);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<'login' | 'signup'>('signup');
+  const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
   const login = useCallback((email: string, name?: string) => {
     setIsAuthenticated(true);
     setUserEmail(email);
     setUserName(name || email.split('@')[0]);
-    setCredits(10);
+    setCredits(20);
     setAuthModalOpen(false);
   }, []);
 
@@ -101,6 +108,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsAuthenticated(false);
     setUserName('');
     setUserEmail('');
+    setPlan('free');
   }, []);
 
   const openAuthModal = useCallback((tab: 'login' | 'signup' = 'signup') => {
@@ -108,9 +116,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setAuthModalOpen(true);
   }, []);
 
-  const closeAuthModal = useCallback(() => {
-    setAuthModalOpen(false);
-  }, []);
+  const closeAuthModal = useCallback(() => setAuthModalOpen(false), []);
+  const openUpgradeModal = useCallback(() => setUpgradeModalOpen(true), []);
+  const closeUpgradeModal = useCallback(() => setUpgradeModalOpen(false), []);
 
   const requireAuth = useCallback((action: () => void) => {
     if (isAuthenticated) {
@@ -133,7 +141,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return;
     }
     const cost = quality === 'hd' ? 4 : 2;
-    if (credits < cost) return;
+    if (credits < cost) {
+      setUpgradeModalOpen(true);
+      return;
+    }
 
     setIsGenerating(true);
     setCredits(prev => prev - cost);
@@ -158,11 +169,11 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider value={{
-      isAuthenticated, userName, userEmail, activePage, credits,
+      isAuthenticated, userName, userEmail, activePage, credits, plan,
       prompt, selectedTemplate, selectedStyle, aspectRatio, quality,
       enhancePrompt, isGenerating, generatedImages, currentImageIndex, gallery,
-      authModalOpen, authModalTab,
-      login, logout, openAuthModal, closeAuthModal, requireAuth,
+      authModalOpen, authModalTab, upgradeModalOpen,
+      login, logout, openAuthModal, closeAuthModal, openUpgradeModal, closeUpgradeModal, requireAuth,
       setActivePage, setPrompt, setSelectedTemplate,
       setSelectedStyle, setAspectRatio, setQuality, setEnhancePrompt,
       setCurrentImageIndex, generate, getCreditCost,

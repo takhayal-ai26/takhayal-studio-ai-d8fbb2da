@@ -3,6 +3,7 @@ import { TopNavbar } from '@/components/layout/TopNavbar';
 import { InspirationFeed } from '@/components/layout/InspirationFeed';
 import { CreationPanel } from '@/components/layout/CreationPanel';
 import { AuthModal } from '@/components/AuthModal';
+import { UpgradeModal } from '@/components/UpgradeModal';
 import { GalleryView } from '@/components/views/GalleryView';
 import { CreditsView } from '@/components/views/CreditsView';
 import { SettingsView } from '@/components/views/SettingsView';
@@ -35,6 +36,7 @@ const Canvas = () => {
         {renderContent()}
       </div>
       <AuthModal />
+      <UpgradeModal />
     </div>
   );
 };
