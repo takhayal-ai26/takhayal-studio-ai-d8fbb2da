@@ -31,7 +31,7 @@ export function CenterCanvas() {
   }, [generate]);
 
   return (
-    <div className="flex-1 flex flex-col min-h-screen p-4 md:p-6 pb-20 md:pb-6 overflow-y-auto">
+    <div className="flex-1 flex flex-col p-4 md:p-6 pb-20 md:pb-6 overflow-y-auto">
       {/* Top bar */}
       <div className="flex items-center justify-between mb-5 h-10 flex-shrink-0">
         <div>
@@ -65,7 +65,7 @@ export function CenterCanvas() {
 
       {/* Main output card */}
       <div className="flex-1 flex flex-col items-center">
-        <div className={`w-full max-w-[640px] ${aspectRatioMap[aspectRatio]} bg-card rounded-xl border border-surface-border relative overflow-hidden`}>
+        <div className={`w-full max-w-[900px] ${aspectRatioMap[aspectRatio]} bg-card rounded-xl border border-surface-border relative overflow-hidden`}>
           {isGenerating ? (
             <div className="absolute inset-0 animate-shimmer flex items-center justify-center">
               <div className="flex flex-col items-center gap-3">
@@ -103,7 +103,7 @@ export function CenterCanvas() {
         </div>
 
         {/* Variations row */}
-        <div className="w-full max-w-[640px] flex gap-2 mt-3">
+        <div className="w-full max-w-[900px] flex gap-2 mt-3">
           {Array.from({ length: 4 }).map((_, i) => {
             const img = generatedImages[i];
             const isActive = i === currentImageIndex;
@@ -133,7 +133,7 @@ export function CenterCanvas() {
 
         {/* Bottom action bar */}
         {hasImages && (
-          <div className="w-full max-w-[640px] flex justify-end gap-2.5 mt-4">
+          <div className="w-full max-w-[900px] flex justify-end gap-2.5 mt-4">
             <button
               onClick={generate}
               className="h-9 px-4 rounded-lg border border-surface-border text-foreground text-[13px] font-medium flex items-center gap-2 hover:bg-card transition-colors"
