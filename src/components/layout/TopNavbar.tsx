@@ -51,7 +51,7 @@ export function TopNavbar() {
               className={`relative px-4 h-16 text-[13px] font-medium transition-colors ${
                 isActive(item)
                   ? 'text-foreground'
-                  : 'text-secondary-text hover:text-foreground'
+                  : 'text-muted-foreground hover:text-foreground'
               }`}
             >
               {item.label}
@@ -93,7 +93,7 @@ export function TopNavbar() {
                 className={`text-left px-4 py-3 rounded-lg text-[15px] font-medium transition-colors ${
                   isActive(item)
                     ? 'text-foreground bg-primary/[0.08]'
-                    : 'text-secondary-text hover:text-foreground hover:bg-card'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-card'
                 }`}
               >
                 {item.label}
@@ -105,7 +105,7 @@ export function TopNavbar() {
               <div className="w-8 h-8 rounded-full bg-card border border-surface-border flex items-center justify-center text-xs font-medium text-foreground">
                 {initials}
               </div>
-              <span className="text-[13px] text-secondary-text">{userName || 'Guest'}</span>
+              <span className="text-[13px] text-muted-foreground">{userName || 'Guest'}</span>
               <div className="ml-auto flex items-center gap-2 px-3 py-1.5 bg-card border border-surface-border rounded-lg">
                 <Flame size={14} className="text-primary" />
                 <span className="text-[13px] font-medium text-foreground">{credits}</span>

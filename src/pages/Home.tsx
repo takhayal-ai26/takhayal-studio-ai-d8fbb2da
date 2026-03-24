@@ -41,7 +41,7 @@ export default function Home() {
           <br className="hidden md:block" />
           professional visuals
         </h1>
-        <p className="text-base font-light text-secondary-text mt-4 max-w-md">
+        <p className="text-base font-light text-muted-foreground mt-4 max-w-md">
           Create ads, content, and visuals in seconds using AI
         </p>
         <div className="flex items-center gap-3 mt-8">
@@ -74,7 +74,7 @@ export default function Home() {
                 </div>
                 <div className="p-4">
                   <span className="text-[11px] font-medium text-primary/80 uppercase tracking-wider">Example</span>
-                  <p className="text-[13px] text-secondary-text mt-1 line-clamp-2">{img.prompt}</p>
+                  <p className="text-[13px] text-muted-foreground mt-1 line-clamp-2">{img.prompt}</p>
                 </div>
               </div>
             ))}
@@ -107,7 +107,7 @@ export default function Home() {
             <div key={f.title} className="bg-card border border-surface-border rounded-xl p-6 text-center">
               <f.icon size={24} className="text-primary mx-auto mb-3" />
               <h3 className="text-[15px] font-medium text-foreground">{f.title}</h3>
-              <p className="text-[13px] text-secondary-text mt-1">{f.desc}</p>
+              <p className="text-[13px] text-muted-foreground mt-1">{f.desc}</p>
             </div>
           ))}
         </div>
