@@ -111,8 +111,6 @@ const Pricing = () => {
             ))}
           </Accordion>
         </section>
-      </div>
-      <AuthModal />
     </div>
   );
 };

@@ -172,7 +172,6 @@ export default function Community() {
           </div>
         </div>
       )}
-      <AuthModal />
     </div>
   );
 }
