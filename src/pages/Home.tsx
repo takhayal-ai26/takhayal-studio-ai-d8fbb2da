@@ -182,26 +182,29 @@ export default function Home() {
       </section>
 
       {/* ━━━ HOW IT WORKS ━━━ */}
-      <section className="px-6 md:px-12 pb-28 md:pb-36">
+      <section className="relative px-6 md:px-12 pb-32 md:pb-40">
+        {/* Section divider glow */}
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-px bg-gradient-to-r from-transparent via-muted/40 to-transparent" />
         <Section>
-          <div className="max-w-5xl mx-auto">
+          <div className="max-w-5xl mx-auto pt-8">
             <div className="text-center mb-16">
-              <h2 className="text-3xl md:text-4xl font-light text-foreground">From idea to image in seconds</h2>
+              <span className="text-[11px] font-medium text-primary uppercase tracking-[0.2em] mb-4 block">How it works</span>
+              <h2 className="text-3xl md:text-5xl font-light text-foreground">From idea to image in seconds</h2>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-12">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 md:gap-6">
               {steps.map((step, i) => (
                 <div key={step.title} className="relative text-center group">
                   {/* Connector line */}
                   {i < steps.length - 1 && (
-                    <div className="hidden md:block absolute top-10 left-[60%] w-[80%] h-px bg-gradient-to-r from-muted-foreground/20 to-transparent" />
+                    <div className="hidden md:block absolute top-12 left-[60%] w-[80%] h-px bg-gradient-to-r from-muted/40 to-transparent" />
                   )}
-                  <div className="relative mx-auto w-20 h-20 rounded-2xl bg-card border border-muted flex items-center justify-center mb-5 group-hover:border-primary/40 transition-colors">
-                    <div className="absolute inset-0 rounded-2xl bg-primary/[0.06] opacity-0 group-hover:opacity-100 transition-opacity" />
-                    <step.icon size={28} className="text-primary relative" />
+                  <div className="relative mx-auto w-24 h-24 rounded-2xl bg-card/80 border border-muted/60 flex items-center justify-center mb-6 group-hover:border-primary/40 group-hover:shadow-[0_0_30px_rgba(245,81,48,0.08)] transition-all duration-500">
+                    <div className="absolute inset-0 rounded-2xl bg-primary/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                    <step.icon size={28} className="text-primary relative" strokeWidth={1.5} />
                   </div>
-                  <span className="text-[11px] font-medium text-primary/60 uppercase tracking-widest mb-2 block">Step {i + 1}</span>
+                  <span className="text-[11px] font-semibold text-primary/70 uppercase tracking-[0.15em] mb-3 block">Step {i + 1}</span>
                   <h3 className="text-lg font-medium text-foreground mb-2">{step.title}</h3>
-                  <p className="text-[13px] text-muted-foreground leading-relaxed max-w-[240px] mx-auto">{step.desc}</p>
+                  <p className="text-[13px] text-muted-foreground leading-relaxed max-w-[220px] mx-auto">{step.desc}</p>
                 </div>
               ))}
             </div>
