@@ -69,6 +69,7 @@ const App = () => (
                 <Route path="integrations" element={<AdminIntegrations />} />
                 <Route path="roles" element={<AdminRoles />} />
                 <Route path="settings" element={<AdminSettings />} />
+                <Route path="translations" element={<AdminTranslations />} />
               </Route>
 
               <Route path="*" element={<NotFound />} />

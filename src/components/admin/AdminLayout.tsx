@@ -24,6 +24,7 @@ const NAV_ITEMS = [
   { label: 'Notifications', icon: Bell, path: '/admin/notifications' },
   { label: 'Integrations', icon: Plug, path: '/admin/integrations' },
   { label: 'Roles & Permissions', icon: Lock, path: '/admin/roles' },
+  { label: 'Translations', icon: Languages, path: '/admin/translations' },
   { label: 'Settings', icon: Settings, path: '/admin/settings' },
 ];
 
