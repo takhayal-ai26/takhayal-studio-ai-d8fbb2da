@@ -19,5 +19,7 @@ export function Logo({ size = 'default' }: { size?: 'small' | 'default' | 'large
 }
 
 export function LogoMark({ size = 28 }: { size?: number }) {
-  return <img src={logoMark} alt="Takhayal" width={size} height={size} />;
+  const { lang } = useLanguage();
+  const logo = lang === 'ar' ? logoMarkAr : logoMark;
+  return <img src={logo} alt="Takhayal" width={size} height={size} className="transition-opacity duration-200" />;
 }
