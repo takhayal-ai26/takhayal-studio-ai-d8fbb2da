@@ -1,5 +1,5 @@
-import { useState, useEffect } from 'react';
-import { Download, RefreshCw, Image as ImageIcon, Maximize2 } from 'lucide-react';
+import { useEffect } from 'react';
+import { Download, RefreshCw, Image as ImageIcon, Maximize2, LayoutTemplate } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 
 const aspectRatioMap: Record<string, string> = {
@@ -12,14 +12,13 @@ const aspectRatioMap: Record<string, string> = {
 export function CenterCanvas() {
   const {
     aspectRatio, setAspectRatio, generatedImages, currentImageIndex,
-    setCurrentImageIndex, isGenerating, generate, prompt,
+    setCurrentImageIndex, isGenerating, generate, prompt, setActivePage,
   } = useApp();
 
   const ratios = ['1:1', '9:16', '16:9', '4:5'] as const;
   const currentImage = generatedImages[currentImageIndex];
   const hasImages = generatedImages.length > 0;
 
-  // Keyboard shortcut
   useEffect(() => {
     const handler = (e: KeyboardEvent) => {
       if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') {
@@ -35,9 +34,11 @@ export function CenterCanvas() {
     <div className="flex-1 flex flex-col min-h-screen p-4 md:p-6 pb-20 md:pb-6 overflow-y-auto">
       {/* Top bar */}
       <div className="flex items-center justify-between mb-5 h-10 flex-shrink-0">
-        <h1 className="text-xl font-medium text-foreground">Studio</h1>
+        <div>
+          <h1 className="text-xl font-medium text-foreground">Canvas</h1>
+          <p className="text-[12px] text-muted-foreground">Generate visuals</p>
+        </div>
         <div className="flex items-center gap-2.5">
-          {/* Aspect ratio pills */}
           <div className="hidden sm:flex items-center gap-1.5">
             {ratios.map(r => (
               <button
@@ -53,7 +54,6 @@ export function CenterCanvas() {
               </button>
             ))}
           </div>
-          {/* Download */}
           {hasImages && (
             <button className="h-8 px-3.5 rounded-md border border-surface-border text-foreground text-[13px] font-medium flex items-center gap-2 hover:bg-card transition-colors">
               <Download size={14} />
@@ -89,11 +89,15 @@ export function CenterCanvas() {
           ) : (
             <div className="absolute inset-0 flex flex-col items-center justify-center">
               <ImageIcon size={48} className="text-surface-border mb-4" />
-              <p className="text-lg font-light text-muted-foreground/60">Your creation will appear here</p>
-              <p className="text-[13px] text-surface-border mt-2">Write a prompt → click Generate</p>
-              <div className="mt-6 px-3.5 py-2 rounded-md border border-surface-border bg-background text-[12px] text-surface-border inline-flex items-center gap-1.5">
-                ⌘ + Enter to generate
-              </div>
+              <p className="text-lg font-light text-muted-foreground/60">Start by describing your image</p>
+              <p className="text-[13px] text-muted-foreground mt-2">Use a template or write your own prompt</p>
+              <button
+                onClick={() => setActivePage('templates')}
+                className="mt-6 h-9 px-5 rounded-lg bg-primary/[0.12] text-primary text-[13px] font-medium hover:bg-primary/20 transition-colors inline-flex items-center gap-2"
+              >
+                <LayoutTemplate size={14} />
+                Try a template
+              </button>
             </div>
           )}
         </div>
