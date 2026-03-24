@@ -73,8 +73,7 @@ export default function Home() {
   const dragging = useRef(false);
 
   const handleStartCreating = () => {
-    if (isAuthenticated) navigate('/home');
-    else openAuthModal('signup');
+    navigate('/home');
   };
 
   const handleSliderMove = (clientX: number) => {
