@@ -104,11 +104,20 @@ export default function Home() {
 
       {/* ━━━ HERO ━━━ */}
       <section className="relative flex flex-col items-center justify-center text-center px-6 pt-44 pb-28 md:pt-52 md:pb-36">
-        {/* Multi-layer glow */}
+        {/* Animated gradient wave */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[500px] bg-primary/[0.07] rounded-full blur-[150px]" />
-          <div className="absolute top-2/3 left-1/3 w-[300px] h-[300px] bg-primary/[0.04] rounded-full blur-[100px]" />
-          <div className="absolute top-1/2 right-1/4 w-[200px] h-[200px] bg-primary/[0.03] rounded-full blur-[80px]" />
+          <div className="absolute inset-0 opacity-[0.12] animate-[heroWave_20s_ease-in-out_infinite]"
+            style={{
+              background: 'radial-gradient(ellipse 80% 50% at 20% 50%, hsl(var(--primary) / 0.6), transparent), radial-gradient(ellipse 60% 40% at 70% 60%, hsl(var(--primary) / 0.4), transparent)',
+              filter: 'blur(80px)',
+            }}
+          />
+          <div className="absolute inset-0 opacity-[0.08] animate-[heroWave2_25s_ease-in-out_infinite]"
+            style={{
+              background: 'radial-gradient(ellipse 70% 50% at 60% 40%, hsl(var(--primary) / 0.5), transparent), radial-gradient(ellipse 50% 60% at 30% 70%, hsl(10 90% 40% / 0.3), transparent)',
+              filter: 'blur(100px)',
+            }}
+          />
         </div>
 
         {/* Decorative grid lines */}
