@@ -33,9 +33,10 @@ export function TopNavbar() {
   }, []);
 
   const isActive = (item: typeof navItems[0]) => {
-    if (item.id === 'home') return location.pathname === '/home';
+    if (item.id === 'community') return location.pathname === '/community';
     if (item.id === 'pricing') return location.pathname === '/pricing';
-    return activePage === item.id && location.pathname === '/studio';
+    if (item.route === '/studio') return activePage === item.id && location.pathname === '/studio';
+    return location.pathname === item.route;
   };
 
   const isToolsActive = location.pathname.startsWith('/tools');
@@ -43,7 +44,7 @@ export function TopNavbar() {
   const handleNav = (item: typeof navItems[0]) => {
     setMobileOpen(false);
     setToolsOpen(false);
-    if (item.id !== 'pricing') setActivePage(item.id as NavPage);
+    if (item.route === '/studio') setActivePage(item.id as NavPage);
     navigate(item.route);
   };
 
