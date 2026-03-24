@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Upload, ChevronDown, Sparkles, X, Coins, Box, Cpu, Maximize } from 'lucide-react';
+import { Upload, ChevronDown, Sparkles, X, Coins, Box, Cpu, Maximize, Image as ImageIcon } from 'lucide-react';
 import { useApp, TEMPLATE_PROMPTS, AspectRatio } from '@/context/AppContext';
 
 const MODELS = [
