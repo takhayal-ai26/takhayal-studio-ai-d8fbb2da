@@ -59,7 +59,7 @@ export function TopNavbar() {
             <button
               key={item.id}
               onClick={() => handleNav(item)}
-              className={`relative px-3.5 h-16 text-[13px] font-medium transition-colors ${
+              className={`relative px-4 h-16 text-[15px] font-medium transition-colors ${
                 isActive(item)
                   ? 'text-foreground'
                   : 'text-muted-foreground hover:text-foreground'
