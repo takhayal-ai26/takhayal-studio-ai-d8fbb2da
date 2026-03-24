@@ -35,7 +35,7 @@ export function CenterCanvas() {
       {/* Top bar */}
       <div className="flex items-center justify-between mb-5 h-10 flex-shrink-0">
         <div>
-          <h1 className="text-xl font-medium text-foreground">Canvas</h1>
+          <h1 className="text-xl font-medium text-foreground">Studio</h1>
           <p className="text-[12px] text-muted-foreground">Generate visuals</p>
         </div>
         <div className="flex items-center gap-2.5">
