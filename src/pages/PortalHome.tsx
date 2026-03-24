@@ -61,9 +61,6 @@ export default function PortalHome() {
     ? masonryImages
     : masonryImages.filter(m => m.cat === activeCategory);
 
-  const scrollCreate = (dir: number) => {
-    scrollRef.current?.scrollBy({ left: dir * 260, behavior: 'smooth' });
-  };
 
   return (
     <div className="flex flex-col min-h-screen w-full bg-background">
