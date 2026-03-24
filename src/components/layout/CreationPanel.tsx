@@ -28,7 +28,7 @@ export function CreationPanel() {
     aspectRatio, setAspectRatio, quality, setQuality,
     enhancePrompt, setEnhancePrompt,
     generate, isGenerating, credits, getCreditCost,
-    generatedImages, currentImageIndex, setCurrentImageIndex,
+  } = useApp();
   } = useApp();
 
   const [selectedModel, setSelectedModel] = useState('seedream');
