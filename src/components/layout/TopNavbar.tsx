@@ -1,21 +1,24 @@
 import { useApp, NavPage } from '@/context/AppContext';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Logo } from '@/components/Logo';
-import { Flame, Menu, X, Crown, User, CreditCard, Settings, LogOut } from 'lucide-react';
+import { Flame, Menu, X, Crown, CreditCard, Settings, LogOut } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
+import { LanguageToggle } from '@/components/LanguageToggle';
 
-const navItems: { id: string; label: string; route: string; studioPage?: NavPage }[] = [
-  { id: 'home', label: 'Home', route: '/home' },
-  { id: 'studio', label: 'Studio', route: '/studio', studioPage: 'canvas' },
-  { id: 'tools', label: 'Tools', route: '/tools' },
-  { id: 'community', label: 'Community', route: '/community' },
-  { id: 'gallery', label: 'Gallery', route: '/studio', studioPage: 'gallery' },
-  { id: 'templates', label: 'Templates', route: '/studio', studioPage: 'templates' },
-  { id: 'pricing', label: 'Pricing', route: '/pricing' },
+const navItemDefs: { id: string; labelKey: string; route: string; studioPage?: NavPage }[] = [
+  { id: 'home', labelKey: 'home', route: '/home' },
+  { id: 'studio', labelKey: 'studio', route: '/studio', studioPage: 'canvas' },
+  { id: 'tools', labelKey: 'tools', route: '/tools' },
+  { id: 'community', labelKey: 'community', route: '/community' },
+  { id: 'gallery', labelKey: 'gallery', route: '/studio', studioPage: 'gallery' },
+  { id: 'templates', labelKey: 'templates', route: '/studio', studioPage: 'templates' },
+  { id: 'pricing', labelKey: 'pricing', route: '/pricing' },
 ];
 
 export function TopNavbar() {
   const { activePage, setActivePage, credits, userName, isAuthenticated, plan, openAuthModal, logout } = useApp();
+  const { t, isRTL } = useLanguage();
   const navigate = useNavigate();
   const location = useLocation();
   const initials = userName ? userName.slice(0, 2).toUpperCase() : 'U';
@@ -24,6 +27,16 @@ export function TopNavbar() {
   const avatarRef = useRef<HTMLDivElement>(null);
 
   const lowCredits = credits <= 5 && credits > 0;
+
+  const navLabels: Record<string, string> = {
+    home: t.nav.home,
+    studio: t.nav.studio,
+    tools: t.nav.tools,
+    community: t.nav.community,
+    gallery: t.nav.gallery,
+    templates: t.nav.templates,
+    pricing: t.nav.pricing,
+  };
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -35,12 +48,12 @@ export function TopNavbar() {
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
-  const isActive = (item: typeof navItems[0]) => {
+  const isActive = (item: typeof navItemDefs[0]) => {
     if (item.studioPage) return location.pathname === '/studio' && activePage === item.studioPage;
     return location.pathname === item.route || (item.route !== '/' && location.pathname.startsWith(item.route));
   };
 
-  const handleNav = (item: typeof navItems[0]) => {
+  const handleNav = (item: typeof navItemDefs[0]) => {
     setMobileOpen(false);
     if (item.studioPage) setActivePage(item.studioPage);
     navigate(item.route);
@@ -55,7 +68,7 @@ export function TopNavbar() {
 
         {/* Center: Nav links (desktop) */}
         <div className="hidden md:flex items-center gap-0.5 mx-auto">
-          {navItems.filter(item => !(isAuthenticated && item.id === 'pricing')).map(item => (
+          {navItemDefs.filter(item => !(isAuthenticated && item.id === 'pricing')).map(item => (
             <button
               key={item.id}
               onClick={() => handleNav(item)}
@@ -65,9 +78,9 @@ export function TopNavbar() {
                   : 'text-muted-foreground hover:text-foreground'
               }`}
             >
-              {item.label}
+              {navLabels[item.labelKey]}
               {isActive(item) && (
-                <span className="absolute bottom-0 left-3.5 right-3.5 h-[2px] bg-primary rounded-full" />
+                <span className={`absolute bottom-0 ${isRTL ? 'right-3.5 left-3.5' : 'left-3.5 right-3.5'} h-[2px] bg-primary rounded-full`} />
               )}
             </button>
           ))}
@@ -75,12 +88,13 @@ export function TopNavbar() {
 
         {/* Right: State-dependent */}
         <div className="hidden md:flex items-center gap-3 flex-shrink-0">
+          <LanguageToggle />
           {isAuthenticated ? (
             <>
               {/* Credit pill */}
               <button
                 onClick={() => { setActivePage('credits'); navigate('/studio'); }}
-                title="View credits & billing"
+                title={t.common.viewCredits}
                 className={`flex items-center gap-2 px-3.5 py-1.5 rounded-full transition-all duration-200 ${
                   lowCredits
                     ? 'bg-primary/15 border border-primary/40 shadow-[0_0_12px_rgba(245,81,48,0.15)]'
@@ -99,12 +113,12 @@ export function TopNavbar() {
                   onClick={() => navigate('/pricing')}
                   className="h-9 px-4 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:brightness-90 transition-all"
                 >
-                  Upgrade
+                  {t.nav.upgrade}
                 </button>
               ) : (
                 <span className="flex items-center gap-1.5 px-3 py-1.5 bg-primary/[0.1] border border-primary/20 rounded-lg text-[12px] font-medium text-primary">
                   <Crown size={12} />
-                  Pro
+                  {t.nav.pro}
                 </span>
               )}
 
@@ -118,24 +132,24 @@ export function TopNavbar() {
                 </button>
 
                 {avatarOpen && (
-                  <div className="absolute right-0 top-full mt-2 w-52 bg-card border border-border/20 rounded-xl p-1.5 shadow-2xl shadow-black/50 z-50 animate-fade-in">
+                  <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-full mt-2 w-52 bg-card border border-border/20 rounded-xl p-1.5 shadow-2xl shadow-black/50 z-50 animate-fade-in`}>
                     <div className="px-3 py-2.5 border-b border-border/10 mb-1">
                       <p className="text-[13px] font-medium text-foreground">{userName}</p>
-                      <p className="text-[11px] text-muted-foreground">{plan === 'pro' ? 'Pro Plan' : 'Free Plan'}</p>
+                      <p className="text-[11px] text-muted-foreground">{plan === 'pro' ? t.avatar.proPlan : t.avatar.freePlan}</p>
                     </div>
                     <button
                       onClick={() => { setAvatarOpen(false); setActivePage('credits'); navigate('/studio'); }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-foreground hover:bg-muted/10 transition-colors"
                     >
                       <CreditCard size={14} className="text-muted-foreground" />
-                      Billing & Credits
+                      {t.avatar.billingCredits}
                     </button>
                     <button
                       onClick={() => { setAvatarOpen(false); setActivePage('settings'); navigate('/studio'); }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-foreground hover:bg-muted/10 transition-colors"
                     >
                       <Settings size={14} className="text-muted-foreground" />
-                      Settings
+                      {t.avatar.settings}
                     </button>
                     <div className="border-t border-border/10 mt-1 pt-1">
                       <button
@@ -143,7 +157,7 @@ export function TopNavbar() {
                         className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-red-400 hover:bg-red-500/10 transition-colors"
                       >
                         <LogOut size={14} />
-                        Log out
+                        {t.avatar.logout}
                       </button>
                     </div>
                   </div>
@@ -156,13 +170,13 @@ export function TopNavbar() {
                 onClick={() => openAuthModal('login')}
                 className="text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-2"
               >
-                Log in
+                {t.nav.login}
               </button>
               <button
                 onClick={() => openAuthModal('signup')}
                 className="h-10 px-5 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:brightness-90 transition-all"
               >
-                Sign up
+                {t.nav.signup}
               </button>
             </>
           )}
@@ -171,7 +185,7 @@ export function TopNavbar() {
         {/* Mobile menu button */}
         <button
           onClick={() => setMobileOpen(!mobileOpen)}
-          className="md:hidden ml-auto text-foreground p-2"
+          className={`md:hidden ${isRTL ? 'mr-auto' : 'ml-auto'} text-foreground p-2`}
         >
           {mobileOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
@@ -181,17 +195,20 @@ export function TopNavbar() {
       {mobileOpen && (
         <div className="fixed inset-0 z-40 bg-background pt-16 flex flex-col md:hidden overflow-y-auto">
           <div className="flex flex-col p-6 gap-1">
-            {navItems.filter(item => !(isAuthenticated && item.id === 'pricing')).map(item => (
+            <div className="mb-4">
+              <LanguageToggle />
+            </div>
+            {navItemDefs.filter(item => !(isAuthenticated && item.id === 'pricing')).map(item => (
               <button
                 key={item.id}
                 onClick={() => handleNav(item)}
-                className={`text-left px-4 py-3 rounded-lg text-[15px] font-medium transition-colors ${
+                className={`text-${isRTL ? 'right' : 'left'} px-4 py-3 rounded-lg text-[15px] font-medium transition-colors ${
                   isActive(item)
                     ? 'text-foreground bg-primary/[0.08]'
                     : 'text-muted-foreground hover:text-foreground hover:bg-card'
                 }`}
               >
-                {item.label}
+                {navLabels[item.labelKey]}
               </button>
             ))}
           </div>
@@ -204,7 +221,7 @@ export function TopNavbar() {
                   </div>
                   <div className="flex-1">
                     <span className="text-[13px] text-foreground block">{userName}</span>
-                    <span className="text-[11px] text-muted-foreground">{plan === 'pro' ? 'Pro' : 'Free'}</span>
+                    <span className="text-[11px] text-muted-foreground">{plan === 'pro' ? 'Pro' : t.pricing.free}</span>
                   </div>
                   <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full ${
                     lowCredits ? 'bg-primary/15 border border-primary/40' : 'bg-card border border-surface-border'
@@ -218,14 +235,14 @@ export function TopNavbar() {
                   className="w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-[14px] text-foreground hover:bg-card transition-colors"
                 >
                   <CreditCard size={16} className="text-muted-foreground" />
-                  Billing & Credits
+                  {t.avatar.billingCredits}
                 </button>
                 <button
                   onClick={() => { setMobileOpen(false); logout(); }}
                   className="w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-[14px] text-red-400 hover:bg-red-500/10 transition-colors"
                 >
                   <LogOut size={16} />
-                  Log out
+                  {t.avatar.logout}
                 </button>
               </div>
             ) : (
@@ -234,13 +251,13 @@ export function TopNavbar() {
                   onClick={() => { setMobileOpen(false); openAuthModal('login'); }}
                   className="flex-1 h-11 rounded-lg border border-surface-border text-foreground text-[14px] font-medium"
                 >
-                  Log in
+                  {t.nav.login}
                 </button>
                 <button
                   onClick={() => { setMobileOpen(false); openAuthModal('signup'); }}
                   className="flex-1 h-11 rounded-lg bg-primary text-primary-foreground text-[14px] font-medium"
                 >
-                  Sign up
+                  {t.nav.signup}
                 </button>
               </div>
             )}
