@@ -6,7 +6,7 @@ export function Logo({ size = 'default' }: { size?: 'small' | 'default' | 'large
   const { lang } = useLanguage();
   const imgSize = size === 'small' ? 24 : size === 'large' ? 40 : 28;
   const textSize = size === 'small' ? 'text-sm' : size === 'large' ? 'text-xl' : 'text-lg';
-  const arHeight = size === 'small' ? 30 : size === 'large' ? 51 : 36;
+  const arHeight = size === 'small' ? 42 : size === 'large' ? 71 : 50;
 
   if (lang === 'ar') {
     return (
@@ -29,7 +29,7 @@ export function Logo({ size = 'default' }: { size?: 'small' | 'default' | 'large
 export function LogoMark({ size = 28 }: { size?: number }) {
   const { lang } = useLanguage();
   if (lang === 'ar') {
-    return <img src={logoFullAr} alt="تخيّل" style={{ height: size * 1.275 }} className="w-auto" />;
+    return <img src={logoFullAr} alt="تخيّل" style={{ height: size * 1.785 }} className="w-auto" />;
   }
   return <img src={logoMark} alt="Takhayal" width={size} height={size} />;
 }
