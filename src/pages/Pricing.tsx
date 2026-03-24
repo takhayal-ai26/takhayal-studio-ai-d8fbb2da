@@ -78,7 +78,7 @@ const Pricing = () => {
       if (!isAuthenticated) {
         openAuthModal('signup');
       } else {
-        navigate('/canvas');
+        navigate('/studio');
       }
     } else {
       if (!isAuthenticated) {
