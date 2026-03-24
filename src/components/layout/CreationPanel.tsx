@@ -37,7 +37,6 @@ export function CreationPanel() {
   const cost = getCreditCost();
   const canGenerate = prompt.trim().length > 0 && !isGenerating && credits >= cost;
   const activeModel = MODELS.find(m => m.id === selectedModel) || MODELS[0];
-  const activeModel = MODELS.find(m => m.id === selectedModel) || MODELS[0];
 
   const toggleDropdown = (key: OpenDropdown) => {
     setOpenDropdown(prev => prev === key ? null : key);
