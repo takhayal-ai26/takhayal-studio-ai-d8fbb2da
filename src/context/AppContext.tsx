@@ -186,7 +186,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.functions.invoke('generate-image', {
         body: {
           prompt: styledPrompt,
-          image_size: getImageSize(),
+          aspect_ratio: aspectRatio,
           num_images: 1,
         },
       });
