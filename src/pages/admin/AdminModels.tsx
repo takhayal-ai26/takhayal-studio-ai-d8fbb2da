@@ -255,21 +255,23 @@ export default function AdminModels() {
                 <TableHeader>
                   <TableRow className="border-border/40">
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Model</TableHead>
-                    <TableHead className="text-[11px] uppercase text-muted-foreground">Provider</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">ID</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Speed</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Cost/Run</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Best For</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Default</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {providerModels.map(m => (
-                    <TableRow key={m.name} className="border-border/20">
+                    <TableRow key={m.id} className="border-border/20">
                       <TableCell className="text-[13px] font-medium">{m.name}</TableCell>
-                      <TableCell className="text-[13px] text-muted-foreground">{connectedProvider?.provider_name}</TableCell>
+                      <TableCell className="text-[11px] text-muted-foreground font-mono">{m.id}</TableCell>
                       <TableCell className="text-[13px]">{m.speed}</TableCell>
                       <TableCell className="text-[13px] font-medium text-primary">{m.cost}</TableCell>
-                      <TableCell>{connectedProvider?.default_model === m.name.toLowerCase().replace(/\s/g, '-') && <CheckCircle size={14} className="text-emerald-400" />}</TableCell>
+                      <TableCell className="text-[12px] text-muted-foreground max-w-[200px] truncate" title={m.bestFor}>{m.bestFor}</TableCell>
+                      <TableCell>{connectedProvider?.default_model === m.id && <CheckCircle size={14} className="text-emerald-400" />}</TableCell>
                       <TableCell><Switch defaultChecked={m.active} className="scale-75" /></TableCell>
                     </TableRow>
                   ))}
