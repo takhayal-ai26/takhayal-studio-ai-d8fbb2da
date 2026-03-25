@@ -1,34 +1,52 @@
 import { useState, useEffect, useRef } from 'react';
-import { Upload, ChevronDown, Sparkles, X, Coins, Box, Cpu, Maximize, Image as ImageIcon, Check, Wand2, Zap } from 'lucide-react';
+import { Upload, ChevronDown, Sparkles, X, Coins, Box, Cpu, Maximize, Image as ImageIcon, Check, Wand2, Zap, Layers } from 'lucide-react';
 import { useApp, TEMPLATE_PROMPTS, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { useModels, ModelRecord } from '@/hooks/useModels';
+import { Badge } from '@/components/ui/badge';
 
-const MODELS = [
-  { id: 'flux-schnell', name: 'Flux Schnell', desc: 'Fast generation via Fal.ai', icon: Zap },
-  { id: 'flux-dev', name: 'Flux Dev', desc: 'Higher quality, slower', icon: Sparkles },
-  { id: 'flux-pro', name: 'Flux Pro', desc: 'Best quality (coming soon)', icon: Cpu },
-];
-const SIZES: { label: string; value: AspectRatio; icon: string }[] = [
-  { label: '1:1', value: '1:1', icon: '◻' }, { label: '4:3', value: '4:5', icon: '▭' },
-  { label: '16:9', value: '16:9', icon: '▬' }, { label: '9:16', value: '9:16', icon: '▯' },
-];
 const RESOLUTIONS = [
   { label: '1K', value: '1K', descKey: 'standard' },
   { label: '2K', value: '2K', descKey: 'highQuality' },
   { label: '4K', value: '4K', descKey: 'ultraHD' },
 ] as const;
+
 type OpenDropdown = 'model' | 'size' | 'resolution' | null;
 
 export function CreationPanel() {
   const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, enhancePrompt, setEnhancePrompt, generate, isGenerating, credits, getCreditCost } = useApp();
   const { t } = useLanguage();
-  const [selectedModel, setSelectedModel] = useState('flux-schnell');
+  const { activeModels, defaultModel } = useModels();
+
+  const [selectedModelId, setSelectedModelId] = useState<string>('');
   const [selectedResolution, setSelectedResolution] = useState<string>('2K');
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const cost = getCreditCost();
-  const canGenerate = prompt.trim().length > 0 && !isGenerating && credits >= cost;
-  const activeModel = MODELS.find(m => m.id === selectedModel) || MODELS[0];
+
+  // Set default model once loaded
+  useEffect(() => {
+    if (defaultModel && !selectedModelId) {
+      setSelectedModelId(defaultModel.id);
+    } else if (activeModels.length > 0 && !selectedModelId) {
+      setSelectedModelId(activeModels[0].id);
+    }
+  }, [defaultModel, activeModels, selectedModelId]);
+
+  const currentModel = activeModels.find(m => m.id === selectedModelId) || defaultModel || activeModels[0];
+
+  // Available ratios from current model
+  const availableRatios = currentModel?.supported_ratios || ['1:1', '16:9', '9:16', '4:5'];
+
+  // Ensure selected ratio is valid for current model
+  useEffect(() => {
+    if (currentModel && !currentModel.supported_ratios.includes(aspectRatio)) {
+      const defaultR = currentModel.default_ratio as AspectRatio || '1:1' as AspectRatio;
+      setAspectRatio(defaultR);
+    }
+  }, [currentModel, aspectRatio, setAspectRatio]);
+
+  const canGenerate = prompt.trim().length > 0 && !isGenerating && credits >= cost && !!currentModel;
   const toggleDropdown = (key: OpenDropdown) => setOpenDropdown(prev => prev === key ? null : key);
   const resDescMap: Record<string, string> = { standard: t.studio.standard, highQuality: t.studio.highQuality, ultraHD: t.studio.ultraHD };
 
@@ -36,6 +54,8 @@ export function CreationPanel() {
   useEffect(() => { const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenDropdown(null); if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); generate(); } }; window.addEventListener('keydown', handler); return () => window.removeEventListener('keydown', handler); }, [generate]);
 
   const handleResolution = (r: string) => { setSelectedResolution(r); setQuality(r === '1K' ? 'standard' : 'hd'); setOpenDropdown(null); };
+
+  const ratioIcons: Record<string, string> = { '1:1': '◻', '4:3': '▭', '16:9': '▬', '9:16': '▯', '4:5': '▭', '3:4': '▭', '3:2': '▬', '2:3': '▯', '5:4': '▭', '21:9': '▬' };
 
   return (
     <aside ref={panelRef} className="w-[340px] xl:w-[380px] flex flex-col bg-background flex-shrink-0 overflow-visible relative z-30 border-r border-border/5">
@@ -61,21 +81,42 @@ export function CreationPanel() {
           <span className="text-[13px] font-medium">{t.studio.uploadImages}</span>
           <span className="text-[11px] text-muted-foreground/40">JPG / PNG up to 10MB</span>
         </button>
-        {/* Model selector */}
+        {/* Model selector - dynamic from DB */}
         <div className="relative">
           <button onClick={() => toggleDropdown('model')} className={`w-full flex items-center justify-between p-4 rounded-2xl bg-card/80 border transition-all duration-150 ${openDropdown === 'model' ? 'border-primary/30 bg-card' : 'border-border/10 hover:border-border/20'}`}>
-            <div className="flex items-center gap-3"><div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${openDropdown === 'model' ? 'bg-primary/15' : 'bg-primary/[0.08]'}`}><Cpu size={16} className="text-primary" /></div><div className="text-left"><p className="text-[13px] font-medium text-foreground">{t.studio.model}</p><p className="text-[12px] text-primary/70">{activeModel.name}</p></div></div>
+            <div className="flex items-center gap-3">
+              <div className={`w-9 h-9 rounded-xl flex items-center justify-center transition-colors ${openDropdown === 'model' ? 'bg-primary/15' : 'bg-primary/[0.08]'}`}><Cpu size={16} className="text-primary" /></div>
+              <div className="text-left">
+                <p className="text-[13px] font-medium text-foreground">{t.studio.model}</p>
+                <p className="text-[12px] text-primary/70">{currentModel?.model_name || 'Select model'}</p>
+              </div>
+            </div>
             <ChevronDown size={16} className={`text-muted-foreground transition-transform duration-200 rotate-180 ${openDropdown === 'model' ? 'rotate-0' : ''}`} />
           </button>
           {openDropdown === 'model' && (
             <div className="absolute left-0 right-0 bottom-full mb-2 bg-card border border-border/20 rounded-2xl p-2 shadow-2xl shadow-black/40 z-50 animate-fade-in max-h-[320px] overflow-y-auto">
               <p className="text-[10px] text-primary/40 uppercase tracking-wider font-medium px-3 pt-2 pb-2 flex items-center gap-1.5"><Cpu size={10} />{t.studio.selectModel}</p>
-              {MODELS.map(m => { const Icon = m.icon; const isActive = selectedModel === m.id; return (
-                <button key={m.id} onClick={() => { setSelectedModel(m.id); setOpenDropdown(null); }} className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-150 ${isActive ? 'bg-primary/10' : 'hover:bg-muted/10'}`}>
-                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isActive ? 'bg-primary/20' : 'bg-muted/15'}`}><Icon size={14} className={isActive ? 'text-primary' : 'text-muted-foreground'} /></div>
-                  <div className="text-left flex-1"><p className={`text-[13px] font-medium ${isActive ? 'text-primary' : 'text-foreground'}`}>{m.name}</p><p className="text-[11px] text-muted-foreground/50">{m.desc}</p></div>
-                  {isActive && <Check size={14} className="text-primary" />}
-                </button>); })}
+              {activeModels.map(m => {
+                const isActive = selectedModelId === m.id;
+                return (
+                  <button key={m.id} onClick={() => { setSelectedModelId(m.id); setOpenDropdown(null); }} className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-150 ${isActive ? 'bg-primary/10' : 'hover:bg-muted/10'}`}>
+                    <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isActive ? 'bg-primary/20' : 'bg-muted/15'}`}>
+                      <Cpu size={14} className={isActive ? 'text-primary' : 'text-muted-foreground'} />
+                    </div>
+                    <div className="text-left flex-1">
+                      <p className={`text-[13px] font-medium ${isActive ? 'text-primary' : 'text-foreground'}`}>{m.model_name}</p>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] text-muted-foreground/50">{m.speed} · ${m.cost_per_run?.toFixed(3)}</span>
+                        <Badge variant="outline" className="text-[9px] py-0 px-1">{m.input_type}</Badge>
+                      </div>
+                    </div>
+                    {isActive && <Check size={14} className="text-primary" />}
+                  </button>
+                );
+              })}
+              {activeModels.length === 0 && (
+                <p className="text-[11px] text-muted-foreground/50 text-center py-4">No active models. Enable models in Admin.</p>
+              )}
             </div>
           )}
         </div>
@@ -89,10 +130,18 @@ export function CreationPanel() {
             {openDropdown === 'size' && (
               <div className="absolute left-0 right-0 bottom-full mb-2 bg-card border border-border/20 rounded-2xl p-2 shadow-2xl shadow-black/40 z-50 animate-fade-in">
                 <p className="text-[10px] text-primary/40 uppercase tracking-wider font-medium px-3 pt-2 pb-2 flex items-center gap-1.5"><Maximize size={10} />{t.studio.aspectRatio}</p>
-                {SIZES.map(s => { const isActive = aspectRatio === s.value; return (
-                  <button key={s.value} onClick={() => { setAspectRatio(s.value); setOpenDropdown(null); }} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150 ${isActive ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted/10'}`}>
-                    <span>{s.label}</span><div className="flex items-center gap-2"><span className={`text-[14px] ${isActive ? 'text-primary/60' : 'opacity-30'}`}>{s.icon}</span>{isActive && <Check size={13} className="text-primary" />}</div>
-                  </button>); })}
+                {availableRatios.map(r => {
+                  const isActive = aspectRatio === r;
+                  return (
+                    <button key={r} onClick={() => { setAspectRatio(r as AspectRatio); setOpenDropdown(null); }} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150 ${isActive ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted/10'}`}>
+                      <span>{r}</span>
+                      <div className="flex items-center gap-2">
+                        <span className={`text-[14px] ${isActive ? 'text-primary/60' : 'opacity-30'}`}>{ratioIcons[r] || '◻'}</span>
+                        {isActive && <Check size={13} className="text-primary" />}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>

@@ -1,0 +1,86 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+
+export interface ModelRecord {
+  id: string;
+  provider_id: string | null;
+  model_name: string;
+  endpoint_id: string;
+  provider_name: string;
+  speed: string | null;
+  cost_per_run: number | null;
+  best_for: string | null;
+  input_type: 'image_size' | 'aspect_ratio';
+  supported_ratios: string[];
+  supported_sizes: string[];
+  default_ratio: string | null;
+  default_resolution: string | null;
+  max_resolution: string | null;
+  is_active: boolean;
+  is_default: boolean;
+  notes: string | null;
+  admin_overrides: Record<string, unknown>;
+  last_sync_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+function parseModel(row: any): ModelRecord {
+  return {
+    ...row,
+    cost_per_run: row.cost_per_run ? Number(row.cost_per_run) : null,
+    supported_ratios: Array.isArray(row.supported_ratios) ? row.supported_ratios : [],
+    supported_sizes: Array.isArray(row.supported_sizes) ? row.supported_sizes : [],
+    admin_overrides: row.admin_overrides || {},
+  };
+}
+
+export function useModels() {
+  const [models, setModels] = useState<ModelRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const fetchModels = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('models')
+      .select('*')
+      .order('is_active', { ascending: false })
+      .order('is_default', { ascending: false })
+      .order('model_name');
+
+    if (error) {
+      console.error('Failed to fetch models:', error);
+      return;
+    }
+    setModels((data || []).map(parseModel));
+    setLoading(false);
+  }, []);
+
+  useEffect(() => {
+    fetchModels();
+
+    // Realtime subscription
+    const channel = supabase
+      .channel('models-changes')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'models' }, () => {
+        fetchModels();
+      })
+      .subscribe();
+
+    return () => { supabase.removeChannel(channel); };
+  }, [fetchModels]);
+
+  const updateModel = useCallback(async (id: string, updates: Partial<ModelRecord>) => {
+    const { error } = await supabase
+      .from('models')
+      .update({ ...updates, updated_at: new Date().toISOString() } as any)
+      .eq('id', id);
+
+    if (error) throw error;
+    await fetchModels();
+  }, [fetchModels]);
+
+  const activeModels = models.filter(m => m.is_active);
+  const defaultModel = models.find(m => m.is_default) || activeModels[0] || null;
+
+  return { models, activeModels, defaultModel, loading, fetchModels, updateModel };
+}
