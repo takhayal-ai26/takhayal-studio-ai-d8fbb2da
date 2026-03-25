@@ -26,17 +26,26 @@ interface ProviderConfig {
   config: Record<string, unknown>;
 }
 
-const AVAILABLE_MODELS: Record<string, { name: string; speed: string; cost: string; active: boolean }[]> = {
+const AVAILABLE_MODELS: Record<string, { name: string; id: string; speed: string; cost: string; active: boolean; bestFor: string }[]> = {
   'Fal.ai': [
-    { name: 'Flux Schnell', speed: '~8s', cost: '$0.003', active: true },
-    { name: 'Flux Dev', speed: '~12s', cost: '$0.025', active: false },
-    { name: 'Flux Pro', speed: '~15s', cost: '$0.05', active: false },
+    { name: 'Flux Schnell', id: 'fal-ai/flux/schnell', speed: '~8s', cost: '$0.003', active: true, bestFor: 'Fast drafts, iteration' },
+    { name: 'Flux Dev', id: 'fal-ai/flux/dev', speed: '~12s', cost: '$0.025', active: false, bestFor: 'Development, testing' },
+    { name: 'Flux Pro', id: 'fal-ai/flux-pro', speed: '~15s', cost: '$0.05', active: false, bestFor: 'High quality generation' },
+    { name: 'FLUX Pro Ultra', id: 'fal-ai/flux-pro/v1.1-ultra', speed: '~20s', cost: '$0.06', active: false, bestFor: 'Highest quality photorealistic, hero shots, premium ads' },
+    { name: 'Ideogram V3', id: 'fal-ai/ideogram/v3', speed: '~15s', cost: '$0.08', active: false, bestFor: 'Arabic/English text overlays, typography, logos, posters' },
+    { name: 'SDXL Lightning', id: 'fal-ai/fast-sdxl', speed: '~3s', cost: '$0.001', active: false, bestFor: 'Ultra fast previews, high volume generation' },
+    { name: 'Stable Diffusion 3.5 Large', id: 'fal-ai/stable-diffusion-v35-large', speed: '~18s', cost: '$0.04', active: false, bestFor: 'Artistic, illustrated, creative editorial' },
+    { name: 'Aura Flow', id: 'fal-ai/aura-flow', speed: '~12s', cost: '$0.02', active: false, bestFor: 'Fashion, beauty, lifestyle photography' },
+    { name: 'Recraft V3', id: 'fal-ai/recraft-v3', speed: '~15s', cost: '$0.04', active: false, bestFor: 'Brand design, illustrations, vector-style, icons' },
+    { name: 'Imagen 4', id: 'fal-ai/imagen4/preview', speed: '~10s', cost: '$0.04', active: false, bestFor: 'Photorealistic people, lifestyle, Gulf social content' },
   ],
 };
 
 const ROUTING_RULES = [
-  { tool: 'Generate Image', defaultModel: 'Flux Schnell', fallback: 'Flux Dev', planRouting: 'Free: Schnell / Pro: Schnell' },
-  { tool: 'Create Logo', defaultModel: 'Flux Schnell', fallback: '-', planRouting: 'All: Flux Schnell' },
+  { tool: 'Generate Image', defaultModel: 'Flux Schnell', fallback: 'FLUX Pro Ultra', planRouting: 'Free: Schnell / Pro: Schnell' },
+  { tool: 'Create Logo', defaultModel: 'Ideogram V3', fallback: 'Recraft V3', planRouting: 'All: Ideogram V3' },
+  { tool: 'Text Overlay', defaultModel: 'Ideogram V3', fallback: '-', planRouting: 'All: Ideogram V3' },
+  { tool: 'Fast Preview', defaultModel: 'SDXL Lightning', fallback: 'Flux Schnell', planRouting: 'All: SDXL Lightning' },
   { tool: 'Upscale Image', defaultModel: '-', fallback: '-', planRouting: 'Not connected' },
   { tool: 'Remove Background', defaultModel: '-', fallback: '-', planRouting: 'Not connected' },
   { tool: 'Enhance Image', defaultModel: '-', fallback: '-', planRouting: 'Not connected' },
@@ -246,21 +255,23 @@ export default function AdminModels() {
                 <TableHeader>
                   <TableRow className="border-border/40">
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Model</TableHead>
-                    <TableHead className="text-[11px] uppercase text-muted-foreground">Provider</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">ID</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Speed</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Cost/Run</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Best For</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Default</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {providerModels.map(m => (
-                    <TableRow key={m.name} className="border-border/20">
+                    <TableRow key={m.id} className="border-border/20">
                       <TableCell className="text-[13px] font-medium">{m.name}</TableCell>
-                      <TableCell className="text-[13px] text-muted-foreground">{connectedProvider?.provider_name}</TableCell>
+                      <TableCell className="text-[11px] text-muted-foreground font-mono">{m.id}</TableCell>
                       <TableCell className="text-[13px]">{m.speed}</TableCell>
                       <TableCell className="text-[13px] font-medium text-primary">{m.cost}</TableCell>
-                      <TableCell>{connectedProvider?.default_model === m.name.toLowerCase().replace(/\s/g, '-') && <CheckCircle size={14} className="text-emerald-400" />}</TableCell>
+                      <TableCell className="text-[12px] text-muted-foreground max-w-[200px] truncate" title={m.bestFor}>{m.bestFor}</TableCell>
+                      <TableCell>{connectedProvider?.default_model === m.id && <CheckCircle size={14} className="text-emerald-400" />}</TableCell>
                       <TableCell><Switch defaultChecked={m.active} className="scale-75" /></TableCell>
                     </TableRow>
                   ))}
@@ -363,7 +374,7 @@ export default function AdminModels() {
                   </SelectTrigger>
                   <SelectContent>
                     {AVAILABLE_MODELS[selectedProvider.provider_name].map(m => (
-                      <SelectItem key={m.name} value={m.name.toLowerCase().replace(/\s/g, '-')}>
+                      <SelectItem key={m.id} value={m.id}>
                         {m.name} ({m.speed})
                       </SelectItem>
                     ))}
