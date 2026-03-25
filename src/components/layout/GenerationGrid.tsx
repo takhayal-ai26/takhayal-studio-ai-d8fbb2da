@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Download, Maximize2, Clock, RefreshCw, Bookmark, Share2, ChevronDown, Copy } from 'lucide-react';
+import { X, Download, Maximize2, Clock, RefreshCw, Share2, ChevronDown, Copy } from 'lucide-react';
 import { useApp, GeneratedImage } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 
@@ -169,8 +169,13 @@ export function GenerationGrid() {
                   >
                     <RefreshCw size={13} />{t.studio.regenerate}
                   </button>
-                  <button className="h-10 rounded-xl border border-border/15 bg-card/60 text-foreground/80 text-[12px] font-medium flex items-center justify-center gap-1.5 hover:bg-card hover:border-border/30 transition-all">
-                    <Bookmark size={13} />Save
+                  <button
+                    onClick={() => {
+                      navigator.clipboard.writeText(selectedCard.prompt);
+                    }}
+                    className="h-10 rounded-xl border border-border/15 bg-card/60 text-foreground/80 text-[12px] font-medium flex items-center justify-center gap-1.5 hover:bg-card hover:border-border/30 transition-all"
+                  >
+                    <Copy size={13} />Copy
                   </button>
                   <button className="h-10 rounded-xl border border-border/15 bg-card/60 text-foreground/80 text-[12px] font-medium flex items-center justify-center gap-1.5 hover:bg-card hover:border-border/30 transition-all">
                     <Share2 size={13} />Share
