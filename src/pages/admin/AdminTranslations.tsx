@@ -1,5 +1,5 @@
-import { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useState, useMemo, useCallback } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -7,10 +7,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { translations } from '@/i18n/translations';
+import { useTranslationOverridesStore } from '@/stores/translationOverridesStore';
 import {
-  Search, Download, Upload, RefreshCw, Plus, Languages, CheckCircle2,
-  AlertCircle, Clock, Edit2, Copy, Trash2, Eye, FileDown, FileUp, Globe
+  Search, Download, RefreshCw, Plus, Languages, CheckCircle2,
+  AlertCircle, Clock, Edit2, Copy, Trash2, Eye, FileDown, FileUp,
+  ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 
@@ -36,6 +39,7 @@ function getSectionFromKey(key: string): string {
     templates: 'Templates', community: 'Community', auth: 'Auth',
     pricing: 'Billing', credits: 'Billing', avatar: 'Navigation',
     upgrade: 'Billing', settings: 'Settings', notFound: 'System',
+    creditsView: 'Billing',
   };
   return map[first] || 'General';
 }
@@ -46,29 +50,38 @@ type TranslationEntry = {
   en: string;
   ar: string;
   status: 'complete' | 'missing' | 'review';
-  updatedAt: string;
+  isOverridden: boolean;
 };
 
 const SECTIONS = ['All', 'Navigation', 'Home', 'Portal', 'Studio', 'Tools', 'Tool Pages', 'Templates', 'Community', 'Auth', 'Billing', 'Settings', 'System', 'General'];
 const STATUSES = ['All', 'complete', 'missing', 'review'];
+const PAGE_SIZE = 100;
 
 export default function AdminTranslations() {
   const enFlat = useMemo(() => flattenObj(translations.en), []);
   const arFlat = useMemo(() => flattenObj(translations.ar), []);
+  const { overrides, setBothOverrides, removeOverride, addKey } = useTranslationOverridesStore();
 
+  // Merge static + overrides to get effective values
   const allKeys = useMemo(() => {
-    const keys = new Set([...Object.keys(enFlat), ...Object.keys(arFlat)]);
+    const keys = new Set([
+      ...Object.keys(enFlat),
+      ...Object.keys(arFlat),
+      ...Object.keys(overrides.en),
+      ...Object.keys(overrides.ar),
+    ]);
     return Array.from(keys).sort();
-  }, [enFlat, arFlat]);
+  }, [enFlat, arFlat, overrides]);
 
   const entries: TranslationEntry[] = useMemo(() =>
     allKeys.map(key => {
-      const en = enFlat[key] || '';
-      const ar = arFlat[key] || '';
+      const en = overrides.en[key] ?? enFlat[key] ?? '';
+      const ar = overrides.ar[key] ?? arFlat[key] ?? '';
+      const isOverridden = key in overrides.en || key in overrides.ar;
       let status: TranslationEntry['status'] = 'complete';
       if (!en || !ar) status = 'missing';
-      return { key, section: getSectionFromKey(key), en, ar, status, updatedAt: '2026-03-24' };
-    }), [allKeys, enFlat, arFlat]);
+      return { key, section: getSectionFromKey(key), en, ar, status, isOverridden };
+    }), [allKeys, enFlat, arFlat, overrides]);
 
   const [search, setSearch] = useState('');
   const [sectionFilter, setSectionFilter] = useState('All');
@@ -77,6 +90,12 @@ export default function AdminTranslations() {
   const [editEn, setEditEn] = useState('');
   const [editAr, setEditAr] = useState('');
   const [previewLang, setPreviewLang] = useState<'en' | 'ar'>('en');
+  const [page, setPage] = useState(1);
+  const [addDialogOpen, setAddDialogOpen] = useState(false);
+  const [newKey, setNewKey] = useState('');
+  const [newEn, setNewEn] = useState('');
+  const [newAr, setNewAr] = useState('');
+  const [deleteKey, setDeleteKey] = useState<string | null>(null);
 
   const filtered = useMemo(() => {
     return entries.filter(e => {
@@ -90,19 +109,55 @@ export default function AdminTranslations() {
     });
   }, [entries, search, sectionFilter, statusFilter]);
 
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+  const currentPage = Math.min(page, totalPages);
+  const paginated = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
+
   const totalKeys = entries.length;
   const completed = entries.filter(e => e.status === 'complete').length;
   const missingAr = entries.filter(e => !e.ar).length;
   const missingEn = entries.filter(e => !e.en).length;
 
-  const openEdit = (entry: TranslationEntry) => {
+  const openEdit = useCallback((entry: TranslationEntry) => {
     setEditEntry(entry);
     setEditEn(entry.en);
     setEditAr(entry.ar);
     setPreviewLang('en');
-  };
+  }, []);
 
-  const handleExportCSV = () => {
+  const handleSave = useCallback(() => {
+    if (!editEntry) return;
+    setBothOverrides(editEntry.key, editEn, editAr);
+    toast({ title: 'Saved', description: `"${editEntry.key}" updated — changes are live.` });
+    setEditEntry(null);
+  }, [editEntry, editEn, editAr, setBothOverrides]);
+
+  const handleCopyKey = useCallback((key: string) => {
+    navigator.clipboard.writeText(key);
+    toast({ title: 'Copied', description: `Key "${key}" copied to clipboard` });
+  }, []);
+
+  const handleDelete = useCallback(() => {
+    if (!deleteKey) return;
+    removeOverride(deleteKey);
+    toast({ title: 'Reset', description: `"${deleteKey}" reset to default value` });
+    setDeleteKey(null);
+  }, [deleteKey, removeOverride]);
+
+  const handleAddKey = useCallback(() => {
+    if (!newKey.trim()) {
+      toast({ title: 'Error', description: 'Key is required', variant: 'destructive' });
+      return;
+    }
+    addKey(newKey.trim(), newEn, newAr);
+    toast({ title: 'Added', description: `Key "${newKey.trim()}" added` });
+    setNewKey('');
+    setNewEn('');
+    setNewAr('');
+    setAddDialogOpen(false);
+  }, [newKey, newEn, newAr, addKey]);
+
+  const handleExportCSV = useCallback(() => {
     const header = 'key,section,en,ar,status\n';
     const rows = entries.map(e =>
       `"${e.key}","${e.section}","${e.en.replace(/"/g, '""')}","${e.ar.replace(/"/g, '""')}","${e.status}"`
@@ -115,9 +170,9 @@ export default function AdminTranslations() {
     a.click();
     URL.revokeObjectURL(url);
     toast({ title: 'Exported', description: `${entries.length} keys exported as CSV` });
-  };
+  }, [entries]);
 
-  const handleExportJSON = () => {
+  const handleExportJSON = useCallback(() => {
     const data = { en: translations.en, ar: translations.ar };
     const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -127,11 +182,44 @@ export default function AdminTranslations() {
     a.click();
     URL.revokeObjectURL(url);
     toast({ title: 'Exported', description: 'Translations exported as JSON' });
-  };
+  }, []);
 
-  const handleSync = () => {
+  const handleImportJSON = useCallback(() => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.json';
+    input.onchange = async (e) => {
+      const file = (e.target as HTMLInputElement).files?.[0];
+      if (!file) return;
+      try {
+        const text = await file.text();
+        const data = JSON.parse(text);
+        let count = 0;
+        if (data.en && typeof data.en === 'object') {
+          const flat = flattenObj(data.en);
+          for (const [k, v] of Object.entries(flat)) {
+            setBothOverrides(k, v, overrides.ar[k] ?? arFlat[k] ?? '');
+            count++;
+          }
+        }
+        if (data.ar && typeof data.ar === 'object') {
+          const flat = flattenObj(data.ar);
+          for (const [k, v] of Object.entries(flat)) {
+            setBothOverrides(k, overrides.en[k] ?? enFlat[k] ?? '', v);
+            count++;
+          }
+        }
+        toast({ title: 'Imported', description: `${count} keys imported from JSON` });
+      } catch {
+        toast({ title: 'Error', description: 'Invalid JSON file', variant: 'destructive' });
+      }
+    };
+    input.click();
+  }, [setBothOverrides, overrides, enFlat, arFlat]);
+
+  const handleSync = useCallback(() => {
     toast({ title: 'Sync Complete', description: `${totalKeys} keys synced from codebase` });
-  };
+  }, [totalKeys]);
 
   const statusBadge = (status: string) => {
     if (status === 'complete') return <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/20 text-[11px]">Complete</Badge>;
@@ -145,7 +233,7 @@ export default function AdminTranslations() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold">Translations</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage all app content in multiple languages</p>
+          <p className="text-sm text-muted-foreground mt-1">Manage all app content in multiple languages — edits go live instantly</p>
         </div>
         <div className="flex items-center gap-2">
           <Button variant="outline" size="sm" onClick={handleSync}>
@@ -157,10 +245,10 @@ export default function AdminTranslations() {
           <Button variant="outline" size="sm" onClick={handleExportJSON}>
             <Download size={14} className="mr-1.5" /> JSON
           </Button>
-          <Button variant="outline" size="sm">
+          <Button variant="outline" size="sm" onClick={handleImportJSON}>
             <FileUp size={14} className="mr-1.5" /> Import
           </Button>
-          <Button size="sm" className="bg-primary hover:bg-primary/90">
+          <Button size="sm" className="bg-primary hover:bg-primary/90" onClick={() => setAddDialogOpen(true)}>
             <Plus size={14} className="mr-1.5" /> Add Key
           </Button>
         </div>
@@ -201,11 +289,11 @@ export default function AdminTranslations() {
           <Input
             placeholder="Search keys, English, or Arabic..."
             value={search}
-            onChange={e => setSearch(e.target.value)}
+            onChange={e => { setSearch(e.target.value); setPage(1); }}
             className="pl-9 h-9 text-sm bg-card/60 border-border/40"
           />
         </div>
-        <Select value={sectionFilter} onValueChange={setSectionFilter}>
+        <Select value={sectionFilter} onValueChange={v => { setSectionFilter(v); setPage(1); }}>
           <SelectTrigger className="w-[160px] h-9 text-sm bg-card/60 border-border/40">
             <SelectValue placeholder="Section" />
           </SelectTrigger>
@@ -213,7 +301,7 @@ export default function AdminTranslations() {
             {SECTIONS.map(s => <SelectItem key={s} value={s}>{s}</SelectItem>)}
           </SelectContent>
         </Select>
-        <Select value={statusFilter} onValueChange={setStatusFilter}>
+        <Select value={statusFilter} onValueChange={v => { setStatusFilter(v); setPage(1); }}>
           <SelectTrigger className="w-[140px] h-9 text-sm bg-card/60 border-border/40">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
@@ -234,38 +322,63 @@ export default function AdminTranslations() {
               <TableHead className="text-xs">English</TableHead>
               <TableHead className="text-xs">Arabic</TableHead>
               <TableHead className="text-xs w-[90px]">Status</TableHead>
-              <TableHead className="text-xs w-[80px] text-right">Actions</TableHead>
+              <TableHead className="text-xs w-[100px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filtered.slice(0, 50).map(entry => (
-              <TableRow key={entry.key} className="border-border/20 hover:bg-muted/20">
-                <TableCell className="font-mono text-xs text-muted-foreground py-2.5">{entry.key}</TableCell>
+            {paginated.map(entry => (
+              <TableRow
+                key={entry.key}
+                className="border-border/20 hover:bg-muted/20 cursor-pointer"
+                onClick={() => openEdit(entry)}
+              >
+                <TableCell className="font-mono text-xs text-muted-foreground py-2.5">
+                  {entry.key}
+                  {entry.isOverridden && (
+                    <Badge className="ml-1.5 bg-primary/15 text-primary border-primary/20 text-[9px] px-1">edited</Badge>
+                  )}
+                </TableCell>
                 <TableCell className="py-2.5">
                   <Badge variant="outline" className="text-[10px] font-normal border-border/40">{entry.section}</Badge>
                 </TableCell>
                 <TableCell className="text-sm py-2.5 max-w-[200px] truncate">{entry.en || <span className="text-red-400 italic text-xs">missing</span>}</TableCell>
                 <TableCell className="text-sm py-2.5 max-w-[200px] truncate" dir="rtl">{entry.ar || <span className="text-red-400 italic text-xs">missing</span>}</TableCell>
                 <TableCell className="py-2.5">{statusBadge(entry.status)}</TableCell>
-                <TableCell className="py-2.5 text-right">
+                <TableCell className="py-2.5 text-right" onClick={e => e.stopPropagation()}>
                   <div className="flex items-center justify-end gap-1">
                     <button onClick={() => openEdit(entry)} className="p-1.5 rounded-md hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors">
                       <Edit2 size={13} />
                     </button>
-                    <button className="p-1.5 rounded-md hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors">
+                    <button onClick={() => handleCopyKey(entry.key)} className="p-1.5 rounded-md hover:bg-muted/50 text-muted-foreground hover:text-foreground transition-colors">
                       <Copy size={13} />
                     </button>
+                    {entry.isOverridden && (
+                      <button onClick={() => setDeleteKey(entry.key)} className="p-1.5 rounded-md hover:bg-red-500/20 text-muted-foreground hover:text-red-400 transition-colors">
+                        <Trash2 size={13} />
+                      </button>
+                    )}
                   </div>
                 </TableCell>
               </TableRow>
             ))}
           </TableBody>
         </Table>
-        {filtered.length > 50 && (
-          <div className="p-3 text-center border-t border-border/20">
-            <p className="text-xs text-muted-foreground">Showing 50 of {filtered.length} keys</p>
+
+        {/* Pagination */}
+        <div className="p-3 flex items-center justify-between border-t border-border/20">
+          <p className="text-xs text-muted-foreground">
+            Showing {(currentPage - 1) * PAGE_SIZE + 1}–{Math.min(currentPage * PAGE_SIZE, filtered.length)} of {filtered.length} keys
+          </p>
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" disabled={currentPage <= 1} onClick={() => setPage(p => p - 1)} className="h-7 w-7 p-0">
+              <ChevronLeft size={14} />
+            </Button>
+            <span className="text-xs text-muted-foreground px-2">Page {currentPage} of {totalPages}</span>
+            <Button variant="ghost" size="sm" disabled={currentPage >= totalPages} onClick={() => setPage(p => p + 1)} className="h-7 w-7 p-0">
+              <ChevronRight size={14} />
+            </Button>
           </div>
-        )}
+        </div>
       </Card>
 
       {/* Edit Drawer */}
@@ -276,13 +389,11 @@ export default function AdminTranslations() {
           </SheetHeader>
           {editEntry && (
             <div className="space-y-5 mt-6">
-              {/* Key */}
               <div>
                 <label className="text-xs text-muted-foreground font-medium mb-1 block">Key</label>
                 <Input value={editEntry.key} readOnly className="font-mono text-xs bg-muted/20 border-border/40" />
               </div>
 
-              {/* Section */}
               <div className="flex gap-3">
                 <div className="flex-1">
                   <label className="text-xs text-muted-foreground font-medium mb-1 block">Section</label>
@@ -290,11 +401,10 @@ export default function AdminTranslations() {
                 </div>
                 <div className="flex-1">
                   <label className="text-xs text-muted-foreground font-medium mb-1 block">Status</label>
-                  {statusBadge(editEntry.status)}
+                  {statusBadge((!editEn || !editAr) ? 'missing' : 'complete')}
                 </div>
               </div>
 
-              {/* English */}
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs text-muted-foreground font-medium">English</label>
@@ -303,19 +413,12 @@ export default function AdminTranslations() {
                 <Textarea value={editEn} onChange={e => setEditEn(e.target.value)} rows={3} className="text-sm bg-card/60 border-border/40" />
               </div>
 
-              {/* Arabic */}
               <div>
                 <div className="flex items-center justify-between mb-1">
                   <label className="text-xs text-muted-foreground font-medium">Arabic</label>
                   <span className="text-[10px] text-muted-foreground">{editAr.length} chars</span>
                 </div>
                 <Textarea value={editAr} onChange={e => setEditAr(e.target.value)} rows={3} dir="rtl" className="text-sm bg-card/60 border-border/40 text-right font-[Cairo]" />
-              </div>
-
-              {/* Notes */}
-              <div>
-                <label className="text-xs text-muted-foreground font-medium mb-1 block">Notes</label>
-                <Textarea placeholder="Add context or notes for translators..." rows={2} className="text-xs bg-card/60 border-border/40" />
               </div>
 
               {/* Live Preview */}
@@ -340,12 +443,8 @@ export default function AdminTranslations() {
                 </div>
               </div>
 
-              {/* Actions */}
               <div className="flex gap-2 pt-2">
-                <Button className="flex-1 bg-primary hover:bg-primary/90" onClick={() => {
-                  toast({ title: 'Saved', description: `Translation for "${editEntry.key}" updated` });
-                  setEditEntry(null);
-                }}>
+                <Button className="flex-1 bg-primary hover:bg-primary/90" onClick={handleSave}>
                   Save Changes
                 </Button>
                 <Button variant="outline" onClick={() => setEditEntry(null)}>Cancel</Button>
@@ -354,6 +453,47 @@ export default function AdminTranslations() {
           )}
         </SheetContent>
       </Sheet>
+
+      {/* Add Key Dialog */}
+      <Dialog open={addDialogOpen} onOpenChange={setAddDialogOpen}>
+        <DialogContent className="bg-background border-border/40">
+          <DialogHeader>
+            <DialogTitle>Add Translation Key</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <label className="text-xs text-muted-foreground font-medium mb-1 block">Key (dot notation)</label>
+              <Input value={newKey} onChange={e => setNewKey(e.target.value)} placeholder="e.g. landing.newSection" className="font-mono text-sm bg-card/60 border-border/40" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground font-medium mb-1 block">English</label>
+              <Textarea value={newEn} onChange={e => setNewEn(e.target.value)} rows={2} className="text-sm bg-card/60 border-border/40" />
+            </div>
+            <div>
+              <label className="text-xs text-muted-foreground font-medium mb-1 block">Arabic</label>
+              <Textarea value={newAr} onChange={e => setNewAr(e.target.value)} rows={2} dir="rtl" className="text-sm bg-card/60 border-border/40 text-right font-[Cairo]" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setAddDialogOpen(false)}>Cancel</Button>
+            <Button className="bg-primary hover:bg-primary/90" onClick={handleAddKey}>Add Key</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <Dialog open={!!deleteKey} onOpenChange={open => !open && setDeleteKey(null)}>
+        <DialogContent className="bg-background border-border/40">
+          <DialogHeader>
+            <DialogTitle>Reset Translation</DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-muted-foreground">Reset <code className="font-mono text-xs bg-muted/30 px-1 py-0.5 rounded">{deleteKey}</code> to its default value? This removes your custom override.</p>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteKey(null)}>Cancel</Button>
+            <Button variant="destructive" onClick={handleDelete}>Reset</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
