@@ -1,0 +1,1 @@
+CREATE POLICY "Allow anon read" ON public.provider_configs FOR SELECT TO anon USING (true);
