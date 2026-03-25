@@ -28,7 +28,7 @@ serve(async (req) => {
 
     console.log("Generating images with fal.ai Flux Schnell:", { prompt, image_size, num_images });
 
-    const response = await fetch("https://queue.fal.run/fal-ai/flux/schnell", {
+    const response = await fetch("https://fal.run/fal-ai/flux/schnell", {
       method: "POST",
       headers: {
         Authorization: `Key ${FAL_AI_API_KEY}`,
