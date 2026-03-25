@@ -172,7 +172,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         body: {
           prompt: styledPrompt,
           image_size: getImageSize(),
-          num_images: 4,
+          num_images: 1,
         },
       });
 
