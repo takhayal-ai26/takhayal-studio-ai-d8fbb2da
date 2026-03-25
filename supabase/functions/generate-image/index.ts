@@ -26,14 +26,17 @@ serve(async (req) => {
       );
     }
 
-    console.log("Generating images with fal.ai Flux Schnell:", { prompt, image_size, num_images });
+    const falHeaders = {
+      Authorization: `Key ${FAL_AI_API_KEY}`,
+      "Content-Type": "application/json",
+    };
 
-    const response = await fetch("https://fal.run/fal-ai/flux/schnell", {
+    console.log("Submitting to fal.ai Flux Schnell:", { prompt, image_size, num_images });
+
+    // Submit to queue
+    const submitRes = await fetch("https://queue.fal.run/fal-ai/flux/schnell", {
       method: "POST",
-      headers: {
-        Authorization: `Key ${FAL_AI_API_KEY}`,
-        "Content-Type": "application/json",
-      },
+      headers: falHeaders,
       body: JSON.stringify({
         prompt,
         image_size: image_size || "square_hd",
@@ -43,21 +46,56 @@ serve(async (req) => {
       }),
     });
 
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error("fal.ai error:", response.status, errorText);
+    if (!submitRes.ok) {
+      const errorText = await submitRes.text();
+      console.error("fal.ai submit error:", submitRes.status, errorText);
       return new Response(
-        JSON.stringify({ error: `fal.ai API error: ${response.status}` }),
+        JSON.stringify({ error: `fal.ai API error: ${submitRes.status}` }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
     }
 
-    const data = await response.json();
-    console.log("fal.ai response received, images:", data.images?.length);
+    const submitData = await submitRes.json();
+    const { status_url, response_url } = submitData;
 
-    return new Response(JSON.stringify(data), {
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    if (!status_url || !response_url) {
+      // Direct response (no queue)
+      console.log("Direct response, images:", submitData.images?.length);
+      return new Response(JSON.stringify(submitData), {
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Poll for completion (max ~60s)
+    for (let i = 0; i < 30; i++) {
+      await new Promise(r => setTimeout(r, 2000));
+      const statusRes = await fetch(status_url, { headers: falHeaders });
+      const statusData = await statusRes.json();
+      console.log("Poll attempt", i + 1, "status:", statusData.status);
+
+      if (statusData.status === "COMPLETED") {
+        // Fetch the result
+        const resultRes = await fetch(response_url, { headers: falHeaders });
+        const resultData = await resultRes.json();
+        console.log("Generation complete, images:", resultData.images?.length);
+        return new Response(JSON.stringify(resultData), {
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        });
+      }
+
+      if (statusData.status === "FAILED") {
+        console.error("fal.ai generation failed:", statusData);
+        return new Response(
+          JSON.stringify({ error: "Image generation failed" }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+    }
+
+    return new Response(
+      JSON.stringify({ error: "Generation timed out" }),
+      { status: 504, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+    );
   } catch (error) {
     console.error("generate-image error:", error);
     return new Response(
