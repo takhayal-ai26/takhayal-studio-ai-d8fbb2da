@@ -32,6 +32,7 @@ function formatFileSize(bytes: number): string {
 export default function AdminMedia() {
   const { assets, addAsset, removeAsset, updateAsset } = useAdminMediaStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
 
   // State
   const [search, setSearch] = useState('');
@@ -54,6 +55,9 @@ export default function AdminMedia() {
   const [editUsage, setEditUsage] = useState('');
   const [editTags, setEditTags] = useState('');
   const [editAlt, setEditAlt] = useState('');
+  const [editNewUrl, setEditNewUrl] = useState<string | null>(null);
+  const [editNewMimeType, setEditNewMimeType] = useState<string | null>(null);
+  const [editNewSize, setEditNewSize] = useState<number | null>(null);
 
   // Filtered assets
   const filtered = useMemo(() => {
@@ -162,21 +166,48 @@ export default function AdminMedia() {
     setEditUsage(asset.usage);
     setEditTags(asset.tags.join(', '));
     setEditAlt(asset.alt);
+    setEditNewUrl(null);
+    setEditNewMimeType(null);
+    setEditNewSize(null);
   }, []);
 
   // Save edit
   const saveEdit = useCallback(() => {
     if (!editAsset) return;
-    updateAsset(editAsset.id, {
+    const updates: Partial<MediaAsset> = {
       name: editName,
       type: editType,
       usage: editUsage,
       tags: editTags.split(',').map(t => t.trim()).filter(Boolean),
       alt: editAlt,
-    });
+    };
+    if (editNewUrl) {
+      updates.url = editNewUrl;
+      updates.mimeType = editNewMimeType || editAsset.mimeType;
+      updates.size = formatFileSize(editNewSize || editAsset.sizeBytes);
+      updates.sizeBytes = editNewSize || editAsset.sizeBytes;
+    }
+    updateAsset(editAsset.id, updates);
     toast.success('Asset updated successfully');
     setEditAsset(null);
-  }, [editAsset, editName, editType, editUsage, editTags, editAlt, updateAsset]);
+  }, [editAsset, editName, editType, editUsage, editTags, editAlt, editNewUrl, editNewMimeType, editNewSize, updateAsset]);
+
+  // Handle edit image replacement
+  const handleEditFileChange = useCallback((files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setEditNewUrl(reader.result as string);
+      setEditNewMimeType(file.type);
+      setEditNewSize(file.size);
+    };
+    reader.readAsDataURL(file);
+  }, []);
 
   // Download
   const handleDownload = useCallback((asset: MediaAsset) => {
@@ -444,6 +475,41 @@ export default function AdminMedia() {
             <DialogDescription>Update asset metadata</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Image Preview & Replace */}
+            <div className="space-y-1.5">
+              <Label className="text-xs">Image</Label>
+              <div className="rounded-lg border border-border/40 bg-muted/20 overflow-hidden relative group/edit">
+                <div className="aspect-video flex items-center justify-center">
+                  {(editNewUrl || editAsset?.url) ? (
+                    <img src={editNewUrl || editAsset?.url} alt={editAlt} className="w-full h-full object-contain" />
+                  ) : (
+                    <Image size={32} className="text-muted-foreground/30" />
+                  )}
+                </div>
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center justify-center">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="text-xs gap-1.5"
+                    onClick={() => editFileInputRef.current?.click()}
+                  >
+                    <Upload size={12} /> Replace Image
+                  </Button>
+                </div>
+                {editNewUrl && (
+                  <div className="absolute top-2 right-2">
+                    <Badge className="text-[9px] bg-primary text-primary-foreground">New</Badge>
+                  </div>
+                )}
+              </div>
+              <input
+                ref={editFileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={e => handleEditFileChange(e.target.files)}
+              />
+            </div>
             <div className="space-y-1.5">
               <Label className="text-xs">File Name</Label>
               <Input value={editName} onChange={e => setEditName(e.target.value)} className="h-9 text-xs" />
