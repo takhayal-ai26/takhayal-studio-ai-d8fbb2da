@@ -32,6 +32,7 @@ function formatFileSize(bytes: number): string {
 export default function AdminMedia() {
   const { assets, addAsset, removeAsset, updateAsset } = useAdminMediaStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const editFileInputRef = useRef<HTMLInputElement>(null);
 
   // State
   const [search, setSearch] = useState('');
@@ -54,6 +55,9 @@ export default function AdminMedia() {
   const [editUsage, setEditUsage] = useState('');
   const [editTags, setEditTags] = useState('');
   const [editAlt, setEditAlt] = useState('');
+  const [editNewUrl, setEditNewUrl] = useState<string | null>(null);
+  const [editNewMimeType, setEditNewMimeType] = useState<string | null>(null);
+  const [editNewSize, setEditNewSize] = useState<number | null>(null);
 
   // Filtered assets
   const filtered = useMemo(() => {
