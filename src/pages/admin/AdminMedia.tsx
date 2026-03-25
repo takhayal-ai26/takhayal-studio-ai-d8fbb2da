@@ -166,6 +166,9 @@ export default function AdminMedia() {
     setEditUsage(asset.usage);
     setEditTags(asset.tags.join(', '));
     setEditAlt(asset.alt);
+    setEditNewUrl(null);
+    setEditNewMimeType(null);
+    setEditNewSize(null);
   }, []);
 
   // Save edit
