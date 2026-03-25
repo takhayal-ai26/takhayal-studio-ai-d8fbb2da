@@ -40,7 +40,7 @@ serve(async (req) => {
       body: JSON.stringify({
         prompt,
         image_size: image_size || "square_hd",
-        num_images: num_images || 4,
+        num_images: num_images || 1,
         num_inference_steps: 4,
         enable_safety_checker: true,
       }),
