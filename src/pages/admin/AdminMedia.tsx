@@ -174,16 +174,23 @@ export default function AdminMedia() {
   // Save edit
   const saveEdit = useCallback(() => {
     if (!editAsset) return;
-    updateAsset(editAsset.id, {
+    const updates: Partial<MediaAsset> = {
       name: editName,
       type: editType,
       usage: editUsage,
       tags: editTags.split(',').map(t => t.trim()).filter(Boolean),
       alt: editAlt,
-    });
+    };
+    if (editNewUrl) {
+      updates.url = editNewUrl;
+      updates.mimeType = editNewMimeType || editAsset.mimeType;
+      updates.size = formatFileSize(editNewSize || editAsset.sizeBytes);
+      updates.sizeBytes = editNewSize || editAsset.sizeBytes;
+    }
+    updateAsset(editAsset.id, updates);
     toast.success('Asset updated successfully');
     setEditAsset(null);
-  }, [editAsset, editName, editType, editUsage, editTags, editAlt, updateAsset]);
+  }, [editAsset, editName, editType, editUsage, editTags, editAlt, editNewUrl, editNewMimeType, editNewSize, updateAsset]);
 
   // Download
   const handleDownload = useCallback((asset: MediaAsset) => {
