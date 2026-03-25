@@ -1,25 +1,40 @@
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { useEffect, useState, useCallback } from 'react';
+import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
-import { Cpu, Plus, Edit, Activity, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Cpu, Plus, Edit, Activity, CheckCircle, RefreshCw, Loader2, Wifi, WifiOff, Settings2 } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from '@/hooks/use-toast';
 
-const providers = [
-  { name: 'Fal.ai', type: 'AI Generation', status: 'connected', env: 'production', health: 'healthy', lastSync: '1m ago' },
-  { name: 'Replicate', type: 'AI Generation', status: 'not_connected', env: '-', health: '-', lastSync: '-' },
-  { name: 'Stability AI', type: 'AI Generation', status: 'not_connected', env: '-', health: '-', lastSync: '-' },
-  { name: 'OpenAI', type: 'AI Enhancement', status: 'not_connected', env: '-', health: '-', lastSync: '-' },
-];
+interface ProviderConfig {
+  id: string;
+  provider_name: string;
+  provider_type: string;
+  is_connected: boolean;
+  environment: string;
+  health_status: string;
+  last_sync_at: string | null;
+  api_key_set: boolean;
+  default_model: string | null;
+  config: Record<string, unknown>;
+}
 
-const models = [
-  { name: 'Flux Schnell', provider: 'Fal.ai', tool: 'Generate', type: 'Generation', default: true, active: true, latency: '~8s', cost: '$0.003' },
-  { name: 'Flux Pro', provider: 'Fal.ai', tool: 'Generate', type: 'Generation', default: false, active: false, latency: '~15s', cost: '$0.05' },
-  { name: 'Flux Dev', provider: 'Fal.ai', tool: 'Generate', type: 'Generation', default: false, active: false, latency: '~12s', cost: '$0.025' },
-];
+const AVAILABLE_MODELS: Record<string, { name: string; speed: string; cost: string; active: boolean }[]> = {
+  'Fal.ai': [
+    { name: 'Flux Schnell', speed: '~8s', cost: '$0.003', active: true },
+    { name: 'Flux Dev', speed: '~12s', cost: '$0.025', active: false },
+    { name: 'Flux Pro', speed: '~15s', cost: '$0.05', active: false },
+  ],
+};
 
-const routing = [
+const ROUTING_RULES = [
   { tool: 'Generate Image', defaultModel: 'Flux Schnell', fallback: 'Flux Dev', planRouting: 'Free: Schnell / Pro: Schnell' },
   { tool: 'Create Logo', defaultModel: 'Flux Schnell', fallback: '-', planRouting: 'All: Flux Schnell' },
   { tool: 'Upscale Image', defaultModel: '-', fallback: '-', planRouting: 'Not connected' },
@@ -31,6 +46,7 @@ const healthColor: Record<string, string> = {
   healthy: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   degraded: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
   down: 'bg-destructive/10 text-destructive border-destructive/20',
+  unknown: 'bg-muted/30 text-muted-foreground border-border/40',
 };
 
 const statusColor: Record<string, string> = {
@@ -39,6 +55,99 @@ const statusColor: Record<string, string> = {
 };
 
 export default function AdminModels() {
+  const [providers, setProviders] = useState<ProviderConfig[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [syncingProvider, setSyncingProvider] = useState<string | null>(null);
+  const [configDialogOpen, setConfigDialogOpen] = useState(false);
+  const [selectedProvider, setSelectedProvider] = useState<ProviderConfig | null>(null);
+  const [configForm, setConfigForm] = useState({ environment: 'production', default_model: '' });
+
+  const fetchProviders = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('provider_configs')
+      .select('*')
+      .order('is_connected', { ascending: false });
+
+    if (error) {
+      console.error('Failed to fetch providers:', error);
+      toast({ title: 'Error', description: 'Failed to load providers', variant: 'destructive' });
+      return;
+    }
+    setProviders((data as unknown as ProviderConfig[]) || []);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { fetchProviders(); }, [fetchProviders]);
+
+  const handleSync = useCallback(async (providerName: string) => {
+    setSyncingProvider(providerName);
+    try {
+      const { data, error } = await supabase.functions.invoke('check-provider-health', {
+        body: { provider_name: providerName },
+      });
+
+      if (error) throw error;
+
+      toast({
+        title: `${providerName} Sync Complete`,
+        description: data.details || `Health: ${data.health}`,
+        variant: data.health === 'healthy' ? 'default' : 'destructive',
+      });
+
+      await fetchProviders();
+    } catch (err) {
+      console.error('Sync failed:', err);
+      toast({ title: 'Sync Failed', description: String(err), variant: 'destructive' });
+    } finally {
+      setSyncingProvider(null);
+    }
+  }, [fetchProviders]);
+
+  const openConfigDialog = useCallback((provider: ProviderConfig) => {
+    setSelectedProvider(provider);
+    setConfigForm({
+      environment: provider.environment,
+      default_model: provider.default_model || '',
+    });
+    setConfigDialogOpen(true);
+  }, []);
+
+  const handleSaveConfig = useCallback(async () => {
+    if (!selectedProvider) return;
+
+    const { error } = await supabase
+      .from('provider_configs')
+      .update({
+        environment: configForm.environment,
+        default_model: configForm.default_model || null,
+        updated_at: new Date().toISOString(),
+      } as Record<string, unknown>)
+      .eq('id', selectedProvider.id);
+
+    if (error) {
+      toast({ title: 'Error', description: 'Failed to save configuration', variant: 'destructive' });
+      return;
+    }
+
+    toast({ title: 'Configuration Saved', description: `${selectedProvider.provider_name} updated successfully` });
+    setConfigDialogOpen(false);
+    fetchProviders();
+  }, [selectedProvider, configForm, fetchProviders]);
+
+  const formatTimeSince = (dateStr: string | null) => {
+    if (!dateStr) return '-';
+    const diff = Date.now() - new Date(dateStr).getTime();
+    const mins = Math.floor(diff / 60000);
+    if (mins < 1) return 'Just now';
+    if (mins < 60) return `${mins}m ago`;
+    const hours = Math.floor(mins / 60);
+    if (hours < 24) return `${hours}h ago`;
+    return `${Math.floor(hours / 24)}d ago`;
+  };
+
+  const connectedProvider = providers.find(p => p.is_connected);
+  const providerModels = connectedProvider ? AVAILABLE_MODELS[connectedProvider.provider_name] || [] : [];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
@@ -58,63 +167,111 @@ export default function AdminModels() {
         </TabsList>
 
         <TabsContent value="providers">
-          <div className="grid md:grid-cols-2 gap-4">
-            {providers.map(p => (
-              <Card key={p.name} className="border-border/40 bg-card/50">
-                <CardContent className="p-5">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-3">
-                      <div className="p-2 rounded-lg bg-primary/10"><Cpu size={16} className="text-primary" /></div>
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="animate-spin text-muted-foreground" size={24} />
+            </div>
+          ) : (
+            <div className="grid md:grid-cols-2 gap-4">
+              {providers.map(p => (
+                <Card key={p.id} className={`border-border/40 bg-card/50 transition-all ${p.is_connected ? 'ring-1 ring-emerald-500/20' : ''}`}>
+                  <CardContent className="p-5">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className={`p-2 rounded-lg ${p.is_connected ? 'bg-primary/10' : 'bg-muted/20'}`}>
+                          {p.is_connected ? <Wifi size={16} className="text-primary" /> : <WifiOff size={16} className="text-muted-foreground" />}
+                        </div>
+                        <div>
+                          <h3 className="text-sm font-bold">{p.provider_name}</h3>
+                          <p className="text-[11px] text-muted-foreground">{p.provider_type}</p>
+                        </div>
+                      </div>
+                      <Badge variant="outline" className={`text-[10px] capitalize ${p.is_connected ? statusColor.connected : statusColor.not_connected}`}>
+                        {p.is_connected ? 'Connected' : 'Not Connected'}
+                      </Badge>
+                    </div>
+                    <div className="grid grid-cols-3 gap-3 text-[12px]">
                       <div>
-                        <h3 className="text-sm font-bold">{p.name}</h3>
-                        <p className="text-[11px] text-muted-foreground">{p.type}</p>
+                        <p className="text-muted-foreground">Environment</p>
+                        <p className="font-medium capitalize">{p.is_connected ? p.environment : '-'}</p>
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Health</p>
+                        {p.is_connected && p.health_status !== 'unknown' ? (
+                          <Badge variant="outline" className={`text-[10px] ${healthColor[p.health_status] || healthColor.unknown}`}>
+                            {p.health_status}
+                          </Badge>
+                        ) : <p className="font-medium">-</p>}
+                      </div>
+                      <div>
+                        <p className="text-muted-foreground">Last Sync</p>
+                        <p className="font-medium">{formatTimeSince(p.last_sync_at)}</p>
                       </div>
                     </div>
-                    <Badge variant="outline" className={`text-[10px] capitalize ${statusColor[p.status]}`}>{p.status.replace('_', ' ')}</Badge>
-                  </div>
-                  <div className="grid grid-cols-3 gap-3 text-[12px]">
-                    <div><p className="text-muted-foreground">Environment</p><p className="font-medium capitalize">{p.env}</p></div>
-                    <div><p className="text-muted-foreground">Health</p><p className="font-medium capitalize">{p.health !== '-' ? <Badge variant="outline" className={`text-[10px] ${healthColor[p.health]}`}>{p.health}</Badge> : '-'}</p></div>
-                    <div><p className="text-muted-foreground">Last Sync</p><p className="font-medium">{p.lastSync}</p></div>
-                  </div>
-                  <div className="flex gap-2 mt-4">
-                    <Button variant="outline" size="sm" className="text-xs gap-1"><RefreshCw size={12} /> Sync</Button>
-                    <Button variant="outline" size="sm" className="text-xs gap-1"><Edit size={12} /> Configure</Button>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+                    <div className="flex gap-2 mt-4">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs gap-1"
+                        disabled={!p.is_connected || syncingProvider === p.provider_name}
+                        onClick={() => handleSync(p.provider_name)}
+                      >
+                        {syncingProvider === p.provider_name ? (
+                          <Loader2 size={12} className="animate-spin" />
+                        ) : (
+                          <RefreshCw size={12} />
+                        )}
+                        {syncingProvider === p.provider_name ? 'Syncing...' : 'Sync'}
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs gap-1"
+                        onClick={() => openConfigDialog(p)}
+                      >
+                        <Settings2 size={12} /> Configure
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
         </TabsContent>
 
         <TabsContent value="models">
           <Card className="border-border/40 bg-card/50">
-            <Table>
-              <TableHeader>
-                <TableRow className="border-border/40">
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Model</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Provider</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Tool</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Latency</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Cost/Run</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Default</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {models.map(m => (
-                  <TableRow key={m.name} className="border-border/20">
-                    <TableCell className="text-[13px] font-medium">{m.name}</TableCell>
-                    <TableCell className="text-[13px] text-muted-foreground">{m.provider}</TableCell>
-                    <TableCell><Badge variant="outline" className="text-[10px]">{m.tool}</Badge></TableCell>
-                    <TableCell className="text-[13px]">{m.latency}</TableCell>
-                    <TableCell className="text-[13px] font-medium text-primary">{m.cost}</TableCell>
-                    <TableCell>{m.default && <CheckCircle size={14} className="text-emerald-400" />}</TableCell>
-                    <TableCell><Switch defaultChecked={m.active} className="scale-75" /></TableCell>
+            {providerModels.length > 0 ? (
+              <Table>
+                <TableHeader>
+                  <TableRow className="border-border/40">
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Model</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Provider</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Speed</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Cost/Run</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Default</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+                </TableHeader>
+                <TableBody>
+                  {providerModels.map(m => (
+                    <TableRow key={m.name} className="border-border/20">
+                      <TableCell className="text-[13px] font-medium">{m.name}</TableCell>
+                      <TableCell className="text-[13px] text-muted-foreground">{connectedProvider?.provider_name}</TableCell>
+                      <TableCell className="text-[13px]">{m.speed}</TableCell>
+                      <TableCell className="text-[13px] font-medium text-primary">{m.cost}</TableCell>
+                      <TableCell>{connectedProvider?.default_model === m.name.toLowerCase().replace(/\s/g, '-') && <CheckCircle size={14} className="text-emerald-400" />}</TableCell>
+                      <TableCell><Switch defaultChecked={m.active} className="scale-75" /></TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            ) : (
+              <div className="flex flex-col items-center justify-center text-center gap-3 py-12">
+                <Cpu size={32} className="text-muted-foreground" />
+                <p className="text-sm text-muted-foreground">No active models. Connect a provider first.</p>
+              </div>
+            )}
           </Card>
         </TabsContent>
 
@@ -131,7 +288,7 @@ export default function AdminModels() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {routing.map(r => (
+                {ROUTING_RULES.map(r => (
                   <TableRow key={r.tool} className="border-border/20">
                     <TableCell className="text-[13px] font-medium">{r.tool}</TableCell>
                     <TableCell className="text-[13px]">{r.defaultModel}</TableCell>
@@ -150,11 +307,91 @@ export default function AdminModels() {
             <div className="flex flex-col items-center justify-center text-center gap-3 py-8">
               <Activity size={32} className="text-muted-foreground" />
               <h3 className="text-lg font-semibold">Cost Tracking</h3>
-              <p className="text-sm text-muted-foreground max-w-md">Real-time cost tracking will be available when AI providers are connected. Monitor margin by tool, provider costs, and trends.</p>
+              <p className="text-sm text-muted-foreground max-w-md">Real-time cost tracking will be available when usage data accumulates. Monitor margin by tool, provider costs, and trends.</p>
             </div>
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Configure Dialog */}
+      <Dialog open={configDialogOpen} onOpenChange={setConfigDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings2 size={18} /> Configure {selectedProvider?.provider_name}
+            </DialogTitle>
+            <DialogDescription>
+              Update provider settings and default model configuration.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label className="text-xs text-muted-foreground uppercase tracking-wider">Status</Label>
+              <div className="flex items-center gap-2">
+                <Badge variant="outline" className={`text-[11px] ${selectedProvider?.is_connected ? statusColor.connected : statusColor.not_connected}`}>
+                  {selectedProvider?.is_connected ? 'Connected' : 'Not Connected'}
+                </Badge>
+                {selectedProvider?.api_key_set && (
+                  <Badge variant="outline" className="text-[11px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                    API Key Set
+                  </Badge>
+                )}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="environment" className="text-xs text-muted-foreground uppercase tracking-wider">Environment</Label>
+              <Select value={configForm.environment} onValueChange={(v) => setConfigForm(prev => ({ ...prev, environment: v }))}>
+                <SelectTrigger id="environment">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="production">Production</SelectItem>
+                  <SelectItem value="sandbox">Sandbox</SelectItem>
+                  <SelectItem value="staging">Staging</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {selectedProvider?.is_connected && AVAILABLE_MODELS[selectedProvider.provider_name] && (
+              <div className="space-y-2">
+                <Label htmlFor="default-model" className="text-xs text-muted-foreground uppercase tracking-wider">Default Model</Label>
+                <Select value={configForm.default_model} onValueChange={(v) => setConfigForm(prev => ({ ...prev, default_model: v }))}>
+                  <SelectTrigger id="default-model">
+                    <SelectValue placeholder="Select a model" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {AVAILABLE_MODELS[selectedProvider.provider_name].map(m => (
+                      <SelectItem key={m.name} value={m.name.toLowerCase().replace(/\s/g, '-')}>
+                        {m.name} ({m.speed})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
+
+            {selectedProvider?.is_connected && (
+              <div className="space-y-2">
+                <Label className="text-xs text-muted-foreground uppercase tracking-wider">API Key</Label>
+                <Input
+                  type="password"
+                  value="••••••••••••••••••"
+                  disabled
+                  className="bg-muted/20"
+                />
+                <p className="text-[11px] text-muted-foreground">API key is managed via backend secrets. Contact admin to update.</p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setConfigDialogOpen(false)}>Cancel</Button>
+            <Button onClick={handleSaveConfig}>Save Changes</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

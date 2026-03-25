@@ -14,7 +14,51 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      provider_configs: {
+        Row: {
+          api_key_set: boolean
+          config: Json
+          created_at: string
+          default_model: string | null
+          environment: string
+          health_status: string
+          id: string
+          is_connected: boolean
+          last_sync_at: string | null
+          provider_name: string
+          provider_type: string
+          updated_at: string
+        }
+        Insert: {
+          api_key_set?: boolean
+          config?: Json
+          created_at?: string
+          default_model?: string | null
+          environment?: string
+          health_status?: string
+          id?: string
+          is_connected?: boolean
+          last_sync_at?: string | null
+          provider_name: string
+          provider_type?: string
+          updated_at?: string
+        }
+        Update: {
+          api_key_set?: boolean
+          config?: Json
+          created_at?: string
+          default_model?: string | null
+          environment?: string
+          health_status?: string
+          id?: string
+          is_connected?: boolean
+          last_sync_at?: string | null
+          provider_name?: string
+          provider_type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
