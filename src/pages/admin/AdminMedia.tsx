@@ -475,6 +475,41 @@ export default function AdminMedia() {
             <DialogDescription>Update asset metadata</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
+            {/* Image Preview & Replace */}
+            <div className="space-y-1.5">
+              <Label className="text-xs">Image</Label>
+              <div className="rounded-lg border border-border/40 bg-muted/20 overflow-hidden relative group/edit">
+                <div className="aspect-video flex items-center justify-center">
+                  {(editNewUrl || editAsset?.url) ? (
+                    <img src={editNewUrl || editAsset?.url} alt={editAlt} className="w-full h-full object-contain" />
+                  ) : (
+                    <Image size={32} className="text-muted-foreground/30" />
+                  )}
+                </div>
+                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover/edit:opacity-100 transition-opacity flex items-center justify-center">
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    className="text-xs gap-1.5"
+                    onClick={() => editFileInputRef.current?.click()}
+                  >
+                    <Upload size={12} /> Replace Image
+                  </Button>
+                </div>
+                {editNewUrl && (
+                  <div className="absolute top-2 right-2">
+                    <Badge className="text-[9px] bg-primary text-primary-foreground">New</Badge>
+                  </div>
+                )}
+              </div>
+              <input
+                ref={editFileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={e => handleEditFileChange(e.target.files)}
+              />
+            </div>
             <div className="space-y-1.5">
               <Label className="text-xs">File Name</Label>
               <Input value={editName} onChange={e => setEditName(e.target.value)} className="h-9 text-xs" />
