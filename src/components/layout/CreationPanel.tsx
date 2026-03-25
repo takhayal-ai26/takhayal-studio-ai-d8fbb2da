@@ -4,10 +4,9 @@ import { useApp, TEMPLATE_PROMPTS, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 const MODELS = [
-  { id: 'seedream', name: 'Seedream 5 Lite', desc: 'Fast, creative outputs', icon: Sparkles },
-  { id: 'sdxl', name: 'SDXL', desc: 'Balanced quality & speed', icon: Box },
-  { id: 'realistic', name: 'Realistic Vision', desc: 'Photo-realistic results', icon: ImageIcon },
-  { id: 'anime', name: 'Anime / Stylized', desc: 'Illustration & anime style', icon: Cpu },
+  { id: 'flux-schnell', name: 'Flux Schnell', desc: 'Fast generation via Fal.ai', icon: Zap },
+  { id: 'flux-dev', name: 'Flux Dev', desc: 'Higher quality, slower', icon: Sparkles },
+  { id: 'flux-pro', name: 'Flux Pro', desc: 'Best quality (coming soon)', icon: Cpu },
 ];
 const SIZES: { label: string; value: AspectRatio; icon: string }[] = [
   { label: '1:1', value: '1:1', icon: '◻' }, { label: '4:3', value: '4:5', icon: '▭' },
@@ -23,7 +22,7 @@ type OpenDropdown = 'model' | 'size' | 'resolution' | null;
 export function CreationPanel() {
   const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, enhancePrompt, setEnhancePrompt, generate, isGenerating, credits, getCreditCost } = useApp();
   const { t } = useLanguage();
-  const [selectedModel, setSelectedModel] = useState('seedream');
+  const [selectedModel, setSelectedModel] = useState('flux-schnell');
   const [selectedResolution, setSelectedResolution] = useState<string>('2K');
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
   const panelRef = useRef<HTMLDivElement>(null);
