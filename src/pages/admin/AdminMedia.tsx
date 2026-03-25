@@ -192,6 +192,23 @@ export default function AdminMedia() {
     setEditAsset(null);
   }, [editAsset, editName, editType, editUsage, editTags, editAlt, editNewUrl, editNewMimeType, editNewSize, updateAsset]);
 
+  // Handle edit image replacement
+  const handleEditFileChange = useCallback((files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const file = files[0];
+    if (!file.type.startsWith('image/')) {
+      toast.error('Please select an image file');
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = () => {
+      setEditNewUrl(reader.result as string);
+      setEditNewMimeType(file.type);
+      setEditNewSize(file.size);
+    };
+    reader.readAsDataURL(file);
+  }, []);
+
   // Download
   const handleDownload = useCallback((asset: MediaAsset) => {
     if (!asset.url) {
