@@ -149,15 +149,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return quality === 'hd' ? 4 : 2;
   }, [quality]);
 
-  const getImageSize = useCallback(() => {
-    switch (aspectRatio) {
-      case '1:1': return 'square_hd';
-      case '9:16': return 'portrait_16_9';
-      case '16:9': return 'landscape_16_9';
-      case '4:5': return 'portrait_4_3';
-      default: return 'square_hd';
-    }
-  }, [aspectRatio]);
+  // Ratio-to-size mapping now handled server-side by generate-image edge function
 
   const generate = useCallback(async () => {
     if (!prompt.trim() || isGenerating) return;
