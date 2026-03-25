@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useMemo, ReactNode } from 'react';
 import { translations, Language, TranslationKeys } from './translations';
+import { useTranslationOverridesStore } from '@/stores/translationOverridesStore';
 
 interface LanguageContextType {
   lang: Language;
@@ -10,6 +11,30 @@ interface LanguageContextType {
 
 const LanguageContext = createContext<LanguageContextType | null>(null);
 
+// Deep-set a dot-notation key on a nested object
+function deepSet(obj: any, path: string, value: string) {
+  const parts = path.split('.');
+  let current = obj;
+  for (let i = 0; i < parts.length - 1; i++) {
+    if (!(parts[i] in current) || typeof current[parts[i]] !== 'object') {
+      current[parts[i]] = {};
+    }
+    current = current[parts[i]];
+  }
+  current[parts[parts.length - 1]] = value;
+}
+
+// Deep clone + merge overrides into a translation tree
+function mergeOverrides(base: any, overrides: Record<string, string>): any {
+  const result = JSON.parse(JSON.stringify(base));
+  for (const [key, value] of Object.entries(overrides)) {
+    if (value !== undefined && value !== '') {
+      deepSet(result, key, value);
+    }
+  }
+  return result;
+}
+
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>(() => {
     const stored = localStorage.getItem('takhayal-lang');
@@ -17,15 +42,23 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
     return 'ar' as Language;
   });
 
+  const overrides = useTranslationOverridesStore((s) => s.overrides);
+
   const setLang = useCallback((newLang: Language) => {
     setLangState(newLang);
     localStorage.setItem('takhayal-lang', newLang);
   }, []);
 
   const isRTL = lang === 'ar';
-  const t = translations[lang] as any;
 
-  // Update document attributes
+  const t = useMemo(() => {
+    const langOverrides = overrides[lang] || {};
+    if (Object.keys(langOverrides).length === 0) {
+      return translations[lang] as any;
+    }
+    return mergeOverrides(translations[lang], langOverrides);
+  }, [lang, overrides]);
+
   useEffect(() => {
     document.documentElement.lang = lang;
     document.documentElement.dir = isRTL ? 'rtl' : 'ltr';
