@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Download, Maximize2, Clock, RefreshCw, Bookmark, Share2, ChevronDown, Copy } from 'lucide-react';
+import { X, Download, Maximize2, Clock, RefreshCw, Share2, ChevronDown, Copy } from 'lucide-react';
 import { useApp, GeneratedImage } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 
