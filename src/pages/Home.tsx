@@ -257,7 +257,7 @@ export default function Home() {
             </div>
             <div className="flex gap-4 overflow-x-auto pb-4 scrollbar-hide snap-x snap-mandatory -mx-6 px-6 md:-mx-0 md:px-0">
               {tools.map((tool) => (
-                <button key={tool.title} onClick={() => navigate(tool.route)} className="group relative flex-shrink-0 w-[260px] md:w-[280px] bg-card/50 border border-muted/50 rounded-2xl p-6 text-left hover:border-primary/30 hover:bg-card/80 transition-all duration-500 snap-start">
+                <button key={tool.title} onClick={() => navigate(tool.route)} className={`group relative flex-shrink-0 w-[260px] md:w-[280px] bg-card/50 border border-muted/50 rounded-2xl p-6 ${isRTL ? 'text-right' : 'text-left'} hover:border-primary/30 hover:bg-card/80 transition-all duration-500 snap-start`}>
                   <div className="absolute inset-0 rounded-2xl bg-primary/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="relative">
                     <div className="w-12 h-12 rounded-xl bg-primary/[0.12] border border-primary/15 flex items-center justify-center mb-14 group-hover:bg-primary/[0.18] group-hover:shadow-[0_0_20px_rgba(245,81,48,0.1)] transition-all duration-500">
