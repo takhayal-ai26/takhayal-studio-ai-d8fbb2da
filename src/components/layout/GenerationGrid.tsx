@@ -39,7 +39,7 @@ export function GenerationGrid() {
         state: 'processing' as CardState,
         prompt: prompt,
         startedAt: Date.now(),
-        model: 'Seedream 5 Lite',
+        model: 'Flux Schnell',
         aspectRatio: aspectRatio,
         resolution: quality === 'hd' ? '2K' : '1K',
       };
