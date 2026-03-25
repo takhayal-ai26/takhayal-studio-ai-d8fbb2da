@@ -7,26 +7,24 @@ import { Switch } from '@/components/ui/switch';
 import { Cpu, Plus, Edit, Activity, AlertTriangle, CheckCircle, RefreshCw } from 'lucide-react';
 
 const providers = [
-  { name: 'Replicate', type: 'AI Generation', status: 'connected', env: 'production', health: 'healthy', lastSync: '2m ago' },
-  { name: 'Stability AI', type: 'AI Generation', status: 'connected', env: 'production', health: 'healthy', lastSync: '5m ago' },
-  { name: 'OpenAI', type: 'AI Enhancement', status: 'connected', env: 'sandbox', health: 'degraded', lastSync: '12m ago' },
-  { name: 'Fal.ai', type: 'AI Generation', status: 'not_connected', env: '-', health: '-', lastSync: '-' },
+  { name: 'Fal.ai', type: 'AI Generation', status: 'connected', env: 'production', health: 'healthy', lastSync: '1m ago' },
+  { name: 'Replicate', type: 'AI Generation', status: 'not_connected', env: '-', health: '-', lastSync: '-' },
+  { name: 'Stability AI', type: 'AI Generation', status: 'not_connected', env: '-', health: '-', lastSync: '-' },
+  { name: 'OpenAI', type: 'AI Enhancement', status: 'not_connected', env: '-', health: '-', lastSync: '-' },
 ];
 
 const models = [
-  { name: 'SDXL Lightning', provider: 'Replicate', tool: 'Generate', type: 'Generation', default: true, active: true, latency: '2.1s', cost: '$0.003' },
-  { name: 'Real-ESRGAN', provider: 'Replicate', tool: 'Upscale', type: 'Upscale', default: true, active: true, latency: '3.4s', cost: '$0.005' },
-  { name: 'RMBG-1.4', provider: 'Replicate', tool: 'Remove BG', type: 'BG Removal', default: true, active: true, latency: '1.8s', cost: '$0.002' },
-  { name: 'Flux Schnell', provider: 'Replicate', tool: 'Generate', type: 'Generation', default: false, active: true, latency: '1.2s', cost: '$0.004' },
-  { name: 'GFPGAN', provider: 'Replicate', tool: 'Enhance', type: 'Enhancement', default: true, active: true, latency: '2.8s', cost: '$0.003' },
+  { name: 'Flux Schnell', provider: 'Fal.ai', tool: 'Generate', type: 'Generation', default: true, active: true, latency: '~8s', cost: '$0.003' },
+  { name: 'Flux Pro', provider: 'Fal.ai', tool: 'Generate', type: 'Generation', default: false, active: false, latency: '~15s', cost: '$0.05' },
+  { name: 'Flux Dev', provider: 'Fal.ai', tool: 'Generate', type: 'Generation', default: false, active: false, latency: '~12s', cost: '$0.025' },
 ];
 
 const routing = [
-  { tool: 'Generate Image', defaultModel: 'SDXL Lightning', fallback: 'Flux Schnell', planRouting: 'Free: SDXL / Pro: Flux' },
-  { tool: 'Upscale Image', defaultModel: 'Real-ESRGAN', fallback: '-', planRouting: 'All: Real-ESRGAN' },
-  { tool: 'Remove Background', defaultModel: 'RMBG-1.4', fallback: '-', planRouting: 'All: RMBG-1.4' },
-  { tool: 'Create Logo', defaultModel: 'SDXL Lightning', fallback: 'Flux Schnell', planRouting: 'All: SDXL' },
-  { tool: 'Enhance Image', defaultModel: 'GFPGAN', fallback: '-', planRouting: 'All: GFPGAN' },
+  { tool: 'Generate Image', defaultModel: 'Flux Schnell', fallback: 'Flux Dev', planRouting: 'Free: Schnell / Pro: Schnell' },
+  { tool: 'Create Logo', defaultModel: 'Flux Schnell', fallback: '-', planRouting: 'All: Flux Schnell' },
+  { tool: 'Upscale Image', defaultModel: '-', fallback: '-', planRouting: 'Not connected' },
+  { tool: 'Remove Background', defaultModel: '-', fallback: '-', planRouting: 'Not connected' },
+  { tool: 'Enhance Image', defaultModel: '-', fallback: '-', planRouting: 'Not connected' },
 ];
 
 const healthColor: Record<string, string> = {
