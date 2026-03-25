@@ -149,15 +149,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return quality === 'hd' ? 4 : 2;
   }, [quality]);
 
-  const getImageSize = useCallback(() => {
-    switch (aspectRatio) {
-      case '1:1': return 'square_hd';
-      case '9:16': return 'portrait_16_9';
-      case '16:9': return 'landscape_16_9';
-      case '4:5': return 'portrait_4_3';
-      default: return 'square_hd';
-    }
-  }, [aspectRatio]);
+  // Ratio-to-size mapping now handled server-side by generate-image edge function
 
   const generate = useCallback(async () => {
     if (!prompt.trim() || isGenerating) return;
@@ -186,7 +178,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       const { data, error } = await supabase.functions.invoke('generate-image', {
         body: {
           prompt: styledPrompt,
-          image_size: getImageSize(),
+          aspect_ratio: aspectRatio,
           num_images: 1,
         },
       });
@@ -213,7 +205,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsGenerating(false);
     }
-  }, [prompt, isGenerating, isAuthenticated, credits, quality, selectedTemplate, selectedStyle, aspectRatio, getImageSize]);
+  }, [prompt, isGenerating, isAuthenticated, credits, quality, selectedTemplate, selectedStyle, aspectRatio]);
 
   return (
     <AppContext.Provider value={{

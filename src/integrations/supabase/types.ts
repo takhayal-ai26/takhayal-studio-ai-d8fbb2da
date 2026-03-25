@@ -14,6 +14,86 @@ export type Database = {
   }
   public: {
     Tables: {
+      models: {
+        Row: {
+          admin_overrides: Json
+          best_for: string | null
+          cost_per_run: number | null
+          created_at: string
+          default_ratio: string | null
+          default_resolution: string | null
+          endpoint_id: string
+          id: string
+          input_type: string
+          is_active: boolean
+          is_default: boolean
+          last_sync_at: string | null
+          max_resolution: string | null
+          model_name: string
+          notes: string | null
+          provider_id: string | null
+          provider_name: string
+          speed: string | null
+          supported_ratios: Json
+          supported_sizes: Json
+          updated_at: string
+        }
+        Insert: {
+          admin_overrides?: Json
+          best_for?: string | null
+          cost_per_run?: number | null
+          created_at?: string
+          default_ratio?: string | null
+          default_resolution?: string | null
+          endpoint_id: string
+          id?: string
+          input_type?: string
+          is_active?: boolean
+          is_default?: boolean
+          last_sync_at?: string | null
+          max_resolution?: string | null
+          model_name: string
+          notes?: string | null
+          provider_id?: string | null
+          provider_name?: string
+          speed?: string | null
+          supported_ratios?: Json
+          supported_sizes?: Json
+          updated_at?: string
+        }
+        Update: {
+          admin_overrides?: Json
+          best_for?: string | null
+          cost_per_run?: number | null
+          created_at?: string
+          default_ratio?: string | null
+          default_resolution?: string | null
+          endpoint_id?: string
+          id?: string
+          input_type?: string
+          is_active?: boolean
+          is_default?: boolean
+          last_sync_at?: string | null
+          max_resolution?: string | null
+          model_name?: string
+          notes?: string | null
+          provider_id?: string | null
+          provider_name?: string
+          speed?: string | null
+          supported_ratios?: Json
+          supported_sizes?: Json
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "models_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "provider_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       provider_configs: {
         Row: {
           api_key_set: boolean
