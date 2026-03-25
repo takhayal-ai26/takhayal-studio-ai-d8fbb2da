@@ -374,7 +374,7 @@ export default function AdminModels() {
                   </SelectTrigger>
                   <SelectContent>
                     {AVAILABLE_MODELS[selectedProvider.provider_name].map(m => (
-                      <SelectItem key={m.name} value={m.name.toLowerCase().replace(/\s/g, '-')}>
+                      <SelectItem key={m.id} value={m.id}>
                         {m.name} ({m.speed})
                       </SelectItem>
                     ))}
