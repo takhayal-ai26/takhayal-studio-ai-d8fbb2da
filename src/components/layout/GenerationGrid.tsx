@@ -17,6 +17,21 @@ interface GridCard {
   resolution: string;
 }
 
+/** Convert ratio string like "16:9" to CSS aspect-ratio value like "16/9" */
+function ratioToCSS(ratio: string): string {
+  const map: Record<string, string> = {
+    '1:1': '1/1',
+    '16:9': '16/9',
+    '9:16': '9/16',
+    '4:5': '4/5',
+    '4:3': '4/3',
+    '3:2': '3/2',
+    '3:4': '3/4',
+    '2:3': '2/3',
+  };
+  return map[ratio] || '1/1';
+}
+
 export function GenerationGrid() {
   const { generatedImages, isGenerating, prompt, generate, aspectRatio, quality } = useApp();
   const { t } = useLanguage();
@@ -96,16 +111,17 @@ export function GenerationGrid() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <div ref={gridRef} className="flex-1 overflow-y-auto p-5">
-        <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+        <div className="columns-2 xl:columns-3 2xl:columns-4 gap-4 [column-fill:_balance]">
           {cards.map(card => (
-            <GridCardItem
-              key={card.id}
-              card={card}
-              onClick={() => card.state === 'completed' && setSelectedCard(card)}
-              onDelete={() => handleDeleteCard(card.id)}
-              onCopyPrompt={() => handleCopyPrompt(card.prompt)}
-              onDownload={() => card.image && handleDownloadCard(card.image.url, card.prompt)}
-            />
+            <div key={card.id} className="mb-4 break-inside-avoid">
+              <GridCardItem
+                card={card}
+                onClick={() => card.state === 'completed' && setSelectedCard(card)}
+                onDelete={() => handleDeleteCard(card.id)}
+                onCopyPrompt={() => handleCopyPrompt(card.prompt)}
+                onDownload={() => card.image && handleDownloadCard(card.image.url, card.prompt)}
+              />
+            </div>
           ))}
         </div>
 
@@ -148,7 +164,10 @@ export function GenerationGrid() {
                 src={selectedCard.image.url}
                 alt={selectedCard.prompt}
                 className="max-h-[70vh] max-w-full rounded-2xl object-contain"
-                style={{ animation: 'modalImageZoom 0.4s cubic-bezier(0.16,1,0.3,1)' }}
+                style={{ 
+                  animation: 'modalImageZoom 0.4s cubic-bezier(0.16,1,0.3,1)',
+                  aspectRatio: ratioToCSS(selectedCard.aspectRatio),
+                }}
               />
             </div>
 
@@ -229,10 +248,14 @@ function GridCardItem({ card, onClick, onDelete, onCopyPrompt, onDownload }: {
 }) {
   const { t } = useLanguage();
   const [showActions, setShowActions] = useState(false);
+  const cssRatio = ratioToCSS(card.aspectRatio);
 
   if (card.state === 'processing') {
     return (
-      <div className="rounded-2xl overflow-hidden bg-card/60 border border-border/10 aspect-square relative gen-card-processing">
+      <div
+        className="rounded-2xl overflow-hidden bg-card/60 border border-border/10 relative gen-card-processing"
+        style={{ aspectRatio: cssRatio }}
+      >
         <div className="absolute inset-0 gen-shimmer" />
         <div className="absolute inset-0 gen-glow" />
         <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background/60 backdrop-blur-sm border border-border/10">
@@ -248,7 +271,10 @@ function GridCardItem({ card, onClick, onDelete, onCopyPrompt, onDownload }: {
 
   if (card.state === 'rendering' && card.image) {
     return (
-      <div className="rounded-2xl overflow-hidden bg-card/60 border border-border/10 aspect-square relative gen-card-rendering">
+      <div
+        className="rounded-2xl overflow-hidden bg-card/60 border border-border/10 relative gen-card-rendering"
+        style={{ aspectRatio: cssRatio }}
+      >
         <img src={card.image.url} alt="" className="w-full h-full object-cover blur-md scale-105" />
         <div className="absolute inset-0 gen-sweep" />
         <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background/60 backdrop-blur-sm border border-border/10">
@@ -263,7 +289,8 @@ function GridCardItem({ card, onClick, onDelete, onCopyPrompt, onDownload }: {
 
   return (
     <div
-      className="rounded-2xl overflow-hidden bg-card/60 border border-border/10 aspect-square relative group cursor-pointer gen-card-completed transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
+      className="rounded-2xl overflow-hidden bg-card/60 border border-border/10 relative group cursor-pointer gen-card-completed transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
+      style={{ aspectRatio: cssRatio }}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
       onClick={(e) => {
