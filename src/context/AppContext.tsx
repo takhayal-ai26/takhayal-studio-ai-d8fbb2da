@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 export type NavPage = 'home' | 'canvas' | 'gallery' | 'templates' | 'credits' | 'settings';
 export type AspectRatio = '1:1' | '9:16' | '16:9' | '4:5';
@@ -133,7 +134,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
     return quality === 'hd' ? 4 : 2;
   }, [quality]);
 
-  const generate = useCallback(() => {
+  const getImageSize = useCallback(() => {
+    switch (aspectRatio) {
+      case '1:1': return 'square_hd';
+      case '9:16': return 'portrait_16_9';
+      case '16:9': return 'landscape_16_9';
+      case '4:5': return 'portrait_4_3';
+      default: return 'square_hd';
+    }
+  }, [aspectRatio]);
+
+  const generate = useCallback(async () => {
     if (!prompt.trim() || isGenerating) return;
     if (!isAuthenticated) {
       setAuthModalTab('signup');
@@ -149,10 +160,27 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setIsGenerating(true);
     setCredits(prev => prev - cost);
 
-    setTimeout(() => {
-      const newImages: GeneratedImage[] = Array.from({ length: 4 }, (_, i) => ({
+    try {
+      const fullPrompt = selectedTemplate
+        ? `${TEMPLATE_PROMPTS[selectedTemplate] || ''}, ${prompt}`
+        : prompt;
+      const styledPrompt = selectedStyle
+        ? `${fullPrompt}, ${selectedStyle} style`
+        : fullPrompt;
+
+      const { data, error } = await supabase.functions.invoke('generate-image', {
+        body: {
+          prompt: styledPrompt,
+          image_size: getImageSize(),
+          num_images: 4,
+        },
+      });
+
+      if (error) throw error;
+
+      const newImages: GeneratedImage[] = (data.images || []).map((img: { url: string }, i: number) => ({
         id: `${Date.now()}-${i}`,
-        url: `https://picsum.photos/seed/${Date.now() + i}/640/640`,
+        url: img.url,
         prompt,
         template: selectedTemplate || undefined,
         style: selectedStyle || undefined,
@@ -160,12 +188,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
         quality,
         createdAt: new Date(),
       }));
+
       setGeneratedImages(newImages);
       setCurrentImageIndex(0);
       setGallery(prev => [...newImages, ...prev]);
+    } catch (err) {
+      console.error('Generation failed:', err);
+      setCredits(prev => prev + cost);
+    } finally {
       setIsGenerating(false);
-    }, 2500);
-  }, [prompt, isGenerating, isAuthenticated, credits, quality, selectedTemplate, selectedStyle, aspectRatio]);
+    }
+  }, [prompt, isGenerating, isAuthenticated, credits, quality, selectedTemplate, selectedStyle, aspectRatio, getImageSize]);
 
   return (
     <AppContext.Provider value={{
