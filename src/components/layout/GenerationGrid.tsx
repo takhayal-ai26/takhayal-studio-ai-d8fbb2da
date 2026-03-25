@@ -47,8 +47,8 @@ export function GenerationGrid() {
     const prevImages = prevImagesRef.current;
 
     if (isGenerating && !wasGenerating) {
-      const newCards: GridCard[] = Array.from({ length: 4 }, (_, i) => ({
-        id: `gen-${Date.now()}-${i}`,
+      const newCard: GridCard = {
+        id: `gen-${Date.now()}-0`,
         image: null,
         state: 'processing' as CardState,
         prompt: prompt,
@@ -56,8 +56,8 @@ export function GenerationGrid() {
         model: 'Seedream 5 Lite',
         aspectRatio: aspectRatio,
         resolution: quality === 'hd' ? '2K' : '1K',
-      }));
-      setCards(prev => [...newCards, ...prev].slice(0, 8));
+      };
+      setCards(prev => [newCard, ...prev]);
     }
 
     if (!isGenerating && wasGenerating && generatedImages !== prevImages && generatedImages.length > 0) {
