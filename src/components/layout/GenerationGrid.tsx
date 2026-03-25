@@ -1,21 +1,8 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { X, Download, Maximize2, Clock, RefreshCw, Share2, ChevronDown, Copy, Trash2 } from 'lucide-react';
-import { useApp, GeneratedImage } from '@/context/AppContext';
+import { useApp, GeneratedImage, GenerationCard, CardState } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { toast } from '@/hooks/use-toast';
-
-type CardState = 'processing' | 'rendering' | 'completed';
-
-interface GridCard {
-  id: string;
-  image: GeneratedImage | null;
-  state: CardState;
-  prompt: string;
-  startedAt: number;
-  model: string;
-  aspectRatio: string;
-  resolution: string;
-}
 
 /** Convert ratio string like "16:9" to CSS aspect-ratio value like "16/9" */
 function ratioToCSS(ratio: string): string {
@@ -33,10 +20,9 @@ function ratioToCSS(ratio: string): string {
 }
 
 export function GenerationGrid() {
-  const { generatedImages, isGenerating, prompt, generate, aspectRatio, quality } = useApp();
+  const { generatedImages, isGenerating, prompt, generate, aspectRatio, quality, generationCards: cards, setGenerationCards: setCards } = useApp();
   const { t } = useLanguage();
-  const [cards, setCards] = useState<GridCard[]>([]);
-  const [selectedCard, setSelectedCard] = useState<GridCard | null>(null);
+  const [selectedCard, setSelectedCard] = useState<GenerationCard | null>(null);
   const [promptExpanded, setPromptExpanded] = useState(false);
   const gridRef = useRef<HTMLDivElement>(null);
   const prevGeneratingRef = useRef(false);
@@ -47,7 +33,7 @@ export function GenerationGrid() {
     const prevImages = prevImagesRef.current;
 
     if (isGenerating && !wasGenerating) {
-      const newCard: GridCard = {
+      const newCard: GenerationCard = {
         id: `gen-${Date.now()}-0`,
         image: null,
         state: 'processing' as CardState,
@@ -238,7 +224,7 @@ function DetailRow({ label, value }: { label: string; value: string }) {
 }
 
 function GridCardItem({ card, onClick, onDelete, onCopyPrompt, onDownload }: { 
-  card: GridCard; 
+  card: GenerationCard; 
   onClick: () => void;
   onDelete: () => void;
   onCopyPrompt: () => void;

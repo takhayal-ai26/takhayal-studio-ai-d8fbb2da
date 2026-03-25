@@ -5,6 +5,18 @@ export type NavPage = 'home' | 'canvas' | 'gallery' | 'templates' | 'credits' | 
 export type AspectRatio = '1:1' | '9:16' | '16:9' | '4:5';
 export type Quality = 'standard' | 'hd';
 export type UserPlan = 'free' | 'pro';
+export type CardState = 'processing' | 'rendering' | 'completed';
+
+export interface GenerationCard {
+  id: string;
+  image: GeneratedImage | null;
+  state: CardState;
+  prompt: string;
+  startedAt: number;
+  model: string;
+  aspectRatio: string;
+  resolution: string;
+}
 
 export interface GeneratedImage {
   id: string;
@@ -52,6 +64,8 @@ interface AppState {
   generatedImages: GeneratedImage[];
   currentImageIndex: number;
   gallery: GeneratedImage[];
+  generationCards: GenerationCard[];
+  setGenerationCards: React.Dispatch<React.SetStateAction<GenerationCard[]>>;
   authModalOpen: boolean;
   authModalTab: 'login' | 'signup';
   upgradeModalOpen: boolean;
@@ -93,6 +107,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [gallery, setGallery] = useState<GeneratedImage[]>([]);
+  const [generationCards, setGenerationCards] = useState<GenerationCard[]>([]);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<'login' | 'signup'>('signup');
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
@@ -205,6 +220,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       isAuthenticated, userName, userEmail, activePage, credits, plan,
       prompt, selectedTemplate, selectedStyle, aspectRatio, quality,
       enhancePrompt, isGenerating, generatedImages, currentImageIndex, gallery,
+      generationCards, setGenerationCards,
       authModalOpen, authModalTab, upgradeModalOpen,
       login, logout, openAuthModal, closeAuthModal, openUpgradeModal, closeUpgradeModal, requireAuth,
       setActivePage, setPrompt, setSelectedTemplate,
