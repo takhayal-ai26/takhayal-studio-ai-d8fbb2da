@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useApp, TEMPLATE_PROMPTS } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { Download, RefreshCw } from 'lucide-react';
+import { GenerationGrid } from './GenerationGrid';
 
 const FEED_ITEMS = [
   { image: 'https://picsum.photos/seed/cine1/400/500', prompt: 'Cinematic perfume ad, dramatic lighting, dark background, luxury feel', category: 'Ads', height: 'h-[280px]' },
@@ -19,7 +19,7 @@ const FEED_ITEMS = [
 ];
 
 export function InspirationFeed() {
-  const { setPrompt, setSelectedTemplate, generatedImages, currentImageIndex, setCurrentImageIndex, isGenerating, generate } = useApp();
+  const { setPrompt, setSelectedTemplate, generatedImages, isGenerating, gallery } = useApp();
   const { t } = useLanguage();
   const [activeCategory, setActiveCategory] = useState<string>('All');
 
@@ -32,38 +32,16 @@ export function InspirationFeed() {
 
   const filtered = activeCategory === 'All' ? FEED_ITEMS : FEED_ITEMS.filter(item => item.category === activeCategory);
   const handleUse = (item: typeof FEED_ITEMS[0]) => { setPrompt(item.prompt); setSelectedTemplate(null); };
-  const hasImages = generatedImages.length > 0;
-  const currentImage = generatedImages[currentImageIndex];
 
-  if (hasImages || isGenerating) {
-    return (
-      <div className="flex-1 flex flex-col overflow-hidden border-r border-border/50">
-        <div className="flex-1 flex flex-col items-center justify-center p-6">
-          {isGenerating ? (
-            <div className="w-full max-w-[640px] aspect-square rounded-2xl bg-card animate-shimmer flex items-center justify-center">
-              <div className="flex flex-col items-center gap-3"><div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" /><span className="text-sm text-muted-foreground">{t.studio.generating}</span></div>
-            </div>
-          ) : currentImage ? (
-            <>
-              <div className="w-full max-w-[640px] rounded-2xl overflow-hidden"><img src={currentImage.url} alt={currentImage.prompt} className="w-full object-cover animate-fade-in" /></div>
-              <div className="w-full max-w-[640px] flex gap-2 mt-3">
-                {generatedImages.slice(0, 4).map((img, i) => (
-                  <button key={img.id} onClick={() => setCurrentImageIndex(i)} className={`flex-1 h-16 rounded-xl overflow-hidden border-[1.5px] transition-colors ${i === currentImageIndex ? 'border-primary' : 'border-border/50 hover:border-muted-foreground/40'}`}><img src={img.url} alt="" className="w-full h-full object-cover" /></button>
-                ))}
-              </div>
-              <div className="w-full max-w-[640px] flex justify-end gap-2.5 mt-4">
-                <button onClick={generate} className="h-9 px-4 rounded-xl border border-border/50 text-foreground text-[13px] font-medium flex items-center gap-2 hover:bg-card transition-colors"><RefreshCw size={14} />{t.studio.regenerate}</button>
-                <button className="h-9 px-4 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium flex items-center gap-2 hover:brightness-90 transition-all"><Download size={14} />{t.studio.download}</button>
-              </div>
-            </>
-          ) : null}
-        </div>
-      </div>
-    );
+  // Show generation grid if user has ever generated or is generating
+  const hasActivity = gallery.length > 0 || isGenerating;
+
+  if (hasActivity) {
+    return <GenerationGrid />;
   }
 
   return (
-    <div className="flex-1 flex flex-col overflow-hidden border-r border-border/50">
+    <div className="flex-1 flex flex-col overflow-hidden">
       <div className="flex-shrink-0 px-5 pt-5 pb-3">
         <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">{t.studio.exploreIdeas}</p>
         <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
