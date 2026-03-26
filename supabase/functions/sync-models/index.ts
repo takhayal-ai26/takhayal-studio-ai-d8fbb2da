@@ -32,34 +32,36 @@ const KNOWN_COSTS: Record<string, { base: number; notes: string; tiers: { label:
     { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.04, credits:3 },
     { label:"2K HD", quality:"2K", res:"2048x2048", multiplier:1.5, cost:0.06, credits:5 },
   ]},
-  "fal-ai/flux-realism":              { base: 0.025, notes: "Photorealistic FLUX variant", tiers: [
-    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.025, credits:2 },
-    { label:"2K HD", quality:"2K", res:"2048x2048", multiplier:1.6, cost:0.04, credits:4 },
+  "fal-ai/flux-pro/kontext":          { base: 0.04, notes: "FLUX Kontext Pro, context-aware generation", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.04, credits:3 },
+    { label:"2K HD", quality:"2K", res:"2048x2048", multiplier:1.5, cost:0.06, credits:5 },
   ]},
   "fal-ai/flux-lora":                 { base: 0.025, notes: "FLUX with LoRA support", tiers: [
     { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.025, credits:2 },
   ]},
-  "fal-ai/flux-lora/v2":              { base: 0.025, notes: "FLUX LoRA v2", tiers: [
+  "fal-ai/flux-krea-lora/stream":     { base: 0.025, notes: "FLUX Krea LoRA streaming", tiers: [
     { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.025, credits:2 },
   ]},
-  "fal-ai/flux/dev/image-to-image":   { base: 0.025, notes: "Image-to-image FLUX", tiers: [
-    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.025, credits:2 },
+  "fal-ai/flux-2-pro":                { base: 0.05, notes: "FLUX.2 Pro, next-gen FLUX", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.05, credits:3 },
+    { label:"2K HD", quality:"2K", res:"2048x2048", multiplier:1.5, cost:0.075, credits:5 },
+    { label:"4K Ultra", quality:"4K", res:"4096x4096", multiplier:2.3, cost:0.115, credits:8 },
   ]},
-  "fal-ai/flux-differential-diffusion": { base: 0.025, notes: "Differential diffusion editing", tiers: [
-    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.025, credits:2 },
+  "fal-ai/flux-2-flex":               { base: 0.03, notes: "FLUX.2 Flex, flexible generation", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.03, credits:2 },
+    { label:"2K HD", quality:"2K", res:"2048x2048", multiplier:1.5, cost:0.045, credits:4 },
+  ]},
+  "fal-ai/flux-2/klein/4b/lora":      { base: 0.01, notes: "FLUX.2 Klein 4B LoRA, lightweight", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.01, credits:1 },
+  ]},
+  "fal-ai/flux-2/klein/9b/lora":      { base: 0.015, notes: "FLUX.2 Klein 9B LoRA", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.015, credits:1 },
   ]},
 
   // Ideogram
   "fal-ai/ideogram/v3":               { base: 0.08, notes: "Ideogram V3 with text rendering, HD outputs at 1.25x", tiers: [
     { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.08, credits:4 },
     { label:"HD", quality:"2K", res:"1344x768", multiplier:1.25, cost:0.10, credits:6 },
-  ]},
-  "fal-ai/ideogram/v2":               { base: 0.06, notes: "Ideogram V2", tiers: [
-    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.06, credits:3 },
-    { label:"HD", quality:"2K", res:"1344x768", multiplier:1.33, cost:0.08, credits:5 },
-  ]},
-  "fal-ai/ideogram/v2/turbo":         { base: 0.04, notes: "Ideogram V2 Turbo", tiers: [
-    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.04, credits:2 },
   ]},
 
   // SDXL family
@@ -70,16 +72,13 @@ const KNOWN_COSTS: Record<string, { base: number; notes: string; tiers: { label:
     { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.035, credits:2 },
     { label:"2K HD", quality:"2K", res:"2048x2048", multiplier:1.43, cost:0.05, credits:4 },
   ]},
-  "fal-ai/stable-diffusion-v35-medium": { base: 0.02, notes: "SD 3.5 Medium", tiers: [
-    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.02, credits:2 },
-  ]},
 
   // Recraft
   "fal-ai/recraft-v3":                { base: 0.04, notes: "Recraft V3 brand design, HD at 1.5x", tiers: [
     { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.04, credits:3 },
     { label:"HD", quality:"2K", res:"2048x2048", multiplier:1.5, cost:0.06, credits:5 },
   ]},
-  "fal-ai/recraft-v4/pro":            { base: 0.05, notes: "Recraft V4 Pro", tiers: [
+  "fal-ai/recraft/v4/pro/text-to-image": { base: 0.05, notes: "Recraft V4 Pro", tiers: [
     { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.05, credits:3 },
     { label:"HD", quality:"2K", res:"2048x2048", multiplier:1.6, cost:0.08, credits:5 },
   ]},
@@ -90,39 +89,48 @@ const KNOWN_COSTS: Record<string, { base: number; notes: string; tiers: { label:
     { label:"HD", quality:"2K", res:"2048x2048", multiplier:1.5, cost:0.06, credits:4 },
   ]},
 
+  // GPT Image
+  "fal-ai/gpt-image-1.5":            { base: 0.04, notes: "GPT Image 1.5, multimodal image generation", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.04, credits:3 },
+    { label:"HD", quality:"2K", res:"2048x2048", multiplier:1.5, cost:0.06, credits:5 },
+  ]},
+
+  // Qwen
+  "fal-ai/qwen-image":               { base: 0.03, notes: "Qwen Image generation", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.03, credits:2 },
+  ]},
+
+  // BRIA
+  "fal-ai/bria/fibo/generate":        { base: 0.04, notes: "BRIA Fibo, commercially safe generation", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.04, credits:3 },
+  ]},
+
+  // Seedream
+  "fal-ai/bytedance/seedream/v4.5":   { base: 0.03, notes: "Seedream 4.5 by ByteDance", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.03, credits:2 },
+    { label:"HD", quality:"2K", res:"2048x2048", multiplier:1.5, cost:0.045, credits:3 },
+  ]},
+  "fal-ai/bytedance/seedream/v5/lite": { base: 0.02, notes: "Seedream 5.0 Lite", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.02, credits:1 },
+  ]},
+
+  // ImagineArt
+  "imagineart/imagineart-1.5-preview/text-to-image": { base: 0.03, notes: "ImagineArt 1.5 preview", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.03, credits:2 },
+  ]},
+
   // Other models
   "fal-ai/aura-flow":                 { base: 0.02, notes: "Aura Flow lifestyle model", tiers: [
     { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.02, credits:2 },
+  ]},
+  "fal-ai/nano-banana":               { base: 0.01, notes: "Nano Banana, ultra-fast", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.01, credits:1 },
   ]},
   "fal-ai/nano-banana-2":             { base: 0.01, notes: "Ultra-fast nano model", tiers: [
     { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.01, credits:1 },
   ]},
   "fal-ai/nano-banana-pro":           { base: 0.02, notes: "Nano Pro", tiers: [
     { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.02, credits:2 },
-  ]},
-  "fal-ai/seedream-3.0":              { base: 0.03, notes: "Seedream 3.0", tiers: [
-    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.03, credits:2 },
-  ]},
-  "fal-ai/minimax-image":             { base: 0.01, notes: "MiniMax fast image", tiers: [
-    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.01, credits:1 },
-  ]},
-  "fal-ai/omnigen-v1":                { base: 0.04, notes: "OmniGen V1", tiers: [
-    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.04, credits:3 },
-  ]},
-  "fal-ai/stable-cascade":            { base: 0.02, notes: "Stable Cascade", tiers: [
-    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.02, credits:2 },
-  ]},
-  "fal-ai/kolors":                    { base: 0.01, notes: "Kolors by Kwai", tiers: [
-    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.01, credits:1 },
-  ]},
-  "fal-ai/hyper-sdxl":                { base: 0.005, notes: "Hyper SDXL", tiers: [
-    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.005, credits:1 },
-  ]},
-  "fal-ai/pixart-sigma":              { base: 0.01, notes: "PixArt Sigma", tiers: [
-    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.01, credits:1 },
-  ]},
-  "fal-ai/playground-v25":            { base: 0.005, notes: "Playground v2.5", tiers: [
-    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.005, credits:1 },
   ]},
 };
 
