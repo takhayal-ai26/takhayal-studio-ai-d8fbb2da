@@ -3,6 +3,10 @@ import { useAdminMediaStore, MediaAsset } from '@/stores/adminMediaStore';
 /**
  * Frontend hook to consume media assets from admin store.
  * Provides filtered/typed access for use across the app.
+ * 
+ * IMPORTANT: All components should use this hook to get image URLs
+ * instead of importing from @/assets directly. This ensures that
+ * admin media library changes reflect everywhere in the app.
  */
 export function useMedia() {
   const { assets, getAssetsByType, getAssetById } = useAdminMediaStore();
@@ -20,6 +24,9 @@ export function useMedia() {
   const getUrlByName = (name: string): string =>
     assets.find(a => a.name === name)?.url || '';
 
+  const getById = (id: string): string =>
+    assets.find(a => a.id === id)?.url || '';
+
   return {
     assets,
     banners,
@@ -32,5 +39,6 @@ export function useMedia() {
     getAssetById,
     getByName,
     getUrlByName,
+    getById,
   };
 }
