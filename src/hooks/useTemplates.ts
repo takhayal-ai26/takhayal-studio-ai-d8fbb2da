@@ -1,4 +1,4 @@
-import { useAdminTemplatesStore, AdminTemplate } from '@/stores/adminTemplatesStore';
+import { useAdminTemplatesStore, AdminTemplate, BilingualTag } from '@/stores/adminTemplatesStore';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 export interface FrontendTemplate {
@@ -17,6 +17,11 @@ export function useTemplates() {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
 
+  const resolveTag = (tag: BilingualTag | string): string => {
+    if (typeof tag === 'string') return tag;
+    return isAr && tag.ar ? tag.ar : tag.en;
+  };
+
   const templates: FrontendTemplate[] = adminTemplates
     .filter(t => t.active)
     .map(t => ({
@@ -24,7 +29,7 @@ export function useTemplates() {
       prompt: isAr && t.fullPrompt.ar ? t.fullPrompt.ar : t.fullPrompt.en,
       image: t.thumbnail || `https://picsum.photos/seed/tpl-${t.id}/600/400`,
       description: isAr && t.shortDescription.ar ? t.shortDescription.ar : t.shortDescription.en,
-      tags: t.tags,
+      tags: t.tags.map(resolveTag),
       category: t.category,
       featured: t.featured,
       seasonal: t.seasonal,
