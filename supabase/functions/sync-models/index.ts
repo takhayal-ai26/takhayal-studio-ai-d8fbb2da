@@ -290,12 +290,12 @@ serve(async (req) => {
         // Update cost from known data
         const costData = KNOWN_COSTS[model.endpoint_id];
         if (costData) {
-          if (!overrides.pricing_mode) updatePayload.pricing_mode = costData.tiers.length > 1 ? "resolution_based" : "fixed_per_image";
+          if (!overrides.pricing_mode) updatePayload.pricing_mode = costData.pricingUnit === "per_megapixel" ? "per_megapixel" : (costData.tiers.length > 1 ? "resolution_based" : "fixed_per_image");
           if (!overrides.cost_per_run) updatePayload.cost_per_run = costData.base;
-          // Store pricing notes in admin_overrides
           updatePayload.admin_overrides = {
             ...overrides,
             pricing_notes: costData.notes,
+            pricing_unit: costData.pricingUnit,
           };
         }
 
