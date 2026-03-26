@@ -7,22 +7,123 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Known cost data (fal doesn't expose pricing in the API)
-const KNOWN_COSTS: Record<string, { base: number; tiers: { label: string; quality: string; res: string; cost: number; credits: number }[] }> = {
-  "fal-ai/flux/schnell":            { base: 0.003, tiers: [{ label:"1K", quality:"1K", res:"1024x1024", cost:0.003, credits:1 }, { label:"2K HD", quality:"2K", res:"2048x2048", cost:0.005, credits:2 }] },
-  "fal-ai/flux/dev":                { base: 0.025, tiers: [{ label:"1K", quality:"1K", res:"1024x1024", cost:0.025, credits:2 }, { label:"2K HD", quality:"2K", res:"2048x2048", cost:0.04, credits:4 }] },
-  "fal-ai/flux-pro":                { base: 0.05,  tiers: [{ label:"1K", quality:"1K", res:"1024x1024", cost:0.05, credits:3 }, { label:"2K HD", quality:"2K", res:"2048x2048", cost:0.07, credits:5 }] },
-  "fal-ai/flux-pro/v1.1-ultra":     { base: 0.06,  tiers: [{ label:"1K", quality:"1K", res:"1024x1024", cost:0.06, credits:4 }, { label:"2K HD", quality:"2K", res:"2048x2048", cost:0.09, credits:6 }, { label:"4K Ultra", quality:"4K", res:"4096x4096", cost:0.14, credits:10 }] },
-  "fal-ai/ideogram/v3":             { base: 0.08,  tiers: [{ label:"Standard", quality:"1K", res:"1024x1024", cost:0.08, credits:4 }, { label:"HD", quality:"2K", res:"1344x768", cost:0.10, credits:6 }] },
-  "fal-ai/fast-sdxl":               { base: 0.002, tiers: [{ label:"Standard", quality:"1K", res:"1024x1024", cost:0.002, credits:1 }] },
-  "fal-ai/stable-diffusion-v35-large": { base: 0.035, tiers: [{ label:"1K", quality:"1K", res:"1024x1024", cost:0.035, credits:2 }, { label:"2K HD", quality:"2K", res:"2048x2048", cost:0.05, credits:4 }] },
-  "fal-ai/aura-flow":               { base: 0.02,  tiers: [{ label:"Standard", quality:"1K", res:"1024x1024", cost:0.02, credits:2 }] },
-  "fal-ai/recraft-v3":              { base: 0.04,  tiers: [{ label:"Standard", quality:"1K", res:"1024x1024", cost:0.04, credits:3 }, { label:"HD", quality:"2K", res:"2048x2048", cost:0.06, credits:5 }] },
-  "fal-ai/imagen4/preview":         { base: 0.04,  tiers: [{ label:"Standard", quality:"1K", res:"1024x1024", cost:0.04, credits:2 }, { label:"HD", quality:"2K", res:"2048x2048", cost:0.06, credits:4 }] },
-  "fal-ai/nano-banana-2":           { base: 0.01,  tiers: [{ label:"Standard", quality:"1K", res:"1024x1024", cost:0.01, credits:1 }] },
-  "fal-ai/nano-banana-pro":         { base: 0.02,  tiers: [{ label:"Standard", quality:"1K", res:"1024x1024", cost:0.02, credits:2 }] },
-  "fal-ai/recraft-v4/pro":          { base: 0.05,  tiers: [{ label:"Standard", quality:"1K", res:"1024x1024", cost:0.05, credits:3 }] },
-  "fal-ai/seedream-3.0":            { base: 0.03,  tiers: [{ label:"Standard", quality:"1K", res:"1024x1024", cost:0.03, credits:2 }] },
+// Quality-based pricing tiers for all known fal.ai models
+// base = base cost, tiers define quality/resolution multipliers
+const KNOWN_COSTS: Record<string, { base: number; notes: string; tiers: { label: string; quality: string; res: string; multiplier: number; cost: number; credits: number }[] }> = {
+  // FLUX family
+  "fal-ai/flux/schnell":              { base: 0.003, notes: "Fastest FLUX model, fixed pricing", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.003, credits:1 },
+    { label:"2K HD", quality:"2K", res:"2048x2048", multiplier:1.5, cost:0.005, credits:2 },
+  ]},
+  "fal-ai/flux/dev":                  { base: 0.025, notes: "FLUX dev, higher quality than schnell", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.025, credits:2 },
+    { label:"2K HD", quality:"2K", res:"2048x2048", multiplier:1.6, cost:0.04, credits:4 },
+  ]},
+  "fal-ai/flux-pro":                  { base: 0.05, notes: "FLUX Pro v1, professional quality", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.05, credits:3 },
+    { label:"2K HD", quality:"2K", res:"2048x2048", multiplier:1.4, cost:0.07, credits:5 },
+  ]},
+  "fal-ai/flux-pro/v1.1-ultra":       { base: 0.06, notes: "FLUX Pro Ultra, 2K/4K outputs charged at 1.5x and 2.3x", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.06, credits:4 },
+    { label:"2K HD", quality:"2K", res:"2048x2048", multiplier:1.5, cost:0.09, credits:6 },
+    { label:"4K Ultra", quality:"4K", res:"4096x4096", multiplier:2.33, cost:0.14, credits:10 },
+  ]},
+  "fal-ai/flux-pro/v1.1":             { base: 0.04, notes: "FLUX Pro v1.1", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.04, credits:3 },
+    { label:"2K HD", quality:"2K", res:"2048x2048", multiplier:1.5, cost:0.06, credits:5 },
+  ]},
+  "fal-ai/flux-realism":              { base: 0.025, notes: "Photorealistic FLUX variant", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.025, credits:2 },
+    { label:"2K HD", quality:"2K", res:"2048x2048", multiplier:1.6, cost:0.04, credits:4 },
+  ]},
+  "fal-ai/flux-lora":                 { base: 0.025, notes: "FLUX with LoRA support", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.025, credits:2 },
+  ]},
+  "fal-ai/flux-lora/v2":              { base: 0.025, notes: "FLUX LoRA v2", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.025, credits:2 },
+  ]},
+  "fal-ai/flux/dev/image-to-image":   { base: 0.025, notes: "Image-to-image FLUX", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.025, credits:2 },
+  ]},
+  "fal-ai/flux-differential-diffusion": { base: 0.025, notes: "Differential diffusion editing", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.025, credits:2 },
+  ]},
+
+  // Ideogram
+  "fal-ai/ideogram/v3":               { base: 0.08, notes: "Ideogram V3 with text rendering, HD outputs at 1.25x", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.08, credits:4 },
+    { label:"HD", quality:"2K", res:"1344x768", multiplier:1.25, cost:0.10, credits:6 },
+  ]},
+  "fal-ai/ideogram/v2":               { base: 0.06, notes: "Ideogram V2", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.06, credits:3 },
+    { label:"HD", quality:"2K", res:"1344x768", multiplier:1.33, cost:0.08, credits:5 },
+  ]},
+  "fal-ai/ideogram/v2/turbo":         { base: 0.04, notes: "Ideogram V2 Turbo", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.04, credits:2 },
+  ]},
+
+  // SDXL family
+  "fal-ai/fast-sdxl":                 { base: 0.002, notes: "SDXL Lightning, fastest", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.002, credits:1 },
+  ]},
+  "fal-ai/stable-diffusion-v35-large":{ base: 0.035, notes: "SD 3.5 Large, resolution-based pricing", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.035, credits:2 },
+    { label:"2K HD", quality:"2K", res:"2048x2048", multiplier:1.43, cost:0.05, credits:4 },
+  ]},
+  "fal-ai/stable-diffusion-v35-medium": { base: 0.02, notes: "SD 3.5 Medium", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.02, credits:2 },
+  ]},
+
+  // Recraft
+  "fal-ai/recraft-v3":                { base: 0.04, notes: "Recraft V3 brand design, HD at 1.5x", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.04, credits:3 },
+    { label:"HD", quality:"2K", res:"2048x2048", multiplier:1.5, cost:0.06, credits:5 },
+  ]},
+  "fal-ai/recraft-v4/pro":            { base: 0.05, notes: "Recraft V4 Pro", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.05, credits:3 },
+    { label:"HD", quality:"2K", res:"2048x2048", multiplier:1.6, cost:0.08, credits:5 },
+  ]},
+
+  // Google Imagen
+  "fal-ai/imagen4/preview":           { base: 0.04, notes: "Google Imagen 4, HD at 1.5x", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.04, credits:2 },
+    { label:"HD", quality:"2K", res:"2048x2048", multiplier:1.5, cost:0.06, credits:4 },
+  ]},
+
+  // Other models
+  "fal-ai/aura-flow":                 { base: 0.02, notes: "Aura Flow lifestyle model", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.02, credits:2 },
+  ]},
+  "fal-ai/nano-banana-2":             { base: 0.01, notes: "Ultra-fast nano model", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.01, credits:1 },
+  ]},
+  "fal-ai/nano-banana-pro":           { base: 0.02, notes: "Nano Pro", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.02, credits:2 },
+  ]},
+  "fal-ai/seedream-3.0":              { base: 0.03, notes: "Seedream 3.0", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.03, credits:2 },
+  ]},
+  "fal-ai/minimax-image":             { base: 0.01, notes: "MiniMax fast image", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.01, credits:1 },
+  ]},
+  "fal-ai/omnigen-v1":                { base: 0.04, notes: "OmniGen V1", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.04, credits:3 },
+  ]},
+  "fal-ai/stable-cascade":            { base: 0.02, notes: "Stable Cascade", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.02, credits:2 },
+  ]},
+  "fal-ai/kolors":                    { base: 0.01, notes: "Kolors by Kwai", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.01, credits:1 },
+  ]},
+  "fal-ai/hyper-sdxl":                { base: 0.005, notes: "Hyper SDXL", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.005, credits:1 },
+  ]},
+  "fal-ai/pixart-sigma":              { base: 0.01, notes: "PixArt Sigma", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.01, credits:1 },
+  ]},
+  "fal-ai/playground-v25":            { base: 0.005, notes: "Playground v2.5", tiers: [
+    { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.005, credits:1 },
+  ]},
 };
 
 // Preset size → approx ratio
@@ -52,10 +153,9 @@ async function fetchModelSchema(endpointId: string): Promise<SchemaCapabilities 
     if (!res.ok) return null;
     const data = await res.json();
 
-    const meta = data?.info?.["x-fal-metadata"] || {};
     const schemas = data?.components?.schemas || {};
+    const meta = data?.info?.["x-fal-metadata"] || {};
 
-    // Find the Input schema
     let inputSchema: any = null;
     for (const [name, s] of Object.entries(schemas)) {
       if ((name as string).endsWith("Input") && (s as any)?.properties?.prompt) {
@@ -77,11 +177,9 @@ async function fetchModelSchema(endpointId: string): Promise<SchemaCapabilities 
       category: meta.category || null,
     };
 
-    // Detect input type and extract supported values
     if (props.aspect_ratio) {
       result.input_type = "aspect_ratio";
       const ar = props.aspect_ratio;
-      // Extract enum from anyOf or direct enum
       const enums = extractEnums(ar);
       result.supported_ratios = enums.length > 0 ? enums : ["1:1", "16:9", "9:16", "4:3", "3:4"];
       result.default_ratio = ar.default || enums[0] || "1:1";
@@ -90,21 +188,15 @@ async function fetchModelSchema(endpointId: string): Promise<SchemaCapabilities 
       const is = props.image_size;
       const enums = extractEnums(is);
       result.supported_sizes = enums;
-      // Convert preset enums to ratios
       const ratios = new Set<string>();
       for (const e of enums) {
         if (PRESET_TO_RATIO[e]) ratios.add(PRESET_TO_RATIO[e]);
       }
-      if (ratios.size === 0) {
-        result.supported_ratios = ["1:1", "16:9", "9:16", "4:3", "3:4"];
-      } else {
-        result.supported_ratios = Array.from(ratios);
-      }
+      result.supported_ratios = ratios.size > 0 ? Array.from(ratios) : ["1:1", "16:9", "9:16", "4:3", "3:4"];
       result.default_ratio = result.supported_ratios[0] || "1:1";
       result.default_resolution = is.default || "square_hd";
     }
 
-    // Check for style parameter
     if (props.style) {
       result.has_style = true;
       result.styles = extractEnums(props.style);
@@ -143,7 +235,6 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { endpoint_id } = await req.json().catch(() => ({ endpoint_id: null }));
 
-    // Fetch existing models
     const { data: existingModels, error: fetchError } = await supabase.from("models").select("*");
     if (fetchError) throw fetchError;
 
@@ -151,7 +242,6 @@ serve(async (req) => {
       ? existingModels?.filter((m: any) => m.endpoint_id === endpoint_id) || []
       : existingModels || [];
 
-    // Find fal provider
     const { data: falProvider } = await supabase
       .from("provider_configs")
       .select("id")
@@ -186,7 +276,6 @@ serve(async (req) => {
           updated_at: new Date().toISOString(),
         };
 
-        // Update from schema if available and not overridden
         if (schema) {
           if (!overrides.input_type) updatePayload.input_type = schema.input_type;
           if (!overrides.supported_ratios) updatePayload.supported_ratios = schema.supported_ratios;
@@ -200,12 +289,18 @@ serve(async (req) => {
         if (costData) {
           if (!overrides.pricing_mode) updatePayload.pricing_mode = costData.tiers.length > 1 ? "resolution_based" : "fixed_per_image";
           if (!overrides.cost_per_run) updatePayload.cost_per_run = costData.base;
+          // Store pricing notes in admin_overrides
+          updatePayload.admin_overrides = {
+            ...overrides,
+            pricing_notes: costData.notes,
+          };
         }
 
         const { error: updateError } = await supabase.from("models").update(updatePayload).eq("id", model.id);
 
-        // 4. Sync pricing tiers
+        // 4. Sync pricing tiers with multiplier data
         if (costData?.tiers && !overrides.pricing_tiers) {
+          // Delete existing synced tiers (preserve manual ones via notes field)
           await supabase.from("model_pricing_tiers").delete().eq("model_id", model.id);
           const tierRows = costData.tiers.map((t, i) => ({
             model_id: model.id,
@@ -216,6 +311,7 @@ serve(async (req) => {
             credits_charged: t.credits,
             pricing_mode: costData.tiers.length > 1 ? "resolution_based" : "fixed_per_image",
             is_default: i === 0,
+            notes: `multiplier:${t.multiplier}|source:sync|base:${costData.base}`,
           }));
           await supabase.from("model_pricing_tiers").insert(tierRows);
         }
@@ -228,11 +324,8 @@ serve(async (req) => {
           status: isAvailable ? "available" : "unavailable",
           synced: !updateError,
           schema_found: !!schema,
-          input_type: schema?.input_type || model.input_type,
-          ratios: schema?.supported_ratios || [],
-          sizes: schema?.supported_sizes || [],
-          styles: schema?.styles || [],
           tiers_synced: costData?.tiers?.length || 0,
+          pricing_notes: costData?.notes || null,
         });
       } catch (err) {
         errors.push(`${model.endpoint_id}: ${String(err)}`);
@@ -247,11 +340,11 @@ serve(async (req) => {
       sync_status: errors.length === 0 ? "success" : errors.length < modelsToSync.length ? "partial" : "failed",
       synced_models_count: syncedCount,
       error_message: errors.length > 0 ? errors.join("; ") : null,
-      details: { results },
+      details: { results, tiers_synced: results.reduce((s, r) => s + (r.tiers_synced || 0), 0) },
     });
 
     return new Response(
-      JSON.stringify({ synced_at: new Date().toISOString(), models_checked: results.length, models_synced: syncedCount, results }),
+      JSON.stringify({ synced_at: new Date().toISOString(), models_checked: results.length, models_synced: syncedCount, tiers_synced: results.reduce((s, r) => s + (r.tiers_synced || 0), 0), results }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (error) {

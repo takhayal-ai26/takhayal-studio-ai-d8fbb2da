@@ -327,8 +327,8 @@ export default function AdminPricing() {
               setSyncing(true);
               try {
                 const { data, error } = await supabase.functions.invoke('sync-models', { body: {} });
-                if (error) throw error;
-                toast.success(`Synced ${data.models_synced}/${data.models_checked} models`);
+                const result = data as any;
+                toast.success(`Synced ${result.models_synced}/${result.models_checked} models, ${result.tiers_synced || 0} pricing tiers`);
                 load();
               } catch (e: any) { toast.error(e.message); }
               finally { setSyncing(false); }
@@ -422,31 +422,52 @@ export default function AdminPricing() {
                             </div>
                             {tierCount > 0 && (
                               <div className="mt-4">
-                                <p className="text-muted-foreground font-medium text-xs mb-2">Pricing Tiers</p>
+                                <p className="text-muted-foreground font-medium text-xs mb-2">Pricing Tiers ({tierCount})</p>
+                                {/* Show pricing notes if available */}
+                                {(m as any).admin_overrides?.pricing_notes && (
+                                  <p className="text-[11px] text-amber-400/80 bg-amber-500/5 border border-amber-500/10 rounded-lg px-3 py-1.5 mb-2 italic">
+                                    Provider Note: {(m as any).admin_overrides.pricing_notes}
+                                  </p>
+                                )}
                                 <div className="rounded-lg border border-border/10 overflow-hidden">
                                   <table className="w-full text-xs">
                                     <thead><tr className="bg-muted/10">
                                       <th className="text-left px-3 py-2 text-muted-foreground">Tier</th>
                                       <th className="text-left px-3 py-2 text-muted-foreground">Quality</th>
                                       <th className="text-left px-3 py-2 text-muted-foreground">Resolution</th>
+                                      <th className="text-left px-3 py-2 text-muted-foreground">Multiplier</th>
                                       <th className="text-left px-3 py-2 text-muted-foreground">Provider Cost</th>
                                       <th className="text-left px-3 py-2 text-muted-foreground">Credits</th>
                                       <th className="text-left px-3 py-2 text-muted-foreground">Revenue</th>
                                       <th className="text-left px-3 py-2 text-muted-foreground">Margin</th>
+                                      <th className="text-left px-3 py-2 text-muted-foreground">Margin %</th>
                                     </tr></thead>
                                     <tbody>
                                       {(allTiers[m.id] || []).map(t => {
                                         const tRev = t.credits_charged * creditVal;
                                         const tMargin = tRev - t.cost_per_run;
+                                        const tMarginPct = tRev > 0 ? (tMargin / tRev * 100) : 0;
+                                        // Extract multiplier from notes field
+                                        const multiplierMatch = t.notes?.match(/multiplier:([\d.]+)/);
+                                        const multiplier = multiplierMatch ? parseFloat(multiplierMatch[1]) : 1;
                                         return (
                                           <tr key={t.id} className="border-t border-border/5">
-                                            <td className="px-3 py-2 font-medium">{t.tier_label}</td>
+                                            <td className="px-3 py-2 font-medium">
+                                              {t.tier_label}
+                                              {t.is_default && <Badge variant="outline" className="ml-1 text-[8px] py-0 px-1">Default</Badge>}
+                                            </td>
                                             <td className="px-3 py-2">{t.quality_level || '—'}</td>
                                             <td className="px-3 py-2 font-mono">{t.resolution_key || '—'}</td>
+                                            <td className="px-3 py-2">
+                                              <Badge variant={multiplier > 1 ? 'secondary' : 'outline'} className="text-[9px]">{multiplier}x</Badge>
+                                            </td>
                                             <td className="px-3 py-2">${t.cost_per_run.toFixed(4)}</td>
-                                            <td className="px-3 py-2">{t.credits_charged}</td>
+                                            <td className="px-3 py-2 font-medium">{t.credits_charged}</td>
                                             <td className="px-3 py-2 text-emerald-400">${tRev.toFixed(4)}</td>
                                             <td className={`px-3 py-2 ${tMargin >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>${tMargin.toFixed(4)}</td>
+                                            <td className="px-3 py-2">
+                                              <Badge variant={tMarginPct < 0 ? 'destructive' : tMarginPct < 20 ? 'secondary' : 'default'} className="text-[9px]">{tMarginPct.toFixed(1)}%</Badge>
+                                            </td>
                                           </tr>
                                         );
                                       })}

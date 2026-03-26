@@ -191,7 +191,7 @@ export function CreationPanel() {
           <span className="text-[11px] text-muted-foreground">{credits} {t.studio.creditsRemaining} · ~{Math.floor(credits / cost)} {t.studio.images}</span>
           {credits <= 5 && credits > 0 && (<span className="text-[11px] text-primary font-medium flex items-center gap-1 animate-pulse"><Zap size={10} />{t.studio.lowCredits}</span>)}
         </div>
-        <button onClick={generate} disabled={!canGenerate} className={`w-full h-14 rounded-2xl text-[15px] font-medium transition-all duration-150 flex items-center justify-center gap-3 ${canGenerate ? 'bg-primary text-primary-foreground hover:brightness-90 active:scale-[0.98]' : 'bg-card border border-border/10 text-muted-foreground cursor-not-allowed'}`}>
+        <button onClick={() => generate({ modelId: currentModel?.id, qualityTier: selectedResolution, creditCost: cost })} disabled={!canGenerate} className={`w-full h-14 rounded-2xl text-[15px] font-medium transition-all duration-150 flex items-center justify-center gap-3 ${canGenerate ? 'bg-primary text-primary-foreground hover:brightness-90 active:scale-[0.98]' : 'bg-card border border-border/10 text-muted-foreground cursor-not-allowed'}`}>
           {isGenerating ? (<span className="flex items-center gap-2"><span className="w-4 h-4 border-2 border-primary-foreground/40 border-t-primary-foreground rounded-full animate-spin" />{t.studio.generating}</span>) : (<>{t.toolPage.generate}<span className="flex items-center gap-1.5 text-[12px] opacity-70"><Coins size={13} />{cost} {t.toolPage.credits}</span></>)}
         </button>
         <p className="text-[10px] text-muted-foreground/25 text-center mt-2">⌘ Enter</p>
