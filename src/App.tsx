@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppProvider } from "@/context/AppContext";
@@ -78,6 +78,20 @@ const App = () => (
                 <Route path="settings" element={<AdminSettings />} />
                 <Route path="translations" element={<AdminTranslations />} />
               </Route>
+
+              <Route path="/users" element={<Navigate to="/admin/users" replace />} />
+              <Route path="/billing" element={<Navigate to="/admin/billing" replace />} />
+              <Route path="/pricing-economics" element={<Navigate to="/admin/pricing" replace />} />
+              <Route path="/models" element={<Navigate to="/admin/models" replace />} />
+              <Route path="/content" element={<Navigate to="/admin/content" replace />} />
+              <Route path="/media" element={<Navigate to="/admin/media" replace />} />
+              <Route path="/analytics" element={<Navigate to="/admin/analytics" replace />} />
+              <Route path="/support" element={<Navigate to="/admin/support" replace />} />
+              <Route path="/notifications" element={<Navigate to="/admin/notifications" replace />} />
+              <Route path="/integrations" element={<Navigate to="/admin/integrations" replace />} />
+              <Route path="/roles" element={<Navigate to="/admin/roles" replace />} />
+              <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
+              <Route path="/translations" element={<Navigate to="/admin/translations" replace />} />
 
               <Route path="*" element={<NotFound />} />
             </Routes>
