@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
 import { DollarSign, TrendingUp, TrendingDown, Percent } from 'lucide-react';
 import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
@@ -14,39 +15,10 @@ interface GenerationLog {
   provider_cost: number;
   revenue: number;
   margin: number;
+  quality_tier: string | null;
   resolution: string | null;
+  used_upscale_pipeline: boolean;
   created_at: string;
-}
-
-interface DailyData {
-  date: string;
-  revenue: number;
-  cost: number;
-}
-
-interface ModelBreakdown {
-  model: string;
-  requests: number;
-  totalCost: number;
-  totalRevenue: number;
-  profit: number;
-  margin: number;
-}
-
-interface UserBreakdown {
-  user: string;
-  creditsUsed: number;
-  totalCost: number;
-  totalRevenue: number;
-  profit: number;
-}
-
-interface ToolBreakdown {
-  tool: string;
-  runs: number;
-  avgCost: number;
-  avgRevenue: number;
-  margin: number;
 }
 
 const chartStyle = { background: 'hsl(0,0%,8%)', border: '1px solid hsl(0,0%,16%)', borderRadius: 8, fontSize: 12 };
@@ -84,7 +56,7 @@ export default function EconomicsTab() {
     const prev = dailyMap.get(d) || { revenue: 0, cost: 0 };
     dailyMap.set(d, { revenue: prev.revenue + Number(l.revenue), cost: prev.cost + Number(l.provider_cost) });
   });
-  const dailyData: DailyData[] = Array.from(dailyMap.entries())
+  const dailyData = Array.from(dailyMap.entries())
     .sort((a, b) => a[0].localeCompare(b[0]))
     .map(([date, v]) => ({ date, revenue: +v.revenue.toFixed(4), cost: +v.cost.toFixed(4) }));
 
@@ -95,10 +67,29 @@ export default function EconomicsTab() {
     const prev = modelMap.get(key) || { requests: 0, cost: 0, revenue: 0 };
     modelMap.set(key, { requests: prev.requests + 1, cost: prev.cost + Number(l.provider_cost), revenue: prev.revenue + Number(l.revenue) });
   });
-  const modelBreakdown: ModelBreakdown[] = Array.from(modelMap.entries())
+  const modelBreakdown = Array.from(modelMap.entries())
     .map(([id, v]) => {
       const profit = v.revenue - v.cost;
       return { model: modelNames[id] || id, requests: v.requests, totalCost: v.cost, totalRevenue: v.revenue, profit, margin: v.revenue > 0 ? (profit / v.revenue) * 100 : 0 };
+    })
+    .sort((a, b) => b.requests - a.requests);
+
+  // Quality tier breakdown
+  const tierMap = new Map<string, { requests: number; cost: number; revenue: number; upscaled: number }>();
+  logs.forEach(l => {
+    const key = l.quality_tier || l.resolution || '1K';
+    const prev = tierMap.get(key) || { requests: 0, cost: 0, revenue: 0, upscaled: 0 };
+    tierMap.set(key, {
+      requests: prev.requests + 1,
+      cost: prev.cost + Number(l.provider_cost),
+      revenue: prev.revenue + Number(l.revenue),
+      upscaled: prev.upscaled + (l.used_upscale_pipeline ? 1 : 0),
+    });
+  });
+  const tierBreakdown = Array.from(tierMap.entries())
+    .map(([tier, v]) => {
+      const profit = v.revenue - v.cost;
+      return { tier, requests: v.requests, totalCost: v.cost, totalRevenue: v.revenue, profit, margin: v.revenue > 0 ? (profit / v.revenue) * 100 : 0, upscaled: v.upscaled };
     })
     .sort((a, b) => b.requests - a.requests);
 
@@ -109,7 +100,7 @@ export default function EconomicsTab() {
     const prev = userMap.get(key) || { credits: 0, cost: 0, revenue: 0 };
     userMap.set(key, { credits: prev.credits + l.credits_used, cost: prev.cost + Number(l.provider_cost), revenue: prev.revenue + Number(l.revenue) });
   });
-  const userBreakdown: UserBreakdown[] = Array.from(userMap.entries())
+  const userBreakdown = Array.from(userMap.entries())
     .map(([user, v]) => ({ user: user.slice(0, 8) + '…', creditsUsed: v.credits, totalCost: v.cost, totalRevenue: v.revenue, profit: v.revenue - v.cost }))
     .sort((a, b) => b.creditsUsed - a.creditsUsed);
 
@@ -120,27 +111,17 @@ export default function EconomicsTab() {
     const prev = toolMap.get(key) || { runs: 0, cost: 0, revenue: 0 };
     toolMap.set(key, { runs: prev.runs + 1, cost: prev.cost + Number(l.provider_cost), revenue: prev.revenue + Number(l.revenue) });
   });
-  const toolBreakdown: ToolBreakdown[] = Array.from(toolMap.entries())
+  const toolBreakdown = Array.from(toolMap.entries())
     .map(([tool, v]) => ({
-      tool,
-      runs: v.runs,
+      tool, runs: v.runs,
       avgCost: v.runs > 0 ? v.cost / v.runs : 0,
       avgRevenue: v.runs > 0 ? v.revenue / v.runs : 0,
       margin: v.revenue > 0 ? ((v.revenue - v.cost) / v.revenue) * 100 : 0,
     }))
     .sort((a, b) => b.runs - a.runs);
 
-  if (loading) {
-    return <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">Loading economics data…</div>;
-  }
-
-  if (logs.length === 0) {
-    return (
-      <div className="text-center py-12 text-muted-foreground">
-        <p className="text-sm">No generation logs yet. Economics data will appear here once generations are made.</p>
-      </div>
-    );
-  }
+  if (loading) return <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">Loading economics data…</div>;
+  if (logs.length === 0) return <div className="text-center py-12 text-muted-foreground"><p className="text-sm">No generation logs yet.</p></div>;
 
   const fmt = (v: number) => `$${v.toFixed(4)}`;
   const fmtPct = (v: number) => `${v.toFixed(1)}%`;
@@ -158,10 +139,7 @@ export default function EconomicsTab() {
           <Card key={s.label} className="border-border/40 bg-card/50">
             <CardContent className="p-4 flex items-center gap-3">
               <div className="p-2 rounded-lg bg-primary/10"><s.icon size={16} className={s.color} /></div>
-              <div>
-                <p className="text-lg font-bold">{s.value}</p>
-                <p className="text-[11px] text-muted-foreground">{s.label}</p>
-              </div>
+              <div><p className="text-lg font-bold">{s.value}</p><p className="text-[11px] text-muted-foreground">{s.label}</p></div>
             </CardContent>
           </Card>
         ))}
@@ -181,6 +159,43 @@ export default function EconomicsTab() {
               <Line type="monotone" dataKey="cost" stroke="hsl(0,70%,50%)" strokeWidth={2} dot={false} name="Cost" />
             </LineChart>
           </ResponsiveContainer>
+        </CardContent>
+      </Card>
+
+      {/* Cost by Quality Tier */}
+      <Card className="border-border/40 bg-card/50">
+        <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Economics by Quality Tier</CardTitle></CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Tier</TableHead>
+                <TableHead className="text-right">Requests</TableHead>
+                <TableHead className="text-right">Upscaled</TableHead>
+                <TableHead className="text-right">Total Cost</TableHead>
+                <TableHead className="text-right">Total Revenue</TableHead>
+                <TableHead className="text-right">Profit</TableHead>
+                <TableHead className="text-right">Margin %</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tierBreakdown.map(r => (
+                <TableRow key={r.tier}>
+                  <TableCell className="font-medium text-xs">
+                    {r.tier}
+                    {r.upscaled > 0 && <Badge variant="outline" className="ml-1.5 text-[8px] py-0 px-1 bg-amber-500/10 text-amber-400 border-amber-500/20">{r.upscaled} upscaled</Badge>}
+                  </TableCell>
+                  <TableCell className="text-right text-xs">{r.requests}</TableCell>
+                  <TableCell className="text-right text-xs">{r.upscaled}</TableCell>
+                  <TableCell className="text-right text-xs">{fmt(r.totalCost)}</TableCell>
+                  <TableCell className="text-right text-xs">{fmt(r.totalRevenue)}</TableCell>
+                  <TableCell className={`text-right text-xs ${r.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(r.profit)}</TableCell>
+                  <TableCell className={`text-right text-xs ${r.margin >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmtPct(r.margin)}</TableCell>
+                </TableRow>
+              ))}
+              {tierBreakdown.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground text-xs py-4">No data</TableCell></TableRow>}
+            </TableBody>
+          </Table>
         </CardContent>
       </Card>
 
@@ -210,9 +225,7 @@ export default function EconomicsTab() {
                   <TableCell className={`text-right text-xs ${r.margin >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmtPct(r.margin)}</TableCell>
                 </TableRow>
               ))}
-              {modelBreakdown.length === 0 && (
-                <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground text-xs py-4">No data</TableCell></TableRow>
-              )}
+              {modelBreakdown.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground text-xs py-4">No data</TableCell></TableRow>}
             </TableBody>
           </Table>
         </CardContent>
@@ -242,9 +255,7 @@ export default function EconomicsTab() {
                   <TableCell className={`text-right text-xs ${r.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(r.profit)}</TableCell>
                 </TableRow>
               ))}
-              {userBreakdown.length === 0 && (
-                <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground text-xs py-4">No data</TableCell></TableRow>
-              )}
+              {userBreakdown.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground text-xs py-4">No data</TableCell></TableRow>}
             </TableBody>
           </Table>
         </CardContent>
@@ -274,9 +285,7 @@ export default function EconomicsTab() {
                   <TableCell className={`text-right text-xs ${r.margin >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmtPct(r.margin)}</TableCell>
                 </TableRow>
               ))}
-              {toolBreakdown.length === 0 && (
-                <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground text-xs py-4">No data</TableCell></TableRow>
-              )}
+              {toolBreakdown.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground text-xs py-4">No data</TableCell></TableRow>}
             </TableBody>
           </Table>
         </CardContent>

@@ -24,6 +24,8 @@ export interface ModelRecord {
   last_sync_at: string | null;
   pricing_mode: string;
   credits_per_generation: number | null;
+  upscale_strategy: string;
+  supports_native_high_res: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -38,6 +40,8 @@ function parseModel(row: any): ModelRecord {
     admin_overrides: row.admin_overrides || {},
     pricing_mode: row.pricing_mode || 'fixed_per_image',
     credits_per_generation: row.credits_per_generation ?? null,
+    upscale_strategy: row.upscale_strategy || 'esrgan',
+    supports_native_high_res: row.supports_native_high_res ?? false,
   };
 }
 
