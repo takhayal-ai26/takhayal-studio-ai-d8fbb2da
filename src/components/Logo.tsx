@@ -1,9 +1,12 @@
-import logoMark from '@/assets/logo-mark.svg';
-import logoFullAr from '@/assets/logo-mark-ar.svg';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { useMedia } from '@/hooks/useMedia';
 
 export function Logo({ size = 'default' }: { size?: 'small' | 'default' | 'large' }) {
   const { lang } = useLanguage();
+  const { getUrlByName } = useMedia();
+  const logoMark = getUrlByName('logo-mark.svg');
+  const logoFullAr = getUrlByName('logo-mark-ar.svg');
+
   const imgSize = size === 'small' ? 24 : size === 'large' ? 40 : 28;
   const textSize = size === 'small' ? 'text-sm' : size === 'large' ? 'text-xl' : 'text-lg';
   const arHeight = size === 'small' ? 53 : size === 'large' ? 91 : 64;
@@ -28,6 +31,10 @@ export function Logo({ size = 'default' }: { size?: 'small' | 'default' | 'large
 
 export function LogoMark({ size = 28 }: { size?: number }) {
   const { lang } = useLanguage();
+  const { getUrlByName } = useMedia();
+  const logoMark = getUrlByName('logo-mark.svg');
+  const logoFullAr = getUrlByName('logo-mark-ar.svg');
+
   if (lang === 'ar') {
     return <img src={logoFullAr} alt="تخيّل" style={{ height: size * 2.276 }} className="w-auto" />;
   }
