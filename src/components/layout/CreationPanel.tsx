@@ -3,6 +3,7 @@ import { Upload, ChevronDown, Sparkles, X, Coins, Box, Cpu, Maximize, Image as I
 import { useApp, TEMPLATE_PROMPTS, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useModels, ModelRecord } from '@/hooks/useModels';
+import { usePricing } from '@/hooks/usePricing';
 import { Badge } from '@/components/ui/badge';
 
 const RESOLUTIONS = [
@@ -17,12 +18,15 @@ export function CreationPanel() {
   const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, enhancePrompt, setEnhancePrompt, generate, isGenerating, credits, getCreditCost } = useApp();
   const { t } = useLanguage();
   const { activeModels, defaultModel } = useModels();
+  const { getCreditsForModel } = usePricing();
 
   const [selectedModelId, setSelectedModelId] = useState<string>('');
   const [selectedResolution, setSelectedResolution] = useState<string>('2K');
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const cost = getCreditCost();
+  
+  const currentModel = activeModels.find(m => m.id === selectedModelId) || defaultModel || activeModels[0];
+  const cost = currentModel ? getCreditsForModel(currentModel.id) : getCreditCost();
 
   // Set default model once loaded
   useEffect(() => {
@@ -33,7 +37,7 @@ export function CreationPanel() {
     }
   }, [defaultModel, activeModels, selectedModelId]);
 
-  const currentModel = activeModels.find(m => m.id === selectedModelId) || defaultModel || activeModels[0];
+  // currentModel already declared above
 
   // Available ratios from current model
   const availableRatios = currentModel?.supported_ratios || ['1:1', '16:9', '9:16', '4:5'];

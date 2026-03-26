@@ -33,6 +33,7 @@ import AdminIntegrations from "./pages/admin/AdminIntegrations";
 import AdminRoles from "./pages/admin/AdminRoles";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminTranslations from "./pages/admin/AdminTranslations";
+import AdminPricing from "./pages/admin/AdminPricing";
 
 const queryClient = new QueryClient();
 
@@ -62,6 +63,7 @@ const App = () => (
                 <Route index element={<AdminDashboard />} />
                 <Route path="users" element={<AdminUsers />} />
                 <Route path="billing" element={<AdminBilling />} />
+                <Route path="pricing" element={<AdminPricing />} />
                 <Route path="tools" element={<AdminTools />} />
                 <Route path="models" element={<AdminModels />} />
                 <Route path="templates" element={<AdminTemplates />} />

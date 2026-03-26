@@ -14,12 +14,109 @@ export type Database = {
   }
   public: {
     Tables: {
+      credit_settings: {
+        Row: {
+          created_at: string
+          credit_value_usd: number
+          default_credits_per_generation: number
+          id: string
+          min_credits_per_action: number
+          rounding_rule: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credit_value_usd?: number
+          default_credits_per_generation?: number
+          id?: string
+          min_credits_per_action?: number
+          rounding_rule?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credit_value_usd?: number
+          default_credits_per_generation?: number
+          id?: string
+          min_credits_per_action?: number
+          rounding_rule?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      generation_logs: {
+        Row: {
+          created_at: string
+          credits_used: number
+          id: string
+          image_url: string | null
+          margin: number
+          model_id: string | null
+          prompt: string | null
+          provider_cost: number
+          provider_id: string | null
+          ratio: string | null
+          resolution: string | null
+          revenue: number
+          tool_id: string | null
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          credits_used?: number
+          id?: string
+          image_url?: string | null
+          margin?: number
+          model_id?: string | null
+          prompt?: string | null
+          provider_cost?: number
+          provider_id?: string | null
+          ratio?: string | null
+          resolution?: string | null
+          revenue?: number
+          tool_id?: string | null
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          credits_used?: number
+          id?: string
+          image_url?: string | null
+          margin?: number
+          model_id?: string | null
+          prompt?: string | null
+          provider_cost?: number
+          provider_id?: string | null
+          ratio?: string | null
+          resolution?: string | null
+          revenue?: number
+          tool_id?: string | null
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "generation_logs_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "models"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "generation_logs_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "provider_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       models: {
         Row: {
           admin_overrides: Json
           best_for: string | null
           cost_per_run: number | null
           created_at: string
+          credits_per_generation: number | null
           default_ratio: string | null
           default_resolution: string | null
           endpoint_id: string
@@ -43,6 +140,7 @@ export type Database = {
           best_for?: string | null
           cost_per_run?: number | null
           created_at?: string
+          credits_per_generation?: number | null
           default_ratio?: string | null
           default_resolution?: string | null
           endpoint_id: string
@@ -66,6 +164,7 @@ export type Database = {
           best_for?: string | null
           cost_per_run?: number | null
           created_at?: string
+          credits_per_generation?: number | null
           default_ratio?: string | null
           default_resolution?: string | null
           endpoint_id?: string
@@ -97,47 +196,112 @@ export type Database = {
       provider_configs: {
         Row: {
           api_key_set: boolean
+          base_cost: number | null
+          billing_notes: string | null
           config: Json
           created_at: string
+          currency: string | null
           default_model: string | null
           environment: string
+          fallback_cost: number | null
           health_status: string
           id: string
           is_connected: boolean
           last_sync_at: string | null
+          pricing_type: string | null
           provider_name: string
           provider_type: string
           updated_at: string
         }
         Insert: {
           api_key_set?: boolean
+          base_cost?: number | null
+          billing_notes?: string | null
           config?: Json
           created_at?: string
+          currency?: string | null
           default_model?: string | null
           environment?: string
+          fallback_cost?: number | null
           health_status?: string
           id?: string
           is_connected?: boolean
           last_sync_at?: string | null
+          pricing_type?: string | null
           provider_name: string
           provider_type?: string
           updated_at?: string
         }
         Update: {
           api_key_set?: boolean
+          base_cost?: number | null
+          billing_notes?: string | null
           config?: Json
           created_at?: string
+          currency?: string | null
           default_model?: string | null
           environment?: string
+          fallback_cost?: number | null
           health_status?: string
           id?: string
           is_connected?: boolean
           last_sync_at?: string | null
+          pricing_type?: string | null
           provider_name?: string
           provider_type?: string
           updated_at?: string
         }
         Relationships: []
+      }
+      tools_pricing: {
+        Row: {
+          created_at: string
+          credit_multiplier: number
+          credits_per_generation: number
+          default_model_id: string | null
+          free_usage_enabled: boolean
+          id: string
+          max_free_uses: number | null
+          override_model_pricing: boolean
+          tool_id: string
+          tool_name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          credit_multiplier?: number
+          credits_per_generation?: number
+          default_model_id?: string | null
+          free_usage_enabled?: boolean
+          id?: string
+          max_free_uses?: number | null
+          override_model_pricing?: boolean
+          tool_id: string
+          tool_name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          credit_multiplier?: number
+          credits_per_generation?: number
+          default_model_id?: string | null
+          free_usage_enabled?: boolean
+          id?: string
+          max_free_uses?: number | null
+          override_model_pricing?: boolean
+          tool_id?: string
+          tool_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tools_pricing_default_model_id_fkey"
+            columns: ["default_model_id"]
+            isOneToOne: false
+            referencedRelation: "models"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

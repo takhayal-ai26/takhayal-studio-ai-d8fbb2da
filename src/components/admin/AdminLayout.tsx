@@ -13,6 +13,7 @@ const NAV_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
   { label: 'Users', icon: Users, path: '/admin/users' },
   { label: 'Billing & Credits', icon: CreditCard, path: '/admin/billing' },
+  { label: 'Pricing & Economics', icon: CreditCard, path: '/admin/pricing' },
   { label: 'Tools', icon: Wrench, path: '/admin/tools' },
   { label: 'Models & Providers', icon: Cpu, path: '/admin/models' },
   { label: 'Templates', icon: FileText, path: '/admin/templates' },
