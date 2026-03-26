@@ -179,7 +179,22 @@ serve(async (req) => {
     // ===== RESOLUTION + RATIO MAPPING =====
     const selectedRatio = aspect_ratio || "1:1";
 
-    if (modelInputType === "aspect_ratio") {
+    // Models with restricted image_size literals (e.g. GPT Image)
+    const RESTRICTED_SIZE_MODELS: Record<string, Record<string, string>> = {
+      "fal-ai/gpt-image-1.5": {
+        "1:1": "1024x1024",
+        "16:9": "1536x1024",
+        "9:16": "1024x1536",
+        "4:3": "1536x1024",
+        "3:4": "1024x1536",
+      },
+    };
+
+    const restrictedSizes = RESTRICTED_SIZE_MODELS[endpoint];
+    if (restrictedSizes) {
+      // These models only accept specific string literals
+      payload.image_size = restrictedSizes[selectedRatio] || restrictedSizes["1:1"] || "1024x1024";
+    } else if (modelInputType === "aspect_ratio") {
       payload.aspect_ratio = selectedRatio;
       if (quality_tier && quality_tier !== "1K" && quality_tier !== "standard") {
         const dims = resolveImageSize(selectedRatio, quality_tier, modelMaxRes);
@@ -192,7 +207,6 @@ serve(async (req) => {
       } else if (image_size) {
         payload.image_size = image_size;
       } else {
-        // 1K / standard: use preset strings
         payload.image_size = RATIO_TO_PRESET[selectedRatio] || "square_hd";
       }
     }
