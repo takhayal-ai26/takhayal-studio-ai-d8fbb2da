@@ -1,20 +1,13 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Download, Maximize2, Clock, RefreshCw, Share2, ChevronDown, Copy, Trash2 } from 'lucide-react';
+import { X, Download, Maximize2, Clock, RefreshCw, Share2, ChevronDown, Copy, Trash2, AlertCircle, Loader2 } from 'lucide-react';
 import { useApp, GeneratedImage, GenerationCard, CardState } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { toast } from '@/hooks/use-toast';
 
-/** Convert ratio string like "16:9" to CSS aspect-ratio value like "16/9" */
 function ratioToCSS(ratio: string): string {
   const map: Record<string, string> = {
-    '1:1': '1/1',
-    '16:9': '16/9',
-    '9:16': '9/16',
-    '4:5': '4/5',
-    '4:3': '4/3',
-    '3:2': '3/2',
-    '3:4': '3/4',
-    '2:3': '2/3',
+    '1:1': '1/1', '16:9': '16/9', '9:16': '9/16', '4:5': '4/5',
+    '4:3': '4/3', '3:2': '3/2', '3:4': '3/4', '2:3': '2/3',
   };
   return map[ratio] || '1/1';
 }
@@ -32,11 +25,13 @@ export function GenerationGrid() {
     const wasGenerating = prevGeneratingRef.current;
     const prevImages = prevImagesRef.current;
 
+    // When generation starts → add a queued card, then switch to generating
     if (isGenerating && !wasGenerating) {
+      const cardId = `gen-${Date.now()}-0`;
       const newCard: GenerationCard = {
-        id: `gen-${Date.now()}-0`,
+        id: cardId,
         image: null,
-        state: 'processing' as CardState,
+        state: 'queued' as CardState,
         prompt: prompt,
         startedAt: Date.now(),
         model: 'Flux Schnell',
@@ -44,19 +39,47 @@ export function GenerationGrid() {
         resolution: quality === 'hd' ? '2K' : '1K',
       };
       setCards(prev => [newCard, ...prev]);
+      // After a brief moment, switch to generating
+      setTimeout(() => {
+        setCards(p => p.map(c => c.id === cardId ? { ...c, state: 'generating' as CardState } : c));
+      }, 800);
     }
 
+    // When generation completes → preload image, then mark completed
     if (!isGenerating && wasGenerating && generatedImages !== prevImages && generatedImages.length > 0) {
       setCards(prev => {
         const updated = [...prev];
-        const processingCard = updated.find(c => c.state === 'processing');
-        if (processingCard && generatedImages[0]) {
-          const idx = updated.indexOf(processingCard);
-          updated[idx] = { ...updated[idx], state: 'rendering', image: generatedImages[0] };
-          const cardId = updated[idx].id;
-          setTimeout(() => {
-            setCards(p => p.map(c => c.id === cardId ? { ...c, state: 'completed' } : c));
-          }, 1200);
+        const activeCard = updated.find(c => c.state === 'queued' || c.state === 'generating');
+        if (activeCard && generatedImages[0]) {
+          const idx = updated.indexOf(activeCard);
+          const imageUrl = generatedImages[0].url;
+          const cardId = activeCard.id;
+
+          // Preload image in memory before showing
+          const img = new Image();
+          img.onload = () => {
+            setCards(p => p.map(c => c.id === cardId ? { ...c, state: 'completed' as CardState, image: generatedImages[0] } : c));
+          };
+          img.onerror = () => {
+            setCards(p => p.map(c => c.id === cardId ? { ...c, state: 'failed' as CardState } : c));
+          };
+          img.src = imageUrl;
+
+          // Keep it in generating state while preloading
+          updated[idx] = { ...updated[idx], state: 'generating' as CardState };
+        }
+        return updated;
+      });
+    }
+
+    // If generation failed (no new images)
+    if (!isGenerating && wasGenerating && generatedImages === prevImages) {
+      setCards(prev => {
+        const updated = [...prev];
+        const activeCard = updated.find(c => c.state === 'queued' || c.state === 'generating');
+        if (activeCard) {
+          const idx = updated.indexOf(activeCard);
+          updated[idx] = { ...updated[idx], state: 'failed' as CardState };
         }
         return updated;
       });
@@ -92,6 +115,11 @@ export function GenerationGrid() {
     a.click();
   }, []);
 
+  const handleRetry = useCallback((cardId: string) => {
+    setCards(prev => prev.filter(c => c.id !== cardId));
+    setTimeout(() => generate(), 100);
+  }, [generate]);
+
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <div ref={gridRef} className="flex-1 overflow-y-auto p-5">
@@ -104,6 +132,7 @@ export function GenerationGrid() {
                 onDelete={() => handleDeleteCard(card.id)}
                 onCopyPrompt={() => handleCopyPrompt(card.prompt)}
                 onDownload={() => card.image && handleDownloadCard(card.image.url, card.prompt)}
+                onRetry={() => handleRetry(card.id)}
               />
             </div>
           ))}
@@ -134,7 +163,6 @@ export function GenerationGrid() {
             style={{ animation: 'modalScaleIn 0.3s cubic-bezier(0.16,1,0.3,1)' }}
             onClick={e => e.stopPropagation()}
           >
-            {/* Close */}
             <button
               onClick={() => setSelectedCard(null)}
               className="absolute -top-2 -right-2 z-10 w-9 h-9 rounded-full bg-card border border-border/20 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
@@ -142,29 +170,25 @@ export function GenerationGrid() {
               <X size={16} />
             </button>
 
-            {/* Image */}
             <div className="flex-1 flex items-center justify-center min-h-0">
               <img
                 src={selectedCard.image.url}
                 alt={selectedCard.prompt}
                 className="max-h-[70vh] max-w-full rounded-2xl object-contain"
-                style={{ 
+                style={{
                   animation: 'modalImageZoom 0.4s cubic-bezier(0.16,1,0.3,1)',
                   aspectRatio: ratioToCSS(selectedCard.aspectRatio),
                 }}
               />
             </div>
 
-            {/* Details Panel */}
             <div className="lg:w-[280px] flex-shrink-0 flex flex-col gap-5">
-              {/* Metadata */}
               <div className="space-y-3">
                 <DetailRow label={t.studio.model} value={selectedCard.model} />
                 <DetailRow label={t.studio.aspectRatio || 'Aspect Ratio'} value={selectedCard.aspectRatio} />
                 <DetailRow label={t.studio.resolution || 'Resolution'} value={selectedCard.resolution} />
               </div>
 
-              {/* Prompt */}
               <div>
                 <p className="text-[11px] text-muted-foreground/50 uppercase tracking-wider font-medium mb-1.5">{t.studio.prompt}</p>
                 <p className={`text-[13px] text-foreground/80 leading-relaxed ${!promptExpanded ? 'line-clamp-3' : ''}`}>
@@ -181,7 +205,6 @@ export function GenerationGrid() {
                 )}
               </div>
 
-              {/* Actions */}
               <div className="flex flex-col gap-2 mt-auto">
                 <button className="h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:brightness-90 transition-all active:scale-[0.98]">
                   <Download size={15} />{t.studio.download}
@@ -194,9 +217,7 @@ export function GenerationGrid() {
                     <RefreshCw size={13} />{t.studio.regenerate}
                   </button>
                   <button
-                    onClick={() => {
-                      navigator.clipboard.writeText(selectedCard.prompt);
-                    }}
+                    onClick={() => { navigator.clipboard.writeText(selectedCard.prompt); }}
                     className="h-10 rounded-xl border border-border/15 bg-card/60 text-foreground/80 text-[12px] font-medium flex items-center justify-center gap-1.5 hover:bg-card hover:border-border/30 transition-all"
                   >
                     <Copy size={13} />Copy
@@ -223,57 +244,94 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function GridCardItem({ card, onClick, onDelete, onCopyPrompt, onDownload }: { 
-  card: GenerationCard; 
+function GridCardItem({ card, onClick, onDelete, onCopyPrompt, onDownload, onRetry }: {
+  card: GenerationCard;
   onClick: () => void;
   onDelete: () => void;
   onCopyPrompt: () => void;
   onDownload: () => void;
+  onRetry: () => void;
 }) {
   const { t } = useLanguage();
   const [showActions, setShowActions] = useState(false);
   const cssRatio = ratioToCSS(card.aspectRatio);
 
-  if (card.state === 'processing') {
+  // ── QUEUED STATE ──
+  if (card.state === 'queued') {
     return (
       <div
-        className="rounded-2xl overflow-hidden bg-card/60 border border-border/10 relative gen-card-processing"
+        className="rounded-2xl overflow-hidden bg-card/60 border border-border/10 relative"
+        style={{ aspectRatio: cssRatio }}
+      >
+        <div className="absolute inset-0 animate-pulse bg-gradient-to-br from-card/80 via-muted/30 to-card/80" />
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <Clock size={18} className="text-primary/60 animate-pulse" />
+          </div>
+          <span className="text-[13px] font-medium text-muted-foreground/60">{t.studio.queued}</span>
+        </div>
+        <div className="absolute bottom-3 left-3 right-3">
+          <p className="text-[11px] text-muted-foreground/30 line-clamp-2">{card.prompt}</p>
+        </div>
+      </div>
+    );
+  }
+
+  // ── GENERATING STATE ──
+  if (card.state === 'generating') {
+    return (
+      <div
+        className="rounded-2xl overflow-hidden bg-card/60 border border-border/10 relative"
         style={{ aspectRatio: cssRatio }}
       >
         <div className="absolute inset-0 gen-shimmer" />
         <div className="absolute inset-0 gen-glow" />
-        <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background/60 backdrop-blur-sm border border-border/10">
-          <Clock size={10} className="text-primary animate-pulse" />
-          <span className="text-[11px] font-medium text-primary/80">{t.studio.generating}</span>
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <Loader2 size={18} className="text-primary animate-spin" />
+          </div>
+          <span className="text-[13px] font-medium text-primary/70">{t.studio.generating}</span>
         </div>
         <div className="absolute bottom-3 left-3 right-3">
-          <p className="text-[11px] text-muted-foreground/40 line-clamp-2">{card.prompt}</p>
+          <p className="text-[11px] text-muted-foreground/30 line-clamp-2">{card.prompt}</p>
         </div>
       </div>
     );
   }
 
-  if (card.state === 'rendering' && card.image) {
+  // ── FAILED STATE ──
+  if (card.state === 'failed') {
     return (
       <div
-        className="rounded-2xl overflow-hidden bg-card/60 border border-border/10 relative gen-card-rendering"
+        className="rounded-2xl overflow-hidden bg-card/60 border border-destructive/20 relative"
         style={{ aspectRatio: cssRatio }}
       >
-        <img src={card.image.url} alt="" className="w-full h-full object-cover blur-md scale-105" />
-        <div className="absolute inset-0 gen-sweep" />
-        <div className="absolute top-3 left-3 flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-background/60 backdrop-blur-sm border border-border/10">
-          <span className="w-1.5 h-1.5 rounded-full bg-primary animate-pulse" />
-          <span className="text-[11px] font-medium text-foreground/60">Rendering</span>
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3">
+          <div className="w-10 h-10 rounded-full bg-destructive/10 border border-destructive/20 flex items-center justify-center">
+            <AlertCircle size={18} className="text-destructive/70" />
+          </div>
+          <span className="text-[13px] font-medium text-destructive/70">{t.studio.failedToLoad}</span>
+          <button
+            onClick={(e) => { e.stopPropagation(); onRetry(); }}
+            className="h-8 px-4 rounded-lg bg-card border border-border/20 text-[12px] font-medium text-foreground/80 hover:bg-muted/30 transition-colors flex items-center gap-1.5"
+          >
+            <RefreshCw size={12} />
+            {t.studio.retry}
+          </button>
+        </div>
+        <div className="absolute bottom-3 left-3 right-3">
+          <p className="text-[11px] text-muted-foreground/30 line-clamp-2">{card.prompt}</p>
         </div>
       </div>
     );
   }
 
+  // ── COMPLETED STATE ──
   if (!card.image) return null;
 
   return (
     <div
-      className="rounded-2xl overflow-hidden bg-card/60 border border-border/10 relative group cursor-pointer gen-card-completed transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
+      className="rounded-2xl overflow-hidden bg-card/60 border border-border/10 relative group cursor-pointer transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5"
       style={{ aspectRatio: cssRatio }}
       onMouseEnter={() => setShowActions(true)}
       onMouseLeave={() => setShowActions(false)}
@@ -285,19 +343,16 @@ function GridCardItem({ card, onClick, onDelete, onCopyPrompt, onDownload }: {
       <img
         src={card.image.url}
         alt={card.prompt}
-        className="w-full h-full object-cover transition-all duration-500 gen-reveal group-hover:scale-[1.02]"
+        className="w-full h-full object-cover transition-all duration-500 group-hover:scale-[1.02] animate-fade-in"
       />
-      {/* Hover overlay */}
       <div className="absolute inset-0 bg-background/0 group-hover:bg-background/10 transition-colors duration-300 pointer-events-none" />
 
-      {/* Quick actions bar */}
       <div className={`quick-actions absolute right-2.5 top-1/2 -translate-y-1/2 flex flex-col gap-2 transition-all duration-300 ${showActions ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2 pointer-events-none'}`}>
         <QuickActionButton icon={<Copy size={14} />} onClick={onCopyPrompt} label="Copy prompt" />
         <QuickActionButton icon={<Download size={14} />} onClick={onDownload} label="Download" />
-        <QuickActionButton icon={<Trash2 size={14} />} onClick={onDelete} label="Delete" destructive />
+        <QuickActionButton icon={<Trash2 size={14} />} onClick={onDelete} label="Delete" />
       </div>
 
-      {/* Bottom prompt on hover */}
       <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-3 pointer-events-none">
         <p className="text-[11px] text-foreground/80 line-clamp-2">{card.prompt}</p>
       </div>
@@ -312,8 +367,8 @@ function QuickActionButton({ icon, onClick, label, destructive }: { icon: React.
       onClick={(e) => { e.stopPropagation(); onClick(); }}
       title={label}
       className={`w-9 h-9 rounded-full backdrop-blur-md border border-border/10 flex items-center justify-center transition-all duration-200 active:scale-90 ${
-        destructive 
-          ? 'bg-background/60 text-foreground/80 hover:bg-destructive/80 hover:text-destructive-foreground hover:border-destructive/30' 
+        destructive
+          ? 'bg-background/60 text-foreground/80 hover:bg-destructive/80 hover:text-destructive-foreground hover:border-destructive/30'
           : 'bg-background/60 text-foreground/80 hover:bg-primary/80 hover:text-primary-foreground hover:border-primary/30'
       }`}
     >
