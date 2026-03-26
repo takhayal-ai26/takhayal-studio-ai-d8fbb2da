@@ -7,7 +7,32 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-const RATIO_TO_IMAGE_SIZE: Record<string, string> = {
+// Base sizes per ratio at 1K quality (~1MP)
+const RATIO_BASE_DIMS: Record<string, { w: number; h: number }> = {
+  "1:1":  { w: 1024, h: 1024 },
+  "16:9": { w: 1344, h: 768 },
+  "9:16": { w: 768, h: 1344 },
+  "4:3":  { w: 1184, h: 896 },
+  "3:4":  { w: 896, h: 1184 },
+  "4:5":  { w: 896, h: 1120 },
+  "5:4":  { w: 1120, h: 896 },
+  "3:2":  { w: 1216, h: 832 },
+  "2:3":  { w: 832, h: 1216 },
+  "21:9": { w: 1536, h: 640 },
+};
+
+// Quality multipliers relative to 1K base
+const QUALITY_MULTIPLIERS: Record<string, number> = {
+  "1K": 1,
+  "standard": 1,
+  "2K": 2,
+  "hd": 2,
+  "4K": 4,
+  "ultra": 4,
+};
+
+// fal.ai preset strings for models that use image_size presets
+const RATIO_TO_PRESET: Record<string, string> = {
   "1:1": "square_hd",
   "16:9": "landscape_16_9",
   "9:16": "portrait_16_9",
@@ -18,6 +43,34 @@ const RATIO_TO_IMAGE_SIZE: Record<string, string> = {
   "3:2": "landscape_4_3",
   "2:3": "portrait_4_3",
 };
+
+function parseMaxResolution(maxRes: string | null): number {
+  if (!maxRes) return 4096;
+  // Extract the larger dimension from "WxH" format as total pixel budget
+  const parts = maxRes.toLowerCase().split("x");
+  if (parts.length === 2) {
+    const w = parseInt(parts[0]); const h = parseInt(parts[1]);
+    if (!isNaN(w) && !isNaN(h)) return Math.max(w, h);
+  }
+  const single = parseInt(maxRes);
+  return !isNaN(single) ? single : 4096;
+}
+
+function resolveImageSize(ratio: string, qualityTier: string | null, maxRes?: string | null): { width: number; height: number } {
+  const base = RATIO_BASE_DIMS[ratio] || RATIO_BASE_DIMS["1:1"];
+  const mult = QUALITY_MULTIPLIERS[qualityTier || "1K"] || 1;
+  let w = Math.round((base.w * mult) / 32) * 32;
+  let h = Math.round((base.h * mult) / 32) * 32;
+  // Cap longest side to model max, scale other side proportionally
+  const maxPx = parseMaxResolution(maxRes || null);
+  const longest = Math.max(w, h);
+  if (longest > maxPx) {
+    const scale = maxPx / longest;
+    w = Math.round((w * scale) / 32) * 32;
+    h = Math.round((h * scale) / 32) * 32;
+  }
+  return { width: w, height: h };
+}
 
 serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -45,13 +98,13 @@ serve(async (req) => {
     let resolvedModelId = model_id || null;
     let creditsUsed = 2;
     let providerCost = 0;
+    let modelMaxRes: string | null = null;
 
     // Fetch model config from DB
     if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
       const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
       try {
-        // Fetch model by ID or default
         let modelQuery = supabase.from("models").select("*").eq("is_active", true);
         if (model_id) {
           modelQuery = supabase.from("models").select("*").eq("id", model_id);
@@ -66,6 +119,7 @@ serve(async (req) => {
           resolvedModelId = modelData.id;
           providerCost = modelData.cost_per_run ? Number(modelData.cost_per_run) : 0;
           creditsUsed = modelData.credits_per_generation || 2;
+          modelMaxRes = modelData.max_resolution || null;
         }
 
         // Check for quality-tier-specific pricing
@@ -122,15 +176,38 @@ serve(async (req) => {
       enable_safety_checker: true,
     };
 
-    if (modelInputType === "aspect_ratio") {
-      payload.aspect_ratio = aspect_ratio || "1:1";
+    // ===== RESOLUTION + RATIO MAPPING =====
+    const selectedRatio = aspect_ratio || "1:1";
+
+    // Models with restricted image_size literals (e.g. GPT Image)
+    const RESTRICTED_SIZE_MODELS: Record<string, Record<string, string>> = {
+      "fal-ai/gpt-image-1.5": {
+        "1:1": "1024x1024",
+        "16:9": "1536x1024",
+        "9:16": "1024x1536",
+        "4:3": "1536x1024",
+        "3:4": "1024x1536",
+      },
+    };
+
+    const restrictedSizes = RESTRICTED_SIZE_MODELS[endpoint];
+    if (restrictedSizes) {
+      // These models only accept specific string literals
+      payload.image_size = restrictedSizes[selectedRatio] || restrictedSizes["1:1"] || "1024x1024";
+    } else if (modelInputType === "aspect_ratio") {
+      payload.aspect_ratio = selectedRatio;
+      if (quality_tier && quality_tier !== "1K" && quality_tier !== "standard") {
+        const dims = resolveImageSize(selectedRatio, quality_tier, modelMaxRes);
+        payload.image_size = dims;
+      }
     } else {
-      if (image_size) {
+      if (quality_tier && quality_tier !== "1K" && quality_tier !== "standard") {
+        const dims = resolveImageSize(selectedRatio, quality_tier, modelMaxRes);
+        payload.image_size = dims;
+      } else if (image_size) {
         payload.image_size = image_size;
-      } else if (aspect_ratio) {
-        payload.image_size = RATIO_TO_IMAGE_SIZE[aspect_ratio] || "square_hd";
       } else {
-        payload.image_size = "square_hd";
+        payload.image_size = RATIO_TO_PRESET[selectedRatio] || "square_hd";
       }
     }
 
@@ -138,7 +215,8 @@ serve(async (req) => {
       payload.num_inference_steps = 4;
     }
 
-    console.log(`Submitting to fal.ai [${endpoint}]:`, { prompt: prompt.slice(0, 80), ...payload });
+    console.log(`[generate-image] endpoint=${endpoint} ratio=${selectedRatio} quality=${quality_tier} inputType=${modelInputType}`);
+    console.log(`[generate-image] payload:`, JSON.stringify(payload));
 
     const submitRes = await fetch(`https://queue.fal.run/${endpoint}`, {
       method: "POST",
@@ -174,11 +252,14 @@ serve(async (req) => {
         const resultRes = await fetch(response_url, { headers: falHeaders });
         const resultData = await resultRes.json();
         console.log("Generation complete, images:", resultData.images?.length);
-        return new Response(JSON.stringify({ 
-          ...resultData, 
+        return new Response(JSON.stringify({
+          ...resultData,
           model_used: endpoint,
           credits_used: creditsUsed,
           provider_cost: providerCost,
+          requested_ratio: selectedRatio,
+          requested_quality: quality_tier || "1K",
+          requested_image_size: payload.image_size,
         }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
