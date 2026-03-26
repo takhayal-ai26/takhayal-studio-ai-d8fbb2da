@@ -5,7 +5,7 @@ export type NavPage = 'home' | 'canvas' | 'gallery' | 'templates' | 'credits' | 
 export type AspectRatio = '1:1' | '9:16' | '16:9' | '4:5';
 export type Quality = 'standard' | 'hd';
 export type UserPlan = 'free' | 'pro';
-export type CardState = 'processing' | 'rendering' | 'completed';
+export type CardState = 'queued' | 'generating' | 'completed' | 'failed';
 
 export interface GenerationCard {
   id: string;
