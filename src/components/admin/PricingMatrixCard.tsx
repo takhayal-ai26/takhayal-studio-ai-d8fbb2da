@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Save } from 'lucide-react';
+import { Plus, Trash2, Save, ArrowUp } from 'lucide-react';
 import type { PricingTier } from '@/hooks/usePricingTiers';
 
 interface Props {
@@ -13,6 +13,11 @@ interface Props {
   onAdd: (tier: Omit<PricingTier, 'id'>) => Promise<void>;
   onUpdate: (id: string, updates: Partial<PricingTier>) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+}
+
+function isUpscaledTier(tier: PricingTier): boolean {
+  const q = tier.quality_level?.toUpperCase();
+  return q === '2K' || q === '4K' || q === 'HD' || q === 'ULTRA';
 }
 
 export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, onAdd, onUpdate, onDelete }: Props) {
@@ -26,9 +31,7 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
       quality_level: newTier.quality || null,
       resolution_key: newTier.resolution || null,
       aspect_ratio: null,
-      width: null,
-      height: null,
-      megapixels: null,
+      width: null, height: null, megapixels: null,
       cost_per_run: newTier.cost,
       credits_charged: newTier.credits,
       pricing_mode: 'fixed_per_image',
@@ -57,6 +60,7 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
             <th className="text-left px-3 py-2 text-muted-foreground font-medium">Tier</th>
             <th className="text-left px-3 py-2 text-muted-foreground font-medium">Quality</th>
             <th className="text-left px-3 py-2 text-muted-foreground font-medium">Resolution</th>
+            <th className="text-left px-3 py-2 text-muted-foreground font-medium">Type</th>
             <th className="text-left px-3 py-2 text-muted-foreground font-medium">Provider Cost</th>
             <th className="text-left px-3 py-2 text-muted-foreground font-medium">Credits</th>
             <th className="text-left px-3 py-2 text-muted-foreground font-medium">Revenue</th>
@@ -70,6 +74,7 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
             const revenue = t.credits_charged * creditValueUsd;
             const margin = revenue - t.cost_per_run;
             const marginPct = revenue > 0 ? (margin / revenue * 100) : 0;
+            const usesUpscale = isUpscaledTier(t);
             return (
               <tr key={t.id} className="border-b border-border/5 hover:bg-muted/5">
                 <td className="px-3 py-2 font-medium text-foreground">
@@ -78,6 +83,17 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
                 </td>
                 <td className="px-3 py-2 text-muted-foreground">{t.quality_level || '-'}</td>
                 <td className="px-3 py-2 text-muted-foreground font-mono">{t.resolution_key || '-'}</td>
+                <td className="px-3 py-2">
+                  {usesUpscale ? (
+                    <Badge variant="outline" className="text-[9px] py-0 px-1.5 bg-amber-500/10 text-amber-400 border-amber-500/20 gap-0.5">
+                      <ArrowUp size={8} /> Upscaled
+                    </Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[9px] py-0 px-1.5 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">
+                      Native
+                    </Badge>
+                  )}
+                </td>
                 <td className="px-3 py-2">
                   <Input type="number" step="0.001" className="w-20 h-6 text-[11px]" value={t.cost_per_run}
                     onChange={e => onUpdate(t.id, { cost_per_run: Number(e.target.value) })} />
@@ -104,13 +120,14 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
             );
           })}
           {tiers.length === 0 && (
-            <tr><td colSpan={9} className="text-center py-4 text-muted-foreground text-[11px]">No pricing tiers. Click "Add Tier" or run Sync to populate.</td></tr>
+            <tr><td colSpan={10} className="text-center py-4 text-muted-foreground text-[11px]">No pricing tiers. Click "Add Tier" or run Sync to populate.</td></tr>
           )}
           {adding && (
             <tr className="bg-primary/5">
               <td className="px-3 py-2"><Input className="h-6 text-[11px] w-24" placeholder="Label" value={newTier.label} onChange={e => setNewTier(p => ({ ...p, label: e.target.value }))} /></td>
               <td className="px-3 py-2"><Input className="h-6 text-[11px] w-14" placeholder="1K" value={newTier.quality} onChange={e => setNewTier(p => ({ ...p, quality: e.target.value }))} /></td>
               <td className="px-3 py-2"><Input className="h-6 text-[11px] w-24" placeholder="1024x1024" value={newTier.resolution} onChange={e => setNewTier(p => ({ ...p, resolution: e.target.value }))} /></td>
+              <td className="px-3 py-2"></td>
               <td className="px-3 py-2"><Input type="number" step="0.001" className="h-6 text-[11px] w-20" value={newTier.cost} onChange={e => setNewTier(p => ({ ...p, cost: Number(e.target.value) }))} /></td>
               <td className="px-3 py-2"><Input type="number" className="h-6 text-[11px] w-14" value={newTier.credits} onChange={e => setNewTier(p => ({ ...p, credits: Number(e.target.value) }))} /></td>
               <td colSpan={3}></td>

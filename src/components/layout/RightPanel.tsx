@@ -35,11 +35,14 @@ export function RightPanel() {
   const canGenerate = prompt.trim().length > 0 && !isGenerating && credits >= cost;
   const templates = Object.keys(TEMPLATE_PROMPTS);
 
-  // Use model-specific ratios, filtered to valid AspectRatio values
+  // Use model-specific ratios from DB, filtered to valid AspectRatio values
   const validRatios: AspectRatio[] = ['1:1', '9:16', '16:9', '4:5'];
   const ratios = availableRatios.length > 0
     ? availableRatios.filter(r => validRatios.includes(r as AspectRatio)) as AspectRatio[]
     : validRatios;
+
+  // Quality tiers come directly from selected model's DB config
+  const modelQualityTiers = availableQualityTiers;
 
   const handleTemplateSelect = (tpl: string) => {
     if (selectedTemplate === tpl) { setSelectedTemplate(null); } else { setSelectedTemplate(tpl); setPrompt(TEMPLATE_PROMPTS[tpl]); }

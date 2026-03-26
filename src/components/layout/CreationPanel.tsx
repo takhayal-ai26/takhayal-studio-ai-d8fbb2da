@@ -7,11 +7,11 @@ import { usePricing } from '@/hooks/usePricing';
 import { usePricingTiers } from '@/hooks/usePricingTiers';
 import { Badge } from '@/components/ui/badge';
 
-const RESOLUTIONS = [
-  { label: '1K', value: '1K', descKey: 'standard' },
-  { label: '2K', value: '2K', descKey: 'highQuality' },
-  { label: '4K', value: '4K', descKey: 'ultraHD' },
-] as const;
+const QUALITY_TIER_META: Record<string, { descKey: string }> = {
+  '1K': { descKey: 'standard' },
+  '2K': { descKey: 'highQuality' },
+  '4K': { descKey: 'ultraHD' },
+};
 
 type OpenDropdown = 'model' | 'size' | 'resolution' | null;
 
@@ -23,12 +23,15 @@ export function CreationPanel() {
   const { getCreditsForModelQuality } = usePricingTiers();
 
   const [selectedModelId, setSelectedModelId] = useState<string>('');
-  const [selectedResolution, setSelectedResolution] = useState<string>('2K');
+  const [selectedResolution, setSelectedResolution] = useState<string>('1K');
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   
   const currentModel = activeModels.find(m => m.id === selectedModelId) || defaultModel || activeModels[0];
   
+  // Model-specific quality tiers from DB
+  const modelQualityTiers = currentModel?.supported_quality_tiers || ['1K'];
+
   // Dynamic credit cost: tier-based > model-based > fallback
   const cost = (() => {
     if (!currentModel) return getCreditCost();
@@ -45,6 +48,13 @@ export function CreationPanel() {
       setSelectedModelId(activeModels[0].id);
     }
   }, [defaultModel, activeModels, selectedModelId]);
+
+  // When model changes, reset resolution if not supported
+  useEffect(() => {
+    if (currentModel && !currentModel.supported_quality_tiers.includes(selectedResolution)) {
+      setSelectedResolution(currentModel.supported_quality_tiers[0] || '1K');
+    }
+  }, [currentModel, selectedResolution]);
 
   // Available ratios from current model
   const availableRatios = currentModel?.supported_ratios || ['1:1', '16:9', '9:16', '4:5'];
@@ -119,6 +129,11 @@ export function CreationPanel() {
                       <div className="flex items-center gap-2">
                         <span className="text-[11px] text-muted-foreground/50">{m.speed} · ${m.cost_per_run?.toFixed(3)}</span>
                         <Badge variant="outline" className="text-[9px] py-0 px-1">{m.input_type}</Badge>
+                        <div className="flex gap-0.5">
+                          {m.supported_quality_tiers.map(q => (
+                            <Badge key={q} variant="outline" className="text-[8px] py-0 px-0.5 bg-primary/5 text-primary/60 border-primary/10">{q}</Badge>
+                          ))}
+                        </div>
                       </div>
                     </div>
                     {isActive && <Check size={14} className="text-primary" />}
@@ -164,15 +179,15 @@ export function CreationPanel() {
             {openDropdown === 'resolution' && (
               <div className="absolute left-0 right-0 bottom-full mb-2 bg-card border border-border/20 rounded-2xl p-2 shadow-2xl shadow-black/40 z-50 animate-fade-in">
                 <p className="text-[10px] text-primary/40 uppercase tracking-wider font-medium px-3 pt-2 pb-2 flex items-center gap-1.5"><ImageIcon size={10} />{t.studio.selectQuality}</p>
-                {RESOLUTIONS.map(r => { 
-                  const isActive = selectedResolution === r.value;
-                  // Show dynamic credit cost per tier
-                  const tierCost = currentModel ? getCreditsForModelQuality(currentModel.id, r.value) : null;
+                {modelQualityTiers.map(tierKey => { 
+                  const isActive = selectedResolution === tierKey;
+                  const meta = QUALITY_TIER_META[tierKey] || { descKey: 'standard' };
+                  const tierCost = currentModel ? getCreditsForModelQuality(currentModel.id, tierKey) : null;
                   return (
-                    <button key={r.value} onClick={() => handleResolution(r.value)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150 ${isActive ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted/10'}`}>
+                    <button key={tierKey} onClick={() => handleResolution(tierKey)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150 ${isActive ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted/10'}`}>
                       <div className="flex items-center gap-2">
-                        <span>{r.label}</span>
-                        <span className={`text-[10px] ${isActive ? 'text-primary/50' : 'text-muted-foreground/40'}`}>{resDescMap[r.descKey]}</span>
+                        <span>{tierKey}</span>
+                        <span className={`text-[10px] ${isActive ? 'text-primary/50' : 'text-muted-foreground/40'}`}>{resDescMap[meta.descKey] || tierKey}</span>
                       </div>
                       <div className="flex items-center gap-2">
                         {tierCost !== null && (
@@ -181,6 +196,9 @@ export function CreationPanel() {
                         {isActive && <Check size={13} className="text-primary" />}
                       </div>
                     </button>); })}
+                {modelQualityTiers.length <= 1 && (
+                  <p className="text-[10px] text-muted-foreground/40 px-3 py-1">This model supports only one quality tier</p>
+                )}
               </div>
             )}
           </div>

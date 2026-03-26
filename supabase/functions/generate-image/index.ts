@@ -34,105 +34,60 @@ const RATIO_TO_PRESET: Record<string, string> = {
   "2:3": "portrait_4_3",
 };
 
-// Upscale multipliers: how many times to scale the 1K image
-const UPSCALE_FACTORS: Record<string, number> = {
-  "2K": 2,
-  "hd": 2,
-  "4K": 4,
-  "ultra": 4,
-};
+// Upscale multipliers
+const UPSCALE_FACTORS: Record<string, number> = { "2K": 2, "hd": 2, "4K": 4, "ultra": 4 };
+const UPSCALE_COSTS: Record<string, number> = { "2K": 0.001, "hd": 0.001, "4K": 0.003, "ultra": 0.003 };
 
-// Additional provider cost for upscaling (USD)
-const UPSCALE_COSTS: Record<string, number> = {
-  "2K": 0.001,
-  "hd": 0.001,
-  "4K": 0.003,
-  "ultra": 0.003,
-};
-
-// Models with restricted image_size literals (e.g. GPT Image)
+// Models with restricted image_size literals
 const RESTRICTED_SIZE_MODELS: Record<string, Record<string, string>> = {
   "fal-ai/gpt-image-1.5": {
-    "1:1": "1024x1024",
-    "16:9": "1536x1024",
-    "9:16": "1024x1536",
-    "4:3": "1536x1024",
-    "3:4": "1024x1536",
+    "1:1": "1024x1024", "16:9": "1536x1024", "9:16": "1024x1536",
+    "4:3": "1536x1024", "3:4": "1024x1536",
   },
 };
 
-/**
- * Submit a fal.ai queue job, poll for completion, return result.
- */
 async function falQueueRun(endpoint: string, payload: Record<string, unknown>, falHeaders: Record<string, string>): Promise<{ data: any; error?: string }> {
   const submitRes = await fetch(`https://queue.fal.run/${endpoint}`, {
-    method: "POST",
-    headers: falHeaders,
-    body: JSON.stringify(payload),
+    method: "POST", headers: falHeaders, body: JSON.stringify(payload),
   });
-
   if (!submitRes.ok) {
     const errorText = await submitRes.text();
     console.error(`fal.ai submit error for ${endpoint}:`, submitRes.status, errorText);
     return { data: null, error: `fal.ai API error ${submitRes.status}: ${errorText}` };
   }
-
   const submitData = await submitRes.json();
   const { status_url, response_url } = submitData;
+  if (!status_url || !response_url) return { data: submitData };
 
-  // If no queue URLs, it's a synchronous response
-  if (!status_url || !response_url) {
-    return { data: submitData };
-  }
-
-  // Poll for completion
   for (let i = 0; i < 30; i++) {
     await new Promise(r => setTimeout(r, 2000));
     const statusRes = await fetch(status_url, { headers: falHeaders });
     const statusData = await statusRes.json();
     console.log(`[${endpoint}] Poll ${i + 1}: ${statusData.status}`);
-
     if (statusData.status === "COMPLETED") {
       const resultRes = await fetch(response_url, { headers: falHeaders });
       return { data: await resultRes.json() };
     }
-    if (statusData.status === "FAILED") {
-      return { data: null, error: `Generation failed: ${JSON.stringify(statusData)}` };
-    }
+    if (statusData.status === "FAILED") return { data: null, error: `Generation failed: ${JSON.stringify(statusData)}` };
   }
   return { data: null, error: "Generation timed out" };
 }
 
-/**
- * Upscale an image URL using fal-ai/esrgan.
- * Returns the upscaled image URL.
- */
 async function upscaleImage(imageUrl: string, scale: number, falHeaders: Record<string, string>): Promise<{ url: string | null; error?: string }> {
   console.log(`[upscale] Starting ESRGAN upscale, scale=${scale}`);
-  const result = await falQueueRun("fal-ai/esrgan", {
-    image_url: imageUrl,
-    scale,
-  }, falHeaders);
-
-  if (result.error) {
-    return { url: null, error: result.error };
-  }
-
-  // ESRGAN returns { image: { url, width, height } }
+  const result = await falQueueRun("fal-ai/esrgan", { image_url: imageUrl, scale }, falHeaders);
+  if (result.error) return { url: null, error: result.error };
   const upscaledUrl = result.data?.image?.url;
   if (!upscaledUrl) {
     console.error("[upscale] No image URL in ESRGAN response:", JSON.stringify(result.data));
     return { url: null, error: "ESRGAN returned no image" };
   }
-
   console.log(`[upscale] Done. Output URL: ${upscaledUrl}`);
   return { url: upscaledUrl };
 }
 
 serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response(null, { headers: corsHeaders });
-  }
+  if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
   try {
     const FAL_AI_API_KEY = Deno.env.get("FAL_AI_API_KEY");
@@ -144,10 +99,8 @@ serve(async (req) => {
     const { prompt, model_endpoint, aspect_ratio, image_size, num_images, input_type, quality_tier, model_id } = await req.json();
 
     if (!prompt || typeof prompt !== "string") {
-      return new Response(
-        JSON.stringify({ error: "prompt is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: "prompt is required" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     let endpoint = model_endpoint || "fal-ai/flux/schnell";
@@ -155,7 +108,8 @@ serve(async (req) => {
     let resolvedModelId = model_id || null;
     let creditsUsed = 2;
     let providerCost = 0;
-    let modelMaxRes: string | null = null;
+    let upscaleStrategy = "esrgan";
+    let supportsNativeHighRes = false;
 
     // Fetch model config from DB
     if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
@@ -176,7 +130,8 @@ serve(async (req) => {
           resolvedModelId = modelData.id;
           providerCost = modelData.cost_per_run ? Number(modelData.cost_per_run) : 0;
           creditsUsed = modelData.credits_per_generation || 2;
-          modelMaxRes = modelData.max_resolution || null;
+          upscaleStrategy = modelData.upscale_strategy || "esrgan";
+          supportsNativeHighRes = modelData.supports_native_high_res || false;
         }
 
         // Check for quality-tier-specific pricing
@@ -187,7 +142,6 @@ serve(async (req) => {
             .eq("model_id", resolvedModelId)
             .eq("quality_level", quality_tier)
             .single();
-
           if (tierData) {
             creditsUsed = tierData.credits_charged;
             providerCost = Number(tierData.cost_per_run);
@@ -205,36 +159,40 @@ serve(async (req) => {
         const revenue = creditsUsed * creditValueUsd;
         const margin = revenue - providerCost;
 
-        // Log generation (fire and forget)
+        // Log generation with full metadata
+        const selectedRatio = aspect_ratio || "1:1";
+        const needsUpscale = quality_tier && UPSCALE_FACTORS[quality_tier];
+        const baseDims = RATIO_BASE_DIMS[selectedRatio] || { w: 1024, h: 1024 };
+
         supabase.from("generation_logs").insert({
           model_id: resolvedModelId,
           prompt: prompt.slice(0, 500),
-          ratio: aspect_ratio || null,
-          resolution: quality_tier || null,
-          quality_tier: quality_tier || null,
+          ratio: selectedRatio,
+          resolution: quality_tier || "1K",
+          quality_tier: quality_tier || "1K",
           credits_used: creditsUsed,
           provider_cost: providerCost,
           revenue,
           margin,
+          requested_ratio: selectedRatio,
+          requested_quality_tier: quality_tier || "1K",
+          used_upscale_pipeline: !!needsUpscale,
+          actual_output_width: needsUpscale ? baseDims.w * UPSCALE_FACTORS[quality_tier!] : baseDims.w,
+          actual_output_height: needsUpscale ? baseDims.h * UPSCALE_FACTORS[quality_tier!] : baseDims.h,
         }).then(() => {});
       } catch (e) {
         console.log("DB lookup error (non-fatal):", e);
       }
     }
 
-    const falHeaders = {
-      Authorization: `Key ${FAL_AI_API_KEY}`,
-      "Content-Type": "application/json",
-    };
+    const falHeaders = { Authorization: `Key ${FAL_AI_API_KEY}`, "Content-Type": "application/json" };
 
     // ===== BUILD GENERATION PAYLOAD (always generate at 1K base) =====
     const selectedRatio = aspect_ratio || "1:1";
     const needsUpscale = quality_tier && UPSCALE_FACTORS[quality_tier];
 
     const payload: Record<string, unknown> = {
-      prompt,
-      num_images: num_images || 1,
-      enable_safety_checker: true,
+      prompt, num_images: num_images || 1, enable_safety_checker: true,
     };
 
     const restrictedSizes = RESTRICTED_SIZE_MODELS[endpoint];
@@ -242,9 +200,7 @@ serve(async (req) => {
       payload.image_size = restrictedSizes[selectedRatio] || restrictedSizes["1:1"] || "1024x1024";
     } else if (modelInputType === "aspect_ratio") {
       payload.aspect_ratio = selectedRatio;
-      // For upscale pipeline: always generate at 1K base, upscaler handles the rest
     } else {
-      // image_size type: always generate at 1K base for upscale pipeline
       if (image_size && !needsUpscale) {
         payload.image_size = image_size;
       } else {
@@ -252,21 +208,17 @@ serve(async (req) => {
       }
     }
 
-    if (endpoint === "fal-ai/flux/schnell") {
-      payload.num_inference_steps = 4;
-    }
+    if (endpoint === "fal-ai/flux/schnell") payload.num_inference_steps = 4;
 
-    console.log(`[generate-image] endpoint=${endpoint} ratio=${selectedRatio} quality=${quality_tier} needsUpscale=${!!needsUpscale}`);
+    console.log(`[generate-image] endpoint=${endpoint} ratio=${selectedRatio} quality=${quality_tier} needsUpscale=${!!needsUpscale} upscaleStrategy=${upscaleStrategy}`);
     console.log(`[generate-image] payload:`, JSON.stringify(payload));
 
     // ===== STEP 1: Generate at 1K =====
     const genResult = await falQueueRun(endpoint, payload, falHeaders);
 
     if (genResult.error) {
-      return new Response(
-        JSON.stringify({ error: genResult.error }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
+      return new Response(JSON.stringify({ error: genResult.error }),
+        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
     let resultData = genResult.data;
@@ -284,12 +236,10 @@ serve(async (req) => {
           upscaledImages.push({ ...img, url: upResult.url, original_url: originalUrl });
           upscaled = true;
         } else {
-          // Fallback: keep original if upscale fails
           console.warn("[upscale] Failed, keeping original:", upResult.error);
           upscaledImages.push(img);
         }
       }
-
       resultData = { ...resultData, images: upscaledImages };
     }
 
@@ -303,6 +253,7 @@ serve(async (req) => {
       requested_ratio: selectedRatio,
       requested_quality: quality_tier || "1K",
       upscaled,
+      upscale_strategy: upscaled ? upscaleStrategy : null,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
