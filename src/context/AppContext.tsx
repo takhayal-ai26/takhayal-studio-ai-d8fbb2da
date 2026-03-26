@@ -84,7 +84,7 @@ interface AppState {
   setQuality: (quality: Quality) => void;
   setEnhancePrompt: (enhance: boolean) => void;
   setCurrentImageIndex: (index: number) => void;
-  generate: () => void;
+  generate: (opts?: { modelId?: string; qualityTier?: string }) => void;
   getCreditCost: () => number;
 }
 
@@ -151,14 +151,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   // Ratio-to-size mapping now handled server-side by generate-image edge function
 
-  const generate = useCallback(async () => {
+  const generate = useCallback(async (opts?: { modelId?: string; qualityTier?: string; creditCost?: number }) => {
     if (!prompt.trim() || isGenerating) return;
     if (!isAuthenticated) {
       setAuthModalTab('signup');
       setAuthModalOpen(true);
       return;
     }
-    const cost = quality === 'hd' ? 4 : 2;
+    const cost = opts?.creditCost ?? (quality === 'hd' ? 4 : 2);
     if (credits < cost) {
       setUpgradeModalOpen(true);
       return;
@@ -180,6 +180,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           prompt: styledPrompt,
           aspect_ratio: aspectRatio,
           num_images: 1,
+          model_id: opts?.modelId || undefined,
+          quality_tier: opts?.qualityTier || undefined,
         },
       });
 
