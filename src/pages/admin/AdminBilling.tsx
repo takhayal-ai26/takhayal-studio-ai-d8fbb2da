@@ -5,58 +5,232 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
-import { DollarSign, CreditCard, Zap, TrendingUp, Search, Filter, Plus, Edit, MoreHorizontal } from 'lucide-react';
+import { Textarea } from '@/components/ui/textarea';
+import { Switch } from '@/components/ui/switch';
+import { Label } from '@/components/ui/label';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { DollarSign, CreditCard, Zap, TrendingUp, Plus, Edit, Trash2, Copy, GripVertical } from 'lucide-react';
+import { toast } from 'sonner';
+import {
+  usePricingPlans, useCreditPackages, usePricingFaqs, useCreditExplanations, usePricingPageContent,
+  useSavePlan, useDeletePlan, useSavePackage, useDeletePackage,
+  useSaveFaq, useDeleteFaq, useSaveExplanation, useDeleteExplanation, useSavePageContent,
+  type PricingPlan, type PlanFeature, type CreditPackage, type PricingFaq, type CreditExplanation, type PricingPageContent,
+} from '@/hooks/useBillingData';
 
-const plans = [
-  { name: 'Free', price: '$0/mo', credits: 20, users: 11643, status: 'active', featured: false },
-  { name: 'Pro', price: '$15/mo', credits: 500, users: 1204, status: 'active', featured: true },
-];
+// ── Plan Editor ──
+function PlanEditor({ plan, onClose }: { plan: Partial<PricingPlan> | null; onClose: () => void }) {
+  const [form, setForm] = useState<any>(plan || { slug: '', name_en: '', name_ar: '', price: 0, currency: 'USD', billing_period: 'monthly', included_credits: 0, description_en: '', description_ar: '', badge_en: '', badge_ar: '', cta_label_en: 'Get Started', cta_label_ar: '', cta_action: 'signup', featured: false, active: true, sort_order: 0, is_default: false, visible_logged_out: true, visible_logged_in: true });
+  const [features, setFeatures] = useState<Partial<PlanFeature>[]>(plan?.features || []);
+  const savePlan = useSavePlan();
 
-const packages = [
-  { name: 'Starter Pack', credits: 50, price: '$4.99', badge: '', status: 'active' },
-  { name: 'Creator Pack', credits: 200, price: '$14.99', badge: 'Most Popular', status: 'active' },
-  { name: 'Studio Pack', credits: 500, price: '$29.99', badge: 'Best Value', status: 'active' },
-  { name: 'Enterprise', credits: 2000, price: '$99.99', badge: '', status: 'active' },
-];
+  const save = async () => {
+    try {
+      await savePlan.mutateAsync({ plan: form, features });
+      toast.success('Plan saved');
+      onClose();
+    } catch (e: any) { toast.error(e.message); }
+  };
 
-const transactions = [
-  { user: 'Ahmed K.', amount: '$15.00', type: 'Subscription', status: 'completed', date: '2026-03-24', invoice: 'INV-4821' },
-  { user: 'Sara M.', amount: '$14.99', type: 'Credit Pack', status: 'completed', date: '2026-03-24', invoice: 'INV-4820' },
-  { user: 'Omar H.', amount: '$29.99', type: 'Credit Pack', status: 'completed', date: '2026-03-23', invoice: 'INV-4819' },
-  { user: 'Layla I.', amount: '$15.00', type: 'Subscription', status: 'failed', date: '2026-03-23', invoice: 'INV-4818' },
-  { user: 'Karim S.', amount: '$4.99', type: 'Credit Pack', status: 'refunded', date: '2026-03-22', invoice: 'INV-4817' },
-];
+  const f = (key: string, val: any) => setForm((p: any) => ({ ...p, [key]: val }));
 
-const creditLogs = [
-  { user: 'Ahmed K.', change: '+500', reason: 'Pro plan renewal', tool: '-', date: '2026-03-24', type: 'system' },
-  { user: 'Sara M.', change: '-2', reason: 'Image generation', tool: 'Generate', date: '2026-03-24', type: 'system' },
-  { user: 'Omar H.', change: '+50', reason: 'Admin adjustment', tool: '-', date: '2026-03-23', type: 'admin' },
-  { user: 'Fatima A.', change: '-3', reason: 'Upscale image', tool: 'Upscale', date: '2026-03-23', type: 'system' },
-];
+  return (
+    <Dialog open onOpenChange={() => onClose()}>
+      <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>{plan?.id ? 'Edit Plan' : 'New Plan'}</DialogTitle></DialogHeader>
+        <div className="grid grid-cols-2 gap-4">
+          <div><Label className="text-xs">Slug</Label><Input value={form.slug} onChange={e => f('slug', e.target.value)} /></div>
+          <div><Label className="text-xs">Price</Label><Input type="number" value={form.price} onChange={e => f('price', +e.target.value)} /></div>
+          <div><Label className="text-xs">Name (EN)</Label><Input value={form.name_en} onChange={e => f('name_en', e.target.value)} /></div>
+          <div><Label className="text-xs">Name (AR)</Label><Input dir="rtl" value={form.name_ar} onChange={e => f('name_ar', e.target.value)} /></div>
+          <div><Label className="text-xs">Description (EN)</Label><Textarea value={form.description_en} onChange={e => f('description_en', e.target.value)} /></div>
+          <div><Label className="text-xs">Description (AR)</Label><Textarea dir="rtl" value={form.description_ar} onChange={e => f('description_ar', e.target.value)} /></div>
+          <div><Label className="text-xs">Badge (EN)</Label><Input value={form.badge_en} onChange={e => f('badge_en', e.target.value)} /></div>
+          <div><Label className="text-xs">Badge (AR)</Label><Input dir="rtl" value={form.badge_ar} onChange={e => f('badge_ar', e.target.value)} /></div>
+          <div><Label className="text-xs">CTA (EN)</Label><Input value={form.cta_label_en} onChange={e => f('cta_label_en', e.target.value)} /></div>
+          <div><Label className="text-xs">CTA (AR)</Label><Input dir="rtl" value={form.cta_label_ar} onChange={e => f('cta_label_ar', e.target.value)} /></div>
+          <div><Label className="text-xs">Currency</Label><Input value={form.currency} onChange={e => f('currency', e.target.value)} /></div>
+          <div><Label className="text-xs">Billing Period</Label><Input value={form.billing_period} onChange={e => f('billing_period', e.target.value)} /></div>
+          <div><Label className="text-xs">Credits</Label><Input type="number" value={form.included_credits} onChange={e => f('included_credits', +e.target.value)} /></div>
+          <div><Label className="text-xs">Sort Order</Label><Input type="number" value={form.sort_order} onChange={e => f('sort_order', +e.target.value)} /></div>
+          <div className="flex items-center gap-3"><Switch checked={form.featured} onCheckedChange={v => f('featured', v)} /><Label className="text-xs">Featured</Label></div>
+          <div className="flex items-center gap-3"><Switch checked={form.active} onCheckedChange={v => f('active', v)} /><Label className="text-xs">Active</Label></div>
+          <div className="flex items-center gap-3"><Switch checked={form.is_default} onCheckedChange={v => f('is_default', v)} /><Label className="text-xs">Default Plan</Label></div>
+        </div>
 
-const txStatusColor: Record<string, string> = {
-  completed: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-  failed: 'bg-destructive/10 text-destructive border-destructive/20',
-  refunded: 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-};
+        <div className="mt-4">
+          <div className="flex items-center justify-between mb-2">
+            <Label className="text-sm font-semibold">Features</Label>
+            <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => setFeatures(p => [...p, { text_en: '', text_ar: '', sort_order: p.length, active: true }])}>
+              <Plus size={12} /> Add Feature
+            </Button>
+          </div>
+          {features.map((feat, i) => (
+            <div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-2 mb-2">
+              <Input placeholder="EN" value={feat.text_en} onChange={e => { const n = [...features]; n[i] = { ...n[i], text_en: e.target.value }; setFeatures(n); }} className="text-xs" />
+              <Input dir="rtl" placeholder="AR" value={feat.text_ar} onChange={e => { const n = [...features]; n[i] = { ...n[i], text_ar: e.target.value }; setFeatures(n); }} className="text-xs" />
+              <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setFeatures(p => p.filter((_, j) => j !== i))}><Trash2 size={12} /></Button>
+            </div>
+          ))}
+        </div>
 
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={save} disabled={savePlan.isPending}>{savePlan.isPending ? 'Saving...' : 'Save'}</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Package Editor ──
+function PackageEditor({ pkg, onClose }: { pkg: Partial<CreditPackage> | null; onClose: () => void }) {
+  const [form, setForm] = useState<any>(pkg || { name_en: '', name_ar: '', credits: 0, price: 0, currency: 'USD', badge_en: '', badge_ar: '', description_en: '', description_ar: '', cta_label_en: 'Buy', cta_label_ar: 'شراء', featured: false, active: true, sort_order: 0 });
+  const savePkg = useSavePackage();
+  const save = async () => { try { await savePkg.mutateAsync(form); toast.success('Package saved'); onClose(); } catch (e: any) { toast.error(e.message); } };
+  const f = (key: string, val: any) => setForm((p: any) => ({ ...p, [key]: val }));
+
+  return (
+    <Dialog open onOpenChange={() => onClose()}>
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>{pkg?.id ? 'Edit Package' : 'New Package'}</DialogTitle></DialogHeader>
+        <div className="grid grid-cols-2 gap-3">
+          <div><Label className="text-xs">Name (EN)</Label><Input value={form.name_en} onChange={e => f('name_en', e.target.value)} /></div>
+          <div><Label className="text-xs">Name (AR)</Label><Input dir="rtl" value={form.name_ar} onChange={e => f('name_ar', e.target.value)} /></div>
+          <div><Label className="text-xs">Credits</Label><Input type="number" value={form.credits} onChange={e => f('credits', +e.target.value)} /></div>
+          <div><Label className="text-xs">Price</Label><Input type="number" step="0.01" value={form.price} onChange={e => f('price', +e.target.value)} /></div>
+          <div><Label className="text-xs">Badge (EN)</Label><Input value={form.badge_en} onChange={e => f('badge_en', e.target.value)} /></div>
+          <div><Label className="text-xs">Badge (AR)</Label><Input dir="rtl" value={form.badge_ar} onChange={e => f('badge_ar', e.target.value)} /></div>
+          <div className="flex items-center gap-3"><Switch checked={form.featured} onCheckedChange={v => f('featured', v)} /><Label className="text-xs">Featured</Label></div>
+          <div className="flex items-center gap-3"><Switch checked={form.active} onCheckedChange={v => f('active', v)} /><Label className="text-xs">Active</Label></div>
+        </div>
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={save} disabled={savePkg.isPending}>{savePkg.isPending ? 'Saving...' : 'Save'}</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── FAQ Editor ──
+function FaqEditor({ faq, onClose }: { faq: Partial<PricingFaq> | null; onClose: () => void }) {
+  const [form, setForm] = useState<any>(faq || { question_en: '', question_ar: '', answer_en: '', answer_ar: '', sort_order: 0, active: true });
+  const saveFaq = useSaveFaq();
+  const save = async () => { try { await saveFaq.mutateAsync(form); toast.success('FAQ saved'); onClose(); } catch (e: any) { toast.error(e.message); } };
+  const f = (key: string, val: any) => setForm((p: any) => ({ ...p, [key]: val }));
+
+  return (
+    <Dialog open onOpenChange={() => onClose()}>
+      <DialogContent className="max-w-lg max-h-[85vh] overflow-y-auto">
+        <DialogHeader><DialogTitle>{faq?.id ? 'Edit FAQ' : 'New FAQ'}</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div><Label className="text-xs">Question (EN)</Label><Input value={form.question_en} onChange={e => f('question_en', e.target.value)} /></div>
+          <div><Label className="text-xs">Question (AR)</Label><Input dir="rtl" value={form.question_ar} onChange={e => f('question_ar', e.target.value)} /></div>
+          <div><Label className="text-xs">Answer (EN)</Label><Textarea value={form.answer_en} onChange={e => f('answer_en', e.target.value)} /></div>
+          <div><Label className="text-xs">Answer (AR)</Label><Textarea dir="rtl" value={form.answer_ar} onChange={e => f('answer_ar', e.target.value)} /></div>
+          <div className="flex items-center gap-3"><Switch checked={form.active} onCheckedChange={v => f('active', v)} /><Label className="text-xs">Active</Label></div>
+        </div>
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={save}>{saveFaq.isPending ? 'Saving...' : 'Save'}</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Credit Explanation Editor ──
+function ExplanationEditor({ item, onClose }: { item: Partial<CreditExplanation> | null; onClose: () => void }) {
+  const [form, setForm] = useState<any>(item || { title_en: '', title_ar: '', subtitle_en: '', subtitle_ar: '', icon: 'Image', sort_order: 0, active: true });
+  const saveEx = useSaveExplanation();
+  const save = async () => { try { await saveEx.mutateAsync(form); toast.success('Saved'); onClose(); } catch (e: any) { toast.error(e.message); } };
+  const f = (key: string, val: any) => setForm((p: any) => ({ ...p, [key]: val }));
+
+  return (
+    <Dialog open onOpenChange={() => onClose()}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader><DialogTitle>{item?.id ? 'Edit' : 'New'} Credit Explanation</DialogTitle></DialogHeader>
+        <div className="grid grid-cols-2 gap-3">
+          <div><Label className="text-xs">Title (EN)</Label><Input value={form.title_en} onChange={e => f('title_en', e.target.value)} /></div>
+          <div><Label className="text-xs">Title (AR)</Label><Input dir="rtl" value={form.title_ar} onChange={e => f('title_ar', e.target.value)} /></div>
+          <div><Label className="text-xs">Subtitle (EN)</Label><Input value={form.subtitle_en} onChange={e => f('subtitle_en', e.target.value)} /></div>
+          <div><Label className="text-xs">Subtitle (AR)</Label><Input dir="rtl" value={form.subtitle_ar} onChange={e => f('subtitle_ar', e.target.value)} /></div>
+          <div><Label className="text-xs">Icon (lucide name)</Label><Input value={form.icon} onChange={e => f('icon', e.target.value)} /></div>
+          <div className="flex items-center gap-3"><Switch checked={form.active} onCheckedChange={v => f('active', v)} /><Label className="text-xs">Active</Label></div>
+        </div>
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={save}>{saveEx.isPending ? 'Saving...' : 'Save'}</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Page Content Editor ──
+function PageContentEditor({ item, onClose }: { item: Partial<PricingPageContent> | null; onClose: () => void }) {
+  const [form, setForm] = useState<any>(item || { section_key: '', field_key: '', value_en: '', value_ar: '', sort_order: 0, active: true, metadata_json: {} });
+  const savePc = useSavePageContent();
+  const save = async () => { try { await savePc.mutateAsync(form); toast.success('Saved'); onClose(); } catch (e: any) { toast.error(e.message); } };
+  const f = (key: string, val: any) => setForm((p: any) => ({ ...p, [key]: val }));
+
+  return (
+    <Dialog open onOpenChange={() => onClose()}>
+      <DialogContent className="max-w-lg">
+        <DialogHeader><DialogTitle>{item?.id ? 'Edit' : 'New'} Page Content</DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
+            <div><Label className="text-xs">Section Key</Label><Input value={form.section_key} onChange={e => f('section_key', e.target.value)} /></div>
+            <div><Label className="text-xs">Field Key</Label><Input value={form.field_key} onChange={e => f('field_key', e.target.value)} /></div>
+          </div>
+          <div><Label className="text-xs">Value (EN)</Label><Input value={form.value_en} onChange={e => f('value_en', e.target.value)} /></div>
+          <div><Label className="text-xs">Value (AR)</Label><Input dir="rtl" value={form.value_ar} onChange={e => f('value_ar', e.target.value)} /></div>
+        </div>
+        <div className="flex justify-end gap-2 mt-4">
+          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button onClick={save}>{savePc.isPending ? 'Saving...' : 'Save'}</Button>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ── Main Page ──
 export default function AdminBilling() {
+  const { data: plans = [], isLoading: loadingPlans } = usePricingPlans();
+  const { data: packages = [], isLoading: loadingPkgs } = useCreditPackages();
+  const { data: faqs = [] } = usePricingFaqs();
+  const { data: explanations = [] } = useCreditExplanations();
+  const { data: pageContent = [] } = usePricingPageContent();
+
+  const deletePlan = useDeletePlan();
+  const deletePkg = useDeletePackage();
+  const deleteFaq = useDeleteFaq();
+  const deleteEx = useDeleteExplanation();
+
+  const [editPlan, setEditPlan] = useState<Partial<PricingPlan> | null | 'new'>(null);
+  const [editPkg, setEditPkg] = useState<Partial<CreditPackage> | null | 'new'>(null);
+  const [editFaq, setEditFaq] = useState<Partial<PricingFaq> | null | 'new'>(null);
+  const [editEx, setEditEx] = useState<Partial<CreditExplanation> | null | 'new'>(null);
+  const [editPc, setEditPc] = useState<Partial<PricingPageContent> | null | 'new'>(null);
+
+  const totalPaid = plans.filter(p => p.price > 0).reduce((s, p) => s + p.price, 0);
+
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Billing & Credits</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage plans, packages, transactions, and credit operations</p>
-        </div>
+      <div>
+        <h1 className="text-2xl font-bold tracking-tight">Billing & Credits</h1>
+        <p className="text-sm text-muted-foreground mt-1">Manage plans, packages, pricing page content, FAQs, and credit explanations</p>
       </div>
 
       {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: 'MRR', value: '$18,060', icon: DollarSign },
-          { label: 'Paid Users', value: '1,204', icon: CreditCard },
-          { label: 'Credits Sold', value: '89,400', icon: Zap },
-          { label: 'Avg Revenue/User', value: '$15.01', icon: TrendingUp },
+          { label: 'Plans', value: plans.length, icon: DollarSign },
+          { label: 'Packages', value: packages.length, icon: CreditCard },
+          { label: 'FAQs', value: faqs.length, icon: Zap },
+          { label: 'Credit Cards', value: explanations.length, icon: TrendingUp },
         ].map(s => (
           <Card key={s.label} className="border-border/40 bg-card/50">
             <CardContent className="p-4 flex items-center gap-3">
@@ -74,38 +248,64 @@ export default function AdminBilling() {
         <TabsList className="bg-muted/30">
           <TabsTrigger value="plans" className="text-xs">Plans</TabsTrigger>
           <TabsTrigger value="packages" className="text-xs">Credit Packages</TabsTrigger>
-          <TabsTrigger value="transactions" className="text-xs">Transactions</TabsTrigger>
-          <TabsTrigger value="credit-logs" className="text-xs">Credit Logs</TabsTrigger>
+          <TabsTrigger value="faqs" className="text-xs">FAQs</TabsTrigger>
+          <TabsTrigger value="explanations" className="text-xs">Credit Explanations</TabsTrigger>
+          <TabsTrigger value="page-content" className="text-xs">Page Content</TabsTrigger>
         </TabsList>
 
+        {/* Plans Tab */}
         <TabsContent value="plans">
-          <div className="grid md:grid-cols-2 gap-4">
-            {plans.map(p => (
-              <Card key={p.name} className={`border-border/40 bg-card/50 ${p.featured ? 'ring-1 ring-primary/30' : ''}`}>
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between mb-4">
-                    <div>
-                      <h3 className="text-lg font-bold">{p.name}</h3>
-                      <p className="text-2xl font-bold text-primary mt-1">{p.price}</p>
-                    </div>
-                    {p.featured && <Badge className="text-[10px]">Featured</Badge>}
-                  </div>
-                  <div className="space-y-2 text-sm text-muted-foreground">
-                    <p>{p.credits} credits/month</p>
-                    <p>{p.users.toLocaleString()} active users</p>
-                  </div>
-                  <Button variant="outline" size="sm" className="mt-4 gap-1.5 text-xs"><Edit size={12} /> Edit Plan</Button>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <Card className="border-border/40 bg-card/50">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-semibold">Pricing Plans</CardTitle>
+              <Button size="sm" className="gap-1.5 text-xs" onClick={() => setEditPlan('new')}><Plus size={14} /> Add Plan</Button>
+            </CardHeader>
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border/40">
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Plan</TableHead>
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Price</TableHead>
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Credits</TableHead>
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Features</TableHead>
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Status</TableHead>
+                  <TableHead className="w-20" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {plans.map(p => (
+                  <TableRow key={p.id} className="border-border/20">
+                    <TableCell>
+                      <div className="flex items-center gap-2">
+                        <span className="text-[13px] font-medium">{p.name_en}</span>
+                        {p.featured && <Badge className="text-[9px]">Featured</Badge>}
+                        {p.is_default && <Badge variant="outline" className="text-[9px]">Default</Badge>}
+                      </div>
+                      <span className="text-[11px] text-muted-foreground">{p.name_ar}</span>
+                    </TableCell>
+                    <TableCell className="text-[13px] font-medium text-primary">${p.price}/{p.billing_period}</TableCell>
+                    <TableCell className="text-[13px]">{p.included_credits}</TableCell>
+                    <TableCell className="text-[13px]">{p.features?.length || 0}</TableCell>
+                    <TableCell><Badge variant="outline" className={`text-[10px] ${p.active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>{p.active ? 'Active' : 'Inactive'}</Badge></TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditPlan(p)}><Edit size={12} /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditPlan({ ...p, id: undefined, slug: p.slug + '-copy', name_en: p.name_en + ' Copy' } as any)}><Copy size={12} /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { if (confirm('Delete this plan?')) deletePlan.mutate(p.id); }}><Trash2 size={12} /></Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
         </TabsContent>
 
+        {/* Packages Tab */}
         <TabsContent value="packages">
           <Card className="border-border/40 bg-card/50">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
               <CardTitle className="text-sm font-semibold">Credit Packages</CardTitle>
-              <Button size="sm" className="gap-1.5 text-xs"><Plus size={14} /> Add Package</Button>
+              <Button size="sm" className="gap-1.5 text-xs" onClick={() => setEditPkg('new')}><Plus size={14} /> Add Package</Button>
             </CardHeader>
             <Table>
               <TableHeader>
@@ -115,18 +315,26 @@ export default function AdminBilling() {
                   <TableHead className="text-[11px] uppercase text-muted-foreground">Price</TableHead>
                   <TableHead className="text-[11px] uppercase text-muted-foreground">Badge</TableHead>
                   <TableHead className="text-[11px] uppercase text-muted-foreground">Status</TableHead>
-                  <TableHead className="w-10" />
+                  <TableHead className="w-20" />
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {packages.map(p => (
-                  <TableRow key={p.name} className="border-border/20">
-                    <TableCell className="text-[13px] font-medium">{p.name}</TableCell>
+                  <TableRow key={p.id} className="border-border/20">
+                    <TableCell>
+                      <span className="text-[13px] font-medium">{p.name_en}</span>
+                      <br /><span className="text-[11px] text-muted-foreground">{p.name_ar}</span>
+                    </TableCell>
                     <TableCell className="text-[13px]">{p.credits}</TableCell>
-                    <TableCell className="text-[13px] font-medium text-primary">{p.price}</TableCell>
-                    <TableCell>{p.badge && <Badge variant="outline" className="text-[10px]">{p.badge}</Badge>}</TableCell>
-                    <TableCell><Badge variant="outline" className="text-[10px] bg-emerald-500/10 text-emerald-400 border-emerald-500/20">{p.status}</Badge></TableCell>
-                    <TableCell><Button variant="ghost" size="icon" className="h-7 w-7"><Edit size={12} /></Button></TableCell>
+                    <TableCell className="text-[13px] font-medium text-primary">${p.price}</TableCell>
+                    <TableCell>{p.badge_en && <Badge variant="outline" className="text-[10px]">{p.badge_en}</Badge>}</TableCell>
+                    <TableCell><Badge variant="outline" className={`text-[10px] ${p.active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>{p.active ? 'Active' : 'Inactive'}</Badge></TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditPkg(p)}><Edit size={12} /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { if (confirm('Delete?')) deletePkg.mutate(p.id); }}><Trash2 size={12} /></Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -134,35 +342,34 @@ export default function AdminBilling() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="transactions">
+        {/* FAQs Tab */}
+        <TabsContent value="faqs">
           <Card className="border-border/40 bg-card/50">
             <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-semibold">Recent Transactions</CardTitle>
-              <div className="flex gap-2">
-                <div className="relative"><Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" /><Input placeholder="Search..." className="pl-9 h-8 text-xs w-48 bg-muted/30" /></div>
-                <Button variant="outline" size="sm" className="text-xs gap-1"><Filter size={12} /> Filter</Button>
-              </div>
+              <CardTitle className="text-sm font-semibold">Pricing FAQs</CardTitle>
+              <Button size="sm" className="gap-1.5 text-xs" onClick={() => setEditFaq('new')}><Plus size={14} /> Add FAQ</Button>
             </CardHeader>
             <Table>
               <TableHeader>
                 <TableRow className="border-border/40">
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">User</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Amount</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Type</TableHead>
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Question (EN)</TableHead>
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Question (AR)</TableHead>
                   <TableHead className="text-[11px] uppercase text-muted-foreground">Status</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Date</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Invoice</TableHead>
+                  <TableHead className="w-20" />
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {transactions.map((t, i) => (
-                  <TableRow key={i} className="border-border/20">
-                    <TableCell className="text-[13px] font-medium">{t.user}</TableCell>
-                    <TableCell className="text-[13px] font-medium">{t.amount}</TableCell>
-                    <TableCell className="text-[13px] text-muted-foreground">{t.type}</TableCell>
-                    <TableCell><Badge variant="outline" className={`text-[10px] capitalize ${txStatusColor[t.status]}`}>{t.status}</Badge></TableCell>
-                    <TableCell className="text-[12px] text-muted-foreground">{t.date}</TableCell>
-                    <TableCell className="text-[12px] text-muted-foreground">{t.invoice}</TableCell>
+                {faqs.map(f => (
+                  <TableRow key={f.id} className="border-border/20">
+                    <TableCell className="text-[13px]">{f.question_en}</TableCell>
+                    <TableCell className="text-[13px]" dir="rtl">{f.question_ar}</TableCell>
+                    <TableCell><Badge variant="outline" className={`text-[10px] ${f.active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>{f.active ? 'Active' : 'Inactive'}</Badge></TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditFaq(f)}><Edit size={12} /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { if (confirm('Delete?')) deleteFaq.mutate(f.id); }}><Trash2 size={12} /></Button>
+                      </div>
+                    </TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -170,29 +377,68 @@ export default function AdminBilling() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="credit-logs">
+        {/* Credit Explanations Tab */}
+        <TabsContent value="explanations">
           <Card className="border-border/40 bg-card/50">
-            <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Credit Logs</CardTitle></CardHeader>
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-semibold">Credit Usage Explanations</CardTitle>
+              <Button size="sm" className="gap-1.5 text-xs" onClick={() => setEditEx('new')}><Plus size={14} /> Add Card</Button>
+            </CardHeader>
             <Table>
               <TableHeader>
                 <TableRow className="border-border/40">
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">User</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Change</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Reason</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Tool</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Date</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Source</TableHead>
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Title (EN)</TableHead>
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Subtitle (EN)</TableHead>
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Icon</TableHead>
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Status</TableHead>
+                  <TableHead className="w-20" />
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {creditLogs.map((l, i) => (
-                  <TableRow key={i} className="border-border/20">
-                    <TableCell className="text-[13px] font-medium">{l.user}</TableCell>
-                    <TableCell className={`text-[13px] font-bold ${l.change.startsWith('+') ? 'text-emerald-400' : 'text-destructive'}`}>{l.change}</TableCell>
-                    <TableCell className="text-[13px] text-muted-foreground">{l.reason}</TableCell>
-                    <TableCell className="text-[13px] text-muted-foreground">{l.tool}</TableCell>
-                    <TableCell className="text-[12px] text-muted-foreground">{l.date}</TableCell>
-                    <TableCell><Badge variant="outline" className="text-[10px] capitalize">{l.type}</Badge></TableCell>
+                {explanations.map(ex => (
+                  <TableRow key={ex.id} className="border-border/20">
+                    <TableCell className="text-[13px] font-medium">{ex.title_en}</TableCell>
+                    <TableCell className="text-[13px] text-muted-foreground">{ex.subtitle_en}</TableCell>
+                    <TableCell className="text-[13px]">{ex.icon}</TableCell>
+                    <TableCell><Badge variant="outline" className={`text-[10px] ${ex.active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>{ex.active ? 'Active' : 'Inactive'}</Badge></TableCell>
+                    <TableCell>
+                      <div className="flex gap-1">
+                        <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditEx(ex)}><Edit size={12} /></Button>
+                        <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive" onClick={() => { if (confirm('Delete?')) deleteEx.mutate(ex.id); }}><Trash2 size={12} /></Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </Card>
+        </TabsContent>
+
+        {/* Page Content Tab */}
+        <TabsContent value="page-content">
+          <Card className="border-border/40 bg-card/50">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-sm font-semibold">Pricing Page Content</CardTitle>
+              <Button size="sm" className="gap-1.5 text-xs" onClick={() => setEditPc('new')}><Plus size={14} /> Add Content</Button>
+            </CardHeader>
+            <Table>
+              <TableHeader>
+                <TableRow className="border-border/40">
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Section</TableHead>
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Field</TableHead>
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Value (EN)</TableHead>
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Value (AR)</TableHead>
+                  <TableHead className="w-10" />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {pageContent.map(pc => (
+                  <TableRow key={pc.id} className="border-border/20">
+                    <TableCell className="text-[13px] font-medium">{pc.section_key}</TableCell>
+                    <TableCell className="text-[13px]">{pc.field_key}</TableCell>
+                    <TableCell className="text-[13px] text-muted-foreground truncate max-w-[200px]">{pc.value_en}</TableCell>
+                    <TableCell className="text-[13px] text-muted-foreground truncate max-w-[200px]" dir="rtl">{pc.value_ar}</TableCell>
+                    <TableCell><Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => setEditPc(pc)}><Edit size={12} /></Button></TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -200,6 +446,13 @@ export default function AdminBilling() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      {/* Editors */}
+      {editPlan && <PlanEditor plan={editPlan === 'new' ? null : editPlan} onClose={() => setEditPlan(null)} />}
+      {editPkg && <PackageEditor pkg={editPkg === 'new' ? null : editPkg} onClose={() => setEditPkg(null)} />}
+      {editFaq && <FaqEditor faq={editFaq === 'new' ? null : editFaq} onClose={() => setEditFaq(null)} />}
+      {editEx && <ExplanationEditor item={editEx === 'new' ? null : editEx} onClose={() => setEditEx(null)} />}
+      {editPc && <PageContentEditor item={editPc === 'new' ? null : editPc} onClose={() => setEditPc(null)} />}
     </div>
   );
 }
