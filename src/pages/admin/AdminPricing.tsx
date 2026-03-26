@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import {
   DollarSign, TrendingUp, AlertTriangle, Percent, Coins,
-  Settings2, Save, RefreshCw, Cpu, Wrench, Zap, BarChart3, Clock
+  Settings2, Save, RefreshCw, Cpu, Wrench, Zap, BarChart3, Clock, Loader2
 } from 'lucide-react';
 import { usePricingTiers } from '@/hooks/usePricingTiers';
 import { PricingMatrixCard } from '@/components/admin/PricingMatrixCard';
@@ -34,6 +34,11 @@ interface ModelRow {
   speed: string | null;
   best_for: string | null;
   supported_ratios: string[];
+  supported_sizes: string[];
+  default_ratio: string | null;
+  default_resolution: string | null;
+  max_resolution: string | null;
+  last_sync_at: string | null;
   pricing_mode: string;
 }
 
@@ -99,6 +104,8 @@ export default function AdminPricing() {
   const [providers, setProviders] = useState<ProviderRow[]>([]);
   const [stats, setStats] = useState<GenStats>({ total_generations: 0, total_cost: 0, total_revenue: 0, total_margin: 0 });
   const [saving, setSaving] = useState(false);
+  const [syncing, setSyncing] = useState(false);
+  const [expandedModel, setExpandedModel] = useState<string | null>(null);
 
   const { allTiers, syncLogs, addTier, updateTier, deleteTier, reload: reloadTiers, reloadLogs } = usePricingTiers();
 
@@ -313,18 +320,34 @@ export default function AdminPricing() {
         </TabsContent>
 
         {/* ── MODELS ── */}
-        <TabsContent value="models" className="mt-4">
+        <TabsContent value="models" className="mt-4 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">Model capabilities & pricing from fal.ai API + admin overrides</p>
+            <Button variant="outline" size="sm" className="gap-2 text-xs" disabled={syncing} onClick={async () => {
+              setSyncing(true);
+              try {
+                const { data, error } = await supabase.functions.invoke('sync-models', { body: {} });
+                if (error) throw error;
+                toast.success(`Synced ${data.models_synced}/${data.models_checked} models`);
+                load();
+              } catch (e: any) { toast.error(e.message); }
+              finally { setSyncing(false); }
+            }}>
+              {syncing ? <Loader2 size={14} className="animate-spin" /> : <RefreshCw size={14} />}
+              Sync All Models
+            </Button>
+          </div>
           <div className="rounded-2xl border border-border/10 overflow-hidden">
             <table className="w-full text-sm">
               <thead><tr className="border-b border-border/10 bg-muted/5">
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Model</th>
-                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Pricing Mode</th>
-                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Provider Cost</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Input</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Ratios</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Cost</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Credits</th>
-                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Revenue</th>
-                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Margin</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Margin %</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Tiers</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Synced</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Active</th>
               </tr></thead>
               <tbody>
@@ -332,31 +355,110 @@ export default function AdminPricing() {
                   const mm = modelMargin(m);
                   const cr = m.credits_per_generation || creditSettings?.default_credits_per_generation || 2;
                   const tierCount = (allTiers[m.id] || []).length;
+                  const isExpanded = expandedModel === m.id;
                   return (
-                    <tr key={m.id} className="border-b border-border/5 hover:bg-muted/5">
-                      <td className="px-4 py-3">
-                        <p className="font-medium text-foreground">{m.model_name}</p>
-                        <p className="text-[11px] text-muted-foreground">{m.endpoint_id}</p>
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge variant="outline" className="text-[10px]">{m.pricing_mode || 'fixed'}</Badge>
-                      </td>
-                      <td className="px-4 py-3 text-muted-foreground">${(m.cost_per_run || 0).toFixed(4)}</td>
-                      <td className="px-4 py-3">
-                        <Input type="number" className="w-16 h-8 text-xs" value={cr} onChange={e => updateModelCredits(m.id, Number(e.target.value))} />
-                      </td>
-                      <td className="px-4 py-3 text-emerald-400">${mm.rev.toFixed(4)}</td>
-                      <td className="px-4 py-3"><span className={mm.margin >= 0 ? 'text-emerald-400' : 'text-red-400'}>${mm.margin.toFixed(4)}</span></td>
-                      <td className="px-4 py-3">
-                        <Badge variant={mm.pct < 0 ? 'destructive' : mm.pct < 20 ? 'secondary' : 'default'} className="text-[10px]">
-                          {mm.pct.toFixed(1)}%
-                        </Badge>
-                      </td>
-                      <td className="px-4 py-3">
-                        <Badge variant="outline" className="text-[10px]">{tierCount} tiers</Badge>
-                      </td>
-                      <td className="px-4 py-3"><Badge variant={m.is_active ? 'default' : 'secondary'} className="text-[10px]">{m.is_active ? 'Active' : 'Off'}</Badge></td>
-                    </tr>
+                    <>
+                      <tr key={m.id} className="border-b border-border/5 hover:bg-muted/5 cursor-pointer" onClick={() => setExpandedModel(isExpanded ? null : m.id)}>
+                        <td className="px-4 py-3">
+                          <p className="font-medium text-foreground">{m.model_name}</p>
+                          <p className="text-[11px] text-muted-foreground font-mono">{m.endpoint_id}</p>
+                        </td>
+                        <td className="px-4 py-3">
+                          <Badge variant="outline" className={`text-[10px] ${m.input_type === 'aspect_ratio' ? 'bg-primary/10 text-primary border-primary/20' : ''}`}>{m.input_type}</Badge>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-wrap gap-0.5 max-w-[120px]">
+                            {(m.supported_ratios || []).slice(0, 3).map(r => <Badge key={r} variant="outline" className="text-[9px] py-0 px-1">{r}</Badge>)}
+                            {(m.supported_ratios || []).length > 3 && <Badge variant="outline" className="text-[9px] py-0 px-1">+{m.supported_ratios.length - 3}</Badge>}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3 text-muted-foreground">${(m.cost_per_run || 0).toFixed(4)}</td>
+                        <td className="px-4 py-3">
+                          <Input type="number" className="w-16 h-8 text-xs" value={cr} onClick={e => e.stopPropagation()} onChange={e => updateModelCredits(m.id, Number(e.target.value))} />
+                        </td>
+                        <td className="px-4 py-3">
+                          <Badge variant={mm.pct < 0 ? 'destructive' : mm.pct < 20 ? 'secondary' : 'default'} className="text-[10px]">{mm.pct.toFixed(1)}%</Badge>
+                        </td>
+                        <td className="px-4 py-3"><Badge variant="outline" className="text-[10px]">{tierCount}</Badge></td>
+                        <td className="px-4 py-3 text-[11px] text-muted-foreground">{m.last_sync_at ? new Date(m.last_sync_at).toLocaleDateString() : '-'}</td>
+                        <td className="px-4 py-3"><Badge variant={m.is_active ? 'default' : 'secondary'} className="text-[10px]">{m.is_active ? 'Active' : 'Off'}</Badge></td>
+                      </tr>
+                      {isExpanded && (
+                        <tr key={m.id + '-detail'} className="bg-muted/5 border-b border-border/10">
+                          <td colSpan={9} className="px-6 py-4">
+                            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
+                              <div>
+                                <p className="text-muted-foreground font-medium mb-1">Supported Ratios</p>
+                                <div className="flex flex-wrap gap-1">{(m.supported_ratios || []).map(r => <Badge key={r} variant="outline" className="text-[10px]">{r}</Badge>)}</div>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground font-medium mb-1">Supported Sizes</p>
+                                <div className="flex flex-wrap gap-1">{(m.supported_sizes || []).length > 0 ? m.supported_sizes.map(s => <Badge key={s} variant="outline" className="text-[10px]">{s}</Badge>) : <span className="text-muted-foreground">—</span>}</div>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground font-medium mb-1">Default Ratio / Resolution</p>
+                                <p className="text-foreground">{m.default_ratio || '—'} / {m.default_resolution || '—'}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground font-medium mb-1">Max Resolution</p>
+                                <p className="text-foreground">{m.max_resolution || '—'}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground font-medium mb-1">Speed</p>
+                                <p className="text-foreground">{m.speed || '—'}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground font-medium mb-1">Best For</p>
+                                <p className="text-foreground">{m.best_for || '—'}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground font-medium mb-1">Pricing Mode</p>
+                                <p className="text-foreground">{m.pricing_mode}</p>
+                              </div>
+                              <div>
+                                <p className="text-muted-foreground font-medium mb-1">Economics</p>
+                                <p className="text-foreground">Cost: ${(m.cost_per_run || 0).toFixed(4)} → Rev: ${mm.rev.toFixed(4)} → <span className={mm.margin >= 0 ? 'text-emerald-400' : 'text-red-400'}>Margin: ${mm.margin.toFixed(4)}</span></p>
+                              </div>
+                            </div>
+                            {tierCount > 0 && (
+                              <div className="mt-4">
+                                <p className="text-muted-foreground font-medium text-xs mb-2">Pricing Tiers</p>
+                                <div className="rounded-lg border border-border/10 overflow-hidden">
+                                  <table className="w-full text-xs">
+                                    <thead><tr className="bg-muted/10">
+                                      <th className="text-left px-3 py-2 text-muted-foreground">Tier</th>
+                                      <th className="text-left px-3 py-2 text-muted-foreground">Quality</th>
+                                      <th className="text-left px-3 py-2 text-muted-foreground">Resolution</th>
+                                      <th className="text-left px-3 py-2 text-muted-foreground">Provider Cost</th>
+                                      <th className="text-left px-3 py-2 text-muted-foreground">Credits</th>
+                                      <th className="text-left px-3 py-2 text-muted-foreground">Revenue</th>
+                                      <th className="text-left px-3 py-2 text-muted-foreground">Margin</th>
+                                    </tr></thead>
+                                    <tbody>
+                                      {(allTiers[m.id] || []).map(t => {
+                                        const tRev = t.credits_charged * creditVal;
+                                        const tMargin = tRev - t.cost_per_run;
+                                        return (
+                                          <tr key={t.id} className="border-t border-border/5">
+                                            <td className="px-3 py-2 font-medium">{t.tier_label}</td>
+                                            <td className="px-3 py-2">{t.quality_level || '—'}</td>
+                                            <td className="px-3 py-2 font-mono">{t.resolution_key || '—'}</td>
+                                            <td className="px-3 py-2">${t.cost_per_run.toFixed(4)}</td>
+                                            <td className="px-3 py-2">{t.credits_charged}</td>
+                                            <td className="px-3 py-2 text-emerald-400">${tRev.toFixed(4)}</td>
+                                            <td className={`px-3 py-2 ${tMargin >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>${tMargin.toFixed(4)}</td>
+                                          </tr>
+                                        );
+                                      })}
+                                    </tbody>
+                                  </table>
+                                </div>
+                              </div>
+                            )}
+                          </td>
+                        </tr>
+                      )}
+                    </>
                   );
                 })}
               </tbody>
