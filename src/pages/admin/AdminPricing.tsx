@@ -342,6 +342,7 @@ export default function AdminPricing() {
               <thead><tr className="border-b border-border/10 bg-muted/5">
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Model</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Input</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Quality Tiers</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Ratios</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Cost</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Credits</th>
@@ -365,6 +366,11 @@ export default function AdminPricing() {
                         </td>
                         <td className="px-4 py-3">
                           <Badge variant="outline" className={`text-[10px] ${m.input_type === 'aspect_ratio' ? 'bg-primary/10 text-primary border-primary/20' : ''}`}>{m.input_type}</Badge>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-wrap gap-0.5 max-w-[120px]">
+                            {((m as any).supported_quality_tiers || ['1K']).map((q: string) => <Badge key={q} variant="outline" className="text-[9px] py-0 px-1 bg-primary/10 text-primary border-primary/20">{q}</Badge>)}
+                          </div>
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex flex-wrap gap-0.5 max-w-[120px]">
