@@ -3,6 +3,7 @@ import { Upload, ChevronDown, Sparkles, X, Coins, Box, Cpu, Maximize, Image as I
 import { useApp, TEMPLATE_PROMPTS, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useModels, ModelRecord } from '@/hooks/useModels';
+import { usePricing } from '@/hooks/usePricing';
 import { Badge } from '@/components/ui/badge';
 
 const RESOLUTIONS = [
