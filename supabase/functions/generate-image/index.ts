@@ -44,14 +44,29 @@ const RATIO_TO_PRESET: Record<string, string> = {
   "2:3": "portrait_4_3",
 };
 
-function resolveImageSize(ratio: string, qualityTier: string | null): { width: number; height: number } {
+function parseMaxResolution(maxRes: string | null): { maxW: number; maxH: number } {
+  if (!maxRes) return { maxW: 4096, maxH: 4096 };
+  const parts = maxRes.toLowerCase().split("x");
+  if (parts.length === 2) {
+    const w = parseInt(parts[0]); const h = parseInt(parts[1]);
+    if (!isNaN(w) && !isNaN(h)) return { maxW: w, maxH: h };
+  }
+  const single = parseInt(maxRes);
+  if (!isNaN(single)) return { maxW: single, maxH: single };
+  return { maxW: 4096, maxH: 4096 };
+}
+
+function resolveImageSize(ratio: string, qualityTier: string | null, maxRes?: string | null): { width: number; height: number } {
   const base = RATIO_BASE_DIMS[ratio] || RATIO_BASE_DIMS["1:1"];
   const mult = QUALITY_MULTIPLIERS[qualityTier || "1K"] || 1;
   // Round to nearest multiple of 32 (fal.ai requirement)
-  const w = Math.round((base.w * mult) / 32) * 32;
-  const h = Math.round((base.h * mult) / 32) * 32;
-  // Cap at reasonable max (most models max at ~4096)
-  return { width: Math.min(w, 4096), height: Math.min(h, 4096) };
+  let w = Math.round((base.w * mult) / 32) * 32;
+  let h = Math.round((base.h * mult) / 32) * 32;
+  // Cap to model max resolution
+  const { maxW, maxH } = parseMaxResolution(maxRes || null);
+  w = Math.min(w, maxW);
+  h = Math.min(h, maxH);
+  return { width: w, height: h };
 }
 
 serve(async (req) => {
