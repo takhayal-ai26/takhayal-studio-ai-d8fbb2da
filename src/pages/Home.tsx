@@ -37,15 +37,17 @@ export default function Home() {
   const [sliderPos, setSliderPos] = useState(50);
   const sliderRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
+  const { getUrlByName } = useMedia();
 
   const categories = [
-    { title: t.landing.catProductAds, image: categoryProduct },
-    { title: t.landing.catSocialMedia, image: categorySocial },
-    { title: t.landing.catLogos, image: categoryLogos },
-    { title: t.landing.catPosters, image: categoryPosters },
-    { title: t.landing.catFashion, image: categoryFashion },
-    { title: t.landing.catFoodRestaurant, image: categoryFood },
+    { title: t.landing.catProductAds, image: getUrlByName('category-product.jpg') },
+    { title: t.landing.catSocialMedia, image: getUrlByName('category-social.jpg') },
+    { title: t.landing.catLogos, image: getUrlByName('category-logos.jpg') },
+    { title: t.landing.catPosters, image: getUrlByName('category-posters.jpg') },
+    { title: t.landing.catFashion, image: getUrlByName('category-fashion.jpg') },
+    { title: t.landing.catFoodRestaurant, image: getUrlByName('category-food.jpg') },
   ];
+  const beforeAfter = getUrlByName('before-after.jpg');
 
   const steps = [
     { icon: PenTool, title: t.landing.step1Title, desc: t.landing.step1Desc },
