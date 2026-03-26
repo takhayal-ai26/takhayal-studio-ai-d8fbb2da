@@ -299,6 +299,7 @@ export type Database = {
           provider_id: string | null
           provider_name: string
           speed: string | null
+          supported_quality_tiers: Json
           supported_ratios: Json
           supported_sizes: Json
           updated_at: string
@@ -324,6 +325,7 @@ export type Database = {
           provider_id?: string | null
           provider_name?: string
           speed?: string | null
+          supported_quality_tiers?: Json
           supported_ratios?: Json
           supported_sizes?: Json
           updated_at?: string
@@ -349,6 +351,7 @@ export type Database = {
           provider_id?: string | null
           provider_name?: string
           speed?: string | null
+          supported_quality_tiers?: Json
           supported_ratios?: Json
           supported_sizes?: Json
           updated_at?: string
