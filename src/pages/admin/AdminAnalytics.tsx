@@ -2,6 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, TrendingUp, Users, Zap } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
+import EconomicsTab from '@/components/admin/EconomicsTab';
 
 const trafficData = [
   { date: 'Mar 18', visits: 2400, signups: 120 }, { date: 'Mar 19', visits: 2800, signups: 145 },
