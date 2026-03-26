@@ -3,7 +3,7 @@ import { X, Mail } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { LogoMark } from '@/components/Logo';
-import authVisual from '@/assets/auth-visual.jpg';
+import { useMedia } from '@/hooks/useMedia';
 
 export function AuthModal() {
   const { authModalOpen, authModalTab, login, closeAuthModal } = useApp();
