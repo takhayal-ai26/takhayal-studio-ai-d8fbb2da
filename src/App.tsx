@@ -82,12 +82,8 @@ const App = () => (
               <Route path="/users" element={<Navigate to="/admin/users" replace />} />
               <Route path="/billing" element={<Navigate to="/admin/billing" replace />} />
               <Route path="/pricing-economics" element={<Navigate to="/admin/pricing" replace />} />
-              <Route path="/pricing" element={<Pricing />} />
-              <Route path="/tools" element={<ToolsDirectory />} />
               <Route path="/models" element={<Navigate to="/admin/models" replace />} />
-              <Route path="/templates-admin" element={<Navigate to="/admin/templates" replace />} />
               <Route path="/content" element={<Navigate to="/admin/content" replace />} />
-              <Route path="/community-admin" element={<Navigate to="/admin/community" replace />} />
               <Route path="/media" element={<Navigate to="/admin/media" replace />} />
               <Route path="/analytics" element={<Navigate to="/admin/analytics" replace />} />
               <Route path="/support" element={<Navigate to="/admin/support" replace />} />
