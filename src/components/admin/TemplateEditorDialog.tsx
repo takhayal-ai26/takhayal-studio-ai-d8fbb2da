@@ -61,6 +61,7 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
       setForm(template ? { ...template, tags: [...template.tags] } : newTemplate());
       setErrors({});
       setTagInput('');
+      setTagInputAr('');
     }
   }, [open, template]);
 
@@ -106,14 +107,16 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
   };
 
   const addTag = () => {
-    const t = tagInput.trim();
-    if (t && !form.tags.includes(t)) {
-      setForm(p => ({ ...p, tags: [...p.tags, t] }));
+    const en = tagInput.trim();
+    const ar = tagInputAr.trim();
+    if (en && !form.tags.some(t => t.en === en)) {
+      setForm(p => ({ ...p, tags: [...p.tags, { en, ar }] }));
       setTagInput('');
+      setTagInputAr('');
     }
   };
 
-  const removeTag = (tag: string) => setForm(p => ({ ...p, tags: p.tags.filter(t => t !== tag) }));
+  const removeTag = (tag: BilingualTag) => setForm(p => ({ ...p, tags: p.tags.filter(t => t.en !== tag.en) }));
 
   const BiField = ({ label, path, textarea }: { label: string; path: string; textarea?: boolean }) => {
     const val = getBi(path);
