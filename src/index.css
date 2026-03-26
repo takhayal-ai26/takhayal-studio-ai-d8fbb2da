@@ -119,133 +119,69 @@
 }
 
 /* Generation grid card animations */
-
-/* Queued state — soft breathing pulse */
-.gen-card-queued {
-  animation: genQueuedPulse 2.5s ease-in-out infinite;
+.gen-card-processing {
+  animation: genBreathe 3s ease-in-out infinite;
 }
 
-@keyframes genQueuedPulse {
-  0%, 100% { opacity: 0.7; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.003); }
+@keyframes genBreathe {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.005); }
 }
 
-/* Generating state — premium shimmer */
 .gen-shimmer {
   background: linear-gradient(
-    110deg,
+    135deg,
     hsl(var(--card)) 0%,
-    hsl(var(--card)) 30%,
-    hsl(var(--muted) / 0.6) 50%,
-    hsl(var(--card)) 70%,
+    hsl(var(--muted)) 25%,
+    hsl(var(--card)) 50%,
+    hsl(var(--muted)) 75%,
     hsl(var(--card)) 100%
   );
-  background-size: 300% 100%;
-  animation: genShimmerSlide 2s ease-in-out infinite;
+  background-size: 400% 400%;
+  animation: genShimmer 3s ease infinite;
 }
 
-@keyframes genShimmerSlide {
-  0% { background-position: 150% 0; }
-  100% { background-position: -150% 0; }
+@keyframes genShimmer {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
 }
 
 .gen-glow {
-  animation: genGlowPulse 3s ease-in-out infinite;
+  box-shadow: inset 0 0 60px hsl(var(--primary) / 0.04);
+  animation: genGlow 2.5s ease-in-out infinite;
 }
 
-@keyframes genGlowPulse {
-  0%, 100% { box-shadow: inset 0 0 30px hsl(var(--primary) / 0.02), 0 0 0 0 hsl(var(--primary) / 0); }
-  50% { box-shadow: inset 0 0 60px hsl(var(--primary) / 0.06), 0 0 30px -10px hsl(var(--primary) / 0.08); }
+@keyframes genGlow {
+  0%, 100% { box-shadow: inset 0 0 40px hsl(var(--primary) / 0.03); }
+  50% { box-shadow: inset 0 0 80px hsl(var(--primary) / 0.08); }
 }
 
-/* Generating state — orbiting dot */
-.gen-orbit {
+.gen-sweep::after {
+  content: '';
   position: absolute;
   inset: 0;
-  pointer-events: none;
-}
-
-.gen-orbit::before {
-  content: '';
-  position: absolute;
-  width: 6px;
-  height: 6px;
-  background: hsl(var(--primary));
-  border-radius: 50%;
-  filter: blur(2px);
-  box-shadow: 0 0 12px 4px hsl(var(--primary) / 0.3);
-  animation: genOrbit 4s linear infinite;
-  offset-path: path('M0,0 Q50,-10 100,0 Q110,50 100,100 Q50,110 0,100 Q-10,50 0,0');
-  offset-distance: 0%;
-}
-
-@keyframes genOrbit {
-  0% { offset-distance: 0%; opacity: 0.5; }
-  25% { opacity: 1; }
-  50% { offset-distance: 50%; opacity: 0.5; }
-  75% { opacity: 1; }
-  100% { offset-distance: 100%; opacity: 0.5; }
-}
-
-/* Generating state — border glow trace */
-.gen-border-glow {
-  position: relative;
-}
-
-.gen-border-glow::before {
-  content: '';
-  position: absolute;
-  inset: -1px;
-  border-radius: inherit;
-  background: conic-gradient(
-    from var(--gen-glow-angle, 0deg),
-    transparent 0%,
-    transparent 60%,
-    hsl(var(--primary) / 0.4) 75%,
-    hsl(var(--primary) / 0.6) 80%,
-    hsl(var(--primary) / 0.4) 85%,
-    transparent 100%
+  background: linear-gradient(
+    105deg,
+    transparent 40%,
+    hsl(var(--primary) / 0.08) 50%,
+    transparent 60%
   );
-  animation: genBorderTrace 3s linear infinite;
-  z-index: -1;
-  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
-  mask-composite: exclude;
-  padding: 1.5px;
+  animation: genSweep 2s ease-in-out infinite;
 }
 
-@keyframes genBorderTrace {
-  0% { --gen-glow-angle: 0deg; }
-  100% { --gen-glow-angle: 360deg; }
+@keyframes genSweep {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(100%); }
 }
 
-@property --gen-glow-angle {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
-}
-
-/* Completed — reveal with blur-out */
 .gen-reveal {
-  animation: genReveal 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  animation: genReveal 0.8s ease-out forwards;
 }
 
 @keyframes genReveal {
-  0% { filter: blur(16px) saturate(0.5); transform: scale(1.03); opacity: 0; }
-  40% { opacity: 1; }
-  100% { filter: blur(0) saturate(1); transform: scale(1); opacity: 1; }
-}
-
-/* Failed — subtle shake */
-.gen-card-failed {
-  animation: genShake 0.4s ease-out;
-}
-
-@keyframes genShake {
-  0%, 100% { transform: translateX(0); }
-  20% { transform: translateX(-4px); }
-  40% { transform: translateX(4px); }
-  60% { transform: translateX(-2px); }
-  80% { transform: translateX(2px); }
+  0% { filter: blur(12px); transform: scale(1.02); }
+  100% { filter: blur(0); transform: scale(1); }
 }
 
 /* Modal animations */
