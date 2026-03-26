@@ -53,6 +53,7 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [tagInput, setTagInput] = useState('');
+  const [tagInputAr, setTagInputAr] = useState('');
   const isEdit = !!template;
 
   useEffect(() => {
