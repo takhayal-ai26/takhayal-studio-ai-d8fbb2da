@@ -62,6 +62,7 @@ export default function AdminAnalytics() {
           <TabsTrigger value="tools" className="text-xs">Tool Usage</TabsTrigger>
           <TabsTrigger value="retention" className="text-xs">Retention</TabsTrigger>
           <TabsTrigger value="revenue" className="text-xs">Revenue</TabsTrigger>
+          <TabsTrigger value="economics" className="text-xs">Economics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="traffic">
