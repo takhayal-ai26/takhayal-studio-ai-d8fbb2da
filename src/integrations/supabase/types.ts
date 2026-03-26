@@ -55,6 +55,7 @@ export type Database = {
           prompt: string | null
           provider_cost: number
           provider_id: string | null
+          quality_tier: string | null
           ratio: string | null
           resolution: string | null
           revenue: number
@@ -71,6 +72,7 @@ export type Database = {
           prompt?: string | null
           provider_cost?: number
           provider_id?: string | null
+          quality_tier?: string | null
           ratio?: string | null
           resolution?: string | null
           revenue?: number
@@ -87,6 +89,7 @@ export type Database = {
           prompt?: string | null
           provider_cost?: number
           provider_id?: string | null
+          quality_tier?: string | null
           ratio?: string | null
           resolution?: string | null
           revenue?: number
@@ -110,6 +113,71 @@ export type Database = {
           },
         ]
       }
+      model_pricing_tiers: {
+        Row: {
+          aspect_ratio: string | null
+          cost_per_run: number
+          created_at: string
+          credits_charged: number
+          height: number | null
+          id: string
+          is_default: boolean
+          megapixels: number | null
+          model_id: string
+          notes: string | null
+          pricing_mode: string
+          quality_level: string | null
+          resolution_key: string | null
+          tier_label: string
+          updated_at: string
+          width: number | null
+        }
+        Insert: {
+          aspect_ratio?: string | null
+          cost_per_run?: number
+          created_at?: string
+          credits_charged?: number
+          height?: number | null
+          id?: string
+          is_default?: boolean
+          megapixels?: number | null
+          model_id: string
+          notes?: string | null
+          pricing_mode?: string
+          quality_level?: string | null
+          resolution_key?: string | null
+          tier_label?: string
+          updated_at?: string
+          width?: number | null
+        }
+        Update: {
+          aspect_ratio?: string | null
+          cost_per_run?: number
+          created_at?: string
+          credits_charged?: number
+          height?: number | null
+          id?: string
+          is_default?: boolean
+          megapixels?: number | null
+          model_id?: string
+          notes?: string | null
+          pricing_mode?: string
+          quality_level?: string | null
+          resolution_key?: string | null
+          tier_label?: string
+          updated_at?: string
+          width?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "model_pricing_tiers_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       models: {
         Row: {
           admin_overrides: Json
@@ -128,6 +196,7 @@ export type Database = {
           max_resolution: string | null
           model_name: string
           notes: string | null
+          pricing_mode: string
           provider_id: string | null
           provider_name: string
           speed: string | null
@@ -152,6 +221,7 @@ export type Database = {
           max_resolution?: string | null
           model_name: string
           notes?: string | null
+          pricing_mode?: string
           provider_id?: string | null
           provider_name?: string
           speed?: string | null
@@ -176,6 +246,7 @@ export type Database = {
           max_resolution?: string | null
           model_name?: string
           notes?: string | null
+          pricing_mode?: string
           provider_id?: string | null
           provider_name?: string
           speed?: string | null
@@ -186,6 +257,47 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "models_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "provider_configs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pricing_sync_logs: {
+        Row: {
+          created_at: string
+          details: Json
+          error_message: string | null
+          id: string
+          provider_id: string | null
+          provider_name: string
+          sync_status: string
+          synced_models_count: number
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          error_message?: string | null
+          id?: string
+          provider_id?: string | null
+          provider_name: string
+          sync_status?: string
+          synced_models_count?: number
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          error_message?: string | null
+          id?: string
+          provider_id?: string | null
+          provider_name?: string
+          sync_status?: string
+          synced_models_count?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_sync_logs_provider_id_fkey"
             columns: ["provider_id"]
             isOneToOne: false
             referencedRelation: "provider_configs"

@@ -8,8 +8,10 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import {
   DollarSign, TrendingUp, AlertTriangle, Percent, Coins,
-  Settings2, Save, RefreshCw, Cpu, Wrench, Zap, BarChart3
+  Settings2, Save, RefreshCw, Cpu, Wrench, Zap, BarChart3, Clock
 } from 'lucide-react';
+import { usePricingTiers } from '@/hooks/usePricingTiers';
+import { PricingMatrixCard } from '@/components/admin/PricingMatrixCard';
 
 /* ───── types ───── */
 interface CreditSettings {
@@ -32,6 +34,7 @@ interface ModelRow {
   speed: string | null;
   best_for: string | null;
   supported_ratios: string[];
+  pricing_mode: string;
 }
 
 interface ToolPricing {
@@ -97,6 +100,8 @@ export default function AdminPricing() {
   const [stats, setStats] = useState<GenStats>({ total_generations: 0, total_cost: 0, total_revenue: 0, total_margin: 0 });
   const [saving, setSaving] = useState(false);
 
+  const { allTiers, syncLogs, addTier, updateTier, deleteTier, reload: reloadTiers, reloadLogs } = usePricingTiers();
+
   const load = useCallback(async () => {
     const [csRes, mRes, tRes, pRes, sRes] = await Promise.all([
       supabase.from('credit_settings').select('*').limit(1).single(),
@@ -118,11 +123,12 @@ export default function AdminPricing() {
         total_margin: logs.reduce((s, l) => s + (l.margin || 0), 0),
       });
     }
-  }, []);
+    reloadTiers();
+    reloadLogs();
+  }, [reloadTiers, reloadLogs]);
 
   useEffect(() => { load(); }, [load]);
 
-  /* ── save credit settings ── */
   const saveCreditSettings = async () => {
     if (!creditSettings) return;
     setSaving(true);
@@ -137,13 +143,11 @@ export default function AdminPricing() {
     if (error) toast.error('Failed to save'); else toast.success('Credit settings saved');
   };
 
-  /* ── save model credits ── */
   const updateModelCredits = async (id: string, credits: number) => {
     const { error } = await supabase.from('models').update({ credits_per_generation: credits, updated_at: new Date().toISOString() }).eq('id', id);
     if (error) toast.error('Failed'); else { setModels(prev => prev.map(m => m.id === id ? { ...m, credits_per_generation: credits } : m)); toast.success('Updated'); }
   };
 
-  /* ── save tool pricing ── */
   const updateTool = async (t: ToolPricing) => {
     const { error } = await supabase.from('tools_pricing').update({
       credits_per_generation: t.credits_per_generation,
@@ -157,7 +161,6 @@ export default function AdminPricing() {
     if (error) toast.error('Failed'); else toast.success('Tool pricing saved');
   };
 
-  /* ── save provider pricing ── */
   const updateProvider = async (p: ProviderRow) => {
     const { error } = await supabase.from('provider_configs').update({
       pricing_type: p.pricing_type,
@@ -173,7 +176,6 @@ export default function AdminPricing() {
   const avgMarginPct = stats.total_revenue > 0 ? ((stats.total_margin / stats.total_revenue) * 100).toFixed(1) : '0';
   const creditVal = creditSettings?.credit_value_usd || 0.02;
 
-  /* helper: compute margin for a model */
   const modelMargin = (m: ModelRow) => {
     const cr = m.credits_per_generation || creditSettings?.default_credits_per_generation || 2;
     const rev = cr * creditVal;
@@ -181,7 +183,6 @@ export default function AdminPricing() {
     return { rev, cost, margin: rev - cost, pct: rev > 0 ? ((rev - cost) / rev * 100) : 0 };
   };
 
-  /* ── seed default tools ── */
   const seedTools = async () => {
     const defaults = [
       { tool_id: 'generate-image', tool_name: 'Generate Image', credits_per_generation: 2 },
@@ -194,6 +195,13 @@ export default function AdminPricing() {
     }
     toast.success('Default tools seeded');
     load();
+  };
+
+  const syncStatusColor: Record<string, string> = {
+    success: 'text-emerald-400 bg-emerald-500/10',
+    partial: 'text-amber-400 bg-amber-500/10',
+    failed: 'text-red-400 bg-red-500/10',
+    pending: 'text-muted-foreground bg-muted/10',
   };
 
   return (
@@ -230,7 +238,9 @@ export default function AdminPricing() {
           <TabsTrigger value="overview" className="gap-1.5"><Settings2 size={14} />Credit System</TabsTrigger>
           <TabsTrigger value="providers" className="gap-1.5"><Zap size={14} />Providers</TabsTrigger>
           <TabsTrigger value="models" className="gap-1.5"><Cpu size={14} />Models</TabsTrigger>
+          <TabsTrigger value="matrix" className="gap-1.5"><BarChart3 size={14} />Pricing Matrix</TabsTrigger>
           <TabsTrigger value="tools" className="gap-1.5"><Wrench size={14} />Tools</TabsTrigger>
+          <TabsTrigger value="sync" className="gap-1.5"><Clock size={14} />Sync Logs</TabsTrigger>
         </TabsList>
 
         {/* ── CREDIT SYSTEM ── */}
@@ -259,7 +269,7 @@ export default function AdminPricing() {
           </div>
           <div className="rounded-xl border border-border/10 bg-card/60 p-4 text-xs text-muted-foreground space-y-1">
             <p><strong>Pricing Hierarchy:</strong></p>
-            <p>1. Tool override (highest) → 2. Model pricing → 3. Provider fallback</p>
+            <p>1. Tool override (highest) → 2. Model pricing tier (quality-based) → 3. Model base pricing → 4. Provider fallback</p>
           </div>
         </TabsContent>
 
@@ -308,22 +318,28 @@ export default function AdminPricing() {
             <table className="w-full text-sm">
               <thead><tr className="border-b border-border/10 bg-muted/5">
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Model</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Pricing Mode</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Provider Cost</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Credits</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Revenue</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Margin</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Margin %</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Tiers</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Active</th>
               </tr></thead>
               <tbody>
                 {models.map(m => {
                   const mm = modelMargin(m);
                   const cr = m.credits_per_generation || creditSettings?.default_credits_per_generation || 2;
+                  const tierCount = (allTiers[m.id] || []).length;
                   return (
                     <tr key={m.id} className="border-b border-border/5 hover:bg-muted/5">
                       <td className="px-4 py-3">
                         <p className="font-medium text-foreground">{m.model_name}</p>
                         <p className="text-[11px] text-muted-foreground">{m.endpoint_id}</p>
+                      </td>
+                      <td className="px-4 py-3">
+                        <Badge variant="outline" className="text-[10px]">{m.pricing_mode || 'fixed'}</Badge>
                       </td>
                       <td className="px-4 py-3 text-muted-foreground">${(m.cost_per_run || 0).toFixed(4)}</td>
                       <td className="px-4 py-3">
@@ -336,6 +352,9 @@ export default function AdminPricing() {
                           {mm.pct.toFixed(1)}%
                         </Badge>
                       </td>
+                      <td className="px-4 py-3">
+                        <Badge variant="outline" className="text-[10px]">{tierCount} tiers</Badge>
+                      </td>
                       <td className="px-4 py-3"><Badge variant={m.is_active ? 'default' : 'secondary'} className="text-[10px]">{m.is_active ? 'Active' : 'Off'}</Badge></td>
                     </tr>
                   );
@@ -343,6 +362,28 @@ export default function AdminPricing() {
               </tbody>
             </table>
           </div>
+        </TabsContent>
+
+        {/* ── PRICING MATRIX ── */}
+        <TabsContent value="matrix" className="mt-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <p className="text-sm text-muted-foreground">Quality & resolution-based pricing per model. Revenue/margin auto-calculated from credit value (${creditVal}/credit).</p>
+          </div>
+          {models.filter(m => m.is_active).map(m => (
+            <PricingMatrixCard
+              key={m.id}
+              modelId={m.id}
+              modelName={m.model_name}
+              tiers={allTiers[m.id] || []}
+              creditValueUsd={creditVal}
+              onAdd={addTier}
+              onUpdate={updateTier}
+              onDelete={deleteTier}
+            />
+          ))}
+          {models.filter(m => m.is_active).length === 0 && (
+            <p className="text-center text-muted-foreground py-8">No active models. Enable models in Models & Providers.</p>
+          )}
         </TabsContent>
 
         {/* ── TOOLS ── */}
@@ -384,6 +425,37 @@ export default function AdminPricing() {
               </table>
             </div>
           )}
+        </TabsContent>
+
+        {/* ── SYNC LOGS ── */}
+        <TabsContent value="sync" className="mt-4">
+          <div className="rounded-2xl border border-border/10 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-border/10 bg-muted/5">
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Provider</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Status</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Models Synced</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Error</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Time</th>
+              </tr></thead>
+              <tbody>
+                {syncLogs.map(log => (
+                  <tr key={log.id} className="border-b border-border/5 hover:bg-muted/5">
+                    <td className="px-4 py-3 font-medium text-foreground">{log.provider_name}</td>
+                    <td className="px-4 py-3">
+                      <Badge className={`text-[10px] ${syncStatusColor[log.sync_status] || ''}`}>{log.sync_status}</Badge>
+                    </td>
+                    <td className="px-4 py-3 text-muted-foreground">{log.synced_models_count}</td>
+                    <td className="px-4 py-3 text-[11px] text-red-400 max-w-[200px] truncate">{log.error_message || '-'}</td>
+                    <td className="px-4 py-3 text-[11px] text-muted-foreground">{new Date(log.created_at).toLocaleString()}</td>
+                  </tr>
+                ))}
+                {syncLogs.length === 0 && (
+                  <tr><td colSpan={5} className="text-center py-8 text-muted-foreground">No sync logs yet. Run "Sync from fal" in Models & Providers.</td></tr>
+                )}
+              </tbody>
+            </table>
+          </div>
         </TabsContent>
       </Tabs>
     </div>

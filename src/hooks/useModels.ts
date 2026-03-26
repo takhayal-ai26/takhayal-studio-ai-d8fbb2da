@@ -21,6 +21,8 @@ export interface ModelRecord {
   notes: string | null;
   admin_overrides: Record<string, unknown>;
   last_sync_at: string | null;
+  pricing_mode: string;
+  credits_per_generation: number | null;
   created_at: string;
   updated_at: string;
 }
@@ -32,6 +34,8 @@ function parseModel(row: any): ModelRecord {
     supported_ratios: Array.isArray(row.supported_ratios) ? row.supported_ratios : [],
     supported_sizes: Array.isArray(row.supported_sizes) ? row.supported_sizes : [],
     admin_overrides: row.admin_overrides || {},
+    pricing_mode: row.pricing_mode || 'fixed_per_image',
+    credits_per_generation: row.credits_per_generation ?? null,
   };
 }
 
@@ -57,15 +61,12 @@ export function useModels() {
 
   useEffect(() => {
     fetchModels();
-
-    // Realtime subscription
     const channel = supabase
       .channel('models-changes')
       .on('postgres_changes', { event: '*', schema: 'public', table: 'models' }, () => {
         fetchModels();
       })
       .subscribe();
-
     return () => { supabase.removeChannel(channel); };
   }, [fetchModels]);
 
@@ -74,7 +75,6 @@ export function useModels() {
       .from('models')
       .update({ ...updates, updated_at: new Date().toISOString() } as any)
       .eq('id', id);
-
     if (error) throw error;
     await fetchModels();
   }, [fetchModels]);

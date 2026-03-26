@@ -4,6 +4,7 @@ import { useApp, TEMPLATE_PROMPTS, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useModels, ModelRecord } from '@/hooks/useModels';
 import { usePricing } from '@/hooks/usePricing';
+import { usePricingTiers } from '@/hooks/usePricingTiers';
 import { Badge } from '@/components/ui/badge';
 
 const RESOLUTIONS = [
@@ -19,6 +20,7 @@ export function CreationPanel() {
   const { t } = useLanguage();
   const { activeModels, defaultModel } = useModels();
   const { getCreditsForModel } = usePricing();
+  const { getCreditsForModelQuality } = usePricingTiers();
 
   const [selectedModelId, setSelectedModelId] = useState<string>('');
   const [selectedResolution, setSelectedResolution] = useState<string>('2K');
@@ -26,7 +28,14 @@ export function CreationPanel() {
   const panelRef = useRef<HTMLDivElement>(null);
   
   const currentModel = activeModels.find(m => m.id === selectedModelId) || defaultModel || activeModels[0];
-  const cost = currentModel ? getCreditsForModel(currentModel.id) : getCreditCost();
+  
+  // Dynamic credit cost: tier-based > model-based > fallback
+  const cost = (() => {
+    if (!currentModel) return getCreditCost();
+    const tierCredits = getCreditsForModelQuality(currentModel.id, selectedResolution);
+    if (tierCredits !== null) return tierCredits;
+    return getCreditsForModel(currentModel.id);
+  })();
 
   // Set default model once loaded
   useEffect(() => {
@@ -36,8 +45,6 @@ export function CreationPanel() {
       setSelectedModelId(activeModels[0].id);
     }
   }, [defaultModel, activeModels, selectedModelId]);
-
-  // currentModel already declared above
 
   // Available ratios from current model
   const availableRatios = currentModel?.supported_ratios || ['1:1', '16:9', '9:16', '4:5'];
@@ -157,11 +164,23 @@ export function CreationPanel() {
             {openDropdown === 'resolution' && (
               <div className="absolute left-0 right-0 bottom-full mb-2 bg-card border border-border/20 rounded-2xl p-2 shadow-2xl shadow-black/40 z-50 animate-fade-in">
                 <p className="text-[10px] text-primary/40 uppercase tracking-wider font-medium px-3 pt-2 pb-2 flex items-center gap-1.5"><ImageIcon size={10} />{t.studio.selectQuality}</p>
-                {RESOLUTIONS.map(r => { const isActive = selectedResolution === r.value; return (
-                  <button key={r.value} onClick={() => handleResolution(r.value)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150 ${isActive ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted/10'}`}>
-                    <div className="flex items-center gap-2"><span>{r.label}</span><span className={`text-[10px] ${isActive ? 'text-primary/50' : 'text-muted-foreground/40'}`}>{resDescMap[r.descKey]}</span></div>
-                    {isActive && <Check size={13} className="text-primary" />}
-                  </button>); })}
+                {RESOLUTIONS.map(r => { 
+                  const isActive = selectedResolution === r.value;
+                  // Show dynamic credit cost per tier
+                  const tierCost = currentModel ? getCreditsForModelQuality(currentModel.id, r.value) : null;
+                  return (
+                    <button key={r.value} onClick={() => handleResolution(r.value)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150 ${isActive ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted/10'}`}>
+                      <div className="flex items-center gap-2">
+                        <span>{r.label}</span>
+                        <span className={`text-[10px] ${isActive ? 'text-primary/50' : 'text-muted-foreground/40'}`}>{resDescMap[r.descKey]}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {tierCost !== null && (
+                          <span className="text-[10px] text-muted-foreground flex items-center gap-0.5"><Coins size={9} />{tierCost}</span>
+                        )}
+                        {isActive && <Check size={13} className="text-primary" />}
+                      </div>
+                    </button>); })}
               </div>
             )}
           </div>

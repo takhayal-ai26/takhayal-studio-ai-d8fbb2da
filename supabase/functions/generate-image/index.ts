@@ -7,7 +7,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Map aspect ratios to fal image_size presets
 const RATIO_TO_IMAGE_SIZE: Record<string, string> = {
   "1:1": "square_hd",
   "16:9": "landscape_16_9",
@@ -32,7 +31,7 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    const { prompt, model_endpoint, aspect_ratio, image_size, num_images, input_type } = await req.json();
+    const { prompt, model_endpoint, aspect_ratio, image_size, num_images, input_type, quality_tier, model_id } = await req.json();
 
     if (!prompt || typeof prompt !== "string") {
       return new Response(
@@ -41,27 +40,74 @@ serve(async (req) => {
       );
     }
 
-    // Determine which model to use
     let endpoint = model_endpoint || "fal-ai/flux/schnell";
     let modelInputType = input_type || "image_size";
+    let resolvedModelId = model_id || null;
+    let creditsUsed = 2;
+    let providerCost = 0;
 
-    // If no model specified, fetch default from DB
-    if (!model_endpoint && SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+    // Fetch model config from DB
+    if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+      const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+
       try {
-        const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
-        const { data: defaultModel } = await supabase
-          .from("models")
-          .select("endpoint_id, input_type")
-          .eq("is_default", true)
-          .eq("is_active", true)
+        // Fetch model by ID or default
+        let modelQuery = supabase.from("models").select("*").eq("is_active", true);
+        if (model_id) {
+          modelQuery = supabase.from("models").select("*").eq("id", model_id);
+        } else if (!model_endpoint) {
+          modelQuery = modelQuery.eq("is_default", true);
+        }
+
+        const { data: modelData } = await modelQuery.single();
+        if (modelData) {
+          endpoint = modelData.endpoint_id;
+          modelInputType = modelData.input_type;
+          resolvedModelId = modelData.id;
+          providerCost = modelData.cost_per_run ? Number(modelData.cost_per_run) : 0;
+          creditsUsed = modelData.credits_per_generation || 2;
+        }
+
+        // Check for quality-tier-specific pricing
+        if (resolvedModelId && quality_tier) {
+          const { data: tierData } = await supabase
+            .from("model_pricing_tiers")
+            .select("credits_charged, cost_per_run")
+            .eq("model_id", resolvedModelId)
+            .eq("quality_level", quality_tier)
+            .single();
+
+          if (tierData) {
+            creditsUsed = tierData.credits_charged;
+            providerCost = Number(tierData.cost_per_run);
+          }
+        }
+
+        // Fetch credit settings for revenue calculation
+        const { data: creditSettings } = await supabase
+          .from("credit_settings")
+          .select("credit_value_usd")
+          .limit(1)
           .single();
 
-        if (defaultModel) {
-          endpoint = defaultModel.endpoint_id;
-          modelInputType = defaultModel.input_type;
-        }
+        const creditValueUsd = creditSettings?.credit_value_usd ? Number(creditSettings.credit_value_usd) : 0.02;
+        const revenue = creditsUsed * creditValueUsd;
+        const margin = revenue - providerCost;
+
+        // Log generation (fire and forget)
+        supabase.from("generation_logs").insert({
+          model_id: resolvedModelId,
+          prompt: prompt.slice(0, 500),
+          ratio: aspect_ratio || null,
+          resolution: quality_tier || null,
+          quality_tier: quality_tier || null,
+          credits_used: creditsUsed,
+          provider_cost: providerCost,
+          revenue,
+          margin,
+        }).then(() => {});
       } catch (e) {
-        console.log("Could not fetch default model, using fallback:", e);
+        console.log("DB lookup error (non-fatal):", e);
       }
     }
 
@@ -70,7 +116,6 @@ serve(async (req) => {
       "Content-Type": "application/json",
     };
 
-    // Build the payload based on input type
     const payload: Record<string, unknown> = {
       prompt,
       num_images: num_images || 1,
@@ -80,7 +125,6 @@ serve(async (req) => {
     if (modelInputType === "aspect_ratio") {
       payload.aspect_ratio = aspect_ratio || "1:1";
     } else {
-      // image_size type
       if (image_size) {
         payload.image_size = image_size;
       } else if (aspect_ratio) {
@@ -90,14 +134,12 @@ serve(async (req) => {
       }
     }
 
-    // Some models have specific params
     if (endpoint === "fal-ai/flux/schnell") {
       payload.num_inference_steps = 4;
     }
 
     console.log(`Submitting to fal.ai [${endpoint}]:`, { prompt: prompt.slice(0, 80), ...payload });
 
-    // Submit to queue
     const submitRes = await fetch(`https://queue.fal.run/${endpoint}`, {
       method: "POST",
       headers: falHeaders,
@@ -117,13 +159,11 @@ serve(async (req) => {
     const { status_url, response_url } = submitData;
 
     if (!status_url || !response_url) {
-      // Direct response (no queue)
       return new Response(JSON.stringify(submitData), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
-    // Poll for completion (max ~60s)
     for (let i = 0; i < 30; i++) {
       await new Promise(r => setTimeout(r, 2000));
       const statusRes = await fetch(status_url, { headers: falHeaders });
@@ -134,7 +174,12 @@ serve(async (req) => {
         const resultRes = await fetch(response_url, { headers: falHeaders });
         const resultData = await resultRes.json();
         console.log("Generation complete, images:", resultData.images?.length);
-        return new Response(JSON.stringify({ ...resultData, model_used: endpoint }), {
+        return new Response(JSON.stringify({ 
+          ...resultData, 
+          model_used: endpoint,
+          credits_used: creditsUsed,
+          provider_cost: providerCost,
+        }), {
           headers: { ...corsHeaders, "Content-Type": "application/json" },
         });
       }
