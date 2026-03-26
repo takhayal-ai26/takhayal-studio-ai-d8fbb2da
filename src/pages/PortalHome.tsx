@@ -219,18 +219,18 @@ export default function PortalHome() {
             </div>
             <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
               {[
-                { img: 'https://picsum.photos/seed/cw-fashion/400/550', prompt: 'High-end fashion editorial, modern modest style' },
-                { img: 'https://picsum.photos/seed/cw-product/400/360', prompt: 'Luxury perfume bottle, dramatic studio lighting' },
-                { img: 'https://picsum.photos/seed/cw-food/400/480', prompt: 'Artisan coffee flat lay, warm morning light' },
-                { img: 'https://picsum.photos/seed/cw-cinema/400/420', prompt: 'Cinematic portrait, volumetric fog, moody tones' },
-                { img: 'https://picsum.photos/seed/cw-logo/400/400', prompt: 'Premium 3D logo mockup, golden metallic finish' },
-                { img: 'https://picsum.photos/seed/cw-arch/400/520', prompt: 'Modern villa exterior, blue sky, lush garden' },
+                { img: 'https://picsum.photos/seed/cw-fashion/400/550', promptEn: 'High-end fashion editorial, modern modest style', promptAr: 'تصوير أزياء راقي، أسلوب محتشم عصري' },
+                { img: 'https://picsum.photos/seed/cw-product/400/360', promptEn: 'Luxury perfume bottle, dramatic studio lighting', promptAr: 'زجاجة عطر فاخرة، إضاءة استوديو درامية' },
+                { img: 'https://picsum.photos/seed/cw-food/400/480', promptEn: 'Artisan coffee flat lay, warm morning light', promptAr: 'عرض قهوة حرفية، ضوء صباحي دافئ' },
+                { img: 'https://picsum.photos/seed/cw-cinema/400/420', promptEn: 'Cinematic portrait, volumetric fog, moody tones', promptAr: 'بورتريه سينمائي، ضباب حجمي، ألوان درامية' },
+                { img: 'https://picsum.photos/seed/cw-logo/400/400', promptEn: 'Premium 3D logo mockup, golden metallic finish', promptAr: 'نموذج شعار ثلاثي الأبعاد، لمسة معدنية ذهبية' },
+                { img: 'https://picsum.photos/seed/cw-arch/400/520', promptEn: 'Modern villa exterior, blue sky, lush garden', promptAr: 'واجهة فيلا عصرية، سماء زرقاء، حديقة خضراء' },
               ].map((item, i) => (
                 <button key={i} onClick={() => navigate('/community')} className="group relative w-full rounded-2xl overflow-hidden break-inside-avoid block">
-                  <img src={item.img} alt={item.prompt} className="w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]" loading="lazy" />
+                  <img src={item.img} alt={isAr ? item.promptAr : item.promptEn} className="w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]" loading="lazy" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <p className="text-[11px] text-foreground/80 line-clamp-1">{item.prompt}</p>
+                    <p className="text-[11px] text-foreground/80 line-clamp-1">{isAr ? item.promptAr : item.promptEn}</p>
                   </div>
                 </button>
               ))}
