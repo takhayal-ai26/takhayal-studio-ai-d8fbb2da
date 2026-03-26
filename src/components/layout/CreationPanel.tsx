@@ -37,7 +37,7 @@ export function CreationPanel() {
     }
   }, [defaultModel, activeModels, selectedModelId]);
 
-  const currentModel = activeModels.find(m => m.id === selectedModelId) || defaultModel || activeModels[0];
+  // currentModel already declared above
 
   // Available ratios from current model
   const availableRatios = currentModel?.supported_ratios || ['1:1', '16:9', '9:16', '4:5'];
