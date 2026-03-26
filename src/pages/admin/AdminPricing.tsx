@@ -327,8 +327,8 @@ export default function AdminPricing() {
               setSyncing(true);
               try {
                 const { data, error } = await supabase.functions.invoke('sync-models', { body: {} });
-                if (error) throw error;
-                toast.success(`Synced ${data.models_synced}/${data.models_checked} models`);
+                const result = data as any;
+                toast.success(`Synced ${result.models_synced}/${result.models_checked} models, ${result.tiers_synced || 0} pricing tiers`);
                 load();
               } catch (e: any) { toast.error(e.message); }
               finally { setSyncing(false); }
