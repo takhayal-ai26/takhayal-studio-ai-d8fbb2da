@@ -6,6 +6,11 @@ export interface BilingualField {
   ar: string;
 }
 
+export interface BilingualTag {
+  en: string;
+  ar: string;
+}
+
 export interface AdminTemplate {
   id: string;
   title: BilingualField;
@@ -13,7 +18,7 @@ export interface AdminTemplate {
   fullPrompt: BilingualField;
   ctaLabel: BilingualField;
   category: string;
-  tags: string[];
+  tags: BilingualTag[];
   toolId: string;
   toolType: string;
   thumbnail: string;
@@ -27,13 +32,11 @@ export interface AdminTemplate {
   slug: string;
   sortOrder: number;
   notes: string;
-  // Visibility
   featuredOnHome: boolean;
   visibleInCategory: boolean;
   visibleInToolPage: boolean;
   startDate: string;
   endDate: string;
-  // Analytics (mock)
   analytics: {
     views: number;
     uses: number;
@@ -64,7 +67,7 @@ const seed: AdminTemplate[] = [
     shortDescription: { en: 'Dramatic studio perfume visual', ar: 'صورة عطر بإضاءة استوديو درامية' },
     fullPrompt: { en: 'Luxury perfume bottle, dramatic studio lighting, dark background, reflective surface, high-end product photography', ar: 'زجاجة عطر فاخرة، إضاءة استوديو درامية، خلفية داكنة، سطح عاكس، تصوير منتجات راقي' },
     ctaLabel: { en: 'Use Template', ar: 'استخدم القالب' },
-    category: 'Ads', tags: ['perfume', 'luxury', 'product'], toolId: 'generate', toolType: 'prompt',
+    category: 'Ads', tags: [{ en: 'perfume', ar: 'عطر' }, { en: 'luxury', ar: 'فاخر' }, { en: 'product', ar: 'منتج' }], toolId: 'generate', toolType: 'prompt',
     thumbnail: 'https://picsum.photos/seed/tpl1/400/400', previewImages: [],
     recommendedModel: 'SDXL', recommendedAspectRatio: '1:1', creditCost: 2,
     featured: true, seasonal: false, active: true, slug: 'luxury-perfume-ad', sortOrder: 1, notes: '',
@@ -77,7 +80,7 @@ const seed: AdminTemplate[] = [
     shortDescription: { en: 'Golden lanterns with warm glow', ar: 'فوانيس ذهبية بإضاءة دافئة' },
     fullPrompt: { en: 'Golden Ramadan lanterns, warm ambient glow, bokeh lights, spiritual atmosphere, festive decorations', ar: 'فوانيس رمضان ذهبية، إضاءة دافئة، أضواء بوكيه، أجواء روحانية، زينة احتفالية' },
     ctaLabel: { en: 'Use Template', ar: 'استخدم القالب' },
-    category: 'Seasonal', tags: ['ramadan', 'lantern', 'festive'], toolId: 'generate', toolType: 'prompt',
+    category: 'Seasonal', tags: [{ en: 'ramadan', ar: 'رمضان' }, { en: 'lantern', ar: 'فانوس' }, { en: 'festive', ar: 'احتفالي' }], toolId: 'generate', toolType: 'prompt',
     thumbnail: 'https://picsum.photos/seed/tpl2/400/400', previewImages: [],
     recommendedModel: 'SDXL', recommendedAspectRatio: '9:16', creditCost: 2,
     featured: true, seasonal: true, active: true, slug: 'ramadan-lantern-scene', sortOrder: 2, notes: '',
@@ -90,7 +93,7 @@ const seed: AdminTemplate[] = [
     shortDescription: { en: 'High-end fashion editorial look', ar: 'إطلالة أزياء تحريرية راقية' },
     fullPrompt: { en: 'High-end fashion editorial, soft diffused light, elegant pose, minimalist background, luxury feel', ar: 'تصوير أزياء راقي، إضاءة ناعمة، وضعية أنيقة، خلفية بسيطة، طابع فاخر' },
     ctaLabel: { en: 'Use Template', ar: 'استخدم القالب' },
-    category: 'Fashion', tags: ['fashion', 'editorial', 'elegant'], toolId: 'generate', toolType: 'prompt',
+    category: 'Fashion', tags: [{ en: 'fashion', ar: 'أزياء' }, { en: 'editorial', ar: 'تحريري' }, { en: 'elegant', ar: 'أنيق' }], toolId: 'generate', toolType: 'prompt',
     thumbnail: 'https://picsum.photos/seed/tpl3/400/400', previewImages: [],
     recommendedModel: 'SDXL', recommendedAspectRatio: '4:5', creditCost: 2,
     featured: false, seasonal: false, active: true, slug: 'fashion-editorial', sortOrder: 3, notes: '',
@@ -103,7 +106,7 @@ const seed: AdminTemplate[] = [
     shortDescription: { en: 'Appetizing food shot', ar: 'صورة طعام شهية' },
     fullPrompt: { en: 'Modern restaurant, appetizing food shot, warm colors, shallow depth of field, gourmet plating', ar: 'مطعم عصري، صورة طعام شهية، ألوان دافئة، عمق مجال ضيق، تقديم طعام ذواقي' },
     ctaLabel: { en: 'Use Template', ar: 'استخدم القالب' },
-    category: 'Food', tags: ['food', 'restaurant', 'gourmet'], toolId: 'generate', toolType: 'prompt',
+    category: 'Food', tags: [{ en: 'food', ar: 'طعام' }, { en: 'restaurant', ar: 'مطعم' }, { en: 'gourmet', ar: 'ذواقي' }], toolId: 'generate', toolType: 'prompt',
     thumbnail: 'https://picsum.photos/seed/tpl4/400/400', previewImages: [],
     recommendedModel: 'SDXL', recommendedAspectRatio: '1:1', creditCost: 2,
     featured: false, seasonal: false, active: true, slug: 'modern-restaurant', sortOrder: 4, notes: '',
@@ -116,7 +119,7 @@ const seed: AdminTemplate[] = [
     shortDescription: { en: '3D floating product render', ar: 'عرض ثلاثي الأبعاد لمنتج عائم' },
     fullPrompt: { en: 'Tech product floating on gradient, 3D render, clean minimal background, soft shadows, premium feel', ar: 'منتج تقني عائم على تدرج لوني، عرض ثلاثي الأبعاد، خلفية نظيفة، ظلال ناعمة، طابع فاخر' },
     ctaLabel: { en: 'Use Template', ar: 'استخدم القالب' },
-    category: 'Product', tags: ['tech', 'product', '3d'], toolId: 'generate', toolType: 'prompt',
+    category: 'Product', tags: [{ en: 'tech', ar: 'تقنية' }, { en: 'product', ar: 'منتج' }, { en: '3d', ar: 'ثلاثي الأبعاد' }], toolId: 'generate', toolType: 'prompt',
     thumbnail: 'https://picsum.photos/seed/tpl5/400/400', previewImages: [],
     recommendedModel: 'SDXL', recommendedAspectRatio: '1:1', creditCost: 2,
     featured: true, seasonal: false, active: true, slug: 'tech-product-float', sortOrder: 5, notes: '',
@@ -129,7 +132,7 @@ const seed: AdminTemplate[] = [
     shortDescription: { en: 'Modern Arabic calligraphy logo', ar: 'شعار خط عربي عصري' },
     fullPrompt: { en: 'Arabic calligraphy logo, modern twist, clean background, elegant strokes, brand identity', ar: 'شعار خط عربي، لمسة عصرية، خلفية نظيفة، خطوط أنيقة، هوية بصرية' },
     ctaLabel: { en: 'Use Template', ar: 'استخدم القالب' },
-    category: 'Logo', tags: ['arabic', 'calligraphy', 'logo', 'branding'], toolId: 'logo', toolType: 'prompt',
+    category: 'Logo', tags: [{ en: 'arabic', ar: 'عربي' }, { en: 'calligraphy', ar: 'خط' }, { en: 'logo', ar: 'شعار' }, { en: 'branding', ar: 'علامة تجارية' }], toolId: 'logo', toolType: 'prompt',
     thumbnail: 'https://picsum.photos/seed/tpl6/400/400', previewImages: [],
     recommendedModel: 'SDXL', recommendedAspectRatio: '1:1', creditCost: 3,
     featured: false, seasonal: false, active: true, slug: 'arabic-calligraphy-logo', sortOrder: 6, notes: '',

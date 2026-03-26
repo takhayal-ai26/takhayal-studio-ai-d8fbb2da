@@ -28,7 +28,7 @@ export default function AdminTemplates() {
       const q = search.toLowerCase();
       list = list.filter(t =>
         t.title.en.toLowerCase().includes(q) || t.title.ar.includes(q) ||
-        t.category.toLowerCase().includes(q) || t.tags.some(tag => tag.toLowerCase().includes(q))
+        t.category.toLowerCase().includes(q) || t.tags.some(tag => tag.en.toLowerCase().includes(q) || tag.ar.includes(q))
       );
     }
     if (categoryFilter !== 'all') list = list.filter(t => t.category === categoryFilter);
