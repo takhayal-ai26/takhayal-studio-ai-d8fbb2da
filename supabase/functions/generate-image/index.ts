@@ -177,26 +177,14 @@ serve(async (req) => {
     const selectedRatio = aspect_ratio || "1:1";
 
     if (modelInputType === "aspect_ratio") {
-      // Models that accept aspect_ratio string (e.g. Imagen4, Nano Banana, Seedream)
       payload.aspect_ratio = selectedRatio;
-      // Some aspect_ratio models also accept image_size for resolution control
       if (quality_tier && quality_tier !== "1K" && quality_tier !== "standard") {
-        const dims = resolveImageSize(selectedRatio, quality_tier);
+        const dims = resolveImageSize(selectedRatio, quality_tier, modelMaxRes);
         payload.image_size = dims;
       }
     } else {
-      // Models that use image_size (e.g. Flux, Ideogram, SDXL)
       if (quality_tier && quality_tier !== "1K" && quality_tier !== "standard") {
-        // Use explicit pixel dimensions for higher quality tiers
-        const dims = resolveImageSize(selectedRatio, quality_tier);
-        // Cap to model max resolution if known
-        if (modelMaxRes) {
-          const maxPx = parseInt(modelMaxRes);
-          if (!isNaN(maxPx)) {
-            dims.width = Math.min(dims.width, maxPx);
-            dims.height = Math.min(dims.height, maxPx);
-          }
-        }
+        const dims = resolveImageSize(selectedRatio, quality_tier, modelMaxRes);
         payload.image_size = dims;
       } else if (image_size) {
         payload.image_size = image_size;
