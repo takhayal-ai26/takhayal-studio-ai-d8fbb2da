@@ -133,6 +133,10 @@ export default function AdminAnalytics() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        <TabsContent value="economics">
+          <EconomicsTab />
+        </TabsContent>
       </Tabs>
     </div>
   );
