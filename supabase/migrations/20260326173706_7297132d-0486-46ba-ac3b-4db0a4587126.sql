@@ -1,0 +1,1 @@
+UPDATE models SET is_active = false, notes = 'Endpoint removed from fal.ai' WHERE endpoint_id IN ('fal-ai/bytedance/seedream/v4.5', 'fal-ai/bytedance/seedream/v5/lite');
