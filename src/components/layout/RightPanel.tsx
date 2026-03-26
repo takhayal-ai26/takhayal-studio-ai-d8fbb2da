@@ -30,7 +30,7 @@ export function RightPanel() {
     availableModels, selectedModelId, setSelectedModelId, selectedModel,
     availableQualityTiers, availableRatios, tierCreditsMap,
   } = useApp();
-  const { t, language } = useLanguage();
+  const { t, lang: language } = useLanguage();
   const cost = getCreditCost();
   const canGenerate = prompt.trim().length > 0 && !isGenerating && credits >= cost;
   const templates = Object.keys(TEMPLATE_PROMPTS);
