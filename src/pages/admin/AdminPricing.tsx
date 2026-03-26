@@ -342,6 +342,7 @@ export default function AdminPricing() {
               <thead><tr className="border-b border-border/10 bg-muted/5">
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Model</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Input</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Quality Tiers</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Ratios</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Cost</th>
                 <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Credits</th>
@@ -368,6 +369,11 @@ export default function AdminPricing() {
                         </td>
                         <td className="px-4 py-3">
                           <div className="flex flex-wrap gap-0.5 max-w-[120px]">
+                            {((m as any).supported_quality_tiers || ['1K']).map((q: string) => <Badge key={q} variant="outline" className="text-[9px] py-0 px-1 bg-primary/10 text-primary border-primary/20">{q}</Badge>)}
+                          </div>
+                        </td>
+                        <td className="px-4 py-3">
+                          <div className="flex flex-wrap gap-0.5 max-w-[120px]">
                             {(m.supported_ratios || []).slice(0, 3).map(r => <Badge key={r} variant="outline" className="text-[9px] py-0 px-1">{r}</Badge>)}
                             {(m.supported_ratios || []).length > 3 && <Badge variant="outline" className="text-[9px] py-0 px-1">+{m.supported_ratios.length - 3}</Badge>}
                           </div>
@@ -385,7 +391,7 @@ export default function AdminPricing() {
                       </tr>
                       {isExpanded && (
                         <tr key={m.id + '-detail'} className="bg-muted/5 border-b border-border/10">
-                          <td colSpan={9} className="px-6 py-4">
+                          <td colSpan={10} className="px-6 py-4">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                               <div>
                                 <p className="text-muted-foreground font-medium mb-1">Supported Ratios</p>

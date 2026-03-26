@@ -292,6 +292,10 @@ serve(async (req) => {
         if (costData) {
           if (!overrides.pricing_mode) updatePayload.pricing_mode = costData.pricingUnit === "per_megapixel" ? "per_megapixel" : (costData.tiers.length > 1 ? "resolution_based" : "fixed_per_image");
           if (!overrides.cost_per_run) updatePayload.cost_per_run = costData.base;
+          // Store supported quality tiers from known cost data
+          if (!overrides.supported_quality_tiers) {
+            updatePayload.supported_quality_tiers = costData.tiers.map(t => t.quality);
+          }
           updatePayload.admin_overrides = {
             ...overrides,
             pricing_notes: costData.notes,

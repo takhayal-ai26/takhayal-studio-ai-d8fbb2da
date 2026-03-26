@@ -1,0 +1,1 @@
+ALTER TABLE public.models ADD COLUMN IF NOT EXISTS supported_quality_tiers jsonb NOT NULL DEFAULT '["1K"]'::jsonb;

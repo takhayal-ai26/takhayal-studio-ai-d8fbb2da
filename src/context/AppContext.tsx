@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 
 export type NavPage = 'home' | 'canvas' | 'gallery' | 'templates' | 'credits' | 'settings';
@@ -29,6 +29,17 @@ export interface GeneratedImage {
   createdAt: Date;
 }
 
+export interface StudioModel {
+  id: string;
+  model_name: string;
+  endpoint_id: string;
+  supported_ratios: string[];
+  supported_quality_tiers: string[];
+  credits_per_generation: number | null;
+  input_type: string;
+  is_default: boolean;
+}
+
 export const TEMPLATE_PROMPTS: Record<string, string> = {
   'Ramadan': 'Warm cinematic Ramadan ad, golden lantern, crescent moon, deep purple and gold palette, soft volumetric lighting, premium studio quality',
   'Eid': 'Joyful Eid celebration, vibrant colors, happy family, festive decorations, bright warm atmosphere, commercial quality',
@@ -47,6 +58,13 @@ export const STYLE_OPTIONS = [
   'Minimal', 'Editorial', 'Product', 'Portrait',
 ];
 
+// Map quality tier keys to credit costs (will be overridden by DB tier data)
+const QUALITY_TIER_LABELS: Record<string, string> = {
+  '1K': 'Standard (1K)',
+  '2K': 'HD (2K)',
+  '4K': 'Ultra (4K)',
+};
+
 interface AppState {
   isAuthenticated: boolean;
   userName: string;
@@ -59,6 +77,7 @@ interface AppState {
   selectedStyle: string | null;
   aspectRatio: AspectRatio;
   quality: Quality;
+  selectedQualityTier: string;
   enhancePrompt: boolean;
   isGenerating: boolean;
   generatedImages: GeneratedImage[];
@@ -69,6 +88,13 @@ interface AppState {
   authModalOpen: boolean;
   authModalTab: 'login' | 'signup';
   upgradeModalOpen: boolean;
+  // Model-aware state
+  availableModels: StudioModel[];
+  selectedModelId: string | null;
+  selectedModel: StudioModel | null;
+  availableQualityTiers: string[];
+  availableRatios: string[];
+  tierCreditsMap: Record<string, number>;
   login: (email: string, name?: string) => void;
   logout: () => void;
   openAuthModal: (tab?: 'login' | 'signup') => void;
@@ -82,10 +108,13 @@ interface AppState {
   setSelectedStyle: (style: string | null) => void;
   setAspectRatio: (ratio: AspectRatio) => void;
   setQuality: (quality: Quality) => void;
+  setSelectedQualityTier: (tier: string) => void;
+  setSelectedModelId: (id: string | null) => void;
   setEnhancePrompt: (enhance: boolean) => void;
   setCurrentImageIndex: (index: number) => void;
   generate: (opts?: { modelId?: string; qualityTier?: string; creditCost?: number }) => void;
   getCreditCost: () => number;
+  getQualityTierLabel: (tier: string) => string;
 }
 
 const AppContext = createContext<AppState | null>(null);
@@ -102,6 +131,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
   const [aspectRatio, setAspectRatio] = useState<AspectRatio>('1:1');
   const [quality, setQuality] = useState<Quality>('standard');
+  const [selectedQualityTier, setSelectedQualityTier] = useState<string>('1K');
   const [enhancePrompt, setEnhancePrompt] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [generatedImages, setGeneratedImages] = useState<GeneratedImage[]>([]);
@@ -111,6 +141,73 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<'login' | 'signup'>('signup');
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
+
+  // Model-aware state
+  const [availableModels, setAvailableModels] = useState<StudioModel[]>([]);
+  const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
+  const [tierCreditsMap, setTierCreditsMap] = useState<Record<string, number>>({});
+
+  // Fetch active models on mount
+  useEffect(() => {
+    const fetchModels = async () => {
+      const { data } = await supabase
+        .from('models')
+        .select('id, model_name, endpoint_id, supported_ratios, supported_quality_tiers, credits_per_generation, input_type, is_default')
+        .eq('is_active', true)
+        .order('is_default', { ascending: false })
+        .order('model_name');
+      if (data) {
+        const models: StudioModel[] = (data as any[]).map(m => ({
+          ...m,
+          supported_ratios: Array.isArray(m.supported_ratios) ? m.supported_ratios : [],
+          supported_quality_tiers: Array.isArray(m.supported_quality_tiers) ? m.supported_quality_tiers : ['1K'],
+        }));
+        setAvailableModels(models);
+        const defaultModel = models.find(m => m.is_default) || models[0];
+        if (defaultModel && !selectedModelId) {
+          setSelectedModelId(defaultModel.id);
+        }
+      }
+    };
+    fetchModels();
+  }, []);
+
+  const selectedModel = availableModels.find(m => m.id === selectedModelId) || null;
+  const availableQualityTiers = selectedModel?.supported_quality_tiers || ['1K'];
+  const availableRatios = selectedModel?.supported_ratios || ['1:1', '16:9', '9:16', '4:5'];
+
+  // When model changes, reset quality tier if current tier is not supported
+  useEffect(() => {
+    if (selectedModel && !selectedModel.supported_quality_tiers.includes(selectedQualityTier)) {
+      setSelectedQualityTier(selectedModel.supported_quality_tiers[0] || '1K');
+    }
+    // Also reset aspect ratio if not supported
+    if (selectedModel && selectedModel.supported_ratios.length > 0 && !selectedModel.supported_ratios.includes(aspectRatio)) {
+      const firstRatio = selectedModel.supported_ratios[0] as AspectRatio;
+      if (['1:1', '9:16', '16:9', '4:5'].includes(firstRatio)) {
+        setAspectRatio(firstRatio);
+      }
+    }
+  }, [selectedModelId, selectedModel]);
+
+  // Fetch tier credits when model changes
+  useEffect(() => {
+    if (!selectedModelId) return;
+    const fetchTierCredits = async () => {
+      const { data } = await supabase
+        .from('model_pricing_tiers')
+        .select('quality_level, credits_charged')
+        .eq('model_id', selectedModelId);
+      if (data) {
+        const map: Record<string, number> = {};
+        for (const t of data as any[]) {
+          if (t.quality_level) map[t.quality_level] = t.credits_charged;
+        }
+        setTierCreditsMap(map);
+      }
+    };
+    fetchTierCredits();
+  }, [selectedModelId]);
 
   const login = useCallback((email: string, name?: string) => {
     setIsAuthenticated(true);
@@ -146,10 +243,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, [isAuthenticated]);
 
   const getCreditCost = useCallback(() => {
-    return quality === 'hd' ? 4 : 2;
-  }, [quality]);
+    // Use tier-specific credits from DB, fallback to model default
+    if (tierCreditsMap[selectedQualityTier] !== undefined) {
+      return tierCreditsMap[selectedQualityTier];
+    }
+    return selectedModel?.credits_per_generation || 2;
+  }, [selectedQualityTier, tierCreditsMap, selectedModel]);
 
-  // Ratio-to-size mapping now handled server-side by generate-image edge function
+  const getQualityTierLabel = useCallback((tier: string) => {
+    return QUALITY_TIER_LABELS[tier] || tier;
+  }, []);
 
   const generate = useCallback(async (opts?: { modelId?: string; qualityTier?: string; creditCost?: number }) => {
     if (!prompt.trim() || isGenerating) return;
@@ -158,7 +261,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setAuthModalOpen(true);
       return;
     }
-    const cost = opts?.creditCost ?? (quality === 'hd' ? 4 : 2);
+    const cost = opts?.creditCost ?? getCreditCost();
     if (credits < cost) {
       setUpgradeModalOpen(true);
       return;
@@ -180,8 +283,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
           prompt: styledPrompt,
           aspect_ratio: aspectRatio,
           num_images: 1,
-          model_id: opts?.modelId || undefined,
-          quality_tier: opts?.qualityTier || undefined,
+          model_id: opts?.modelId || selectedModelId || undefined,
+          quality_tier: opts?.qualityTier || selectedQualityTier,
         },
       });
 
@@ -207,19 +310,21 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsGenerating(false);
     }
-  }, [prompt, isGenerating, isAuthenticated, credits, quality, selectedTemplate, selectedStyle, aspectRatio]);
+  }, [prompt, isGenerating, isAuthenticated, credits, quality, selectedTemplate, selectedStyle, aspectRatio, selectedModelId, selectedQualityTier, getCreditCost]);
 
   return (
     <AppContext.Provider value={{
       isAuthenticated, userName, userEmail, activePage, credits, plan,
       prompt, selectedTemplate, selectedStyle, aspectRatio, quality,
-      enhancePrompt, isGenerating, generatedImages, currentImageIndex, gallery,
+      selectedQualityTier, enhancePrompt, isGenerating, generatedImages, currentImageIndex, gallery,
       generationCards, setGenerationCards,
       authModalOpen, authModalTab, upgradeModalOpen,
+      availableModels, selectedModelId, selectedModel, availableQualityTiers, availableRatios, tierCreditsMap,
       login, logout, openAuthModal, closeAuthModal, openUpgradeModal, closeUpgradeModal, requireAuth,
       setActivePage, setPrompt, setSelectedTemplate,
-      setSelectedStyle, setAspectRatio, setQuality, setEnhancePrompt,
-      setCurrentImageIndex, generate, getCreditCost,
+      setSelectedStyle, setAspectRatio, setQuality, setSelectedQualityTier, setSelectedModelId,
+      setEnhancePrompt,
+      setCurrentImageIndex, generate, getCreditCost, getQualityTierLabel,
     }}>
       {children}
     </AppContext.Provider>
