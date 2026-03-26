@@ -307,7 +307,7 @@ serve(async (req) => {
         const { error: updateError } = await supabase.from("models").update(updatePayload).eq("id", model.id);
 
         // 4. Sync pricing tiers with multiplier data
-        if (costData?.tiers && !overrides.pricing_tiers) {
+        if (costData?.tiers) {
           // Delete existing synced tiers (preserve manual ones via notes field)
           await supabase.from("model_pricing_tiers").delete().eq("model_id", model.id);
           const tierRows = costData.tiers.map((t, i) => ({
