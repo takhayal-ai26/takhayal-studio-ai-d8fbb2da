@@ -33,6 +33,7 @@ import AdminIntegrations from "./pages/admin/AdminIntegrations";
 import AdminRoles from "./pages/admin/AdminRoles";
 import AdminSettings from "./pages/admin/AdminSettings";
 import AdminTranslations from "./pages/admin/AdminTranslations";
+import AdminPricing from "./pages/admin/AdminPricing";
 
 const queryClient = new QueryClient();
 

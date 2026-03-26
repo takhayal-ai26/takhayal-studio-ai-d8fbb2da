@@ -1,0 +1,391 @@
+import { useState, useEffect, useCallback } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Badge } from '@/components/ui/badge';
+import { Switch } from '@/components/ui/switch';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { toast } from 'sonner';
+import {
+  DollarSign, TrendingUp, AlertTriangle, Percent, Coins,
+  Settings2, Save, RefreshCw, Cpu, Wrench, Zap, BarChart3
+} from 'lucide-react';
+
+/* ───── types ───── */
+interface CreditSettings {
+  id: string;
+  credit_value_usd: number;
+  default_credits_per_generation: number;
+  min_credits_per_action: number;
+  rounding_rule: string;
+}
+
+interface ModelRow {
+  id: string;
+  model_name: string;
+  endpoint_id: string;
+  provider_name: string;
+  cost_per_run: number | null;
+  credits_per_generation: number | null;
+  is_active: boolean;
+  input_type: string;
+  speed: string | null;
+  best_for: string | null;
+  supported_ratios: string[];
+}
+
+interface ToolPricing {
+  id: string;
+  tool_id: string;
+  tool_name: string;
+  default_model_id: string | null;
+  credits_per_generation: number;
+  credit_multiplier: number;
+  override_model_pricing: boolean;
+  free_usage_enabled: boolean;
+  max_free_uses: number;
+}
+
+interface ProviderRow {
+  id: string;
+  provider_name: string;
+  pricing_type: string | null;
+  base_cost: number | null;
+  currency: string | null;
+  fallback_cost: number | null;
+  billing_notes: string | null;
+  health_status: string;
+  is_connected: boolean;
+}
+
+interface GenStats {
+  total_generations: number;
+  total_cost: number;
+  total_revenue: number;
+  total_margin: number;
+}
+
+/* ───── metric card ───── */
+function MetricCard({ label, value, sub, icon: Icon, color = 'primary' }: { label: string; value: string; sub?: string; icon: any; color?: string }) {
+  const colorClasses: Record<string, string> = {
+    primary: 'bg-primary/10 text-primary',
+    green: 'bg-emerald-500/10 text-emerald-400',
+    red: 'bg-red-500/10 text-red-400',
+    yellow: 'bg-amber-500/10 text-amber-400',
+  };
+  return (
+    <div className="rounded-2xl border border-border/10 bg-card/80 p-5">
+      <div className="flex items-center gap-3 mb-3">
+        <div className={`w-9 h-9 rounded-xl flex items-center justify-center ${colorClasses[color]}`}>
+          <Icon size={18} />
+        </div>
+        <span className="text-[12px] text-muted-foreground font-medium">{label}</span>
+      </div>
+      <p className="text-2xl font-bold text-foreground">{value}</p>
+      {sub && <p className="text-[11px] text-muted-foreground mt-1">{sub}</p>}
+    </div>
+  );
+}
+
+/* ═══════ MAIN ═══════ */
+export default function AdminPricing() {
+  const [tab, setTab] = useState('overview');
+  const [creditSettings, setCreditSettings] = useState<CreditSettings | null>(null);
+  const [models, setModels] = useState<ModelRow[]>([]);
+  const [tools, setTools] = useState<ToolPricing[]>([]);
+  const [providers, setProviders] = useState<ProviderRow[]>([]);
+  const [stats, setStats] = useState<GenStats>({ total_generations: 0, total_cost: 0, total_revenue: 0, total_margin: 0 });
+  const [saving, setSaving] = useState(false);
+
+  const load = useCallback(async () => {
+    const [csRes, mRes, tRes, pRes, sRes] = await Promise.all([
+      supabase.from('credit_settings').select('*').limit(1).single(),
+      supabase.from('models').select('*').order('model_name'),
+      supabase.from('tools_pricing').select('*').order('tool_name'),
+      supabase.from('provider_configs').select('*'),
+      supabase.from('generation_logs').select('credits_used, provider_cost, revenue, margin'),
+    ]);
+    if (csRes.data) setCreditSettings(csRes.data as CreditSettings);
+    if (mRes.data) setModels(mRes.data as unknown as ModelRow[]);
+    if (tRes.data) setTools(tRes.data as unknown as ToolPricing[]);
+    if (pRes.data) setProviders(pRes.data as unknown as ProviderRow[]);
+    if (sRes.data) {
+      const logs = sRes.data as any[];
+      setStats({
+        total_generations: logs.length,
+        total_cost: logs.reduce((s, l) => s + (l.provider_cost || 0), 0),
+        total_revenue: logs.reduce((s, l) => s + (l.revenue || 0), 0),
+        total_margin: logs.reduce((s, l) => s + (l.margin || 0), 0),
+      });
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  /* ── save credit settings ── */
+  const saveCreditSettings = async () => {
+    if (!creditSettings) return;
+    setSaving(true);
+    const { error } = await supabase.from('credit_settings').update({
+      credit_value_usd: creditSettings.credit_value_usd,
+      default_credits_per_generation: creditSettings.default_credits_per_generation,
+      min_credits_per_action: creditSettings.min_credits_per_action,
+      rounding_rule: creditSettings.rounding_rule,
+      updated_at: new Date().toISOString(),
+    }).eq('id', creditSettings.id);
+    setSaving(false);
+    if (error) toast.error('Failed to save'); else toast.success('Credit settings saved');
+  };
+
+  /* ── save model credits ── */
+  const updateModelCredits = async (id: string, credits: number) => {
+    const { error } = await supabase.from('models').update({ credits_per_generation: credits, updated_at: new Date().toISOString() }).eq('id', id);
+    if (error) toast.error('Failed'); else { setModels(prev => prev.map(m => m.id === id ? { ...m, credits_per_generation: credits } : m)); toast.success('Updated'); }
+  };
+
+  /* ── save tool pricing ── */
+  const updateTool = async (t: ToolPricing) => {
+    const { error } = await supabase.from('tools_pricing').update({
+      credits_per_generation: t.credits_per_generation,
+      credit_multiplier: t.credit_multiplier,
+      override_model_pricing: t.override_model_pricing,
+      free_usage_enabled: t.free_usage_enabled,
+      max_free_uses: t.max_free_uses,
+      default_model_id: t.default_model_id,
+      updated_at: new Date().toISOString(),
+    }).eq('id', t.id);
+    if (error) toast.error('Failed'); else toast.success('Tool pricing saved');
+  };
+
+  /* ── save provider pricing ── */
+  const updateProvider = async (p: ProviderRow) => {
+    const { error } = await supabase.from('provider_configs').update({
+      pricing_type: p.pricing_type,
+      base_cost: p.base_cost,
+      currency: p.currency,
+      fallback_cost: p.fallback_cost,
+      billing_notes: p.billing_notes,
+      updated_at: new Date().toISOString(),
+    }).eq('id', p.id);
+    if (error) toast.error('Failed'); else toast.success('Provider updated');
+  };
+
+  const avgMarginPct = stats.total_revenue > 0 ? ((stats.total_margin / stats.total_revenue) * 100).toFixed(1) : '0';
+  const creditVal = creditSettings?.credit_value_usd || 0.02;
+
+  /* helper: compute margin for a model */
+  const modelMargin = (m: ModelRow) => {
+    const cr = m.credits_per_generation || creditSettings?.default_credits_per_generation || 2;
+    const rev = cr * creditVal;
+    const cost = m.cost_per_run || 0;
+    return { rev, cost, margin: rev - cost, pct: rev > 0 ? ((rev - cost) / rev * 100) : 0 };
+  };
+
+  /* ── seed default tools ── */
+  const seedTools = async () => {
+    const defaults = [
+      { tool_id: 'generate-image', tool_name: 'Generate Image', credits_per_generation: 2 },
+      { tool_id: 'upscale', tool_name: 'Upscale', credits_per_generation: 3 },
+      { tool_id: 'remove-bg', tool_name: 'Remove Background', credits_per_generation: 1 },
+      { tool_id: 'create-logo', tool_name: 'Create Logo', credits_per_generation: 4 },
+    ];
+    for (const d of defaults) {
+      await supabase.from('tools_pricing').upsert(d, { onConflict: 'tool_id' });
+    }
+    toast.success('Default tools seeded');
+    load();
+  };
+
+  return (
+    <div className="space-y-6">
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Pricing & Economics</h1>
+          <p className="text-sm text-muted-foreground mt-1">Control pricing at provider, model, and tool level</p>
+        </div>
+        <Button variant="outline" size="sm" onClick={load} className="gap-2"><RefreshCw size={14} />Refresh</Button>
+      </div>
+
+      {/* Overview cards */}
+      <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+        <MetricCard label="Total Revenue" value={`$${stats.total_revenue.toFixed(2)}`} icon={DollarSign} color="green" />
+        <MetricCard label="Total COGS" value={`$${stats.total_cost.toFixed(2)}`} icon={TrendingUp} color="red" />
+        <MetricCard label="Total Profit" value={`$${stats.total_margin.toFixed(2)}`} icon={DollarSign} color={stats.total_margin >= 0 ? 'green' : 'red'} />
+        <MetricCard label="Avg Margin" value={`${avgMarginPct}%`} icon={Percent} color={Number(avgMarginPct) < 20 ? 'yellow' : 'green'} />
+        <MetricCard label="Generations" value={String(stats.total_generations)} icon={BarChart3} />
+      </div>
+
+      {/* Alerts */}
+      {models.filter(m => m.is_active && modelMargin(m).pct < 0).length > 0 && (
+        <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-4 flex items-center gap-3">
+          <AlertTriangle size={18} className="text-red-400" />
+          <span className="text-sm text-red-400">
+            {models.filter(m => m.is_active && modelMargin(m).pct < 0).length} model(s) have negative margins!
+          </span>
+        </div>
+      )}
+
+      <Tabs value={tab} onValueChange={setTab}>
+        <TabsList className="bg-card/80 border border-border/10">
+          <TabsTrigger value="overview" className="gap-1.5"><Settings2 size={14} />Credit System</TabsTrigger>
+          <TabsTrigger value="providers" className="gap-1.5"><Zap size={14} />Providers</TabsTrigger>
+          <TabsTrigger value="models" className="gap-1.5"><Cpu size={14} />Models</TabsTrigger>
+          <TabsTrigger value="tools" className="gap-1.5"><Wrench size={14} />Tools</TabsTrigger>
+        </TabsList>
+
+        {/* ── CREDIT SYSTEM ── */}
+        <TabsContent value="overview" className="space-y-4 mt-4">
+          <div className="rounded-2xl border border-border/10 bg-card/80 p-6 max-w-lg space-y-5">
+            <h3 className="text-lg font-semibold flex items-center gap-2"><Coins size={18} className="text-primary" />Global Credit Settings</h3>
+            {creditSettings && (
+              <>
+                <div className="space-y-3">
+                  <div>
+                    <label className="text-xs text-muted-foreground">1 Credit = USD</label>
+                    <Input type="number" step="0.001" value={creditSettings.credit_value_usd} onChange={e => setCreditSettings({ ...creditSettings, credit_value_usd: Number(e.target.value) })} className="mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Default Credits per Generation</label>
+                    <Input type="number" value={creditSettings.default_credits_per_generation} onChange={e => setCreditSettings({ ...creditSettings, default_credits_per_generation: Number(e.target.value) })} className="mt-1" />
+                  </div>
+                  <div>
+                    <label className="text-xs text-muted-foreground">Min Credits per Action</label>
+                    <Input type="number" value={creditSettings.min_credits_per_action} onChange={e => setCreditSettings({ ...creditSettings, min_credits_per_action: Number(e.target.value) })} className="mt-1" />
+                  </div>
+                </div>
+                <Button onClick={saveCreditSettings} disabled={saving} className="gap-2"><Save size={14} />{saving ? 'Saving...' : 'Save Settings'}</Button>
+              </>
+            )}
+          </div>
+          <div className="rounded-xl border border-border/10 bg-card/60 p-4 text-xs text-muted-foreground space-y-1">
+            <p><strong>Pricing Hierarchy:</strong></p>
+            <p>1. Tool override (highest) → 2. Model pricing → 3. Provider fallback</p>
+          </div>
+        </TabsContent>
+
+        {/* ── PROVIDERS ── */}
+        <TabsContent value="providers" className="mt-4">
+          <div className="rounded-2xl border border-border/10 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-border/10 bg-muted/5">
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Provider</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Pricing Type</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Base Cost</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Currency</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Fallback Cost</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Notes</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Status</th>
+                <th className="px-4 py-3"></th>
+              </tr></thead>
+              <tbody>
+                {providers.map(p => (
+                  <tr key={p.id} className="border-b border-border/5 hover:bg-muted/5">
+                    <td className="px-4 py-3 font-medium text-foreground">{p.provider_name}</td>
+                    <td className="px-4 py-3">
+                      <select value={p.pricing_type || 'per_image'} onChange={e => setProviders(prev => prev.map(x => x.id === p.id ? { ...x, pricing_type: e.target.value } : x))} className="bg-background border border-border/20 rounded px-2 py-1 text-xs">
+                        <option value="per_image">Per Image</option>
+                        <option value="per_request">Per Request</option>
+                        <option value="per_second">Per Second</option>
+                        <option value="per_megapixel">Per Megapixel</option>
+                      </select>
+                    </td>
+                    <td className="px-4 py-3"><Input type="number" step="0.001" className="w-24 h-8 text-xs" value={p.base_cost || 0} onChange={e => setProviders(prev => prev.map(x => x.id === p.id ? { ...x, base_cost: Number(e.target.value) } : x))} /></td>
+                    <td className="px-4 py-3"><Input className="w-16 h-8 text-xs" value={p.currency || 'USD'} onChange={e => setProviders(prev => prev.map(x => x.id === p.id ? { ...x, currency: e.target.value } : x))} /></td>
+                    <td className="px-4 py-3"><Input type="number" step="0.001" className="w-24 h-8 text-xs" value={p.fallback_cost || 0} onChange={e => setProviders(prev => prev.map(x => x.id === p.id ? { ...x, fallback_cost: Number(e.target.value) } : x))} /></td>
+                    <td className="px-4 py-3"><Input className="w-32 h-8 text-xs" value={p.billing_notes || ''} onChange={e => setProviders(prev => prev.map(x => x.id === p.id ? { ...x, billing_notes: e.target.value } : x))} /></td>
+                    <td className="px-4 py-3"><Badge variant={p.is_connected ? 'default' : 'secondary'} className="text-[10px]">{p.health_status}</Badge></td>
+                    <td className="px-4 py-3"><Button size="sm" variant="ghost" onClick={() => updateProvider(p)} className="h-7 text-xs gap-1"><Save size={12} />Save</Button></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </TabsContent>
+
+        {/* ── MODELS ── */}
+        <TabsContent value="models" className="mt-4">
+          <div className="rounded-2xl border border-border/10 overflow-hidden">
+            <table className="w-full text-sm">
+              <thead><tr className="border-b border-border/10 bg-muted/5">
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Model</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Provider Cost</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Credits</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Revenue</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Margin</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Margin %</th>
+                <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Active</th>
+              </tr></thead>
+              <tbody>
+                {models.map(m => {
+                  const mm = modelMargin(m);
+                  const cr = m.credits_per_generation || creditSettings?.default_credits_per_generation || 2;
+                  return (
+                    <tr key={m.id} className="border-b border-border/5 hover:bg-muted/5">
+                      <td className="px-4 py-3">
+                        <p className="font-medium text-foreground">{m.model_name}</p>
+                        <p className="text-[11px] text-muted-foreground">{m.endpoint_id}</p>
+                      </td>
+                      <td className="px-4 py-3 text-muted-foreground">${(m.cost_per_run || 0).toFixed(4)}</td>
+                      <td className="px-4 py-3">
+                        <Input type="number" className="w-16 h-8 text-xs" value={cr} onChange={e => updateModelCredits(m.id, Number(e.target.value))} />
+                      </td>
+                      <td className="px-4 py-3 text-emerald-400">${mm.rev.toFixed(4)}</td>
+                      <td className="px-4 py-3"><span className={mm.margin >= 0 ? 'text-emerald-400' : 'text-red-400'}>${mm.margin.toFixed(4)}</span></td>
+                      <td className="px-4 py-3">
+                        <Badge variant={mm.pct < 0 ? 'destructive' : mm.pct < 20 ? 'secondary' : 'default'} className="text-[10px]">
+                          {mm.pct.toFixed(1)}%
+                        </Badge>
+                      </td>
+                      <td className="px-4 py-3"><Badge variant={m.is_active ? 'default' : 'secondary'} className="text-[10px]">{m.is_active ? 'Active' : 'Off'}</Badge></td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </TabsContent>
+
+        {/* ── TOOLS ── */}
+        <TabsContent value="tools" className="mt-4 space-y-4">
+          {tools.length === 0 && (
+            <div className="text-center py-8">
+              <p className="text-muted-foreground mb-3">No tool pricing configured yet</p>
+              <Button onClick={seedTools} className="gap-2"><Zap size={14} />Seed Default Tools</Button>
+            </div>
+          )}
+          {tools.length > 0 && (
+            <div className="rounded-2xl border border-border/10 overflow-hidden">
+              <table className="w-full text-sm">
+                <thead><tr className="border-b border-border/10 bg-muted/5">
+                  <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Tool</th>
+                  <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Credits</th>
+                  <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Multiplier</th>
+                  <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Override Model</th>
+                  <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Free Uses</th>
+                  <th className="px-4 py-3"></th>
+                </tr></thead>
+                <tbody>
+                  {tools.map(t => (
+                    <tr key={t.id} className="border-b border-border/5 hover:bg-muted/5">
+                      <td className="px-4 py-3 font-medium text-foreground">{t.tool_name}</td>
+                      <td className="px-4 py-3"><Input type="number" className="w-16 h-8 text-xs" value={t.credits_per_generation} onChange={e => setTools(prev => prev.map(x => x.id === t.id ? { ...x, credits_per_generation: Number(e.target.value) } : x))} /></td>
+                      <td className="px-4 py-3"><Input type="number" step="0.1" className="w-16 h-8 text-xs" value={t.credit_multiplier} onChange={e => setTools(prev => prev.map(x => x.id === t.id ? { ...x, credit_multiplier: Number(e.target.value) } : x))} /></td>
+                      <td className="px-4 py-3"><Switch checked={t.override_model_pricing} onCheckedChange={v => setTools(prev => prev.map(x => x.id === t.id ? { ...x, override_model_pricing: v } : x))} /></td>
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2">
+                          <Switch checked={t.free_usage_enabled} onCheckedChange={v => setTools(prev => prev.map(x => x.id === t.id ? { ...x, free_usage_enabled: v } : x))} />
+                          {t.free_usage_enabled && <Input type="number" className="w-14 h-8 text-xs" value={t.max_free_uses} onChange={e => setTools(prev => prev.map(x => x.id === t.id ? { ...x, max_free_uses: Number(e.target.value) } : x))} />}
+                        </div>
+                      </td>
+                      <td className="px-4 py-3"><Button size="sm" variant="ghost" onClick={() => updateTool(t)} className="h-7 text-xs gap-1"><Save size={12} />Save</Button></td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
+}
