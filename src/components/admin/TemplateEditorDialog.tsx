@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { AlertTriangle, Loader2, BarChart3, Eye, MousePointerClick } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { AdminTemplate, BilingualField, CATEGORIES } from '@/stores/adminTemplatesStore';
+import { AdminTemplate, BilingualField, BilingualTag, CATEGORIES } from '@/stores/adminTemplatesStore';
 import { toast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
@@ -197,15 +197,19 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
               <div className="space-y-1.5">
                 <Label className="text-xs">Tags</Label>
                 <div className="flex gap-2">
-                  <Input value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTag())}
-                    className="h-9 text-xs bg-muted/30 border-border/40 flex-1" placeholder="Add tag and press Enter" />
+                  <div className="flex-1 flex gap-2">
+                    <Input value={tagInput} onChange={e => setTagInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                      className="h-9 text-xs bg-muted/30 border-border/40 flex-1" placeholder="Tag (EN)" />
+                    <Input dir="rtl" value={tagInputAr} onChange={e => setTagInputAr(e.target.value)} onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), addTag())}
+                      className="h-9 text-xs bg-muted/30 border-border/40 flex-1 text-right" placeholder="الوسم (AR)" />
+                  </div>
                   <Button size="sm" variant="outline" className="text-xs h-9" onClick={addTag}>Add</Button>
                 </div>
                 {form.tags.length > 0 && (
                   <div className="flex flex-wrap gap-1.5 mt-2">
                     {form.tags.map(tag => (
-                      <Badge key={tag} variant="secondary" className="text-[10px] gap-1 cursor-pointer hover:bg-destructive/20" onClick={() => removeTag(tag)}>
-                        {tag} ×
+                      <Badge key={tag.en} variant="secondary" className="text-[10px] gap-1 cursor-pointer hover:bg-destructive/20" onClick={() => removeTag(tag)}>
+                        {tag.en}{tag.ar ? ` / ${tag.ar}` : ''} ×
                       </Badge>
                     ))}
                   </div>
