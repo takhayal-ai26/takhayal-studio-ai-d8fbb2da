@@ -7,25 +7,25 @@ import { useTools } from '@/hooks/useTools';
 import { useMedia } from '@/hooks/useMedia';
 
 const featuredItems = [
-  { image: 'https://picsum.photos/seed/feat-cinema/800/450', labelKey: 'cinematicAd', prompt: 'Cinematic product advertisement, dramatic studio lighting, dark moody tones, volumetric fog, 4K commercial quality', template: 'Product Shot' },
-  { image: 'https://picsum.photos/seed/feat-fashion/800/450', labelKey: 'fashionEditorial', prompt: 'High-end fashion editorial, modern modest style, soft diffused lighting, clean background, editorial quality', template: 'Fashion' },
-  { image: 'https://picsum.photos/seed/feat-ramadan/800/450', labelKey: 'ramadanCampaignLabel', prompt: 'Warm cinematic Ramadan ad, golden lantern, crescent moon, deep purple and gold palette, soft volumetric lighting', template: 'Ramadan' },
-  { image: 'https://picsum.photos/seed/feat-realestate/800/450', labelKey: 'architectureLabel', prompt: 'Luxury real estate ad, modern building, blue sky, professional architectural photography, premium feel', template: 'Real Estate' },
+  { image: 'https://picsum.photos/seed/feat-cinema/800/450', labelKey: 'cinematicAd', promptEn: 'Cinematic product advertisement, dramatic studio lighting, dark moody tones, volumetric fog, 4K commercial quality', promptAr: 'إعلان منتج سينمائي، إضاءة استوديو درامية، ألوان داكنة، ضباب حجمي، جودة تجارية 4K', template: 'Product Shot' },
+  { image: 'https://picsum.photos/seed/feat-fashion/800/450', labelKey: 'fashionEditorial', promptEn: 'High-end fashion editorial, modern modest style, soft diffused lighting, clean background, editorial quality', promptAr: 'تصوير أزياء راقي، أسلوب محتشم عصري، إضاءة ناعمة، خلفية نظيفة، جودة تحريرية', template: 'Fashion' },
+  { image: 'https://picsum.photos/seed/feat-ramadan/800/450', labelKey: 'ramadanCampaignLabel', promptEn: 'Warm cinematic Ramadan ad, golden lantern, crescent moon, deep purple and gold palette, soft volumetric lighting', promptAr: 'إعلان رمضاني سينمائي دافئ، فانوس ذهبي، هلال، لوحة ألوان بنفسجية وذهبية، إضاءة حجمية ناعمة', template: 'Ramadan' },
+  { image: 'https://picsum.photos/seed/feat-realestate/800/450', labelKey: 'architectureLabel', promptEn: 'Luxury real estate ad, modern building, blue sky, professional architectural photography, premium feel', promptAr: 'إعلان عقاري فاخر، مبنى عصري، سماء زرقاء، تصوير معماري احترافي، طابع فاخر', template: 'Real Estate' },
 ];
 
 const masonryImages = [
-  { image: 'https://picsum.photos/seed/m1/400/600', prompt: 'Luxury perfume ad, dramatic side lighting, dark background, elegant glass bottle', template: 'Product Shot', cat: 'Products' },
-  { image: 'https://picsum.photos/seed/m2/400/400', prompt: 'Trendy streetwear fashion shoot, urban backdrop, bold colors', template: 'Fashion', cat: 'Fashion' },
-  { image: 'https://picsum.photos/seed/m3/400/500', prompt: 'Golden hour restaurant scene, appetizing table spread, warm ambiance', template: 'Restaurant', cat: 'Food' },
-  { image: 'https://picsum.photos/seed/m4/400/350', prompt: 'Minimalist tech product floating, clean gradient background, 3D render', template: 'Product Shot', cat: 'Products' },
-  { image: 'https://picsum.photos/seed/m5/400/550', prompt: 'Cinematic Ramadan greeting, lanterns and stars, cinematic depth of field', template: 'Ramadan', cat: 'Ads' },
-  { image: 'https://picsum.photos/seed/m6/400/450', prompt: 'Instagram story design, bold typography, vibrant gradient, social media', template: 'Reels Cover', cat: 'Social' },
-  { image: 'https://picsum.photos/seed/m7/400/380', prompt: 'Modern villa exterior, blue sky, lush garden, architectural photography', template: 'Real Estate', cat: 'Architecture' },
-  { image: 'https://picsum.photos/seed/m8/400/520', prompt: 'Haute couture fashion editorial, flowing fabric, studio lighting', template: 'Fashion', cat: 'Fashion' },
-  { image: 'https://picsum.photos/seed/m9/400/440', prompt: 'Eid celebration ad, festive colors, joyful atmosphere, commercial quality', template: 'Eid', cat: 'Ads' },
-  { image: 'https://picsum.photos/seed/m10/400/480', prompt: 'Artisan coffee flat lay, latte art, warm morning light, overhead shot', template: 'Restaurant', cat: 'Food' },
-  { image: 'https://picsum.photos/seed/m11/400/360', prompt: 'Clean skincare product on marble, soft shadows, premium aesthetic', template: 'Product Shot', cat: 'Products' },
-  { image: 'https://picsum.photos/seed/m12/400/550', prompt: 'National Day parade scene, flags and fireworks, patriotic celebration', template: 'National Day', cat: 'Ads' },
+  { image: 'https://picsum.photos/seed/m1/400/600', promptEn: 'Luxury perfume ad, dramatic side lighting, dark background, elegant glass bottle', promptAr: 'إعلان عطر فاخر، إضاءة جانبية درامية، خلفية داكنة، زجاجة أنيقة', template: 'Product Shot', cat: 'Products' },
+  { image: 'https://picsum.photos/seed/m2/400/400', promptEn: 'Trendy streetwear fashion shoot, urban backdrop, bold colors', promptAr: 'تصوير أزياء شارع عصرية، خلفية حضرية، ألوان جريئة', template: 'Fashion', cat: 'Fashion' },
+  { image: 'https://picsum.photos/seed/m3/400/500', promptEn: 'Golden hour restaurant scene, appetizing table spread, warm ambiance', promptAr: 'مشهد مطعم في الساعة الذهبية، مائدة شهية، أجواء دافئة', template: 'Restaurant', cat: 'Food' },
+  { image: 'https://picsum.photos/seed/m4/400/350', promptEn: 'Minimalist tech product floating, clean gradient background, 3D render', promptAr: 'منتج تقني عائم بسيط، خلفية متدرجة نظيفة، عرض ثلاثي الأبعاد', template: 'Product Shot', cat: 'Products' },
+  { image: 'https://picsum.photos/seed/m5/400/550', promptEn: 'Cinematic Ramadan greeting, lanterns and stars, cinematic depth of field', promptAr: 'تهنئة رمضانية سينمائية، فوانيس ونجوم، عمق مجال سينمائي', template: 'Ramadan', cat: 'Ads' },
+  { image: 'https://picsum.photos/seed/m6/400/450', promptEn: 'Instagram story design, bold typography, vibrant gradient, social media', promptAr: 'تصميم ستوري إنستغرام، خطوط عريضة، تدرج نابض، وسائل تواصل', template: 'Reels Cover', cat: 'Social' },
+  { image: 'https://picsum.photos/seed/m7/400/380', promptEn: 'Modern villa exterior, blue sky, lush garden, architectural photography', promptAr: 'واجهة فيلا عصرية، سماء زرقاء، حديقة خضراء، تصوير معماري', template: 'Real Estate', cat: 'Architecture' },
+  { image: 'https://picsum.photos/seed/m8/400/520', promptEn: 'Haute couture fashion editorial, flowing fabric, studio lighting', promptAr: 'تصوير أزياء راقية، قماش متدفق، إضاءة استوديو', template: 'Fashion', cat: 'Fashion' },
+  { image: 'https://picsum.photos/seed/m9/400/440', promptEn: 'Eid celebration ad, festive colors, joyful atmosphere, commercial quality', promptAr: 'إعلان احتفال عيد، ألوان احتفالية، أجواء بهيجة، جودة تجارية', template: 'Eid', cat: 'Ads' },
+  { image: 'https://picsum.photos/seed/m10/400/480', promptEn: 'Artisan coffee flat lay, latte art, warm morning light, overhead shot', promptAr: 'عرض قهوة حرفية، فن اللاتيه، ضوء صباحي دافئ، تصوير علوي', template: 'Restaurant', cat: 'Food' },
+  { image: 'https://picsum.photos/seed/m11/400/360', promptEn: 'Clean skincare product on marble, soft shadows, premium aesthetic', promptAr: 'منتج عناية بالبشرة على رخام، ظلال ناعمة، جمالية فاخرة', template: 'Product Shot', cat: 'Products' },
+  { image: 'https://picsum.photos/seed/m12/400/550', promptEn: 'National Day parade scene, flags and fireworks, patriotic celebration', promptAr: 'مشهد عرض اليوم الوطني، أعلام وألعاب نارية، احتفال وطني', template: 'National Day', cat: 'Ads' },
 ];
 
 export default function PortalHome() {
