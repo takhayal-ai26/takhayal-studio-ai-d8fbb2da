@@ -391,7 +391,7 @@ export default function AdminPricing() {
                       </tr>
                       {isExpanded && (
                         <tr key={m.id + '-detail'} className="bg-muted/5 border-b border-border/10">
-                          <td colSpan={9} className="px-6 py-4">
+                          <td colSpan={10} className="px-6 py-4">
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs">
                               <div>
                                 <p className="text-muted-foreground font-medium mb-1">Supported Ratios</p>
