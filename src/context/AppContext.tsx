@@ -84,7 +84,7 @@ interface AppState {
   setQuality: (quality: Quality) => void;
   setEnhancePrompt: (enhance: boolean) => void;
   setCurrentImageIndex: (index: number) => void;
-  generate: (opts?: { modelId?: string; qualityTier?: string }) => void;
+  generate: (opts?: { modelId?: string; qualityTier?: string; creditCost?: number }) => void;
   getCreditCost: () => number;
 }
 
