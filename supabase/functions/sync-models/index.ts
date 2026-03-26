@@ -267,16 +267,8 @@ serve(async (req) => {
         // 1. Fetch OpenAPI schema for capabilities
         const schema = await fetchModelSchema(model.endpoint_id);
 
-        // 2. Health check
-        let isAvailable = false;
-        try {
-          const healthRes = await fetch(`https://fal.run/${model.endpoint_id}`, {
-            method: "POST",
-            headers: { Authorization: `Key ${FAL_AI_API_KEY}`, "Content-Type": "application/json" },
-            body: JSON.stringify({ prompt: "test", num_images: 0 }),
-          });
-          isAvailable = healthRes.status < 500;
-        } catch { isAvailable = false; }
+        // 2. Skip health check to avoid timeout — mark as available if schema found
+        const isAvailable = !!schema;
 
         // 3. Build update payload — preserve admin overrides
         const updatePayload: Record<string, unknown> = {
