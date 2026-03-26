@@ -14,6 +14,66 @@ export type Database = {
   }
   public: {
     Tables: {
+      credit_packages: {
+        Row: {
+          active: boolean
+          badge_ar: string
+          badge_en: string
+          created_at: string
+          credits: number
+          cta_label_ar: string
+          cta_label_en: string
+          currency: string
+          description_ar: string
+          description_en: string
+          featured: boolean
+          id: string
+          name_ar: string
+          name_en: string
+          price: number
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          badge_ar?: string
+          badge_en?: string
+          created_at?: string
+          credits?: number
+          cta_label_ar?: string
+          cta_label_en?: string
+          currency?: string
+          description_ar?: string
+          description_en?: string
+          featured?: boolean
+          id?: string
+          name_ar?: string
+          name_en: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          badge_ar?: string
+          badge_en?: string
+          created_at?: string
+          credits?: number
+          cta_label_ar?: string
+          cta_label_en?: string
+          currency?: string
+          description_ar?: string
+          description_en?: string
+          featured?: boolean
+          id?: string
+          name_ar?: string
+          name_en?: string
+          price?: number
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       credit_settings: {
         Row: {
           created_at: string
@@ -40,6 +100,45 @@ export type Database = {
           id?: string
           min_credits_per_action?: number
           rounding_rule?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      credit_usage_explanations: {
+        Row: {
+          active: boolean
+          created_at: string
+          icon: string
+          id: string
+          sort_order: number
+          subtitle_ar: string
+          subtitle_en: string
+          title_ar: string
+          title_en: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          icon?: string
+          id?: string
+          sort_order?: number
+          subtitle_ar?: string
+          subtitle_en?: string
+          title_ar?: string
+          title_en?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          icon?: string
+          id?: string
+          sort_order?: number
+          subtitle_ar?: string
+          subtitle_en?: string
+          title_ar?: string
+          title_en?: string
           updated_at?: string
         }
         Relationships: []
@@ -263,6 +362,191 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      pricing_faqs: {
+        Row: {
+          active: boolean
+          answer_ar: string
+          answer_en: string
+          created_at: string
+          id: string
+          question_ar: string
+          question_en: string
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          answer_ar?: string
+          answer_en?: string
+          created_at?: string
+          id?: string
+          question_ar?: string
+          question_en?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          answer_ar?: string
+          answer_en?: string
+          created_at?: string
+          id?: string
+          question_ar?: string
+          question_en?: string
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      pricing_page_content: {
+        Row: {
+          active: boolean
+          field_key: string
+          id: string
+          metadata_json: Json
+          section_key: string
+          sort_order: number
+          updated_at: string
+          value_ar: string
+          value_en: string
+        }
+        Insert: {
+          active?: boolean
+          field_key: string
+          id?: string
+          metadata_json?: Json
+          section_key: string
+          sort_order?: number
+          updated_at?: string
+          value_ar?: string
+          value_en?: string
+        }
+        Update: {
+          active?: boolean
+          field_key?: string
+          id?: string
+          metadata_json?: Json
+          section_key?: string
+          sort_order?: number
+          updated_at?: string
+          value_ar?: string
+          value_en?: string
+        }
+        Relationships: []
+      }
+      pricing_plan_features: {
+        Row: {
+          active: boolean
+          id: string
+          plan_id: string
+          sort_order: number
+          text_ar: string
+          text_en: string
+        }
+        Insert: {
+          active?: boolean
+          id?: string
+          plan_id: string
+          sort_order?: number
+          text_ar?: string
+          text_en?: string
+        }
+        Update: {
+          active?: boolean
+          id?: string
+          plan_id?: string
+          sort_order?: number
+          text_ar?: string
+          text_en?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pricing_plan_features_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "pricing_plans"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pricing_plans: {
+        Row: {
+          active: boolean
+          badge_ar: string
+          badge_en: string
+          billing_period: string
+          created_at: string
+          cta_action: string
+          cta_label_ar: string
+          cta_label_en: string
+          currency: string
+          description_ar: string
+          description_en: string
+          featured: boolean
+          id: string
+          included_credits: number
+          is_default: boolean
+          name_ar: string
+          name_en: string
+          price: number
+          slug: string
+          sort_order: number
+          updated_at: string
+          visible_logged_in: boolean
+          visible_logged_out: boolean
+        }
+        Insert: {
+          active?: boolean
+          badge_ar?: string
+          badge_en?: string
+          billing_period?: string
+          created_at?: string
+          cta_action?: string
+          cta_label_ar?: string
+          cta_label_en?: string
+          currency?: string
+          description_ar?: string
+          description_en?: string
+          featured?: boolean
+          id?: string
+          included_credits?: number
+          is_default?: boolean
+          name_ar?: string
+          name_en: string
+          price?: number
+          slug: string
+          sort_order?: number
+          updated_at?: string
+          visible_logged_in?: boolean
+          visible_logged_out?: boolean
+        }
+        Update: {
+          active?: boolean
+          badge_ar?: string
+          badge_en?: string
+          billing_period?: string
+          created_at?: string
+          cta_action?: string
+          cta_label_ar?: string
+          cta_label_en?: string
+          currency?: string
+          description_ar?: string
+          description_en?: string
+          featured?: boolean
+          id?: string
+          included_credits?: number
+          is_default?: boolean
+          name_ar?: string
+          name_en?: string
+          price?: number
+          slug?: string
+          sort_order?: number
+          updated_at?: string
+          visible_logged_in?: boolean
+          visible_logged_out?: boolean
+        }
+        Relationships: []
       }
       pricing_sync_logs: {
         Row: {
