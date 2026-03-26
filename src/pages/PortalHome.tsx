@@ -33,8 +33,17 @@ export default function PortalHome() {
   const { setPrompt, setSelectedTemplate, setActivePage } = useApp();
   const { t, isRTL } = useLanguage();
   const { tools: toolsData } = useTools();
+  const { getUrlByName } = useMedia();
   const [carouselIndex, setCarouselIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState('All');
+
+  const toolImages: Record<string, string> = {
+    'generate': getUrlByName('tool-generate.jpg'),
+    'upscale': getUrlByName('tool-upscale.jpg'),
+    'logo': getUrlByName('tool-logo.jpg'),
+    'remove-bg': getUrlByName('tool-removebg.jpg'),
+    'enhance': getUrlByName('tool-enhance.jpg'),
+  };
 
   const categoryKeys = [
     { key: 'All', label: t.portal.all },
