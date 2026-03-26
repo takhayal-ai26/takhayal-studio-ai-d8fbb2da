@@ -43,7 +43,7 @@ export function CenterCanvas() {
         </div>
         {hasImages && (
           <div className="w-full max-w-[900px] flex justify-end gap-2.5 mt-4">
-            <button onClick={generate} className="h-9 px-4 rounded-lg border border-surface-border text-foreground text-[13px] font-medium flex items-center gap-2 hover:bg-card transition-colors"><RefreshCw size={14} />{t.studio.regenerate}</button>
+            <button onClick={() => generate()} className="h-9 px-4 rounded-lg border border-surface-border text-foreground text-[13px] font-medium flex items-center gap-2 hover:bg-card transition-colors"><RefreshCw size={14} />{t.studio.regenerate}</button>
             <button className="h-9 px-4 rounded-lg bg-primary hover:bg-ember-hover text-primary-foreground text-[13px] font-medium flex items-center gap-2 transition-colors"><Download size={14} />{t.studio.download}</button>
           </div>
         )}

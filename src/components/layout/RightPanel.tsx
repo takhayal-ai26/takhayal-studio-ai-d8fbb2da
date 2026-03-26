@@ -59,7 +59,7 @@ export function RightPanel() {
       </div>
       <div className="sticky bottom-0 bg-background border-t border-border p-4">
         <div className="flex items-center justify-between mb-2.5"><span className="text-[12px] text-muted-foreground">{t.studio.cost}</span><span className="text-[12px] font-medium text-primary">{cost} {t.toolPage.credits}</span></div>
-        <button onClick={generate} disabled={!canGenerate} className={`w-full h-[52px] rounded-lg text-base font-medium transition-all duration-150 ${canGenerate ? 'bg-primary text-primary-foreground hover:bg-ember-hover active:scale-[0.99]' : 'bg-surface-border text-muted-foreground cursor-not-allowed'}`}>
+        <button onClick={() => generate()} disabled={!canGenerate} className={`w-full h-[52px] rounded-lg text-base font-medium transition-all duration-150 ${canGenerate ? 'bg-primary text-primary-foreground hover:bg-ember-hover active:scale-[0.99]' : 'bg-surface-border text-muted-foreground cursor-not-allowed'}`}>
           {isGenerating ? (<span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin" />{t.studio.generating}</span>) : t.toolPage.generate}
         </button>
         <p className="text-[11px] text-muted-foreground/60 text-center mt-2">⌘ Enter</p>
