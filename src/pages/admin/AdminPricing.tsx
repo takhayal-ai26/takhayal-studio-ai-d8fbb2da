@@ -492,7 +492,7 @@ export default function AdminPricing() {
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">Quality & resolution-based pricing per model. Revenue/margin auto-calculated from credit value (${creditVal}/credit).</p>
           </div>
-          {models.filter(m => m.is_active).map(m => (
+          {models.map(m => (
             <PricingMatrixCard
               key={m.id}
               modelId={m.id}
@@ -504,8 +504,8 @@ export default function AdminPricing() {
               onDelete={deleteTier}
             />
           ))}
-          {models.filter(m => m.is_active).length === 0 && (
-            <p className="text-center text-muted-foreground py-8">No active models. Enable models in Models & Providers.</p>
+          {models.length === 0 && (
+            <p className="text-center text-muted-foreground py-8">No models found. Add models in Models & Providers.</p>
           )}
         </TabsContent>
 
