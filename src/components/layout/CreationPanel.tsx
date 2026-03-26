@@ -18,12 +18,15 @@ export function CreationPanel() {
   const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, enhancePrompt, setEnhancePrompt, generate, isGenerating, credits, getCreditCost } = useApp();
   const { t } = useLanguage();
   const { activeModels, defaultModel } = useModels();
+  const { getCreditsForModel } = usePricing();
 
   const [selectedModelId, setSelectedModelId] = useState<string>('');
   const [selectedResolution, setSelectedResolution] = useState<string>('2K');
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const cost = getCreditCost();
+  
+  const currentModel = activeModels.find(m => m.id === selectedModelId) || defaultModel || activeModels[0];
+  const cost = currentModel ? getCreditsForModel(currentModel.id) : getCreditCost();
 
   // Set default model once loaded
   useEffect(() => {
