@@ -145,6 +145,8 @@ export type Database = {
       }
       generation_logs: {
         Row: {
+          actual_output_height: number | null
+          actual_output_width: number | null
           created_at: string
           credits_used: number
           id: string
@@ -156,12 +158,17 @@ export type Database = {
           provider_id: string | null
           quality_tier: string | null
           ratio: string | null
+          requested_quality_tier: string | null
+          requested_ratio: string | null
           resolution: string | null
           revenue: number
           tool_id: string | null
+          used_upscale_pipeline: boolean
           user_id: string | null
         }
         Insert: {
+          actual_output_height?: number | null
+          actual_output_width?: number | null
           created_at?: string
           credits_used?: number
           id?: string
@@ -173,12 +180,17 @@ export type Database = {
           provider_id?: string | null
           quality_tier?: string | null
           ratio?: string | null
+          requested_quality_tier?: string | null
+          requested_ratio?: string | null
           resolution?: string | null
           revenue?: number
           tool_id?: string | null
+          used_upscale_pipeline?: boolean
           user_id?: string | null
         }
         Update: {
+          actual_output_height?: number | null
+          actual_output_width?: number | null
           created_at?: string
           credits_used?: number
           id?: string
@@ -190,9 +202,12 @@ export type Database = {
           provider_id?: string | null
           quality_tier?: string | null
           ratio?: string | null
+          requested_quality_tier?: string | null
+          requested_ratio?: string | null
           resolution?: string | null
           revenue?: number
           tool_id?: string | null
+          used_upscale_pipeline?: boolean
           user_id?: string | null
         }
         Relationships: [
@@ -302,7 +317,9 @@ export type Database = {
           supported_quality_tiers: Json
           supported_ratios: Json
           supported_sizes: Json
+          supports_native_high_res: boolean
           updated_at: string
+          upscale_strategy: string
         }
         Insert: {
           admin_overrides?: Json
@@ -328,7 +345,9 @@ export type Database = {
           supported_quality_tiers?: Json
           supported_ratios?: Json
           supported_sizes?: Json
+          supports_native_high_res?: boolean
           updated_at?: string
+          upscale_strategy?: string
         }
         Update: {
           admin_overrides?: Json
@@ -354,7 +373,9 @@ export type Database = {
           supported_quality_tiers?: Json
           supported_ratios?: Json
           supported_sizes?: Json
+          supports_native_high_res?: boolean
           updated_at?: string
+          upscale_strategy?: string
         }
         Relationships: [
           {
