@@ -6,14 +6,7 @@ import { AuthModal } from '@/components/AuthModal';
 import { Logo } from '@/components/Logo';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { useState, useEffect, useRef } from 'react';
-
-import categoryProduct from '@/assets/landing/category-product.jpg';
-import categorySocial from '@/assets/landing/category-social.jpg';
-import categoryLogos from '@/assets/landing/category-logos.jpg';
-import categoryPosters from '@/assets/landing/category-posters.jpg';
-import categoryFashion from '@/assets/landing/category-fashion.jpg';
-import categoryFood from '@/assets/landing/category-food.jpg';
-import beforeAfter from '@/assets/landing/before-after.jpg';
+import { useMedia } from '@/hooks/useMedia';
 
 function useScrollReveal() {
   const ref = useRef<HTMLDivElement>(null);

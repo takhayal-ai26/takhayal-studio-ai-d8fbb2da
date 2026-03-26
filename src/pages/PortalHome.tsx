@@ -4,17 +4,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTools } from '@/hooks/useTools';
-
-import toolGenerate from '@/assets/tools/tool-generate.jpg';
-import toolUpscale from '@/assets/tools/tool-upscale.jpg';
-import toolLogo from '@/assets/tools/tool-logo.jpg';
-import toolRemovebg from '@/assets/tools/tool-removebg.jpg';
-import toolEnhance from '@/assets/tools/tool-enhance.jpg';
-
-const toolImages: Record<string, string> = {
-  'generate': toolGenerate, 'upscale': toolUpscale, 'logo': toolLogo,
-  'remove-bg': toolRemovebg, 'enhance': toolEnhance,
-};
+import { useMedia } from '@/hooks/useMedia';
 
 const featuredItems = [
   { image: 'https://picsum.photos/seed/feat-cinema/800/450', labelKey: 'cinematicAd', prompt: 'Cinematic product advertisement, dramatic studio lighting, dark moody tones, volumetric fog, 4K commercial quality', template: 'Product Shot' },
