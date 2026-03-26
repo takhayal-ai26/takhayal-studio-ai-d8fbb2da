@@ -1,26 +1,28 @@
 import { useState } from 'react';
 import { useApp, TEMPLATE_PROMPTS } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { useTemplates, FrontendTemplate } from '@/hooks/useTemplates';
 import { GenerationGrid } from './GenerationGrid';
 
-const FEED_ITEMS = [
-  { image: 'https://picsum.photos/seed/cine1/400/500', prompt: 'Cinematic perfume ad, dramatic lighting, dark background, luxury feel', category: 'Ads', height: 'h-[280px]' },
-  { image: 'https://picsum.photos/seed/fashion2/400/600', prompt: 'High-end modest fashion editorial, soft studio lighting, clean background', category: 'Fashion', height: 'h-[340px]' },
-  { image: 'https://picsum.photos/seed/food3/400/400', prompt: 'Gourmet restaurant dish, professional food photography, warm tones, steam rising', category: 'Food', height: 'h-[240px]' },
-  { image: 'https://picsum.photos/seed/arch4/400/550', prompt: 'Modern luxury villa, blue sky, architectural photography, wide angle', category: 'Architecture', height: 'h-[300px]' },
-  { image: 'https://picsum.photos/seed/prod5/400/450', prompt: 'Premium watch on marble surface, studio lighting, commercial quality', category: 'Products', height: 'h-[260px]' },
-  { image: 'https://picsum.photos/seed/social6/400/500', prompt: 'Trendy Instagram post, bold modern aesthetic, vibrant colors, social media ready', category: 'Social', height: 'h-[290px]' },
-  { image: 'https://picsum.photos/seed/ram7/400/520', prompt: TEMPLATE_PROMPTS['Ramadan'], category: 'Ads', height: 'h-[310px]' },
-  { image: 'https://picsum.photos/seed/fash8/400/480', prompt: 'Streetwear lookbook, urban backdrop, moody lighting, editorial quality', category: 'Fashion', height: 'h-[270px]' },
-  { image: 'https://picsum.photos/seed/prod9/400/420', prompt: 'Skincare product flatlay, minimal white background, soft shadows, clean aesthetic', category: 'Products', height: 'h-[250px]' },
-  { image: 'https://picsum.photos/seed/food10/400/560', prompt: 'Arabic coffee setup, dates, traditional, warm golden hour lighting', category: 'Food', height: 'h-[320px]' },
-  { image: 'https://picsum.photos/seed/arch11/400/440', prompt: 'Futuristic office interior, glass and steel, professional real estate photography', category: 'Architecture', height: 'h-[260px]' },
-  { image: 'https://picsum.photos/seed/social12/400/500', prompt: 'YouTube thumbnail, energetic, bold text space, eye-catching composition', category: 'Social', height: 'h-[280px]' },
+const FALLBACK_ITEMS = [
+  { image: 'https://picsum.photos/seed/cine1/400/500', promptEn: 'Cinematic perfume ad, dramatic lighting, dark background, luxury feel', promptAr: 'إعلان عطر سينمائي، إضاءة درامية، خلفية داكنة، طابع فاخر', category: 'Ads', height: 'h-[280px]' },
+  { image: 'https://picsum.photos/seed/fashion2/400/600', promptEn: 'High-end modest fashion editorial, soft studio lighting, clean background', promptAr: 'تصوير أزياء محتشمة راقية، إضاءة استوديو ناعمة، خلفية نظيفة', category: 'Fashion', height: 'h-[340px]' },
+  { image: 'https://picsum.photos/seed/food3/400/400', promptEn: 'Gourmet restaurant dish, professional food photography, warm tones, steam rising', promptAr: 'طبق مطعم فاخر، تصوير طعام احترافي، ألوان دافئة، بخار متصاعد', category: 'Food', height: 'h-[240px]' },
+  { image: 'https://picsum.photos/seed/arch4/400/550', promptEn: 'Modern luxury villa, blue sky, architectural photography, wide angle', promptAr: 'فيلا فاخرة عصرية، سماء زرقاء، تصوير معماري، زاوية واسعة', category: 'Architecture', height: 'h-[300px]' },
+  { image: 'https://picsum.photos/seed/prod5/400/450', promptEn: 'Premium watch on marble surface, studio lighting, commercial quality', promptAr: 'ساعة فاخرة على سطح رخامي، إضاءة استوديو، جودة تجارية', category: 'Products', height: 'h-[260px]' },
+  { image: 'https://picsum.photos/seed/social6/400/500', promptEn: 'Trendy Instagram post, bold modern aesthetic, vibrant colors, social media ready', promptAr: 'منشور إنستغرام عصري، جماليات جريئة، ألوان نابضة، جاهز للنشر', category: 'Social', height: 'h-[290px]' },
+  { image: 'https://picsum.photos/seed/ram7/400/520', promptEn: TEMPLATE_PROMPTS['Ramadan'], promptAr: 'فوانيس رمضان ذهبية، إضاءة دافئة، أضواء بوكيه، أجواء روحانية', category: 'Ads', height: 'h-[310px]' },
+  { image: 'https://picsum.photos/seed/fash8/400/480', promptEn: 'Streetwear lookbook, urban backdrop, moody lighting, editorial quality', promptAr: 'كتالوج أزياء شارع، خلفية حضرية، إضاءة درامية، جودة تحريرية', category: 'Fashion', height: 'h-[270px]' },
+  { image: 'https://picsum.photos/seed/prod9/400/420', promptEn: 'Skincare product flatlay, minimal white background, soft shadows, clean aesthetic', promptAr: 'عرض منتجات عناية بالبشرة، خلفية بيضاء بسيطة، ظلال ناعمة، جمالية نظيفة', category: 'Products', height: 'h-[250px]' },
+  { image: 'https://picsum.photos/seed/food10/400/560', promptEn: 'Arabic coffee setup, dates, traditional, warm golden hour lighting', promptAr: 'طقم قهوة عربية، تمور، تقليدي، إضاءة ساعة ذهبية دافئة', category: 'Food', height: 'h-[320px]' },
+  { image: 'https://picsum.photos/seed/arch11/400/440', promptEn: 'Futuristic office interior, glass and steel, professional real estate photography', promptAr: 'مكتب داخلي مستقبلي، زجاج وفولاذ، تصوير عقاري احترافي', category: 'Architecture', height: 'h-[260px]' },
+  { image: 'https://picsum.photos/seed/social12/400/500', promptEn: 'YouTube thumbnail, energetic, bold text space, eye-catching composition', promptAr: 'صورة مصغرة يوتيوب، حيوية، مساحة نص جريئة، تكوين لافت', category: 'Social', height: 'h-[280px]' },
 ];
 
 export function InspirationFeed() {
   const { setPrompt, setSelectedTemplate, generatedImages, isGenerating, gallery } = useApp();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const isAr = lang === 'ar';
   const [activeCategory, setActiveCategory] = useState<string>('All');
 
   const CATEGORIES_LOCALIZED = [
@@ -30,8 +32,13 @@ export function InspirationFeed() {
     { key: 'Architecture', label: t.portal.architecture },
   ];
 
-  const filtered = activeCategory === 'All' ? FEED_ITEMS : FEED_ITEMS.filter(item => item.category === activeCategory);
-  const handleUse = (item: typeof FEED_ITEMS[0]) => { setPrompt(item.prompt); setSelectedTemplate(null); };
+  const feedItems = FALLBACK_ITEMS.map(item => ({
+    ...item,
+    prompt: isAr ? item.promptAr : item.promptEn,
+  }));
+
+  const filtered = activeCategory === 'All' ? feedItems : feedItems.filter(item => item.category === activeCategory);
+  const handleUse = (item: typeof feedItems[0]) => { setPrompt(item.prompt); setSelectedTemplate(null); };
 
   // Show generation grid if user has ever generated or is generating
   const hasActivity = gallery.length > 0 || isGenerating;
