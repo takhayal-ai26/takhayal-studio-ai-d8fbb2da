@@ -7,30 +7,6 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// Base sizes per ratio at 1K quality (~1MP)
-const RATIO_BASE_DIMS: Record<string, { w: number; h: number }> = {
-  "1:1":  { w: 1024, h: 1024 },
-  "16:9": { w: 1344, h: 768 },
-  "9:16": { w: 768, h: 1344 },
-  "4:3":  { w: 1184, h: 896 },
-  "3:4":  { w: 896, h: 1184 },
-  "4:5":  { w: 896, h: 1120 },
-  "5:4":  { w: 1120, h: 896 },
-  "3:2":  { w: 1216, h: 832 },
-  "2:3":  { w: 832, h: 1216 },
-  "21:9": { w: 1536, h: 640 },
-};
-
-// Quality multipliers relative to 1K base
-const QUALITY_MULTIPLIERS: Record<string, number> = {
-  "1K": 1,
-  "standard": 1,
-  "2K": 2,
-  "hd": 2,
-  "4K": 4,
-  "ultra": 4,
-};
-
 // fal.ai preset strings for models that use image_size presets
 const RATIO_TO_PRESET: Record<string, string> = {
   "1:1": "square_hd",
@@ -44,32 +20,75 @@ const RATIO_TO_PRESET: Record<string, string> = {
   "2:3": "portrait_4_3",
 };
 
-function parseMaxResolution(maxRes: string | null): number {
-  if (!maxRes) return 4096;
-  // Extract the larger dimension from "WxH" format as total pixel budget
-  const parts = maxRes.toLowerCase().split("x");
-  if (parts.length === 2) {
-    const w = parseInt(parts[0]); const h = parseInt(parts[1]);
-    if (!isNaN(w) && !isNaN(h)) return Math.max(w, h);
-  }
-  const single = parseInt(maxRes);
-  return !isNaN(single) ? single : 4096;
-}
+// Upscale multipliers: 2K = 2x, 4K = 4x
+const UPSCALE_FACTORS: Record<string, number> = {
+  "2K": 2,
+  "hd": 2,
+  "4K": 4,
+  "ultra": 4,
+};
 
-function resolveImageSize(ratio: string, qualityTier: string | null, maxRes?: string | null): { width: number; height: number } {
-  const base = RATIO_BASE_DIMS[ratio] || RATIO_BASE_DIMS["1:1"];
-  const mult = QUALITY_MULTIPLIERS[qualityTier || "1K"] || 1;
-  let w = Math.round((base.w * mult) / 32) * 32;
-  let h = Math.round((base.h * mult) / 32) * 32;
-  // Cap longest side to model max, scale other side proportionally
-  const maxPx = parseMaxResolution(maxRes || null);
-  const longest = Math.max(w, h);
-  if (longest > maxPx) {
-    const scale = maxPx / longest;
-    w = Math.round((w * scale) / 32) * 32;
-    h = Math.round((h * scale) / 32) * 32;
+// Additional provider cost for upscaling (ESRGAN)
+const UPSCALE_COSTS: Record<string, number> = {
+  "2K": 0.001,
+  "hd": 0.001,
+  "4K": 0.003,
+  "ultra": 0.003,
+};
+
+// Models with restricted image_size literals
+const RESTRICTED_SIZE_MODELS: Record<string, Record<string, string>> = {
+  "fal-ai/gpt-image-1.5": {
+    "1:1": "1024x1024",
+    "16:9": "1536x1024",
+    "9:16": "1024x1536",
+    "4:3": "1536x1024",
+    "3:4": "1024x1536",
+  },
+};
+
+/**
+ * Submit a fal.ai queue job, poll until complete, return result JSON.
+ */
+async function falQueueRun(endpoint: string, payload: Record<string, unknown>, apiKey: string): Promise<any> {
+  const falHeaders = {
+    Authorization: `Key ${apiKey}`,
+    "Content-Type": "application/json",
+  };
+
+  const submitRes = await fetch(`https://queue.fal.run/${endpoint}`, {
+    method: "POST",
+    headers: falHeaders,
+    body: JSON.stringify(payload),
+  });
+
+  if (!submitRes.ok) {
+    const errorText = await submitRes.text();
+    throw new Error(`fal.ai API error ${submitRes.status}: ${errorText}`);
   }
-  return { width: w, height: h };
+
+  const submitData = await submitRes.json();
+  const { status_url, response_url } = submitData;
+
+  // If no queue URLs, it returned the result directly
+  if (!status_url || !response_url) return submitData;
+
+  // Poll for completion
+  for (let i = 0; i < 60; i++) {
+    await new Promise(r => setTimeout(r, 2000));
+    const statusRes = await fetch(status_url, { headers: falHeaders });
+    const statusData = await statusRes.json();
+    console.log(`Poll ${endpoint} attempt ${i + 1}: ${statusData.status}`);
+
+    if (statusData.status === "COMPLETED") {
+      const resultRes = await fetch(response_url, { headers: falHeaders });
+      return await resultRes.json();
+    }
+    if (statusData.status === "FAILED") {
+      throw new Error(`fal.ai generation failed: ${JSON.stringify(statusData)}`);
+    }
+  }
+  throw new Error("Generation timed out after 120s");
 }
 
 serve(async (req) => {
@@ -98,7 +117,6 @@ serve(async (req) => {
     let resolvedModelId = model_id || null;
     let creditsUsed = 2;
     let providerCost = 0;
-    let modelMaxRes: string | null = null;
 
     // Fetch model config from DB
     if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
@@ -119,7 +137,6 @@ serve(async (req) => {
           resolvedModelId = modelData.id;
           providerCost = modelData.cost_per_run ? Number(modelData.cost_per_run) : 0;
           creditsUsed = modelData.credits_per_generation || 2;
-          modelMaxRes = modelData.max_resolution || null;
         }
 
         // Check for quality-tier-specific pricing
@@ -165,46 +182,22 @@ serve(async (req) => {
       }
     }
 
-    const falHeaders = {
-      Authorization: `Key ${FAL_AI_API_KEY}`,
-      "Content-Type": "application/json",
-    };
-
+    // ===== BUILD GENERATION PAYLOAD =====
+    const selectedRatio = aspect_ratio || "1:1";
     const payload: Record<string, unknown> = {
       prompt,
       num_images: num_images || 1,
       enable_safety_checker: true,
     };
 
-    // ===== RESOLUTION + RATIO MAPPING =====
-    const selectedRatio = aspect_ratio || "1:1";
-
-    // Models with restricted image_size literals (e.g. GPT Image)
-    const RESTRICTED_SIZE_MODELS: Record<string, Record<string, string>> = {
-      "fal-ai/gpt-image-1.5": {
-        "1:1": "1024x1024",
-        "16:9": "1536x1024",
-        "9:16": "1024x1536",
-        "4:3": "1536x1024",
-        "3:4": "1024x1536",
-      },
-    };
-
+    // Always generate at 1K base resolution — upscaling handles 2K/4K
     const restrictedSizes = RESTRICTED_SIZE_MODELS[endpoint];
     if (restrictedSizes) {
-      // These models only accept specific string literals
       payload.image_size = restrictedSizes[selectedRatio] || restrictedSizes["1:1"] || "1024x1024";
     } else if (modelInputType === "aspect_ratio") {
       payload.aspect_ratio = selectedRatio;
-      if (quality_tier && quality_tier !== "1K" && quality_tier !== "standard") {
-        const dims = resolveImageSize(selectedRatio, quality_tier, modelMaxRes);
-        payload.image_size = dims;
-      }
     } else {
-      if (quality_tier && quality_tier !== "1K" && quality_tier !== "standard") {
-        const dims = resolveImageSize(selectedRatio, quality_tier, modelMaxRes);
-        payload.image_size = dims;
-      } else if (image_size) {
+      if (image_size) {
         payload.image_size = image_size;
       } else {
         payload.image_size = RATIO_TO_PRESET[selectedRatio] || "square_hd";
@@ -218,66 +211,67 @@ serve(async (req) => {
     console.log(`[generate-image] endpoint=${endpoint} ratio=${selectedRatio} quality=${quality_tier} inputType=${modelInputType}`);
     console.log(`[generate-image] payload:`, JSON.stringify(payload));
 
-    const submitRes = await fetch(`https://queue.fal.run/${endpoint}`, {
-      method: "POST",
-      headers: falHeaders,
-      body: JSON.stringify(payload),
+    // ===== STEP 1: GENERATE IMAGE AT 1K =====
+    const resultData = await falQueueRun(endpoint, payload, FAL_AI_API_KEY);
+    console.log("Step 1 complete: generated", resultData.images?.length, "images at 1K");
+
+    let finalImages = resultData.images || [];
+    let wasUpscaled = false;
+    const upscaleFactor = UPSCALE_FACTORS[quality_tier || ""] || 0;
+
+    // ===== STEP 2: UPSCALE IF 2K OR 4K =====
+    if (upscaleFactor > 1 && finalImages.length > 0) {
+      console.log(`[generate-image] Upscaling ${finalImages.length} image(s) ${upscaleFactor}x via ESRGAN`);
+      const upscaledImages = [];
+
+      for (const img of finalImages) {
+        try {
+          const upscalePayload: Record<string, unknown> = {
+            image_url: img.url,
+            scale: upscaleFactor,
+          };
+
+          const upscaleResult = await falQueueRun("fal-ai/esrgan", upscalePayload, FAL_AI_API_KEY);
+          
+          if (upscaleResult.image?.url) {
+            upscaledImages.push({
+              ...img,
+              url: upscaleResult.image.url,
+              width: upscaleResult.image.width || (img.width ? img.width * upscaleFactor : undefined),
+              height: upscaleResult.image.height || (img.height ? img.height * upscaleFactor : undefined),
+            });
+            wasUpscaled = true;
+            console.log(`[generate-image] Upscaled to ${upscaleResult.image.width}x${upscaleResult.image.height}`);
+          } else {
+            // Fallback: keep original if upscale fails
+            upscaledImages.push(img);
+            console.warn("[generate-image] Upscale returned no image, keeping original");
+          }
+        } catch (upscaleErr) {
+          console.error("[generate-image] Upscale error (keeping original):", upscaleErr);
+          upscaledImages.push(img);
+        }
+      }
+
+      finalImages = upscaledImages;
+    }
+
+    // ===== RETURN RESULT =====
+    return new Response(JSON.stringify({
+      ...resultData,
+      images: finalImages,
+      model_used: endpoint,
+      credits_used: creditsUsed,
+      provider_cost: providerCost,
+      requested_ratio: selectedRatio,
+      requested_quality: quality_tier || "1K",
+      requested_image_size: payload.image_size,
+      upscaled: wasUpscaled,
+      upscale_factor: upscaleFactor > 1 ? upscaleFactor : null,
+    }), {
+      headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
-    if (!submitRes.ok) {
-      const errorText = await submitRes.text();
-      console.error("fal.ai submit error:", submitRes.status, errorText);
-      return new Response(
-        JSON.stringify({ error: `fal.ai API error: ${submitRes.status}`, details: errorText }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-      );
-    }
-
-    const submitData = await submitRes.json();
-    const { status_url, response_url } = submitData;
-
-    if (!status_url || !response_url) {
-      return new Response(JSON.stringify(submitData), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    for (let i = 0; i < 30; i++) {
-      await new Promise(r => setTimeout(r, 2000));
-      const statusRes = await fetch(status_url, { headers: falHeaders });
-      const statusData = await statusRes.json();
-      console.log("Poll attempt", i + 1, "status:", statusData.status);
-
-      if (statusData.status === "COMPLETED") {
-        const resultRes = await fetch(response_url, { headers: falHeaders });
-        const resultData = await resultRes.json();
-        console.log("Generation complete, images:", resultData.images?.length);
-        return new Response(JSON.stringify({
-          ...resultData,
-          model_used: endpoint,
-          credits_used: creditsUsed,
-          provider_cost: providerCost,
-          requested_ratio: selectedRatio,
-          requested_quality: quality_tier || "1K",
-          requested_image_size: payload.image_size,
-        }), {
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
-      }
-
-      if (statusData.status === "FAILED") {
-        console.error("fal.ai generation failed:", statusData);
-        return new Response(
-          JSON.stringify({ error: "Image generation failed", details: statusData }),
-          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-        );
-      }
-    }
-
-    return new Response(
-      JSON.stringify({ error: "Generation timed out" }),
-      { status: 504, headers: { ...corsHeaders, "Content-Type": "application/json" } }
-    );
   } catch (error) {
     console.error("generate-image error:", error);
     return new Response(
