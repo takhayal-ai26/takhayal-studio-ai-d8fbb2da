@@ -31,7 +31,8 @@ const masonryImages = [
 export default function PortalHome() {
   const navigate = useNavigate();
   const { setPrompt, setSelectedTemplate, setActivePage } = useApp();
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL, lang } = useLanguage();
+  const isAr = lang === 'ar';
   const { tools: toolsData } = useTools();
   const { getUrlByName } = useMedia();
   const [carouselIndex, setCarouselIndex] = useState(0);
