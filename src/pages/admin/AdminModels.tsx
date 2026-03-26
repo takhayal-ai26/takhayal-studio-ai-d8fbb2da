@@ -296,6 +296,7 @@ export default function AdminModels() {
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Endpoint ID</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Provider</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Input Type</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Quality Tiers</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Ratios</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Default Res</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Cost/Run</TableHead>
@@ -319,6 +320,13 @@ export default function AdminModels() {
                         <Badge variant="outline" className={`text-[10px] ${m.input_type === 'aspect_ratio' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted/20 text-muted-foreground'}`}>
                           {m.input_type}
                         </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex flex-wrap gap-0.5 max-w-[120px]">
+                          {(m.supported_quality_tiers || ['1K']).map(q => (
+                            <Badge key={q} variant="outline" className="text-[9px] py-0 px-1 bg-primary/10 text-primary border-primary/20">{q}</Badge>
+                          ))}
+                        </div>
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-0.5 max-w-[140px]">

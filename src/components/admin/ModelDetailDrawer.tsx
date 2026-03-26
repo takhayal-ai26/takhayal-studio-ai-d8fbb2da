@@ -39,6 +39,7 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
         notes: model.notes,
         supported_ratios: model.supported_ratios,
         supported_sizes: model.supported_sizes,
+        supported_quality_tiers: model.supported_quality_tiers,
       });
     }
   }, [model]);
@@ -197,6 +198,30 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
                   if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
                     const v = (e.target as HTMLInputElement).value.trim();
                     setForm(f => ({ ...f, supported_sizes: [...(f.supported_sizes || []), v] }));
+                    (e.target as HTMLInputElement).value = '';
+                  }
+                }}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[11px] text-muted-foreground">Supported Quality Tiers</Label>
+              <div className="flex flex-wrap gap-1">
+                {(form.supported_quality_tiers || []).map((q: string) => (
+                  <Badge key={q} variant="outline" className="text-[10px] bg-primary/10 border-primary/20 text-primary">
+                    {q}
+                    <button className="ml-1 hover:text-destructive" onClick={() => setForm(f => ({ ...f, supported_quality_tiers: (f.supported_quality_tiers || []).filter((x: string) => x !== q) }))}>
+                      <X size={8} />
+                    </button>
+                  </Badge>
+                ))}
+              </div>
+              <Input
+                placeholder="Add tier (e.g. 4K) and press Enter"
+                className="h-7 text-[11px] mt-1"
+                onKeyDown={e => {
+                  if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) {
+                    const v = (e.target as HTMLInputElement).value.trim();
+                    setForm(f => ({ ...f, supported_quality_tiers: [...(f.supported_quality_tiers || []), v] }));
                     (e.target as HTMLInputElement).value = '';
                   }
                 }}
