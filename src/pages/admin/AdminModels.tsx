@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useModels, ModelRecord } from '@/hooks/useModels';
 import { ModelDetailDrawer } from '@/components/admin/ModelDetailDrawer';
+import { usePricingTiers, PricingTier } from '@/hooks/usePricingTiers';
+
+const CREDIT_VALUE = 0.016;
 
 // --- Provider types (kept for Providers tab) ---
 interface ProviderConfig {
