@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Save } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Plus, Save } from 'lucide-react';
 import type { PricingTier } from '@/hooks/usePricingTiers';
 
 interface Props {
