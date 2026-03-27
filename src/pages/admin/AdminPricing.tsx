@@ -498,7 +498,7 @@ export default function AdminPricing() {
           <div className="flex items-center justify-between">
             <p className="text-sm text-muted-foreground">Quality & resolution-based pricing per model. Revenue/margin auto-calculated from credit value (${creditVal}/credit).</p>
           </div>
-          {models.map(m => (
+          {[...models].sort((a, b) => (b.is_active ? 1 : 0) - (a.is_active ? 1 : 0)).map(m => (
             <PricingMatrixCard
               key={m.id}
               modelId={m.id}
