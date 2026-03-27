@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
-import { DollarSign, TrendingUp, TrendingDown, Percent } from 'lucide-react';
-import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { DollarSign, TrendingUp, TrendingDown, Percent, AlertTriangle, Shield } from 'lucide-react';
+import { ResponsiveContainer, LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
 import { supabase } from '@/integrations/supabase/client';
 
 interface GenerationLog {
@@ -18,10 +18,22 @@ interface GenerationLog {
   quality_tier: string | null;
   resolution: string | null;
   used_upscale_pipeline: boolean;
+  was_upscaled: boolean;
+  generation_cost: number;
+  upscale_cost: number;
+  actual_api_cost: number;
+  revenue_usd: number;
+  profit_usd: number;
+  margin_pct: number;
+  upscale_model: string | null;
   created_at: string;
 }
 
 const chartStyle = { background: 'hsl(0,0%,8%)', border: '1px solid hsl(0,0%,16%)', borderRadius: 8, fontSize: 12 };
+const CREDIT_VALUE = 0.016;
+
+const marginColor = (m: number) => m > 70 ? 'text-emerald-400' : m > 40 ? 'text-yellow-400' : 'text-red-400';
+const marginBg = (m: number) => m > 70 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : m > 40 ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20';
 
 export default function EconomicsTab() {
   const [logs, setLogs] = useState<GenerationLog[]>([]);
@@ -33,72 +45,100 @@ export default function EconomicsTab() {
       setLoading(true);
       const [logsRes, modelsRes] = await Promise.all([
         supabase.from('generation_logs').select('*').order('created_at', { ascending: true }),
-        supabase.from('models').select('id, model_name'),
+        supabase.from('models').select('id, model_name, endpoint_id'),
       ]);
-      setLogs((logsRes.data as GenerationLog[]) || []);
+      setLogs((logsRes.data as any[]) || []);
       const names: Record<string, string> = {};
-      (modelsRes.data || []).forEach((m: any) => { names[m.id] = m.model_name; });
+      const endpoints: Record<string, string> = {};
+      (modelsRes.data || []).forEach((m: any) => { names[m.id] = m.model_name; endpoints[m.id] = m.endpoint_id; });
       setModelNames(names);
       setLoading(false);
     }
     fetchData();
   }, []);
 
-  const totalRevenue = logs.reduce((s, l) => s + Number(l.revenue), 0);
-  const totalCost = logs.reduce((s, l) => s + Number(l.provider_cost), 0);
+  // Use new fields if available, fallback to legacy
+  const getRevenue = (l: GenerationLog) => Number(l.revenue_usd) || Number(l.revenue) || (l.credits_used * CREDIT_VALUE);
+  const getCost = (l: GenerationLog) => Number(l.actual_api_cost) || Number(l.provider_cost) || 0;
+  const getProfit = (l: GenerationLog) => getRevenue(l) - getCost(l);
+  const getGenCost = (l: GenerationLog) => Number(l.generation_cost) || Number(l.provider_cost) || 0;
+  const getUpscaleCost = (l: GenerationLog) => Number(l.upscale_cost) || 0;
+
+  const totalRevenue = logs.reduce((s, l) => s + getRevenue(l), 0);
+  const totalCost = logs.reduce((s, l) => s + getCost(l), 0);
   const totalProfit = totalRevenue - totalCost;
   const marginPct = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
 
-  // Daily aggregation
-  const dailyMap = new Map<string, { revenue: number; cost: number }>();
+  // Daily aggregation with profit
+  const dailyMap = new Map<string, { revenue: number; cost: number; profit: number }>();
   logs.forEach(l => {
     const d = l.created_at.slice(0, 10);
-    const prev = dailyMap.get(d) || { revenue: 0, cost: 0 };
-    dailyMap.set(d, { revenue: prev.revenue + Number(l.revenue), cost: prev.cost + Number(l.provider_cost) });
+    const prev = dailyMap.get(d) || { revenue: 0, cost: 0, profit: 0 };
+    const rev = getRevenue(l), cost = getCost(l);
+    dailyMap.set(d, { revenue: prev.revenue + rev, cost: prev.cost + cost, profit: prev.profit + (rev - cost) });
   });
-  const dailyData = Array.from(dailyMap.entries())
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([date, v]) => ({ date, revenue: +v.revenue.toFixed(4), cost: +v.cost.toFixed(4) }));
+  const dailyData = Array.from(dailyMap.entries()).sort((a, b) => a[0].localeCompare(b[0]))
+    .slice(-30)
+    .map(([date, v]) => ({ date, revenue: +v.revenue.toFixed(4), cost: +v.cost.toFixed(4), profit: +v.profit.toFixed(4) }));
 
   // Model breakdown
-  const modelMap = new Map<string, { requests: number; cost: number; revenue: number }>();
+  const modelMap = new Map<string, { requests: number; cost: number; revenue: number; genCost: number; upCost: number }>();
   logs.forEach(l => {
     const key = l.model_id || 'unknown';
-    const prev = modelMap.get(key) || { requests: 0, cost: 0, revenue: 0 };
-    modelMap.set(key, { requests: prev.requests + 1, cost: prev.cost + Number(l.provider_cost), revenue: prev.revenue + Number(l.revenue) });
+    const prev = modelMap.get(key) || { requests: 0, cost: 0, revenue: 0, genCost: 0, upCost: 0 };
+    modelMap.set(key, { requests: prev.requests + 1, cost: prev.cost + getCost(l), revenue: prev.revenue + getRevenue(l), genCost: prev.genCost + getGenCost(l), upCost: prev.upCost + getUpscaleCost(l) });
   });
   const modelBreakdown = Array.from(modelMap.entries())
     .map(([id, v]) => {
       const profit = v.revenue - v.cost;
-      return { model: modelNames[id] || id, requests: v.requests, totalCost: v.cost, totalRevenue: v.revenue, profit, margin: v.revenue > 0 ? (profit / v.revenue) * 100 : 0 };
+      const margin = v.revenue > 0 ? (profit / v.revenue) * 100 : 0;
+      return { model: modelNames[id] || id.slice(0, 8), requests: v.requests, avgCost: v.requests > 0 ? v.cost / v.requests : 0, totalCost: v.cost, totalCredits: 0, totalRevenue: v.revenue, profit, margin };
     })
     .sort((a, b) => b.requests - a.requests);
+  // Compute totalCredits
+  logs.forEach(l => {
+    const entry = modelBreakdown.find(m => m.model === (modelNames[l.model_id || ''] || (l.model_id || '').slice(0, 8)));
+    if (entry) entry.totalCredits += l.credits_used;
+  });
 
-  // Quality tier breakdown
-  const tierMap = new Map<string, { requests: number; cost: number; revenue: number; upscaled: number }>();
+  // Quality tier / upscale analytics
+  const tierMap = new Map<string, { requests: number; genCost: number; upCost: number; totalCost: number; revenue: number; upscaled: number }>();
   logs.forEach(l => {
     const key = l.quality_tier || l.resolution || '1K';
-    const prev = tierMap.get(key) || { requests: 0, cost: 0, revenue: 0, upscaled: 0 };
+    const prev = tierMap.get(key) || { requests: 0, genCost: 0, upCost: 0, totalCost: 0, revenue: 0, upscaled: 0 };
     tierMap.set(key, {
       requests: prev.requests + 1,
-      cost: prev.cost + Number(l.provider_cost),
-      revenue: prev.revenue + Number(l.revenue),
-      upscaled: prev.upscaled + (l.used_upscale_pipeline ? 1 : 0),
+      genCost: prev.genCost + getGenCost(l),
+      upCost: prev.upCost + getUpscaleCost(l),
+      totalCost: prev.totalCost + getCost(l),
+      revenue: prev.revenue + getRevenue(l),
+      upscaled: prev.upscaled + (l.was_upscaled || l.used_upscale_pipeline ? 1 : 0),
     });
   });
   const tierBreakdown = Array.from(tierMap.entries())
-    .map(([tier, v]) => {
-      const profit = v.revenue - v.cost;
-      return { tier, requests: v.requests, totalCost: v.cost, totalRevenue: v.revenue, profit, margin: v.revenue > 0 ? (profit / v.revenue) * 100 : 0, upscaled: v.upscaled };
-    })
-    .sort((a, b) => b.requests - a.requests);
+    .map(([tier, v]) => ({
+      tier, requests: v.requests,
+      avgGenCost: v.requests > 0 ? v.genCost / v.requests : 0,
+      avgUpCost: v.requests > 0 ? v.upCost / v.requests : 0,
+      avgCombinedCost: v.requests > 0 ? v.totalCost / v.requests : 0,
+      margin: v.revenue > 0 ? ((v.revenue - v.totalCost) / v.revenue) * 100 : 0,
+    }))
+    .sort((a, b) => { const order = ['1K', '2K', '4K']; return order.indexOf(a.tier) - order.indexOf(b.tier); });
+
+  // GPT Image 1.5 special panel
+  const gptLogs = logs.filter(l => modelNames[l.model_id || ''] === 'GPT Image 1.5');
+  const gptTotal = gptLogs.length;
+  const gptAvgCost = gptTotal > 0 ? gptLogs.reduce((s, l) => s + getCost(l), 0) / gptTotal : 0;
+  const gptHighCostAlert = gptLogs.some(l => getCost(l) > 0.050);
+  const gptSavedVsMedium = gptTotal * (0.034 - gptAvgCost);
+  const gptSavedVsHigh = gptTotal * (0.133 - gptAvgCost);
 
   // User breakdown
   const userMap = new Map<string, { credits: number; cost: number; revenue: number }>();
   logs.forEach(l => {
     const key = l.user_id || 'anonymous';
     const prev = userMap.get(key) || { credits: 0, cost: 0, revenue: 0 };
-    userMap.set(key, { credits: prev.credits + l.credits_used, cost: prev.cost + Number(l.provider_cost), revenue: prev.revenue + Number(l.revenue) });
+    userMap.set(key, { credits: prev.credits + l.credits_used, cost: prev.cost + getCost(l), revenue: prev.revenue + getRevenue(l) });
   });
   const userBreakdown = Array.from(userMap.entries())
     .map(([user, v]) => ({ user: user.slice(0, 8) + '…', creditsUsed: v.credits, totalCost: v.cost, totalRevenue: v.revenue, profit: v.revenue - v.cost }))
@@ -109,15 +149,10 @@ export default function EconomicsTab() {
   logs.forEach(l => {
     const key = l.tool_id || 'general';
     const prev = toolMap.get(key) || { runs: 0, cost: 0, revenue: 0 };
-    toolMap.set(key, { runs: prev.runs + 1, cost: prev.cost + Number(l.provider_cost), revenue: prev.revenue + Number(l.revenue) });
+    toolMap.set(key, { runs: prev.runs + 1, cost: prev.cost + getCost(l), revenue: prev.revenue + getRevenue(l) });
   });
   const toolBreakdown = Array.from(toolMap.entries())
-    .map(([tool, v]) => ({
-      tool, runs: v.runs,
-      avgCost: v.runs > 0 ? v.cost / v.runs : 0,
-      avgRevenue: v.runs > 0 ? v.revenue / v.runs : 0,
-      margin: v.revenue > 0 ? ((v.revenue - v.cost) / v.revenue) * 100 : 0,
-    }))
+    .map(([tool, v]) => ({ tool, runs: v.runs, avgCost: v.runs > 0 ? v.cost / v.runs : 0, avgRevenue: v.runs > 0 ? v.revenue / v.runs : 0, margin: v.revenue > 0 ? ((v.revenue - v.cost) / v.revenue) * 100 : 0 }))
     .sort((a, b) => b.runs - a.runs);
 
   if (loading) return <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">Loading economics data…</div>;
@@ -131,10 +166,10 @@ export default function EconomicsTab() {
       {/* KPI Cards */}
       <div className="grid grid-cols-4 gap-4">
         {[
-          { label: 'Total Revenue', value: fmt(totalRevenue), icon: DollarSign, color: 'text-emerald-400' },
-          { label: 'Total Cost', value: fmt(totalCost), icon: TrendingDown, color: 'text-red-400' },
-          { label: 'Total Profit', value: fmt(totalProfit), icon: TrendingUp, color: totalProfit >= 0 ? 'text-emerald-400' : 'text-red-400' },
-          { label: 'Margin %', value: fmtPct(marginPct), icon: Percent, color: marginPct >= 0 ? 'text-emerald-400' : 'text-red-400' },
+          { label: 'Total Revenue (USD)', value: fmt(totalRevenue), icon: DollarSign, color: 'text-emerald-400' },
+          { label: 'Total Cost (USD)', value: fmt(totalCost), icon: TrendingDown, color: 'text-red-400' },
+          { label: 'Net Profit (USD)', value: fmt(totalProfit), icon: TrendingUp, color: totalProfit >= 0 ? 'text-emerald-400' : 'text-red-400' },
+          { label: 'Avg Margin %', value: fmtPct(marginPct), icon: Percent, color: marginColor(marginPct) },
         ].map(s => (
           <Card key={s.label} className="border-border/40 bg-card/50">
             <CardContent className="p-4 flex items-center gap-3">
@@ -145,9 +180,9 @@ export default function EconomicsTab() {
         ))}
       </div>
 
-      {/* Revenue vs Cost Chart */}
+      {/* Daily Revenue vs Cost Chart */}
       <Card className="border-border/40 bg-card/50">
-        <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Revenue vs Cost (Daily)</CardTitle></CardHeader>
+        <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Revenue vs Cost (Daily — Last 30 Days)</CardTitle></CardHeader>
         <CardContent>
           <ResponsiveContainer width="100%" height={300}>
             <LineChart data={dailyData}>
@@ -155,47 +190,12 @@ export default function EconomicsTab() {
               <XAxis dataKey="date" tick={{ fontSize: 11, fill: 'hsl(0,2%,41%)' }} axisLine={false} tickLine={false} />
               <YAxis tick={{ fontSize: 11, fill: 'hsl(0,2%,41%)' }} axisLine={false} tickLine={false} tickFormatter={(v) => `$${v}`} />
               <Tooltip contentStyle={chartStyle} formatter={(v: number) => `$${v.toFixed(4)}`} />
+              <Legend />
               <Line type="monotone" dataKey="revenue" stroke="hsl(142,70%,45%)" strokeWidth={2} dot={false} name="Revenue" />
               <Line type="monotone" dataKey="cost" stroke="hsl(0,70%,50%)" strokeWidth={2} dot={false} name="Cost" />
+              <Line type="monotone" dataKey="profit" stroke="hsl(210,70%,50%)" strokeWidth={2} dot={false} name="Profit" />
             </LineChart>
           </ResponsiveContainer>
-        </CardContent>
-      </Card>
-
-      {/* Cost by Quality Tier */}
-      <Card className="border-border/40 bg-card/50">
-        <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Economics by Quality Tier</CardTitle></CardHeader>
-        <CardContent className="p-0">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Tier</TableHead>
-                <TableHead className="text-right">Requests</TableHead>
-                <TableHead className="text-right">Upscaled</TableHead>
-                <TableHead className="text-right">Total Cost</TableHead>
-                <TableHead className="text-right">Total Revenue</TableHead>
-                <TableHead className="text-right">Profit</TableHead>
-                <TableHead className="text-right">Margin %</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {tierBreakdown.map(r => (
-                <TableRow key={r.tier}>
-                  <TableCell className="font-medium text-xs">
-                    {r.tier}
-                    {r.upscaled > 0 && <Badge variant="outline" className="ml-1.5 text-[8px] py-0 px-1 bg-amber-500/10 text-amber-400 border-amber-500/20">{r.upscaled} upscaled</Badge>}
-                  </TableCell>
-                  <TableCell className="text-right text-xs">{r.requests}</TableCell>
-                  <TableCell className="text-right text-xs">{r.upscaled}</TableCell>
-                  <TableCell className="text-right text-xs">{fmt(r.totalCost)}</TableCell>
-                  <TableCell className="text-right text-xs">{fmt(r.totalRevenue)}</TableCell>
-                  <TableCell className={`text-right text-xs ${r.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(r.profit)}</TableCell>
-                  <TableCell className={`text-right text-xs ${r.margin >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmtPct(r.margin)}</TableCell>
-                </TableRow>
-              ))}
-              {tierBreakdown.length === 0 && <TableRow><TableCell colSpan={7} className="text-center text-muted-foreground text-xs py-4">No data</TableCell></TableRow>}
-            </TableBody>
-          </Table>
         </CardContent>
       </Card>
 
@@ -207,9 +207,11 @@ export default function EconomicsTab() {
             <TableHeader>
               <TableRow>
                 <TableHead>Model</TableHead>
-                <TableHead className="text-right">Requests</TableHead>
+                <TableHead className="text-right">Generations</TableHead>
+                <TableHead className="text-right">Avg Cost</TableHead>
                 <TableHead className="text-right">Total Cost</TableHead>
-                <TableHead className="text-right">Total Revenue</TableHead>
+                <TableHead className="text-right">Credits</TableHead>
+                <TableHead className="text-right">Revenue</TableHead>
                 <TableHead className="text-right">Profit</TableHead>
                 <TableHead className="text-right">Margin %</TableHead>
               </TableRow>
@@ -219,15 +221,80 @@ export default function EconomicsTab() {
                 <TableRow key={r.model}>
                   <TableCell className="font-medium text-xs">{r.model}</TableCell>
                   <TableCell className="text-right text-xs">{r.requests}</TableCell>
+                  <TableCell className="text-right text-xs">{fmt(r.avgCost)}</TableCell>
                   <TableCell className="text-right text-xs">{fmt(r.totalCost)}</TableCell>
+                  <TableCell className="text-right text-xs">{r.totalCredits}</TableCell>
                   <TableCell className="text-right text-xs">{fmt(r.totalRevenue)}</TableCell>
                   <TableCell className={`text-right text-xs ${r.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(r.profit)}</TableCell>
-                  <TableCell className={`text-right text-xs ${r.margin >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmtPct(r.margin)}</TableCell>
+                  <TableCell className="text-right text-xs"><Badge variant="outline" className={`text-[10px] ${marginBg(r.margin)}`}>{fmtPct(r.margin)}</Badge></TableCell>
                 </TableRow>
               ))}
-              {modelBreakdown.length === 0 && <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground text-xs py-4">No data</TableCell></TableRow>}
             </TableBody>
           </Table>
+        </CardContent>
+      </Card>
+
+      {/* Upscale Usage */}
+      <Card className="border-border/40 bg-card/50">
+        <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Upscale Usage</CardTitle></CardHeader>
+        <CardContent className="p-0">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Quality Tier</TableHead>
+                <TableHead className="text-right">Generations</TableHead>
+                <TableHead className="text-right">Avg Gen Cost</TableHead>
+                <TableHead className="text-right">Avg Upscale Cost</TableHead>
+                <TableHead className="text-right">Avg Combined Cost</TableHead>
+                <TableHead className="text-right">Margin %</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {tierBreakdown.map(r => (
+                <TableRow key={r.tier}>
+                  <TableCell className="font-medium text-xs">
+                    {r.tier}
+                    {r.tier !== '1K' && <Badge variant="outline" className="ml-1.5 text-[8px] py-0 px-1 bg-amber-500/10 text-amber-400 border-amber-500/20">upscaled</Badge>}
+                  </TableCell>
+                  <TableCell className="text-right text-xs">{r.requests}</TableCell>
+                  <TableCell className="text-right text-xs">{fmt(r.avgGenCost)}</TableCell>
+                  <TableCell className="text-right text-xs">{fmt(r.avgUpCost)}</TableCell>
+                  <TableCell className="text-right text-xs">{fmt(r.avgCombinedCost)}</TableCell>
+                  <TableCell className="text-right text-xs"><Badge variant="outline" className={`text-[10px] ${marginBg(r.margin)}`}>{fmtPct(r.margin)}</Badge></TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
+
+      {/* GPT Image 1.5 Cost Guard */}
+      <Card className="border-border/40 bg-card/50">
+        <CardHeader className="pb-2">
+          <CardTitle className="text-sm font-semibold flex items-center gap-2">
+            <Shield size={14} className="text-primary" />
+            GPT Image 1.5 Cost Guard
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {gptTotal === 0 ? (
+            <p className="text-xs text-muted-foreground">No GPT Image 1.5 generations yet.</p>
+          ) : (
+            <div className="space-y-3">
+              {gptHighCostAlert && (
+                <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
+                  <AlertTriangle size={16} className="text-red-400" />
+                  <p className="text-xs text-red-400 font-medium">⚠️ ALERT: A generation cost exceeded $0.050 — the low quality override may not be working!</p>
+                </div>
+              )}
+              <div className="grid grid-cols-4 gap-4">
+                <div><p className="text-[10px] text-muted-foreground uppercase">Total Generations</p><p className="text-lg font-bold">{gptTotal}</p></div>
+                <div><p className="text-[10px] text-muted-foreground uppercase">Avg Cost/Gen</p><p className={`text-lg font-bold ${gptAvgCost <= 0.020 ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(gptAvgCost)}</p></div>
+                <div><p className="text-[10px] text-muted-foreground uppercase">Saved vs Medium ($0.034)</p><p className="text-lg font-bold text-emerald-400">{fmt(gptSavedVsMedium)}</p></div>
+                <div><p className="text-[10px] text-muted-foreground uppercase">Saved vs High ($0.133)</p><p className="text-lg font-bold text-emerald-400">{fmt(gptSavedVsHigh)}</p></div>
+              </div>
+            </div>
+          )}
         </CardContent>
       </Card>
 
@@ -255,7 +322,6 @@ export default function EconomicsTab() {
                   <TableCell className={`text-right text-xs ${r.profit >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(r.profit)}</TableCell>
                 </TableRow>
               ))}
-              {userBreakdown.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground text-xs py-4">No data</TableCell></TableRow>}
             </TableBody>
           </Table>
         </CardContent>
@@ -282,10 +348,9 @@ export default function EconomicsTab() {
                   <TableCell className="text-right text-xs">{r.runs}</TableCell>
                   <TableCell className="text-right text-xs">{fmt(r.avgCost)}</TableCell>
                   <TableCell className="text-right text-xs">{fmt(r.avgRevenue)}</TableCell>
-                  <TableCell className={`text-right text-xs ${r.margin >= 0 ? 'text-emerald-400' : 'text-red-400'}`}>{fmtPct(r.margin)}</TableCell>
+                  <TableCell className="text-right text-xs"><Badge variant="outline" className={`text-[10px] ${marginBg(r.margin)}`}>{fmtPct(r.margin)}</Badge></TableCell>
                 </TableRow>
               ))}
-              {toolBreakdown.length === 0 && <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground text-xs py-4">No data</TableCell></TableRow>}
             </TableBody>
           </Table>
         </CardContent>
