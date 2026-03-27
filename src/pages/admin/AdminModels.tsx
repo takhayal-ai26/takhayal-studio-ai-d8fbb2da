@@ -322,8 +322,10 @@ export default function AdminModels() {
                 </TableHeader>
                 <TableBody>
                   {filteredModels.map(m => {
-                    const { c1k, c2k, c4k } = getModelCosts(m);
+                    const { c1k } = getModelCosts(m);
                     const avgMargin = c1k.marginPct;
+                    const supportedTiers = Array.isArray(m.supported_quality_tiers) ? m.supported_quality_tiers : ['1K'];
+                    const pricingLabel = PRICING_TYPE_LABELS[m.pricing_mode] || PRICING_TYPE_LABELS['flat_per_image'];
                     return (
                     <TableRow
                       key={m.id}
@@ -337,10 +339,18 @@ export default function AdminModels() {
                         </div>
                       </TableCell>
                       <TableCell className="text-[12px]">{m.provider_name}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={`text-[10px] ${pricingLabel.color}`}>{pricingLabel.label}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1 flex-wrap">
+                          {supportedTiers.map((t: string) => (
+                            <Badge key={t} variant="outline" className="text-[9px] bg-primary/5 border-primary/20 text-primary">{t}</Badge>
+                          ))}
+                        </div>
+                      </TableCell>
                       <TableCell className="text-[13px] font-medium text-primary font-mono">${c1k.providerCost.toFixed(3)}</TableCell>
-                      <TableCell className="text-[13px] font-mono text-muted-foreground">${c2k.providerCost.toFixed(3)}</TableCell>
-                      <TableCell className="text-[13px] font-mono text-muted-foreground">${c4k.providerCost.toFixed(3)}</TableCell>
-                      <TableCell className="text-[12px] font-mono">{c1k.credits}/{c2k.credits}/{c4k.credits}</TableCell>
+                      <TableCell className="text-[12px] font-mono">{c1k.credits}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={`text-[10px] ${marginBadge(avgMargin)}`}>
                           {avgMargin.toFixed(0)}%
