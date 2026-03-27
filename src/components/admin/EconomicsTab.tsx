@@ -17,15 +17,10 @@ interface GenerationLog {
   margin: number;
   quality_tier: string | null;
   resolution: string | null;
-  used_upscale_pipeline: boolean;
-  was_upscaled: boolean;
-  generation_cost: number;
-  upscale_cost: number;
   actual_api_cost: number;
   revenue_usd: number;
   profit_usd: number;
   margin_pct: number;
-  upscale_model: string | null;
   created_at: string;
 }
 
@@ -49,27 +44,22 @@ export default function EconomicsTab() {
       ]);
       setLogs((logsRes.data as any[]) || []);
       const names: Record<string, string> = {};
-      const endpoints: Record<string, string> = {};
-      (modelsRes.data || []).forEach((m: any) => { names[m.id] = m.model_name; endpoints[m.id] = m.endpoint_id; });
+      (modelsRes.data || []).forEach((m: any) => { names[m.id] = m.model_name; });
       setModelNames(names);
       setLoading(false);
     }
     fetchData();
   }, []);
 
-  // Use new fields if available, fallback to legacy
   const getRevenue = (l: GenerationLog) => Number(l.revenue_usd) || Number(l.revenue) || (l.credits_used * CREDIT_VALUE);
   const getCost = (l: GenerationLog) => Number(l.actual_api_cost) || Number(l.provider_cost) || 0;
-  const getProfit = (l: GenerationLog) => getRevenue(l) - getCost(l);
-  const getGenCost = (l: GenerationLog) => Number(l.generation_cost) || Number(l.provider_cost) || 0;
-  const getUpscaleCost = (l: GenerationLog) => Number(l.upscale_cost) || 0;
 
   const totalRevenue = logs.reduce((s, l) => s + getRevenue(l), 0);
   const totalCost = logs.reduce((s, l) => s + getCost(l), 0);
   const totalProfit = totalRevenue - totalCost;
   const marginPct = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
 
-  // Daily aggregation with profit
+  // Daily aggregation
   const dailyMap = new Map<string, { revenue: number; cost: number; profit: number }>();
   logs.forEach(l => {
     const d = l.created_at.slice(0, 10);
@@ -82,56 +72,40 @@ export default function EconomicsTab() {
     .map(([date, v]) => ({ date, revenue: +v.revenue.toFixed(4), cost: +v.cost.toFixed(4), profit: +v.profit.toFixed(4) }));
 
   // Model breakdown
-  const modelMap = new Map<string, { requests: number; cost: number; revenue: number; genCost: number; upCost: number }>();
+  const modelMap = new Map<string, { requests: number; cost: number; revenue: number; credits: number }>();
   logs.forEach(l => {
     const key = l.model_id || 'unknown';
-    const prev = modelMap.get(key) || { requests: 0, cost: 0, revenue: 0, genCost: 0, upCost: 0 };
-    modelMap.set(key, { requests: prev.requests + 1, cost: prev.cost + getCost(l), revenue: prev.revenue + getRevenue(l), genCost: prev.genCost + getGenCost(l), upCost: prev.upCost + getUpscaleCost(l) });
+    const prev = modelMap.get(key) || { requests: 0, cost: 0, revenue: 0, credits: 0 };
+    modelMap.set(key, { requests: prev.requests + 1, cost: prev.cost + getCost(l), revenue: prev.revenue + getRevenue(l), credits: prev.credits + l.credits_used });
   });
   const modelBreakdown = Array.from(modelMap.entries())
     .map(([id, v]) => {
       const profit = v.revenue - v.cost;
       const margin = v.revenue > 0 ? (profit / v.revenue) * 100 : 0;
-      return { model: modelNames[id] || id.slice(0, 8), requests: v.requests, avgCost: v.requests > 0 ? v.cost / v.requests : 0, totalCost: v.cost, totalCredits: 0, totalRevenue: v.revenue, profit, margin };
+      return { model: modelNames[id] || id.slice(0, 8), requests: v.requests, avgCost: v.requests > 0 ? v.cost / v.requests : 0, totalCost: v.cost, totalCredits: v.credits, totalRevenue: v.revenue, profit, margin };
     })
     .sort((a, b) => b.requests - a.requests);
-  // Compute totalCredits
-  logs.forEach(l => {
-    const entry = modelBreakdown.find(m => m.model === (modelNames[l.model_id || ''] || (l.model_id || '').slice(0, 8)));
-    if (entry) entry.totalCredits += l.credits_used;
-  });
 
-  // Quality tier / upscale analytics
-  const tierMap = new Map<string, { requests: number; genCost: number; upCost: number; totalCost: number; revenue: number; upscaled: number }>();
+  // Quality tier breakdown (no upscale columns)
+  const tierMap = new Map<string, { requests: number; totalCost: number; revenue: number }>();
   logs.forEach(l => {
     const key = l.quality_tier || l.resolution || '1K';
-    const prev = tierMap.get(key) || { requests: 0, genCost: 0, upCost: 0, totalCost: 0, revenue: 0, upscaled: 0 };
-    tierMap.set(key, {
-      requests: prev.requests + 1,
-      genCost: prev.genCost + getGenCost(l),
-      upCost: prev.upCost + getUpscaleCost(l),
-      totalCost: prev.totalCost + getCost(l),
-      revenue: prev.revenue + getRevenue(l),
-      upscaled: prev.upscaled + (l.was_upscaled || l.used_upscale_pipeline ? 1 : 0),
-    });
+    const prev = tierMap.get(key) || { requests: 0, totalCost: 0, revenue: 0 };
+    tierMap.set(key, { requests: prev.requests + 1, totalCost: prev.totalCost + getCost(l), revenue: prev.revenue + getRevenue(l) });
   });
   const tierBreakdown = Array.from(tierMap.entries())
     .map(([tier, v]) => ({
       tier, requests: v.requests,
-      avgGenCost: v.requests > 0 ? v.genCost / v.requests : 0,
-      avgUpCost: v.requests > 0 ? v.upCost / v.requests : 0,
-      avgCombinedCost: v.requests > 0 ? v.totalCost / v.requests : 0,
+      avgCost: v.requests > 0 ? v.totalCost / v.requests : 0,
       margin: v.revenue > 0 ? ((v.revenue - v.totalCost) / v.revenue) * 100 : 0,
     }))
     .sort((a, b) => { const order = ['1K', '2K', '4K']; return order.indexOf(a.tier) - order.indexOf(b.tier); });
 
-  // GPT Image 1.5 special panel
+  // GPT Image 1.5 cost guard
   const gptLogs = logs.filter(l => modelNames[l.model_id || ''] === 'GPT Image 1.5');
   const gptTotal = gptLogs.length;
   const gptAvgCost = gptTotal > 0 ? gptLogs.reduce((s, l) => s + getCost(l), 0) / gptTotal : 0;
-  const gptHighCostAlert = gptLogs.some(l => getCost(l) > 0.050);
-  const gptSavedVsMedium = gptTotal * (0.034 - gptAvgCost);
-  const gptSavedVsHigh = gptTotal * (0.133 - gptAvgCost);
+  const gptHighCostAlert = gptLogs.some(l => getCost(l) > 0.020);
 
   // User breakdown
   const userMap = new Map<string, { credits: number; cost: number; revenue: number }>();
@@ -152,7 +126,7 @@ export default function EconomicsTab() {
     toolMap.set(key, { runs: prev.runs + 1, cost: prev.cost + getCost(l), revenue: prev.revenue + getRevenue(l) });
   });
   const toolBreakdown = Array.from(toolMap.entries())
-    .map(([tool, v]) => ({ tool, runs: v.runs, avgCost: v.runs > 0 ? v.cost / v.runs : 0, avgRevenue: v.runs > 0 ? v.revenue / v.runs : 0, margin: v.revenue > 0 ? ((v.revenue - v.cost) / v.revenue) * 100 : 0 }))
+    .map(([tool, v]) => ({ tool, runs: v.runs, avgCost: v.runs > 0 ? v.cost / v.runs : 0, margin: v.revenue > 0 ? ((v.revenue - v.cost) / v.revenue) * 100 : 0 }))
     .sort((a, b) => b.runs - a.runs);
 
   if (loading) return <div className="flex items-center justify-center py-12 text-muted-foreground text-sm">Loading economics data…</div>;
@@ -234,32 +208,25 @@ export default function EconomicsTab() {
         </CardContent>
       </Card>
 
-      {/* Upscale Usage */}
+      {/* Resolution Tier Breakdown */}
       <Card className="border-border/40 bg-card/50">
-        <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Upscale Usage</CardTitle></CardHeader>
+        <CardHeader className="pb-2"><CardTitle className="text-sm font-semibold">Cost by Resolution</CardTitle></CardHeader>
         <CardContent className="p-0">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Quality Tier</TableHead>
+                <TableHead>Resolution</TableHead>
                 <TableHead className="text-right">Generations</TableHead>
-                <TableHead className="text-right">Avg Gen Cost</TableHead>
-                <TableHead className="text-right">Avg Upscale Cost</TableHead>
-                <TableHead className="text-right">Avg Combined Cost</TableHead>
+                <TableHead className="text-right">Avg Cost</TableHead>
                 <TableHead className="text-right">Margin %</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {tierBreakdown.map(r => (
                 <TableRow key={r.tier}>
-                  <TableCell className="font-medium text-xs">
-                    {r.tier}
-                    {r.tier !== '1K' && <Badge variant="outline" className="ml-1.5 text-[8px] py-0 px-1 bg-amber-500/10 text-amber-400 border-amber-500/20">upscaled</Badge>}
-                  </TableCell>
+                  <TableCell className="font-medium text-xs">{r.tier}</TableCell>
                   <TableCell className="text-right text-xs">{r.requests}</TableCell>
-                  <TableCell className="text-right text-xs">{fmt(r.avgGenCost)}</TableCell>
-                  <TableCell className="text-right text-xs">{fmt(r.avgUpCost)}</TableCell>
-                  <TableCell className="text-right text-xs">{fmt(r.avgCombinedCost)}</TableCell>
+                  <TableCell className="text-right text-xs">{fmt(r.avgCost)}</TableCell>
                   <TableCell className="text-right text-xs"><Badge variant="outline" className={`text-[10px] ${marginBg(r.margin)}`}>{fmtPct(r.margin)}</Badge></TableCell>
                 </TableRow>
               ))}
@@ -284,14 +251,13 @@ export default function EconomicsTab() {
               {gptHighCostAlert && (
                 <div className="flex items-center gap-2 p-3 rounded-lg bg-red-500/10 border border-red-500/20">
                   <AlertTriangle size={16} className="text-red-400" />
-                  <p className="text-xs text-red-400 font-medium">⚠️ ALERT: A generation cost exceeded $0.050 — the low quality override may not be working!</p>
+                  <p className="text-xs text-red-400 font-medium">⚠️ ALERT: A generation exceeded $0.020 — check cost guard!</p>
                 </div>
               )}
-              <div className="grid grid-cols-4 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div><p className="text-[10px] text-muted-foreground uppercase">Total Generations</p><p className="text-lg font-bold">{gptTotal}</p></div>
                 <div><p className="text-[10px] text-muted-foreground uppercase">Avg Cost/Gen</p><p className={`text-lg font-bold ${gptAvgCost <= 0.020 ? 'text-emerald-400' : 'text-red-400'}`}>{fmt(gptAvgCost)}</p></div>
-                <div><p className="text-[10px] text-muted-foreground uppercase">Saved vs Medium ($0.034)</p><p className="text-lg font-bold text-emerald-400">{fmt(gptSavedVsMedium)}</p></div>
-                <div><p className="text-[10px] text-muted-foreground uppercase">Saved vs High ($0.133)</p><p className="text-lg font-bold text-emerald-400">{fmt(gptSavedVsHigh)}</p></div>
+                <div><p className="text-[10px] text-muted-foreground uppercase">Status</p><p className={`text-lg font-bold ${gptAvgCost <= 0.020 ? 'text-emerald-400' : 'text-red-400'}`}>{gptAvgCost <= 0.020 ? '✅ Safe' : '⚠️ Over Budget'}</p></div>
               </div>
             </div>
           )}
@@ -337,7 +303,6 @@ export default function EconomicsTab() {
                 <TableHead>Tool</TableHead>
                 <TableHead className="text-right">Runs</TableHead>
                 <TableHead className="text-right">Avg Cost</TableHead>
-                <TableHead className="text-right">Avg Revenue</TableHead>
                 <TableHead className="text-right">Margin %</TableHead>
               </TableRow>
             </TableHeader>
@@ -347,7 +312,6 @@ export default function EconomicsTab() {
                   <TableCell className="font-medium text-xs">{r.tool}</TableCell>
                   <TableCell className="text-right text-xs">{r.runs}</TableCell>
                   <TableCell className="text-right text-xs">{fmt(r.avgCost)}</TableCell>
-                  <TableCell className="text-right text-xs">{fmt(r.avgRevenue)}</TableCell>
                   <TableCell className="text-right text-xs"><Badge variant="outline" className={`text-[10px] ${marginBg(r.margin)}`}>{fmtPct(r.margin)}</Badge></TableCell>
                 </TableRow>
               ))}
