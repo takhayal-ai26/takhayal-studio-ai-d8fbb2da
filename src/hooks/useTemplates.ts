@@ -1,41 +1,63 @@
-import { useAdminTemplatesStore, AdminTemplate, BilingualTag } from '@/stores/adminTemplatesStore';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 export interface FrontendTemplate {
+  id: string;
   name: string;
   prompt: string;
   image: string;
-  description: string;
-  tags: string[];
   category: string;
+  ratio: string;
   featured: boolean;
-  seasonal: boolean;
+}
+
+export interface TemplateCategory {
+  id: string;
+  name: string;
+  sort_order: number;
 }
 
 export function useTemplates() {
-  const { templates: adminTemplates } = useAdminTemplatesStore();
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
+  const [templates, setTemplates] = useState<FrontendTemplate[]>([]);
+  const [categories, setCategories] = useState<TemplateCategory[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const resolveTag = (tag: BilingualTag | string): string => {
-    if (typeof tag === 'string') return tag;
-    return isAr && tag.ar ? tag.ar : tag.en;
-  };
+  useEffect(() => {
+    const fetch = async () => {
+      setLoading(true);
+      const [tplRes, catRes] = await Promise.all([
+        supabase.from('templates').select('*').eq('active', true).order('sort_order'),
+        supabase.from('template_categories').select('*').eq('active', true).order('sort_order'),
+      ]);
 
-  const templates: FrontendTemplate[] = adminTemplates
-    .filter(t => t.active)
-    .map(t => ({
-      name: isAr && t.title.ar ? t.title.ar : t.title.en,
-      prompt: isAr && t.fullPrompt.ar ? t.fullPrompt.ar : t.fullPrompt.en,
-      image: t.thumbnail || `https://picsum.photos/seed/tpl-${t.id}/600/400`,
-      description: isAr && t.shortDescription.ar ? t.shortDescription.ar : t.shortDescription.en,
-      tags: t.tags.map(resolveTag),
-      category: t.category,
-      featured: t.featured,
-      seasonal: t.seasonal,
-    }));
+      if (tplRes.data) {
+        setTemplates((tplRes.data as any[]).map(t => ({
+          id: t.id,
+          name: isAr && t.title_ar ? t.title_ar : t.title_en,
+          prompt: t.prompt || '',
+          image: t.cover_image_url || `https://picsum.photos/seed/tpl-${t.id}/600/400`,
+          category: t.category,
+          ratio: t.ratio || '1:1',
+          featured: t.featured,
+        })));
+      }
 
-  const categories = ['All', ...Array.from(new Set(adminTemplates.filter(t => t.active).map(t => t.category)))];
+      if (catRes.data) {
+        setCategories((catRes.data as any[]).map(c => ({
+          id: c.id,
+          name: isAr && c.name_ar ? c.name_ar : c.name_en,
+          sort_order: c.sort_order,
+        })));
+      }
+      setLoading(false);
+    };
+    fetch();
+  }, [lang, isAr]);
 
-  return { templates, categories };
+  const categoryNames = ['All', ...categories.map(c => c.name)];
+
+  return { templates, categories, categoryNames, loading };
 }

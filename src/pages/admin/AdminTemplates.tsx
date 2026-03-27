@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -6,70 +6,107 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Search, Plus, Edit, Copy, Archive, Eye, BarChart3, Star, MoreHorizontal, Trash2 } from 'lucide-react';
+import { Search, Plus, Edit, Copy, Star, MoreHorizontal, Trash2 } from 'lucide-react';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
-import { useAdminTemplatesStore, AdminTemplate, CATEGORIES } from '@/stores/adminTemplatesStore';
 import TemplateEditorDialog from '@/components/admin/TemplateEditorDialog';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
+
+interface DBTemplate {
+  id: string;
+  title_en: string;
+  title_ar: string;
+  category: string;
+  cover_image_url: string;
+  ratio: string;
+  prompt: string;
+  active: boolean;
+  featured: boolean;
+  sort_order: number;
+  created_at: string;
+  updated_at: string;
+}
+
+interface DBCategory {
+  id: string;
+  name_en: string;
+  name_ar: string;
+  sort_order: number;
+  active: boolean;
+}
 
 export default function AdminTemplates() {
-  const { templates, addTemplate, updateTemplate, deleteTemplate, duplicateTemplate, toggleFeatured, toggleSeasonal, toggleActive } = useAdminTemplatesStore();
+  const [templates, setTemplates] = useState<DBTemplate[]>([]);
+  const [categories, setCategories] = useState<DBCategory[]>([]);
   const [search, setSearch] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [statusFilter, setStatusFilter] = useState('all');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingTemplate, setEditingTemplate] = useState<AdminTemplate | null>(null);
+  const [editingTemplate, setEditingTemplate] = useState<DBTemplate | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<{ id: string; name: string } | null>(null);
+
+  const fetchData = async () => {
+    const [tplRes, catRes] = await Promise.all([
+      supabase.from('templates').select('*').order('sort_order'),
+      supabase.from('template_categories').select('*').order('sort_order'),
+    ]);
+    if (tplRes.data) setTemplates(tplRes.data as any[]);
+    if (catRes.data) setCategories(catRes.data as any[]);
+  };
+
+  useEffect(() => { fetchData(); }, []);
+
+  const categoryNames = useMemo(() => categories.map(c => c.name_en), [categories]);
 
   const filtered = useMemo(() => {
     let list = templates;
     if (search.trim()) {
       const q = search.toLowerCase();
-      list = list.filter(t =>
-        t.title.en.toLowerCase().includes(q) || t.title.ar.includes(q) ||
-        t.category.toLowerCase().includes(q) || t.tags.some(tag => tag.en.toLowerCase().includes(q) || tag.ar.includes(q))
-      );
+      list = list.filter(t => t.title_en.toLowerCase().includes(q) || t.title_ar.includes(q) || t.category.toLowerCase().includes(q));
     }
     if (categoryFilter !== 'all') list = list.filter(t => t.category === categoryFilter);
     if (statusFilter === 'featured') list = list.filter(t => t.featured);
-    if (statusFilter === 'seasonal') list = list.filter(t => t.seasonal);
     if (statusFilter === 'active') list = list.filter(t => t.active);
     if (statusFilter === 'inactive') list = list.filter(t => !t.active);
     return list;
   }, [templates, search, categoryFilter, statusFilter]);
 
-  const stats = useMemo(() => {
-    const totalViews = templates.reduce((s, t) => s + t.analytics.views, 0);
-    const totalUses = templates.reduce((s, t) => s + t.analytics.uses, 0);
-    const avgRate = templates.length ? Math.round(totalUses / totalViews * 100) : 0;
-    return [
-      { label: 'Total Templates', value: String(templates.length), icon: Star },
-      { label: 'Featured', value: String(templates.filter(t => t.featured).length), icon: Star },
-      { label: 'Total Views', value: totalViews.toLocaleString(), icon: Eye },
-      { label: 'Avg Use Rate', value: `${avgRate}%`, icon: BarChart3 },
-    ];
-  }, [templates]);
-
-  const handleSave = (t: AdminTemplate) => {
-    const exists = templates.find(x => x.id === t.id);
-    if (exists) updateTemplate(t.id, t);
-    else addTemplate(t);
+  const toggleField = async (id: string, field: 'active' | 'featured', current: boolean) => {
+    await supabase.from('templates').update({ [field]: !current, updated_at: new Date().toISOString() } as any).eq('id', id);
+    fetchData();
   };
 
-  const openEdit = (t: AdminTemplate) => { setEditingTemplate(t); setDialogOpen(true); };
+  const handleDuplicate = async (t: DBTemplate) => {
+    const dup = { ...t, title_en: `${t.title_en} (Copy)`, title_ar: t.title_ar ? `${t.title_ar} (نسخة)` : '', featured: false, sort_order: t.sort_order + 1 };
+    delete (dup as any).id;
+    delete (dup as any).created_at;
+    delete (dup as any).updated_at;
+    await supabase.from('templates').insert(dup as any);
+    fetchData();
+    toast({ title: 'Template duplicated' });
+  };
+
+  const confirmDelete = async () => {
+    if (!deleteConfirm) return;
+    await supabase.from('templates').delete().eq('id', deleteConfirm.id);
+    fetchData();
+    toast({ title: 'Template deleted' });
+    setDeleteConfirm(null);
+  };
+
+  const openEdit = (t: DBTemplate) => { setEditingTemplate(t); setDialogOpen(true); };
   const openCreate = () => { setEditingTemplate(null); setDialogOpen(true); };
 
-  const handleDuplicate = (id: string) => {
-    duplicateTemplate(id);
-    toast({ title: 'Template duplicated', description: 'A copy has been created.' });
-  };
-
-  const confirmDelete = () => {
-    if (!deleteConfirm) return;
-    deleteTemplate(deleteConfirm.id);
-    toast({ title: 'Template deleted', description: `"${deleteConfirm.name}" removed.` });
-    setDeleteConfirm(null);
+  const handleSave = async (t: any) => {
+    if (t.id && templates.find(x => x.id === t.id)) {
+      const { id, created_at, ...updates } = t;
+      await supabase.from('templates').update({ ...updates, updated_at: new Date().toISOString() } as any).eq('id', id);
+    } else {
+      const { id, created_at, updated_at, ...insertData } = t;
+      await supabase.from('templates').insert(insertData as any);
+    }
+    fetchData();
   };
 
   return (
@@ -77,24 +114,16 @@ export default function AdminTemplates() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Templates</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage template library, categories, and performance</p>
+          <p className="text-sm text-muted-foreground mt-1">Manage template gallery and categories</p>
         </div>
         <Button size="sm" className="gap-1.5 text-xs" onClick={openCreate}><Plus size={14} /> Create Template</Button>
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
-        {stats.map(s => (
-          <Card key={s.label} className="border-border/40 bg-card/50">
-            <CardContent className="p-4 flex items-center gap-3">
-              <div className="p-2 rounded-lg bg-primary/10"><s.icon size={16} className="text-primary" /></div>
-              <div>
-                <p className="text-lg font-bold">{s.value}</p>
-                <p className="text-[11px] text-muted-foreground">{s.label}</p>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="grid grid-cols-3 gap-4">
+        <Card className="border-border/40 bg-card/50"><CardContent className="p-4"><p className="text-lg font-bold">{templates.length}</p><p className="text-[11px] text-muted-foreground">Total Templates</p></CardContent></Card>
+        <Card className="border-border/40 bg-card/50"><CardContent className="p-4"><p className="text-lg font-bold">{templates.filter(t => t.featured).length}</p><p className="text-[11px] text-muted-foreground">Featured</p></CardContent></Card>
+        <Card className="border-border/40 bg-card/50"><CardContent className="p-4"><p className="text-lg font-bold">{templates.filter(t => t.active).length}</p><p className="text-[11px] text-muted-foreground">Active</p></CardContent></Card>
       </div>
 
       {/* Filters */}
@@ -107,7 +136,7 @@ export default function AdminTemplates() {
           <SelectTrigger className="h-9 w-36 text-xs bg-muted/30 border-border/40"><SelectValue placeholder="Category" /></SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Categories</SelectItem>
-            {CATEGORIES.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
+            {categoryNames.map(c => <SelectItem key={c} value={c}>{c}</SelectItem>)}
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={setStatusFilter}>
@@ -115,7 +144,6 @@ export default function AdminTemplates() {
           <SelectContent>
             <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="featured">Featured</SelectItem>
-            <SelectItem value="seasonal">Seasonal</SelectItem>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
           </SelectContent>
@@ -132,11 +160,8 @@ export default function AdminTemplates() {
             <TableRow className="border-border/40 hover:bg-transparent">
               <TableHead className="text-[11px] uppercase text-muted-foreground">Template</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Category</TableHead>
-              <TableHead className="text-[11px] uppercase text-muted-foreground">Views</TableHead>
-              <TableHead className="text-[11px] uppercase text-muted-foreground">Uses</TableHead>
-              <TableHead className="text-[11px] uppercase text-muted-foreground">Rate</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Ratio</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Featured</TableHead>
-              <TableHead className="text-[11px] uppercase text-muted-foreground">Seasonal</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
               <TableHead className="w-10" />
             </TableRow>
@@ -146,29 +171,24 @@ export default function AdminTemplates() {
               <TableRow key={t.id} className="border-border/20 hover:bg-muted/20 cursor-pointer" onClick={() => openEdit(t)}>
                 <TableCell>
                   <div className="flex items-center gap-3">
-                    {t.thumbnail && (
-                      <div className="w-9 h-9 rounded-md overflow-hidden border border-border/30 flex-shrink-0">
-                        <img src={t.thumbnail} alt="" className="w-full h-full object-cover" />
+                    {t.cover_image_url && (
+                      <div className="w-10 h-10 rounded-lg overflow-hidden border border-border/30 flex-shrink-0">
+                        <img src={t.cover_image_url} alt="" className="w-full h-full object-cover" />
                       </div>
                     )}
                     <div>
-                      <p className="text-[13px] font-medium">{t.title.en}</p>
-                      <p className="text-[11px] text-muted-foreground truncate max-w-[180px]">{t.shortDescription.en || t.fullPrompt.en}</p>
+                      <p className="text-[13px] font-medium">{t.title_en}</p>
+                      {t.title_ar && <p className="text-[11px] text-muted-foreground" dir="rtl">{t.title_ar}</p>}
                     </div>
                   </div>
                 </TableCell>
                 <TableCell><Badge variant="outline" className="text-[10px]">{t.category}</Badge></TableCell>
-                <TableCell className="text-[13px]">{t.analytics.views.toLocaleString()}</TableCell>
-                <TableCell className="text-[13px]">{t.analytics.uses.toLocaleString()}</TableCell>
-                <TableCell className="text-[13px] font-medium text-primary">{t.analytics.useRate}</TableCell>
+                <TableCell className="text-[13px] text-muted-foreground">{t.ratio}</TableCell>
                 <TableCell onClick={e => e.stopPropagation()}>
-                  <Switch checked={t.featured} onCheckedChange={() => toggleFeatured(t.id)} className="scale-75" />
+                  <Switch checked={t.featured} onCheckedChange={() => toggleField(t.id, 'featured', t.featured)} className="scale-75" />
                 </TableCell>
                 <TableCell onClick={e => e.stopPropagation()}>
-                  <Switch checked={t.seasonal} onCheckedChange={() => toggleSeasonal(t.id)} className="scale-75" />
-                </TableCell>
-                <TableCell onClick={e => e.stopPropagation()}>
-                  <Switch checked={t.active} onCheckedChange={() => toggleActive(t.id)} className="scale-75" />
+                  <Switch checked={t.active} onCheckedChange={() => toggleField(t.id, 'active', t.active)} className="scale-75" />
                 </TableCell>
                 <TableCell onClick={e => e.stopPropagation()}>
                   <DropdownMenu>
@@ -177,10 +197,9 @@ export default function AdminTemplates() {
                     </DropdownMenuTrigger>
                     <DropdownMenuContent align="end" className="w-40">
                       <DropdownMenuItem className="text-xs gap-2" onClick={() => openEdit(t)}><Edit size={12} /> Edit</DropdownMenuItem>
-                      <DropdownMenuItem className="text-xs gap-2" onClick={() => handleDuplicate(t.id)}><Copy size={12} /> Duplicate</DropdownMenuItem>
-                      <DropdownMenuItem className="text-xs gap-2"><Eye size={12} /> Preview</DropdownMenuItem>
+                      <DropdownMenuItem className="text-xs gap-2" onClick={() => handleDuplicate(t)}><Copy size={12} /> Duplicate</DropdownMenuItem>
                       <DropdownMenuSeparator />
-                      <DropdownMenuItem className="text-xs gap-2 text-destructive" onClick={() => setDeleteConfirm({ id: t.id, name: t.title.en })}>
+                      <DropdownMenuItem className="text-xs gap-2 text-destructive" onClick={() => setDeleteConfirm({ id: t.id, name: t.title_en })}>
                         <Trash2 size={12} /> Delete
                       </DropdownMenuItem>
                     </DropdownMenuContent>
@@ -190,25 +209,20 @@ export default function AdminTemplates() {
             ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={9} className="text-center text-sm text-muted-foreground py-8">
-                  No templates found
-                </TableCell>
+                <TableCell colSpan={6} className="text-center text-sm text-muted-foreground py-8">No templates found</TableCell>
               </TableRow>
             )}
           </TableBody>
         </Table>
       </Card>
 
-      <TemplateEditorDialog open={dialogOpen} onOpenChange={setDialogOpen} template={editingTemplate} onSave={handleSave} />
+      <TemplateEditorDialog open={dialogOpen} onOpenChange={setDialogOpen} template={editingTemplate} onSave={handleSave} categories={categoryNames} />
 
-      {/* Delete Confirmation */}
       <Dialog open={!!deleteConfirm} onOpenChange={() => setDeleteConfirm(null)}>
         <DialogContent className="max-w-sm bg-card border-border/40">
           <DialogHeader>
             <DialogTitle className="text-base">Delete Template</DialogTitle>
-            <DialogDescription className="text-xs">
-              Are you sure you want to delete "{deleteConfirm?.name}"? This action cannot be undone.
-            </DialogDescription>
+            <DialogDescription className="text-xs">Are you sure you want to delete "{deleteConfirm?.name}"? This cannot be undone.</DialogDescription>
           </DialogHeader>
           <DialogFooter>
             <Button variant="outline" size="sm" className="text-xs" onClick={() => setDeleteConfirm(null)}>Cancel</Button>
