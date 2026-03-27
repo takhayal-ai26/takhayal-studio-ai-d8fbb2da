@@ -27,6 +27,10 @@ export interface GeneratedImage {
   aspectRatio: AspectRatio;
   quality: Quality;
   createdAt: Date;
+  modelName?: string;
+  modelId?: string;
+  qualityTier?: string;
+  endpointId?: string;
 }
 
 export interface StudioModel {
