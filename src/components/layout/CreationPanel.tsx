@@ -5,7 +5,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useModels, ModelRecord } from '@/hooks/useModels';
 import { usePricing } from '@/hooks/usePricing';
 import { usePricingTiers } from '@/hooks/usePricingTiers';
-import { Badge } from '@/components/ui/badge';
+
 
 const QUALITY_TIER_META: Record<string, { descKey: string }> = {
   '1K': { descKey: 'standard' },

@@ -42,7 +42,7 @@ export function RightPanel() {
     : validRatios;
 
   const modelQualityTiers = availableQualityTiers;
-  const isGptImage = selectedModel?.endpoint_id === 'fal-ai/gpt-image-1.5';
+  
 
   const handleTemplateSelect = (tpl: string) => {
     if (selectedTemplate === tpl) { setSelectedTemplate(null); } else { setSelectedTemplate(tpl); setPrompt(TEMPLATE_PROMPTS[tpl]); }
