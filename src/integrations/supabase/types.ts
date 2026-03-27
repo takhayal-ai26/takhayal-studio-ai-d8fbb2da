@@ -259,6 +259,7 @@ export type Database = {
           credits_charged: number
           height: number | null
           id: string
+          is_active: boolean
           is_default: boolean
           megapixels: number | null
           model_id: string
@@ -277,6 +278,7 @@ export type Database = {
           credits_charged?: number
           height?: number | null
           id?: string
+          is_active?: boolean
           is_default?: boolean
           megapixels?: number | null
           model_id: string
@@ -295,6 +297,7 @@ export type Database = {
           credits_charged?: number
           height?: number | null
           id?: string
+          is_active?: boolean
           is_default?: boolean
           megapixels?: number | null
           model_id?: string

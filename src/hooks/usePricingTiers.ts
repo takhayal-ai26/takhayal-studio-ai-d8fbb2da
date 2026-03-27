@@ -15,6 +15,7 @@ export interface PricingTier {
   credits_charged: number;
   pricing_mode: string;
   is_default: boolean;
+  is_active: boolean;
   notes: string | null;
 }
 
@@ -81,7 +82,7 @@ export function usePricingTiers(modelId?: string) {
   }, [fetchTiers]);
 
   const getCreditsForModelQuality = useCallback((mId: string, quality: string): number | null => {
-    const modelTiers = allTiers[mId] || tiers.filter(t => t.model_id === mId);
+    const modelTiers = (allTiers[mId] || tiers.filter(t => t.model_id === mId)).filter(t => t.is_active !== false);
     const match = modelTiers.find(t => t.quality_level === quality);
     if (match) return match.credits_charged;
     const def = modelTiers.find(t => t.is_default);
@@ -89,7 +90,7 @@ export function usePricingTiers(modelId?: string) {
   }, [allTiers, tiers]);
 
   const getCostForModelQuality = useCallback((mId: string, quality: string): number | null => {
-    const modelTiers = allTiers[mId] || tiers.filter(t => t.model_id === mId);
+    const modelTiers = (allTiers[mId] || tiers.filter(t => t.model_id === mId)).filter(t => t.is_active !== false);
     const match = modelTiers.find(t => t.quality_level === quality);
     if (match) return match.cost_per_run;
     const def = modelTiers.find(t => t.is_default);
