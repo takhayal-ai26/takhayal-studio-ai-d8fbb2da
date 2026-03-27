@@ -77,15 +77,13 @@ function resolvePayload(endpoint: string, ratio: string, quality: string, inputT
     const speedMap: Record<string, string> = { "1K": "TURBO", "2K": "BALANCED", "4K": "QUALITY" };
     return { aspect_ratio: ratio, rendering_speed: speedMap[quality] || "TURBO" };
   }
-  // Nano Banana models: use resolution parameter
+  // Nano Banana models: use resolution parameter (expects '0.5K', '1K', '2K', '4K')
   if (endpoint.includes("nano-banana")) {
-    const resMap: Record<string, string> = { "1K": "1024", "2K": "2048", "4K": "4096" };
-    return { aspect_ratio: ratio, resolution: resMap[quality] || "1024" };
+    return { aspect_ratio: ratio, resolution: quality };
   }
-  // Imagen 4: aspect_ratio + resolution param
+  // Imagen 4: aspect_ratio + resolution param (expects '1K', '2K' etc.)
   if (endpoint.includes("imagen4")) {
-    const resMap: Record<string, string> = { "1K": "1024", "2K": "2048" };
-    return { aspect_ratio: ratio, resolution: resMap[quality] || "1024" };
+    return { aspect_ratio: ratio, resolution: quality };
   }
   // Seedream: image_size with computed dimensions
   if (endpoint.includes("seedream")) {
