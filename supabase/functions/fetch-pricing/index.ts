@@ -34,8 +34,23 @@ serve(async (req) => {
     "fal-ai/esrgan",
   ];
 
-  const qs = endpoints.map(e => `endpoint_ids=${encodeURIComponent(e)}`).join("&");
-  const url = `https://api.fal.ai/v1/models/pricing?${qs}`;
+  // Fetch pricing for each endpoint individually
+  const results: Record<string, any> = {};
+  
+  for (const ep of endpoints) {
+    try {
+      const r = await fetch(`https://api.fal.ai/v1/models/pricing?endpoint_id=${encodeURIComponent(ep)}`, {
+        headers: { Authorization: `Key ${FAL_AI_API_KEY}` },
+      });
+      results[ep] = await r.json();
+    } catch (e) {
+      results[ep] = { error: String(e) };
+    }
+  }
+
+  return new Response(JSON.stringify(results, null, 2), {
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
 
   const res = await fetch(url, {
     headers: { Authorization: `Key ${FAL_AI_API_KEY}` },
