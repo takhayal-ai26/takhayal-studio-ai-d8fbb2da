@@ -27,6 +27,19 @@ const revenueByPlan = [
 const chartStyle = { background: 'hsl(0,0%,8%)', border: '1px solid hsl(0,0%,16%)', borderRadius: 8, fontSize: 12 };
 
 export default function AdminAnalytics() {
+  const { data: toolRunsData = [] } = useQuery({
+    queryKey: ['tool-runs-analytics'],
+    queryFn: async () => {
+      const { data } = await supabase.from('tool_runs').select('tool_slug, status, credits_charged, revenue, margin, estimated_provider_cost').limit(1000);
+      return data || [];
+    },
+  });
+
+  const toolUsage = (() => {
+    const counts: Record<string, number> = {};
+    toolRunsData.forEach((r: any) => { counts[r.tool_slug] = (counts[r.tool_slug] || 0) + 1; });
+    return Object.entries(counts).map(([tool, uses]) => ({ tool, uses })).sort((a, b) => b.uses - a.uses);
+  })();
   return (
     <div className="space-y-6">
       <div>
