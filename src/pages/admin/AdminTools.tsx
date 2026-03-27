@@ -5,10 +5,12 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Search, Plus, Edit, BarChart3, Eye, Zap, ArrowUpRight, Trash2, Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2, Image, Palette, Layers } from 'lucide-react';
-import { useAdminToolsStore, AdminTool } from '@/stores/adminToolsStore';
-import ToolEditorDialog from '@/components/admin/ToolEditorDialog';
+import { Search, Plus, Edit, BarChart3, Eye, Zap, ArrowUpRight, Trash2, Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2, Image, Palette, Layers, Loader2 } from 'lucide-react';
+import { useToolsDB, ToolRecord } from '@/hooks/useToolsDB';
+import AdminToolEditorDialog from '@/components/admin/AdminToolEditorDialog';
 import { toast } from '@/hooks/use-toast';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 import type { LucideIcon } from 'lucide-react';
 
 const iconLookup: Record<string, LucideIcon> = {
@@ -16,44 +18,62 @@ const iconLookup: Record<string, LucideIcon> = {
 };
 
 export default function AdminTools() {
-  const { tools, addTool, updateTool, toggleActive, toggleFeatured, deleteTool } = useAdminToolsStore();
+  const { rawTools, isLoading, updateTool, deleteTool: deleteToolMutation } = useToolsDB();
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingTool, setEditingTool] = useState<AdminTool | null>(null);
+  const [editingTool, setEditingTool] = useState<ToolRecord | null>(null);
+
+  // Tool runs stats
+  const { data: runStats = [] } = useQuery({
+    queryKey: ['tool-run-stats'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('tool_runs')
+        .select('tool_slug, status, credits_charged, revenue')
+        .order('created_at', { ascending: false })
+        .limit(1000);
+      return data || [];
+    },
+  });
 
   const filtered = useMemo(() => {
-    if (!search.trim()) return tools;
+    if (!search.trim()) return rawTools;
     const q = search.toLowerCase();
-    return tools.filter(t =>
-      t.name.en.toLowerCase().includes(q) ||
-      t.name.ar.includes(q) ||
-      t.inputType.includes(q)
+    return rawTools.filter(t =>
+      t.title_en.toLowerCase().includes(q) ||
+      t.title_ar.includes(q) ||
+      t.slug.includes(q)
     );
-  }, [tools, search]);
+  }, [rawTools, search]);
 
   const stats = useMemo(() => {
-    const active = tools.filter(t => t.active).length;
-    const totalVisits = tools.reduce((s, t) => s + t.analytics.visits, 0);
-    const totalGens = tools.reduce((s, t) => s + t.analytics.generations, 0);
-    const totalRev = tools.reduce((s, t) => s + parseInt(t.analytics.revenue.replace(/[$,]/g, '') || '0'), 0);
+    const active = rawTools.filter(t => t.active).length;
+    const totalRuns = runStats.length;
+    const completedRuns = runStats.filter((r: any) => r.status === 'completed').length;
+    const totalRevenue = runStats.reduce((s: number, r: any) => s + (Number(r.revenue) || 0), 0);
     return [
       { label: 'Active Tools', value: String(active), icon: Zap },
-      { label: 'Total Visits Today', value: totalVisits.toLocaleString(), icon: Eye },
-      { label: 'Generations Today', value: totalGens.toLocaleString(), icon: BarChart3 },
-      { label: 'Tool Revenue', value: `$${totalRev.toLocaleString()}`, icon: ArrowUpRight },
+      { label: 'Total Runs', value: totalRuns.toLocaleString(), icon: Eye },
+      { label: 'Completed', value: completedRuns.toLocaleString(), icon: BarChart3 },
+      { label: 'Revenue (USD)', value: `$${totalRevenue.toFixed(2)}`, icon: ArrowUpRight },
     ];
-  }, [tools]);
+  }, [rawTools, runStats]);
 
-  const handleSave = (tool: AdminTool) => {
-    const exists = tools.find(t => t.id === tool.id);
-    if (exists) {
-      updateTool(tool.id, tool);
-    } else {
-      addTool(tool);
-    }
+  const handleToggleActive = (tool: ToolRecord) => {
+    updateTool.mutate({ id: tool.id, updates: { active: !tool.active } });
   };
 
-  const openEdit = (tool: AdminTool) => {
+  const handleToggleFeatured = (tool: ToolRecord) => {
+    updateTool.mutate({ id: tool.id, updates: { featured: !tool.featured } });
+  };
+
+  const handleDelete = (tool: ToolRecord) => {
+    deleteToolMutation.mutate(tool.id, {
+      onSuccess: () => toast({ title: 'Tool deleted', description: `"${tool.title_en}" has been removed.` }),
+    });
+  };
+
+  const openEdit = (tool: ToolRecord) => {
     setEditingTool(tool);
     setDialogOpen(true);
   };
@@ -63,22 +83,22 @@ export default function AdminTools() {
     setDialogOpen(true);
   };
 
-  const handleDelete = (id: string, name: string) => {
-    deleteTool(id);
-    toast({ title: 'Tool deleted', description: `"${name}" has been removed.` });
-  };
+  const getToolRunCount = (slug: string) => runStats.filter((r: any) => r.tool_slug === slug).length;
+
+  if (isLoading) {
+    return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary" size={24} /></div>;
+  }
 
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Tools</h1>
-          <p className="text-sm text-muted-foreground mt-1">Manage image tools, configurations, and performance</p>
+          <p className="text-sm text-muted-foreground mt-1">Manage tools, providers, pricing, and performance</p>
         </div>
         <Button size="sm" className="gap-1.5 text-xs" onClick={openAdd}><Plus size={14} /> Add Tool</Button>
       </div>
 
-      {/* Stats */}
       <div className="grid grid-cols-4 gap-4">
         {stats.map(s => (
           <Card key={s.label} className="border-border/40 bg-card/50">
@@ -93,29 +113,22 @@ export default function AdminTools() {
         ))}
       </div>
 
-      {/* Tools Table */}
       <Card className="border-border/40 bg-card/50">
         <CardHeader className="flex flex-row items-center justify-between pb-2">
           <CardTitle className="text-sm font-semibold">All Tools ({filtered.length})</CardTitle>
           <div className="relative">
             <Search size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search tools..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              className="pl-9 h-8 text-xs w-56 bg-muted/30"
-            />
+            <Input placeholder="Search tools..." value={search} onChange={e => setSearch(e.target.value)} className="pl-9 h-8 text-xs w-56 bg-muted/30" />
           </div>
         </CardHeader>
         <Table>
           <TableHeader>
             <TableRow className="border-border/40 hover:bg-transparent">
               <TableHead className="text-[11px] uppercase text-muted-foreground">Tool</TableHead>
-              <TableHead className="text-[11px] uppercase text-muted-foreground">Arabic Name</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Arabic</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Credits</TableHead>
-              <TableHead className="text-[11px] uppercase text-muted-foreground">Input</TableHead>
-              <TableHead className="text-[11px] uppercase text-muted-foreground">Visits</TableHead>
-              <TableHead className="text-[11px] uppercase text-muted-foreground">Revenue</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Provider</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Runs</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Featured</TableHead>
               <TableHead className="w-20" />
@@ -123,54 +136,39 @@ export default function AdminTools() {
           </TableHeader>
           <TableBody>
             {filtered.map(tool => {
-              const Icon = iconLookup[tool.iconName] || Sparkles;
+              const Icon = iconLookup[tool.icon_name] || Sparkles;
               return (
-                <TableRow
-                  key={tool.id}
-                  className="border-border/20 hover:bg-muted/20 cursor-pointer"
-                  onClick={() => openEdit(tool)}
-                >
+                <TableRow key={tool.id} className="border-border/20 hover:bg-muted/20 cursor-pointer" onClick={() => openEdit(tool)}>
                   <TableCell>
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-primary/10"><Icon size={16} className="text-primary" /></div>
                       <div>
-                        <p className="text-[13px] font-medium">{tool.name.en}</p>
-                        <p className="text-[11px] text-muted-foreground">{tool.shortDesc.en}</p>
+                        <p className="text-[13px] font-medium">{tool.title_en}</p>
+                        <p className="text-[11px] text-muted-foreground">{tool.short_desc_en}</p>
                       </div>
                     </div>
                   </TableCell>
                   <TableCell>
-                    <span dir="rtl" className="text-[13px]">{tool.name.ar || <span className="text-yellow-500 text-[11px]">Missing</span>}</span>
+                    <span dir="rtl" className="text-[13px]">{tool.title_ar || <span className="text-yellow-500 text-[11px]">Missing</span>}</span>
                   </TableCell>
-                  <TableCell><Badge variant="outline" className="text-[10px]">{tool.creditCost} credits</Badge></TableCell>
-                  <TableCell className="text-[12px] text-muted-foreground capitalize">{tool.inputType}</TableCell>
-                  <TableCell className="text-[13px]">{tool.analytics.visits.toLocaleString()}</TableCell>
-                  <TableCell className="text-[13px] font-medium text-primary">{tool.analytics.revenue}</TableCell>
+                  <TableCell><Badge variant="outline" className="text-[10px]">{tool.default_credit_cost} credits</Badge></TableCell>
+                  <TableCell>
+                    <div>
+                      <p className="text-[12px] text-muted-foreground">{tool.provider_name}</p>
+                      <p className="text-[10px] text-muted-foreground/60 font-mono">{tool.provider_endpoint}</p>
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-[13px]">{getToolRunCount(tool.slug)}</TableCell>
                   <TableCell onClick={e => e.stopPropagation()}>
-                    <Switch
-                      checked={tool.active}
-                      onCheckedChange={() => toggleActive(tool.id)}
-                      className="scale-75"
-                    />
+                    <Switch checked={tool.active} onCheckedChange={() => handleToggleActive(tool)} className="scale-75" />
                   </TableCell>
                   <TableCell onClick={e => e.stopPropagation()}>
-                    <Switch
-                      checked={tool.featured}
-                      onCheckedChange={() => toggleFeatured(tool.id)}
-                      className="scale-75"
-                    />
+                    <Switch checked={tool.featured} onCheckedChange={() => handleToggleFeatured(tool)} className="scale-75" />
                   </TableCell>
                   <TableCell onClick={e => e.stopPropagation()}>
                     <div className="flex gap-1">
-                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(tool)}>
-                        <Edit size={12} />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-7 w-7 text-destructive hover:text-destructive"
-                        onClick={() => handleDelete(tool.id, tool.name.en)}
-                      >
+                      <Button variant="ghost" size="icon" className="h-7 w-7" onClick={() => openEdit(tool)}><Edit size={12} /></Button>
+                      <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive" onClick={() => handleDelete(tool)}>
                         <Trash2 size={12} />
                       </Button>
                     </div>
@@ -180,8 +178,8 @@ export default function AdminTools() {
             })}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={9} className="text-center text-sm text-muted-foreground py-8">
-                  No tools found matching "{search}"
+                <TableCell colSpan={8} className="text-center text-sm text-muted-foreground py-8">
+                  No tools found
                 </TableCell>
               </TableRow>
             )}
@@ -189,11 +187,10 @@ export default function AdminTools() {
         </Table>
       </Card>
 
-      <ToolEditorDialog
+      <AdminToolEditorDialog
         open={dialogOpen}
         onOpenChange={setDialogOpen}
         tool={editingTool}
-        onSave={handleSave}
       />
     </div>
   );

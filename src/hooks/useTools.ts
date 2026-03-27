@@ -1,61 +1,33 @@
-import { useAdminToolsStore, AdminTool } from '@/stores/adminToolsStore';
-import { useLanguage } from '@/i18n/LanguageContext';
-import { Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2, Image, Palette, Layers, type LucideIcon } from 'lucide-react';
+import { useToolsDB, ToolView } from '@/hooks/useToolsDB';
 import { TOOLS as STATIC_TOOLS, type ToolDef } from '@/data/tools';
-import { useAdminMediaStore } from '@/stores/adminMediaStore';
-
-const iconLookup: Record<string, LucideIcon> = {
-  Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2, Image, Palette, Layers,
-};
-
-// Map tool IDs to media asset names for thumbnails
-const toolMediaMap: Record<string, string> = {
-  'generate': 'generate.jpg',
-  'upscale': 'upscale.jpg',
-  'logo': 'logo.jpg',
-  'remove-bg': 'remove-bg.jpg',
-  'enhance': 'enhance.jpg',
-};
 
 /**
- * Returns tools data merged from admin store, respecting active/featured state
- * and bilingual content based on current language.
- * Images are resolved from the Media Library store.
+ * Legacy compatibility hook — proxies to useToolsDB.
+ * Maps DB-backed ToolView into the ToolDef shape expected by older components.
  */
 export function useTools() {
-  const { tools: adminTools } = useAdminToolsStore();
-  const { lang } = useLanguage();
-  const isAr = lang === 'ar';
-  const mediaAssets = useAdminMediaStore(s => s.assets);
+  const { tools: dbTools, featuredTools: featuredViews, rawTools } = useToolsDB();
 
-  const getMediaUrl = (name: string): string =>
-    mediaAssets.find(a => a.name === name)?.url || '';
+  // Map ToolView → ToolDef shape for backward compat
+  const tools: ToolDef[] = dbTools.map(t => {
+    const staticTool = STATIC_TOOLS.find(s => s.id === t.slug);
+    return {
+      id: t.slug,
+      name: t.name,
+      description: t.description,
+      shortDesc: t.shortDesc,
+      image: t.image || staticTool?.image || '',
+      route: t.route,
+      icon: t.icon,
+      inputType: t.inputType === 'mixed' ? 'prompt' as const : t.inputType as 'prompt' | 'upload',
+      heroTagline: t.heroTitle,
+      creditCost: t.creditCost,
+      options: staticTool?.options || [],
+      examples: staticTool?.examples || [],
+    };
+  });
 
-  // Merge admin data with static tool definitions (for options, examples)
-  const tools: ToolDef[] = adminTools
-    .filter(t => t.active)
-    .map(adminTool => {
-      const staticTool = STATIC_TOOLS.find(s => s.id === adminTool.id);
-      const mediaImage = toolMediaMap[adminTool.id] ? getMediaUrl(toolMediaMap[adminTool.id]) : '';
-      return {
-        id: adminTool.id,
-        name: isAr && adminTool.name.ar ? adminTool.name.ar : adminTool.name.en,
-        description: isAr && adminTool.description.ar ? adminTool.description.ar : adminTool.description.en,
-        shortDesc: isAr && adminTool.shortDesc.ar ? adminTool.shortDesc.ar : adminTool.shortDesc.en,
-        heroTagline: isAr && adminTool.hero.title.ar ? adminTool.hero.title.ar : adminTool.hero.title.en,
-        creditCost: adminTool.creditCost,
-        inputType: adminTool.inputType === 'mixed' ? 'prompt' as const : adminTool.inputType,
-        route: adminTool.route,
-        icon: iconLookup[adminTool.iconName] || Sparkles,
-        image: adminTool.coverImage || mediaImage || staticTool?.image || '',
-        options: staticTool?.options || [],
-        examples: staticTool?.examples || [],
-      };
-    });
+  const featuredToolIds = featuredViews.map(t => t.slug);
 
-  const featuredTools = adminTools
-    .filter(t => t.active && t.featured)
-    .map(t => t.id);
-
-  return { tools, featuredTools, adminTools };
+  return { tools, featuredTools: featuredToolIds, adminTools: rawTools };
 }
