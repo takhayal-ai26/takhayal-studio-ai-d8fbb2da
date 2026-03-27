@@ -310,10 +310,10 @@ export default function AdminModels() {
                   <TableRow className="border-border/40">
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Model</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Provider</TableHead>
-                     <TableHead className="text-[11px] uppercase text-muted-foreground">1K Cost</TableHead>
-                     <TableHead className="text-[11px] uppercase text-muted-foreground">2K Cost</TableHead>
-                     <TableHead className="text-[11px] uppercase text-muted-foreground">4K Cost</TableHead>
-                     <TableHead className="text-[11px] uppercase text-muted-foreground">Credits (1K/2K/4K)</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Pricing Type</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Quality Tiers</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">1K Cost</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Credits (1K)</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Margin %</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Default</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
