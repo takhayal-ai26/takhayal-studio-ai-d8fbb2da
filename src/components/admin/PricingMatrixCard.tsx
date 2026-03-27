@@ -2,7 +2,8 @@ import { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Trash2, Save } from 'lucide-react';
+import { Switch } from '@/components/ui/switch';
+import { Plus, Save } from 'lucide-react';
 import type { PricingTier } from '@/hooks/usePricingTiers';
 
 interface Props {
@@ -68,7 +69,7 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
             <th className="text-left px-3 py-2 text-muted-foreground font-medium">Revenue</th>
             <th className="text-left px-3 py-2 text-muted-foreground font-medium">Margin</th>
             <th className="text-left px-3 py-2 text-muted-foreground font-medium">Margin %</th>
-            <th className="px-3 py-2 w-16"></th>
+            <th className="px-3 py-2 w-16 text-muted-foreground font-medium">Active</th>
           </tr>
         </thead>
         <tbody>
@@ -107,9 +108,9 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
                   </Badge>
                 </td>
                 <td className="px-3 py-2">
-                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => onDelete(t.id)}>
-                    <Trash2 size={11} className="text-muted-foreground hover:text-destructive" />
-                  </Button>
+                  <Switch checked={true} onCheckedChange={(checked) => {
+                    if (!checked) onDelete(t.id);
+                  }} />
                 </td>
               </tr>
             );
