@@ -79,7 +79,7 @@ export function TemplatesView() {
             {activeCategory === 'All' && !search && featured.length > 0 && (
               <section className="mt-8 mb-10">
                 <h2 className="text-lg font-semibold text-foreground mb-5">{t.templatesView.featured}</h2>
-                <div className="columns-2 md:columns-3 gap-4 space-y-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                   {featured.map(tpl => (
                     <TemplateCard key={tpl.id} tpl={tpl} onUse={handleUse} isRTL={isRTL} useLabel={t.portal?.use || 'Use'} />
                   ))}
@@ -97,7 +97,7 @@ export function TemplatesView() {
                   <p className="text-sm text-muted-foreground">{t.templatesView.noTemplatesFound}</p>
                 </div>
               ) : (
-                <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                   {filtered.map(tpl => (
                     <TemplateCard key={tpl.id} tpl={tpl} onUse={handleUse} isRTL={isRTL} useLabel={t.portal?.use || 'Use'} />
                   ))}
@@ -127,7 +127,7 @@ function TemplateCard({
   return (
     <button
       onClick={() => onUse(tpl)}
-      className="group w-full break-inside-avoid rounded-2xl overflow-hidden border border-border hover:border-primary/60 transition-all duration-200 bg-card hover:shadow-lg text-left block"
+      className="group w-full rounded-2xl overflow-hidden border border-border hover:border-primary/60 transition-all duration-200 bg-card hover:shadow-lg text-left block"
     >
       <div className="relative overflow-hidden" style={{ aspectRatio }}>
         <img
@@ -136,6 +136,12 @@ function TemplateCard({
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
         />
+        {/* Gradient overlay for title readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        {/* Title overlaid at bottom-left */}
+        <h3 className="absolute bottom-3 left-3 right-3 text-sm font-semibold text-white leading-tight drop-shadow-md">
+          {tpl.name}
+        </h3>
         {/* Hover overlay with CTA */}
         <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200" />
         <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -143,9 +149,6 @@ function TemplateCard({
             {useLabel} <ArrowRight size={12} className={isRTL ? 'rotate-180' : ''} />
           </span>
         </div>
-      </div>
-      <div className="p-4">
-        <h3 className="text-base font-semibold text-foreground leading-tight">{tpl.name}</h3>
       </div>
     </button>
   );
