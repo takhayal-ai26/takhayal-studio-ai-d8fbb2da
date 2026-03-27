@@ -13,8 +13,9 @@ import { toast } from '@/hooks/use-toast';
 import { useModels, ModelRecord } from '@/hooks/useModels';
 import { ModelDetailDrawer } from '@/components/admin/ModelDetailDrawer';
 import { usePricingTiers, PricingTier } from '@/hooks/usePricingTiers';
+import { CREDIT_VALUE_USD, calculateCost, buildModelPricingConfig, type PricingType } from '@/lib/pricing-engine';
 
-const CREDIT_VALUE = 0.016;
+const CREDIT_VALUE = CREDIT_VALUE_USD;
 
 // --- Provider types (kept for Providers tab) ---
 interface ProviderConfig {
@@ -70,14 +71,14 @@ export default function AdminModels() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [syncingModels, setSyncingModels] = useState(false);
 
-  // Helper to get tier cost/credits for a model
-  const getTierData = (modelId: string, quality: string) => {
-    const tiers = allTiers[modelId] || [];
-    return tiers.find(t => t.quality_level === quality);
-  };
-  const getMargin = (credits: number, cost: number) => {
-    const rev = credits * CREDIT_VALUE;
-    return rev > 0 ? ((rev - cost) / rev) * 100 : 0;
+  // Helper to get cost/credits using centralized cost engine
+  const getModelCosts = (model: ModelRecord) => {
+    const tiers = allTiers[model.id] || [];
+    const config = buildModelPricingConfig(model, tiers.map(t => ({ quality_level: t.quality_level, cost_per_run: t.cost_per_run, credits_charged: t.credits_charged })));
+    const c1k = calculateCost(config, '1:1', '1K');
+    const c2k = calculateCost(config, '1:1', '2K');
+    const c4k = calculateCost(config, '1:1', '4K');
+    return { c1k, c2k, c4k };
   };
   const marginBadge = (m: number) => m > 70 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : m > 40 ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20';
 
@@ -321,16 +322,8 @@ export default function AdminModels() {
                 </TableHeader>
                 <TableBody>
                   {filteredModels.map(m => {
-                    const t1k = getTierData(m.id, '1K');
-                    const t2k = getTierData(m.id, '2K');
-                    const t4k = getTierData(m.id, '4K');
-                     const baseCost = t1k?.cost_per_run ?? m.cost_per_run ?? 0;
-                     const cost2k = t2k?.cost_per_run ?? (baseCost * 2);
-                     const cost4k = t4k?.cost_per_run ?? (baseCost * 4);
-                    const cr1k = t1k?.credits_charged ?? m.credits_per_generation ?? 2;
-                    const cr2k = t2k?.credits_charged ?? cr1k + 1;
-                    const cr4k = t4k?.credits_charged ?? cr1k + 2;
-                    const avgMargin = getMargin(cr1k, baseCost);
+                    const { c1k, c2k, c4k } = getModelCosts(m);
+                    const avgMargin = c1k.marginPct;
                     return (
                     <TableRow
                       key={m.id}
@@ -344,10 +337,10 @@ export default function AdminModels() {
                         </div>
                       </TableCell>
                       <TableCell className="text-[12px]">{m.provider_name}</TableCell>
-                      <TableCell className="text-[13px] font-medium text-primary font-mono">${baseCost.toFixed(3)}</TableCell>
-                      <TableCell className="text-[13px] font-mono text-muted-foreground">${cost2k.toFixed(3)}</TableCell>
-                      <TableCell className="text-[13px] font-mono text-muted-foreground">${cost4k.toFixed(3)}</TableCell>
-                      <TableCell className="text-[12px] font-mono">{cr1k}/{cr2k}/{cr4k}</TableCell>
+                      <TableCell className="text-[13px] font-medium text-primary font-mono">${c1k.providerCost.toFixed(3)}</TableCell>
+                      <TableCell className="text-[13px] font-mono text-muted-foreground">${c2k.providerCost.toFixed(3)}</TableCell>
+                      <TableCell className="text-[13px] font-mono text-muted-foreground">${c4k.providerCost.toFixed(3)}</TableCell>
+                      <TableCell className="text-[12px] font-mono">{c1k.credits}/{c2k.credits}/{c4k.credits}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={`text-[10px] ${marginBadge(avgMargin)}`}>
                           {avgMargin.toFixed(0)}%

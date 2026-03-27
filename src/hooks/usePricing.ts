@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { CREDIT_VALUE_USD, calculateCost, buildModelPricingConfig } from '@/lib/pricing-engine';
 
 interface PricingConfig {
   creditValueUsd: number;
@@ -13,7 +14,7 @@ interface ModelPricing {
 }
 
 export function usePricing() {
-  const [config, setConfig] = useState<PricingConfig>({ creditValueUsd: 0.02, defaultCredits: 2 });
+  const [config, setConfig] = useState<PricingConfig>({ creditValueUsd: CREDIT_VALUE_USD, defaultCredits: 2 });
   const [modelPricingMap, setModelPricingMap] = useState<Record<string, ModelPricing>>({});
 
   const load = useCallback(async () => {
@@ -62,5 +63,5 @@ export function usePricing() {
     });
   }, [modelPricingMap, config]);
 
-  return { config, getCreditsForModel, logGeneration, reload: load };
+  return { config, getCreditsForModel, logGeneration, reload: load, calculateCost, buildModelPricingConfig, CREDIT_VALUE_USD };
 }

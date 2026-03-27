@@ -5,6 +5,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useModels, ModelRecord } from '@/hooks/useModels';
 import { usePricing } from '@/hooks/usePricing';
 import { usePricingTiers } from '@/hooks/usePricingTiers';
+import { CREDIT_VALUE_USD } from '@/lib/pricing-engine';
 
 
 const QUALITY_TIER_META: Record<string, { descKey: string }> = {
@@ -13,7 +14,7 @@ const QUALITY_TIER_META: Record<string, { descKey: string }> = {
   '4K': { descKey: 'ultraHD' },
 };
 
-const CREDIT_VALUE = 0.016;
+const CREDIT_VALUE = CREDIT_VALUE_USD;
 
 type OpenDropdown = 'model' | 'size' | 'resolution' | null;
 
