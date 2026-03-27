@@ -68,47 +68,27 @@ export function TemplatesView() {
         </div>
       </div>
 
-      <div className="px-6 md:px-10">
+      <div className="px-4 md:px-6">
         {loading ? (
           <div className="py-20 text-center">
             <p className="text-sm text-muted-foreground">Loading templates...</p>
           </div>
         ) : (
-          <>
-            {/* Featured Section */}
-            {activeCategory === 'All' && !search && featured.length > 0 && (
-              <section className="mt-8 mb-10">
-                <h2 className="text-lg font-semibold text-foreground mb-5">{t.templatesView.featured}</h2>
-                <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-4 [column-fill:_balance]">
-                  {featured.map(tpl => (
-                    <div key={tpl.id} className="break-inside-avoid mb-4">
-                      <TemplateCard tpl={tpl} onUse={handleUse} isRTL={isRTL} useLabel={t.portal?.use || 'Use'} />
-                    </div>
-                  ))}
-                </div>
-              </section>
+          <section className="pt-4 pb-10">
+            {filtered.length === 0 ? (
+              <div className="py-20 text-center">
+                <p className="text-sm text-muted-foreground">{t.templatesView.noTemplatesFound}</p>
+              </div>
+            ) : (
+              <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-1.5 [column-fill:_balance]">
+                {filtered.map(tpl => (
+                  <div key={tpl.id} className="break-inside-avoid mb-1.5">
+                    <TemplateCard tpl={tpl} onUse={handleUse} isRTL={isRTL} useLabel={t.portal?.use || 'Use'} />
+                  </div>
+                ))}
+              </div>
             )}
-
-            {/* All Templates */}
-            <section className="pb-10">
-              {activeCategory === 'All' && !search && (
-                <h2 className="text-lg font-semibold text-foreground mb-5">{t.templatesView.allTemplates}</h2>
-              )}
-              {filtered.length === 0 ? (
-                <div className="py-20 text-center">
-                  <p className="text-sm text-muted-foreground">{t.templatesView.noTemplatesFound}</p>
-                </div>
-              ) : (
-                <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-4 [column-fill:_balance]">
-                  {filtered.map(tpl => (
-                    <div key={tpl.id} className="break-inside-avoid mb-4">
-                      <TemplateCard tpl={tpl} onUse={handleUse} isRTL={isRTL} useLabel={t.portal?.use || 'Use'} />
-                    </div>
-                  ))}
-                </div>
-              )}
-            </section>
-          </>
+          </section>
         )}
       </div>
     </div>
@@ -131,7 +111,7 @@ function TemplateCard({
   return (
     <button
       onClick={() => onUse(tpl)}
-      className="group w-full rounded-2xl overflow-hidden border border-border hover:border-primary/60 transition-all duration-200 bg-card hover:shadow-lg text-left block"
+      className="group w-full rounded-lg overflow-hidden transition-all duration-200 hover:opacity-90 text-left block"
     >
       <div className="relative overflow-hidden" style={{ aspectRatio }}>
         <img
@@ -140,17 +120,13 @@ function TemplateCard({
           className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
           loading="lazy"
         />
-        {/* Gradient overlay for title readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-        {/* Title overlaid at bottom-left */}
-        <h3 className="absolute bottom-3 left-3 right-3 text-sm font-semibold text-white leading-tight drop-shadow-md">
+        <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+        <h3 className="absolute bottom-2.5 left-3 right-3 text-sm font-semibold text-white leading-tight drop-shadow-md">
           {tpl.name}
         </h3>
-        {/* Hover overlay with CTA */}
-        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-colors duration-200" />
-        <div className="absolute top-3 right-3 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <span className="h-8 px-4 rounded-xl bg-primary text-primary-foreground text-xs font-medium flex items-center gap-1.5 shadow-lg">
-            {useLabel} <ArrowRight size={12} className={isRTL ? 'rotate-180' : ''} />
+        <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <span className="h-7 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium flex items-center gap-1 shadow-lg">
+            {useLabel}
           </span>
         </div>
       </div>
