@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Switch } from '@/components/ui/switch';
-import { Plus, Save } from 'lucide-react';
+import { Plus, Save, Star } from 'lucide-react';
 import type { PricingTier } from '@/hooks/usePricingTiers';
 
 interface Props {
@@ -15,6 +15,13 @@ interface Props {
   onUpdate: (id: string, updates: Partial<PricingTier>) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
 }
+
+const PRICING_MODES = [
+  { value: 'flat_per_image', label: 'Flat' },
+  { value: 'per_megapixel', label: 'Per MP' },
+  { value: 'quality_tier', label: 'Quality' },
+  { value: 'size_locked', label: 'Locked' },
+];
 
 const PRICING_TYPE_LABELS: Record<string, { label: string; color: string }> = {
   per_megapixel: { label: 'Per MP', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
@@ -47,6 +54,16 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
     setNewTier({ label: '', quality: '', resolution: '', cost: 0, credits: 2, pricingMode: 'flat_per_image' });
   };
 
+  const handleSetDefault = async (tierId: string) => {
+    // Unset all other defaults for this model, then set the new one
+    for (const t of tiers) {
+      if (t.is_default && t.id !== tierId) {
+        await onUpdate(t.id, { is_default: false });
+      }
+    }
+    await onUpdate(tierId, { is_default: true });
+  };
+
   return (
     <div className="rounded-xl border border-border/10 bg-card/60 overflow-hidden">
       <div className="px-4 py-3 border-b border-border/10 flex items-center justify-between bg-muted/5">
@@ -70,7 +87,8 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
             <th className="text-left px-3 py-2 text-muted-foreground font-medium">Revenue</th>
             <th className="text-left px-3 py-2 text-muted-foreground font-medium">Margin</th>
             <th className="text-left px-3 py-2 text-muted-foreground font-medium">Margin %</th>
-            <th className="px-3 py-2 w-16 text-muted-foreground font-medium">Active</th>
+            <th className="text-center px-3 py-2 text-muted-foreground font-medium w-14">Default</th>
+            <th className="text-center px-3 py-2 text-muted-foreground font-medium w-16">Active</th>
           </tr>
         </thead>
         <tbody>
@@ -78,18 +96,26 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
             const revenue = t.credits_charged * creditValueUsd;
             const margin = revenue - t.cost_per_run;
             const marginPct = revenue > 0 ? (margin / revenue * 100) : 0;
-            const typeInfo = PRICING_TYPE_LABELS[t.pricing_mode] || PRICING_TYPE_LABELS.flat_per_image;
             return (
               <tr key={t.id} className={`border-b border-border/5 hover:bg-muted/5 ${t.is_active === false ? 'opacity-40' : ''}`}>
-                <td className="px-3 py-2 font-medium text-foreground">
-                  {t.tier_label}
-                  {t.is_default && <Badge variant="outline" className="ml-1.5 text-[8px] py-0 px-1">Default</Badge>}
-                </td>
-                <td className="px-3 py-2 text-muted-foreground">{t.quality_level || '-'}</td>
                 <td className="px-3 py-2">
-                  <Badge variant="outline" className={`text-[9px] py-0 px-1.5 ${typeInfo.color}`}>
-                    {typeInfo.label}
-                  </Badge>
+                  <Input className="h-6 text-[11px] w-28 font-medium" value={t.tier_label}
+                    onChange={e => onUpdate(t.id, { tier_label: e.target.value })} />
+                </td>
+                <td className="px-3 py-2">
+                  <Input className="h-6 text-[11px] w-14" value={t.quality_level || ''}
+                    onChange={e => onUpdate(t.id, { quality_level: e.target.value || null })} />
+                </td>
+                <td className="px-3 py-2">
+                  <select
+                    className="h-6 text-[10px] bg-background border border-border/20 rounded px-1"
+                    value={t.pricing_mode}
+                    onChange={e => onUpdate(t.id, { pricing_mode: e.target.value })}
+                  >
+                    {PRICING_MODES.map(m => (
+                      <option key={m.value} value={m.value}>{m.label}</option>
+                    ))}
+                  </select>
                 </td>
                 <td className="px-3 py-2">
                   <Input type="number" step="0.001" className="w-20 h-6 text-[11px]" value={t.cost_per_run}
@@ -108,31 +134,41 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
                     {marginPct.toFixed(1)}%
                   </Badge>
                 </td>
-                <td className="px-3 py-2">
+                <td className="px-3 py-2 text-center">
+                  <button
+                    onClick={() => handleSetDefault(t.id)}
+                    className={`p-1 rounded transition-colors ${t.is_default ? 'text-primary' : 'text-muted-foreground/30 hover:text-muted-foreground'}`}
+                    title={t.is_default ? 'Default tier' : 'Set as default'}
+                  >
+                    <Star size={14} fill={t.is_default ? 'currentColor' : 'none'} />
+                  </button>
+                </td>
+                <td className="px-3 py-2 text-center">
                   <Switch checked={t.is_active !== false} onCheckedChange={(checked) => onUpdate(t.id, { is_active: checked } as any)} />
                 </td>
               </tr>
             );
           })}
           {tiers.length === 0 && (
-            <tr><td colSpan={9} className="text-center py-4 text-muted-foreground text-[11px]">No pricing tiers. Click "Add Tier" to configure.</td></tr>
+            <tr><td colSpan={10} className="text-center py-4 text-muted-foreground text-[11px]">No pricing tiers. Click "Add Tier" to configure.</td></tr>
           )}
           {adding && (
             <tr className="bg-primary/5">
-              <td className="px-3 py-2"><Input className="h-6 text-[11px] w-24" placeholder="Label" value={newTier.label} onChange={e => setNewTier(p => ({ ...p, label: e.target.value }))} /></td>
+              <td className="px-3 py-2"><Input className="h-6 text-[11px] w-28" placeholder="Label" value={newTier.label} onChange={e => setNewTier(p => ({ ...p, label: e.target.value }))} /></td>
               <td className="px-3 py-2"><Input className="h-6 text-[11px] w-14" placeholder="1K" value={newTier.quality} onChange={e => setNewTier(p => ({ ...p, quality: e.target.value }))} /></td>
               <td className="px-3 py-2">
                 <select className="h-6 text-[10px] bg-background border border-border/20 rounded px-1" value={newTier.pricingMode} onChange={e => setNewTier(p => ({ ...p, pricingMode: e.target.value }))}>
-                  <option value="flat_per_image">Flat</option>
-                  <option value="per_megapixel">Per MP</option>
-                  <option value="quality_tier">Quality</option>
-                  <option value="size_locked">Locked</option>
+                  {PRICING_MODES.map(m => (
+                    <option key={m.value} value={m.value}>{m.label}</option>
+                  ))}
                 </select>
               </td>
               <td className="px-3 py-2"><Input type="number" step="0.001" className="h-6 text-[11px] w-20" value={newTier.cost} onChange={e => setNewTier(p => ({ ...p, cost: Number(e.target.value) }))} /></td>
               <td className="px-3 py-2"><Input type="number" className="h-6 text-[11px] w-14" value={newTier.credits} onChange={e => setNewTier(p => ({ ...p, credits: Number(e.target.value) }))} /></td>
               <td colSpan={3}></td>
-              <td className="px-3 py-2"><Button size="icon" variant="ghost" className="h-6 w-6" onClick={handleAdd}><Save size={11} className="text-primary" /></Button></td>
+              <td colSpan={2} className="px-3 py-2 text-center">
+                <Button size="icon" variant="ghost" className="h-6 w-6" onClick={handleAdd}><Save size={11} className="text-primary" /></Button>
+              </td>
             </tr>
           )}
         </tbody>
