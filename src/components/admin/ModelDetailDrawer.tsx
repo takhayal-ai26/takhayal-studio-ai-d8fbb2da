@@ -8,7 +8,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Save, X, Clock, DollarSign, Layers, Maximize, Settings2, Sparkles, ArrowUp } from 'lucide-react';
+import { Save, X, Clock, DollarSign, Layers, Maximize, Settings2, Sparkles } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import type { ModelRecord } from '@/hooks/useModels';
 
@@ -41,7 +41,7 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
         supported_ratios: model.supported_ratios,
         supported_sizes: model.supported_sizes,
         supported_quality_tiers: model.supported_quality_tiers,
-        upscale_strategy: model.upscale_strategy,
+        pricing_mode: model.pricing_mode,
         supports_native_high_res: model.supports_native_high_res,
       });
     }
@@ -58,7 +58,7 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
       if (form.best_for !== model.best_for) overrideKeys.push('best_for');
       if (form.default_ratio !== model.default_ratio) overrideKeys.push('default_ratio');
       if (form.default_resolution !== model.default_resolution) overrideKeys.push('default_resolution');
-      if (form.upscale_strategy !== model.upscale_strategy) overrideKeys.push('upscale_strategy');
+      if (form.pricing_mode !== model.pricing_mode) overrideKeys.push('pricing_mode');
 
       const existingOverrides = model.admin_overrides || {};
       const newOverrides = { ...existingOverrides };
@@ -73,6 +73,14 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
       setSaving(false);
     }
   };
+
+  const PRICING_TYPES = [
+    { value: 'flat_per_image', label: 'Flat per Image' },
+    { value: 'per_megapixel', label: 'Per Megapixel' },
+    { value: 'quality_tier', label: 'Quality Tier' },
+    { value: 'size_locked', label: 'Size Locked' },
+    { value: 'manual_pending', label: 'Manual / Pending' },
+  ];
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -119,18 +127,29 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
 
           <Separator />
 
-          {/* Pricing & Performance */}
+          {/* Pricing */}
           <section className="space-y-3">
             <h3 className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5"><DollarSign size={12} /> Pricing & Speed</h3>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
-                <Label className="text-[11px] text-muted-foreground">Cost / Run</Label>
+                <Label className="text-[11px] text-muted-foreground">Base Cost (1K)</Label>
                 <Input type="number" step="0.001" value={form.cost_per_run ?? ''} onChange={e => setForm(f => ({ ...f, cost_per_run: parseFloat(e.target.value) || 0 }))} className="h-8 text-xs" />
               </div>
               <div className="space-y-1.5">
-                <Label className="text-[11px] text-muted-foreground flex items-center gap-1"><Clock size={10} /> Speed</Label>
-                <Input value={form.speed ?? ''} onChange={e => setForm(f => ({ ...f, speed: e.target.value }))} className="h-8 text-xs" />
+                <Label className="text-[11px] text-muted-foreground">Pricing Type</Label>
+                <Select value={form.pricing_mode || 'flat_per_image'} onValueChange={v => setForm(f => ({ ...f, pricing_mode: v }))}>
+                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {PRICING_TYPES.map(pt => (
+                      <SelectItem key={pt.value} value={pt.value}>{pt.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[11px] text-muted-foreground flex items-center gap-1"><Clock size={10} /> Speed</Label>
+              <Input value={form.speed ?? ''} onChange={e => setForm(f => ({ ...f, speed: e.target.value }))} className="h-8 text-xs" />
             </div>
             {model.last_sync_at && (
               <p className="text-[10px] text-muted-foreground">Last synced: {new Date(model.last_sync_at).toLocaleString()}</p>
@@ -139,33 +158,15 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
 
           <Separator />
 
-          {/* Upscale & Resolution Strategy */}
+          {/* Resolution Strategy — NO upscale options */}
           <section className="space-y-3">
-            <h3 className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5"><ArrowUp size={12} /> Resolution Strategy</h3>
-            <div className="grid grid-cols-2 gap-3">
-              <div className="space-y-1.5">
-                <Label className="text-[11px] text-muted-foreground">Upscale Strategy</Label>
-                <Select value={form.upscale_strategy || 'esrgan'} onValueChange={v => setForm(f => ({ ...f, upscale_strategy: v }))}>
-                  <SelectTrigger className="h-8 text-xs"><SelectValue /></SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="esrgan">ESRGAN (fast, cheap)</SelectItem>
-                    <SelectItem value="creative">Creative Upscaler (premium)</SelectItem>
-                    <SelectItem value="none">No upscaling</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="space-y-1.5">
-                <Label className="text-[11px] text-muted-foreground">Native High-Res</Label>
-                <div className="flex items-center gap-2 mt-1">
-                  <Switch checked={form.supports_native_high_res} onCheckedChange={v => setForm(f => ({ ...f, supports_native_high_res: v }))} />
-                  <span className="text-[11px] text-muted-foreground">{form.supports_native_high_res ? 'Yes' : 'No'}</span>
-                </div>
-              </div>
+            <h3 className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5"><Layers size={12} /> Resolution Strategy</h3>
+            <div className="flex items-center gap-2">
+              <Switch checked={form.supports_native_high_res} onCheckedChange={v => setForm(f => ({ ...f, supports_native_high_res: v }))} />
+              <Label className="text-xs">Supports Native High-Res</Label>
             </div>
             <p className="text-[10px] text-muted-foreground/60">
-              {form.supports_native_high_res
-                ? 'This model can output high-res natively. Upscaling is optional.'
-                : 'Higher quality (2K/4K) is achieved through the upscale pipeline after 1K generation.'}
+              All resolutions are native — no upscaling pipeline. Cost scales with resolution based on the pricing type.
             </p>
           </section>
 
@@ -186,19 +187,6 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
               </div>
               <Input placeholder="Add ratio (e.g. 21:9) and press Enter" className="h-7 text-[11px] mt-1"
                 onKeyDown={e => { if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) { const v = (e.target as HTMLInputElement).value.trim(); setForm(f => ({ ...f, supported_ratios: [...(f.supported_ratios || []), v] })); (e.target as HTMLInputElement).value = ''; } }} />
-            </div>
-            <div className="space-y-1.5">
-              <Label className="text-[11px] text-muted-foreground">Supported Sizes (image_size models)</Label>
-              <div className="flex flex-wrap gap-1">
-                {(form.supported_sizes || []).map(s => (
-                  <Badge key={s} variant="outline" className="text-[10px] bg-muted/20">
-                    {s}
-                    <button className="ml-1 hover:text-destructive" onClick={() => setForm(f => ({ ...f, supported_sizes: (f.supported_sizes || []).filter(x => x !== s) }))}><X size={8} /></button>
-                  </Badge>
-                ))}
-              </div>
-              <Input placeholder="Add size preset (e.g. square_hd)" className="h-7 text-[11px] mt-1"
-                onKeyDown={e => { if (e.key === 'Enter' && (e.target as HTMLInputElement).value.trim()) { const v = (e.target as HTMLInputElement).value.trim(); setForm(f => ({ ...f, supported_sizes: [...(f.supported_sizes || []), v] })); (e.target as HTMLInputElement).value = ''; } }} />
             </div>
             <div className="space-y-1.5">
               <Label className="text-[11px] text-muted-foreground">Supported Quality Tiers</Label>
@@ -248,7 +236,6 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
             <div className="space-y-1.5">
               <Label className="text-[11px] text-muted-foreground">Best For (AR)</Label>
               <Textarea value={(form as any).best_for_ar ?? ''} onChange={e => setForm(f => ({ ...f, best_for_ar: e.target.value }))} className="text-xs min-h-[60px] text-right" dir="rtl" placeholder="مثال: إنشاء سريع للمسودات" />
-              <p className="text-[9px] text-muted-foreground/50">Leave empty to fallback to English</p>
             </div>
             <div className="space-y-1.5">
               <Label className="text-[11px] text-muted-foreground">Admin Notes</Label>
@@ -256,7 +243,6 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
             </div>
           </section>
 
-          {/* Admin Overrides indicator */}
           {Object.keys(model.admin_overrides || {}).length > 0 && (
             <div className="rounded-lg bg-primary/5 border border-primary/10 p-3">
               <p className="text-[11px] text-primary font-medium mb-1">Admin Overrides Active</p>
