@@ -79,7 +79,7 @@ export function TemplatesView() {
             {activeCategory === 'All' && !search && featured.length > 0 && (
               <section className="mt-8 mb-10">
                 <h2 className="text-lg font-semibold text-foreground mb-5">{t.templatesView.featured}</h2>
-                <div className="columns-2 md:columns-3 gap-4 space-y-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                   {featured.map(tpl => (
                     <TemplateCard key={tpl.id} tpl={tpl} onUse={handleUse} isRTL={isRTL} useLabel={t.portal?.use || 'Use'} />
                   ))}
