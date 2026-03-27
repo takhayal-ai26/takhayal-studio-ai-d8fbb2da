@@ -5,7 +5,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useModels, ModelRecord } from '@/hooks/useModels';
 import { usePricing } from '@/hooks/usePricing';
 import { usePricingTiers } from '@/hooks/usePricingTiers';
-import { Badge } from '@/components/ui/badge';
+
 
 const QUALITY_TIER_META: Record<string, { descKey: string }> = {
   '1K': { descKey: 'standard' },
@@ -19,7 +19,7 @@ type OpenDropdown = 'model' | 'size' | 'resolution' | null;
 
 export function CreationPanel() {
   const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, enhancePrompt, setEnhancePrompt, generate, isGenerating, credits, getCreditCost } = useApp();
-  const { t } = useLanguage();
+  const { t, lang: language } = useLanguage();
   const { activeModels, defaultModel } = useModels();
   const { getCreditsForModel } = usePricing();
   const { getCreditsForModelQuality, getCostForModelQuality } = usePricingTiers();
@@ -70,7 +70,7 @@ export function CreationPanel() {
   const handleResolution = (r: string) => { setSelectedResolution(r); setQuality(r === '1K' ? 'standard' : 'hd'); setOpenDropdown(null); };
   const ratioIcons: Record<string, string> = { '1:1': '◻', '4:3': '▭', '16:9': '▬', '9:16': '▯', '4:5': '▭', '3:4': '▭', '3:2': '▬', '2:3': '▯', '5:4': '▭', '21:9': '▬' };
 
-  const isGptImage = currentModel?.endpoint_id === 'fal-ai/gpt-image-1.5';
+  
 
   return (
     <aside ref={panelRef} className="w-[340px] xl:w-[380px] flex flex-col bg-background flex-shrink-0 overflow-visible relative z-30 border-r border-border/5">
@@ -105,7 +105,6 @@ export function CreationPanel() {
                 <p className="text-[13px] font-medium text-foreground">{t.studio.model}</p>
                 <div className="flex items-center gap-1.5">
                   <p className="text-[12px] text-primary/70">{currentModel?.model_name || 'Select model'}</p>
-                  {isGptImage && <Badge variant="outline" className="text-[8px] py-0 px-1 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">OpenAI · Best for text</Badge>}
                 </div>
               </div>
             </div>
@@ -114,28 +113,17 @@ export function CreationPanel() {
           {openDropdown === 'model' && (
             <div className="absolute left-0 right-0 bottom-full mb-2 bg-card border border-border/20 rounded-2xl p-2 shadow-2xl shadow-black/40 z-50 animate-fade-in max-h-[320px] overflow-y-auto">
               <p className="text-[10px] text-primary/40 uppercase tracking-wider font-medium px-3 pt-2 pb-2 flex items-center gap-1.5"><Cpu size={10} />{t.studio.selectModel}</p>
-              {activeModels.map(m => {
+               {activeModels.map(m => {
                 const isActive = selectedModelId === m.id;
-                const isGpt = m.endpoint_id === 'fal-ai/gpt-image-1.5';
+                const bestForText = language === 'ar' ? (m.best_for_ar || m.best_for) : m.best_for;
                 return (
                   <button key={m.id} onClick={() => { setSelectedModelId(m.id); setOpenDropdown(null); }} className={`w-full flex items-center gap-3 p-3 rounded-xl transition-all duration-150 ${isActive ? 'bg-primary/10' : 'hover:bg-muted/10'}`}>
                     <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${isActive ? 'bg-primary/20' : 'bg-muted/15'}`}>
                       <Cpu size={14} className={isActive ? 'text-primary' : 'text-muted-foreground'} />
                     </div>
-                    <div className="text-left flex-1">
-                      <div className="flex items-center gap-1.5">
-                        <p className={`text-[13px] font-medium ${isActive ? 'text-primary' : 'text-foreground'}`}>{m.model_name}</p>
-                        {isGpt && <Badge variant="outline" className="text-[7px] py-0 px-1 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">OpenAI</Badge>}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-[11px] text-muted-foreground/50">{m.speed} · ${m.cost_per_run?.toFixed(3)}</span>
-                        <Badge variant="outline" className="text-[9px] py-0 px-1">{m.input_type}</Badge>
-                        <div className="flex gap-0.5">
-                          {m.supported_quality_tiers.map(q => (
-                            <Badge key={q} variant="outline" className="text-[8px] py-0 px-0.5 bg-primary/5 text-primary/60 border-primary/10">{q}</Badge>
-                          ))}
-                        </div>
-                      </div>
+                    <div className={`text-left flex-1 ${language === 'ar' ? 'text-right' : ''}`}>
+                      <p className={`text-[13px] font-semibold ${isActive ? 'text-primary' : 'text-foreground'}`}>{m.model_name}</p>
+                      {bestForText && <p className="text-[11px] text-muted-foreground/60 mt-0.5">{bestForText}</p>}
                     </div>
                     {isActive && <Check size={14} className="text-primary" />}
                   </button>

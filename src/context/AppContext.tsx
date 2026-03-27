@@ -42,6 +42,8 @@ export interface StudioModel {
   credits_per_generation: number | null;
   input_type: string;
   is_default: boolean;
+  best_for: string | null;
+  best_for_ar: string | null;
 }
 
 export const TEMPLATE_PROMPTS: Record<string, string> = {

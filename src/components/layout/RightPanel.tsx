@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { ChevronDown, X, Coins } from 'lucide-react';
+import { ChevronDown, X, Coins, Check } from 'lucide-react';
 import { useApp, TEMPLATE_PROMPTS, STYLE_OPTIONS, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { Badge } from '@/components/ui/badge';
+
 
 function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -42,7 +42,7 @@ export function RightPanel() {
     : validRatios;
 
   const modelQualityTiers = availableQualityTiers;
-  const isGptImage = selectedModel?.endpoint_id === 'fal-ai/gpt-image-1.5';
+  
 
   const handleTemplateSelect = (tpl: string) => {
     if (selectedTemplate === tpl) { setSelectedTemplate(null); } else { setSelectedTemplate(tpl); setPrompt(TEMPLATE_PROMPTS[tpl]); }
@@ -58,24 +58,23 @@ export function RightPanel() {
         <Section title={language === 'ar' ? 'النموذج' : 'Model'} defaultOpen>
           <div className="space-y-2">
             {availableModels.map(m => {
-              const isGpt = m.endpoint_id === 'fal-ai/gpt-image-1.5';
+              const isSelected = selectedModelId === m.id;
+              const bestForText = language === 'ar' ? (m.best_for_ar || m.best_for) : m.best_for;
               return (
                 <button
                   key={m.id}
                   onClick={() => setSelectedModelId(m.id)}
-                  className={`w-full text-left px-3 py-2 rounded-lg text-[12px] border transition-colors ${
-                    selectedModelId === m.id
-                      ? 'bg-primary/[0.12] border-primary text-primary font-medium'
-                      : 'bg-card border-surface-border text-foreground hover:border-muted-foreground/40'
-                  }`}
+                  className={`w-full px-3 py-2.5 rounded-lg border transition-colors flex items-center gap-2 ${
+                    isSelected
+                      ? 'bg-primary/[0.12] border-primary'
+                      : 'bg-card border-surface-border hover:border-muted-foreground/40'
+                  } ${language === 'ar' ? 'text-right' : 'text-left'}`}
                 >
-                  <div className="flex items-center gap-1.5">
-                    <span className="block">{m.model_name}</span>
-                    {isGpt && <Badge variant="outline" className="text-[7px] py-0 px-1 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">OpenAI · Best for text</Badge>}
+                  <div className="flex-1 min-w-0">
+                    <p className={`text-[12px] font-semibold ${isSelected ? 'text-primary' : 'text-foreground'}`}>{m.model_name}</p>
+                    {bestForText && <p className="text-[10px] text-muted-foreground/60 mt-0.5 truncate">{bestForText}</p>}
                   </div>
-                  <span className="text-[10px] text-muted-foreground">
-                    {m.supported_quality_tiers.join(' · ')} · {m.credits_per_generation || 2} {t.toolPage.credits}
-                  </span>
+                  {isSelected && <Check size={12} className="text-primary flex-shrink-0" />}
                 </button>
               );
             })}

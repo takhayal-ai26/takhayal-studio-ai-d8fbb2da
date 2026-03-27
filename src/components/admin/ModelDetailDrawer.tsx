@@ -30,6 +30,7 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
         speed: model.speed,
         cost_per_run: model.cost_per_run,
         best_for: model.best_for,
+        best_for_ar: (model as any).best_for_ar,
         input_type: model.input_type,
         default_ratio: model.default_ratio,
         default_resolution: model.default_resolution,
@@ -241,8 +242,13 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
           <section className="space-y-3">
             <h3 className="text-xs uppercase tracking-wider text-muted-foreground font-semibold">Best For & Notes</h3>
             <div className="space-y-1.5">
-              <Label className="text-[11px] text-muted-foreground">Best For</Label>
-              <Textarea value={form.best_for ?? ''} onChange={e => setForm(f => ({ ...f, best_for: e.target.value }))} className="text-xs min-h-[60px]" />
+              <Label className="text-[11px] text-muted-foreground">Best For (EN)</Label>
+              <Textarea value={form.best_for ?? ''} onChange={e => setForm(f => ({ ...f, best_for: e.target.value }))} className="text-xs min-h-[60px]" placeholder="e.g. Fast drafts & iterations" />
+            </div>
+            <div className="space-y-1.5">
+              <Label className="text-[11px] text-muted-foreground">Best For (AR)</Label>
+              <Textarea value={(form as any).best_for_ar ?? ''} onChange={e => setForm(f => ({ ...f, best_for_ar: e.target.value }))} className="text-xs min-h-[60px] text-right" dir="rtl" placeholder="مثال: إنشاء سريع للمسودات" />
+              <p className="text-[9px] text-muted-foreground/50">Leave empty to fallback to English</p>
             </div>
             <div className="space-y-1.5">
               <Label className="text-[11px] text-muted-foreground">Admin Notes</Label>
