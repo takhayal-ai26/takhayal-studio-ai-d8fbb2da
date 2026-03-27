@@ -80,7 +80,7 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
             const marginPct = revenue > 0 ? (margin / revenue * 100) : 0;
             const typeInfo = PRICING_TYPE_LABELS[t.pricing_mode] || PRICING_TYPE_LABELS.flat_per_image;
             return (
-              <tr key={t.id} className="border-b border-border/5 hover:bg-muted/5">
+              <tr key={t.id} className={`border-b border-border/5 hover:bg-muted/5 ${t.is_active === false ? 'opacity-40' : ''}`}>
                 <td className="px-3 py-2 font-medium text-foreground">
                   {t.tier_label}
                   {t.is_default && <Badge variant="outline" className="ml-1.5 text-[8px] py-0 px-1">Default</Badge>}
