@@ -95,11 +95,13 @@ serve(async (req) => {
 
     if (supabase) {
       try {
-        let modelQuery = supabase.from("models").select("*").eq("is_active", true);
+        let modelQuery = supabase.from("models").select("*");
         if (model_id) {
-          modelQuery = supabase.from("models").select("*").eq("id", model_id);
-        } else if (!model_endpoint) {
-          modelQuery = modelQuery.eq("is_default", true);
+          modelQuery = modelQuery.eq("id", model_id);
+        } else if (model_endpoint) {
+          modelQuery = modelQuery.eq("endpoint_id", model_endpoint);
+        } else {
+          modelQuery = modelQuery.eq("is_active", true).eq("is_default", true);
         }
 
         const { data: modelData } = await modelQuery.single();
