@@ -3,17 +3,14 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { BarChart3, TrendingUp, Users, Zap } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, LineChart, Line } from 'recharts';
 import EconomicsTab from '@/components/admin/EconomicsTab';
+import { useQuery } from '@tanstack/react-query';
+import { supabase } from '@/integrations/supabase/client';
 
 const trafficData = [
   { date: 'Mar 18', visits: 2400, signups: 120 }, { date: 'Mar 19', visits: 2800, signups: 145 },
   { date: 'Mar 20', visits: 3100, signups: 160 }, { date: 'Mar 21', visits: 2900, signups: 138 },
   { date: 'Mar 22', visits: 3400, signups: 172 }, { date: 'Mar 23', visits: 3200, signups: 155 },
   { date: 'Mar 24', visits: 3600, signups: 184 },
-];
-
-const toolUsage = [
-  { tool: 'Generate', uses: 4812 }, { tool: 'Remove BG', uses: 3410 },
-  { tool: 'Upscale', uses: 1890 }, { tool: 'Enhance', uses: 1340 }, { tool: 'Logo', uses: 1240 },
 ];
 
 const retentionData = [
