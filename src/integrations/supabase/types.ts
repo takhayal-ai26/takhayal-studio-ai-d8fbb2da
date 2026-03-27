@@ -320,6 +320,7 @@ export type Database = {
         Row: {
           admin_overrides: Json
           best_for: string | null
+          best_for_ar: string | null
           cost_per_run: number | null
           created_at: string
           credits_per_generation: number | null
@@ -348,6 +349,7 @@ export type Database = {
         Insert: {
           admin_overrides?: Json
           best_for?: string | null
+          best_for_ar?: string | null
           cost_per_run?: number | null
           created_at?: string
           credits_per_generation?: number | null
@@ -376,6 +378,7 @@ export type Database = {
         Update: {
           admin_overrides?: Json
           best_for?: string | null
+          best_for_ar?: string | null
           cost_per_run?: number | null
           created_at?: string
           credits_per_generation?: number | null
