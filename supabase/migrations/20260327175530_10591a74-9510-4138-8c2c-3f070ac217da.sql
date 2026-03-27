@@ -1,0 +1,1 @@
+ALTER TABLE public.model_pricing_tiers ADD COLUMN IF NOT EXISTS is_active boolean NOT NULL DEFAULT true;
