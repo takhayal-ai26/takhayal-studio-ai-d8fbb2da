@@ -775,6 +775,211 @@ export type Database = {
         }
         Relationships: []
       }
+      tool_examples: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          prompt: string
+          sort_order: number
+          tool_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          prompt?: string
+          sort_order?: number
+          tool_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          prompt?: string
+          sort_order?: number
+          tool_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_examples_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tool_runs: {
+        Row: {
+          completed_at: string | null
+          confirmed_provider_cost: number | null
+          created_at: string
+          credits_charged: number
+          error_message: string | null
+          estimated_provider_cost: number
+          failed_at: string | null
+          id: string
+          input_image_url: string | null
+          input_options_json: Json
+          input_prompt: string | null
+          margin: number
+          output_image_url: string | null
+          output_images_json: Json
+          provider_endpoint: string
+          provider_name: string
+          revenue: number
+          started_at: string | null
+          status: string
+          tool_id: string | null
+          tool_slug: string
+          user_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          confirmed_provider_cost?: number | null
+          created_at?: string
+          credits_charged?: number
+          error_message?: string | null
+          estimated_provider_cost?: number
+          failed_at?: string | null
+          id?: string
+          input_image_url?: string | null
+          input_options_json?: Json
+          input_prompt?: string | null
+          margin?: number
+          output_image_url?: string | null
+          output_images_json?: Json
+          provider_endpoint?: string
+          provider_name?: string
+          revenue?: number
+          started_at?: string | null
+          status?: string
+          tool_id?: string | null
+          tool_slug: string
+          user_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          confirmed_provider_cost?: number | null
+          created_at?: string
+          credits_charged?: number
+          error_message?: string | null
+          estimated_provider_cost?: number
+          failed_at?: string | null
+          id?: string
+          input_image_url?: string | null
+          input_options_json?: Json
+          input_prompt?: string | null
+          margin?: number
+          output_image_url?: string | null
+          output_images_json?: Json
+          provider_endpoint?: string
+          provider_name?: string
+          revenue?: number
+          started_at?: string | null
+          status?: string
+          tool_id?: string | null
+          tool_slug?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_runs_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tools: {
+        Row: {
+          active: boolean
+          cover_image_url: string
+          created_at: string
+          default_credit_cost: number
+          description_ar: string
+          description_en: string
+          featured: boolean
+          hero_subtitle_ar: string
+          hero_subtitle_en: string
+          hero_title_ar: string
+          hero_title_en: string
+          icon_name: string
+          id: string
+          input_type: string
+          internal_provider_cost_estimate: number
+          provider_endpoint: string
+          provider_name: string
+          result_type: string
+          route: string
+          short_desc_ar: string
+          short_desc_en: string
+          slug: string
+          sort_order: number
+          title_ar: string
+          title_en: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          cover_image_url?: string
+          created_at?: string
+          default_credit_cost?: number
+          description_ar?: string
+          description_en?: string
+          featured?: boolean
+          hero_subtitle_ar?: string
+          hero_subtitle_en?: string
+          hero_title_ar?: string
+          hero_title_en?: string
+          icon_name?: string
+          id?: string
+          input_type?: string
+          internal_provider_cost_estimate?: number
+          provider_endpoint?: string
+          provider_name?: string
+          result_type?: string
+          route: string
+          short_desc_ar?: string
+          short_desc_en?: string
+          slug: string
+          sort_order?: number
+          title_ar?: string
+          title_en?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          cover_image_url?: string
+          created_at?: string
+          default_credit_cost?: number
+          description_ar?: string
+          description_en?: string
+          featured?: boolean
+          hero_subtitle_ar?: string
+          hero_subtitle_en?: string
+          hero_title_ar?: string
+          hero_title_en?: string
+          icon_name?: string
+          id?: string
+          input_type?: string
+          internal_provider_cost_estimate?: number
+          provider_endpoint?: string
+          provider_name?: string
+          result_type?: string
+          route?: string
+          short_desc_ar?: string
+          short_desc_en?: string
+          slug?: string
+          sort_order?: number
+          title_ar?: string
+          title_en?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tools_pricing: {
         Row: {
           created_at: string
