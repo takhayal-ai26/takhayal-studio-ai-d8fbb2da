@@ -179,30 +179,18 @@ export function CreationPanel() {
             </button>
             {openDropdown === 'resolution' && (
               <div className="absolute left-0 right-0 bottom-full mb-2 bg-card border border-border/20 rounded-2xl p-2 shadow-2xl shadow-black/40 z-50 animate-fade-in">
-                <p className="text-[10px] text-primary/40 uppercase tracking-wider font-medium px-3 pt-2 pb-2 flex items-center gap-1.5"><ImageIcon size={10} />{t.studio.selectQuality}</p>
                 {modelQualityTiers.map(tierKey => { 
                   const isActive = selectedResolution === tierKey;
-                  const meta = QUALITY_TIER_META[tierKey] || { descKey: 'standard' };
-                  const tierCredits = currentModel ? getCreditsForModelQuality(currentModel.id, tierKey) : null;
-                  const tierApiCost = currentModel ? getCostForModelQuality(currentModel.id, tierKey) : null;
                   return (
-                    <button key={tierKey} onClick={() => handleResolution(tierKey)} className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] font-medium transition-all duration-150 ${isActive ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted/10'}`}>
-                      <div className="flex items-center gap-2">
-                        <span>{tierKey}</span>
-                        <span className={`text-[10px] ${isActive ? 'text-primary/50' : 'text-muted-foreground/40'}`}>{resDescMap[meta.descKey] || tierKey}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        {tierCredits !== null && (
-                          <span className="text-[10px] text-muted-foreground flex items-center gap-0.5">
-                            <Coins size={9} />{tierCredits} · ~${tierApiCost !== null ? tierApiCost.toFixed(3) : '?'}
-                          </span>
-                        )}
-                        {isActive && <Check size={13} className="text-primary" />}
-                      </div>
+                    <button
+                      key={tierKey}
+                      onClick={() => handleResolution(tierKey)}
+                      title={tierKey === '1K' ? '1024px' : tierKey === '2K' ? '2048px' : '4096px'}
+                      className={`w-full flex items-center justify-between px-3 py-2.5 rounded-xl text-[13px] font-semibold transition-all duration-150 ${isActive ? 'bg-primary/10 text-primary' : 'text-foreground hover:bg-muted/10'}`}
+                    >
+                      <span>{tierKey}</span>
+                      {isActive && <Check size={13} className="text-primary" />}
                     </button>); })}
-                {modelQualityTiers.length <= 1 && (
-                  <p className="text-[10px] text-muted-foreground/40 px-3 py-1">This model supports only one quality tier</p>
-                )}
               </div>
             )}
           </div>

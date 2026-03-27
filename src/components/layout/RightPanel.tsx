@@ -106,32 +106,22 @@ export function RightPanel() {
           <p className="text-[12px] text-muted-foreground mb-2.5">{t.studio.aspectRatio}</p>
           <div className="flex gap-2 flex-wrap">{ratios.map(r => (<button key={r} onClick={() => setAspectRatio(r)} className={`flex-1 min-w-[60px] h-9 rounded-lg text-[13px] font-medium transition-colors ${aspectRatio === r ? 'bg-primary text-primary-foreground' : 'bg-card border border-surface-border text-muted-foreground hover:text-foreground'}`}>{r}</button>))}</div>
 
-          <p className="text-[12px] text-muted-foreground mb-2.5 mt-3.5">{t.studio.quality}</p>
-          <div className="flex gap-2 flex-wrap">
-            {availableQualityTiers.map(tier => {
-              const display = QUALITY_TIER_DISPLAY[tier] || { label: tier, labelAr: tier };
-              const tierCredits = tierCreditsMap[tier] || selectedModel?.credits_per_generation || 2;
-              const extraCredits = tierCredits - baseTierCredits;
-              return (
-                <button
-                  key={tier}
-                  onClick={() => setSelectedQualityTier(tier)}
-                  className={`flex-1 min-w-[80px] rounded-lg text-[12px] font-medium transition-colors flex flex-col items-center justify-center gap-0.5 py-2 ${
-                    selectedQualityTier === tier
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-card border border-surface-border text-muted-foreground hover:text-foreground'
-                  }`}
-                >
-                  <span>{language === 'ar' ? display.labelAr : display.label}</span>
-                  <span className={`text-[9px] flex items-center gap-0.5 ${selectedQualityTier === tier ? 'opacity-70' : 'text-muted-foreground/50'}`}>
-                    <Coins size={8} />{tierCredits} credits
-                    {extraCredits > 0 && selectedQualityTier !== tier && (
-                      <span className="px-1 py-0 rounded bg-primary/[0.12] text-primary text-[8px]">+{extraCredits}</span>
-                    )}
-                  </span>
-                </button>
-              );
-            })}
+          <p className="text-[12px] text-muted-foreground mb-2.5 mt-3.5">{language === 'ar' ? 'الدقة' : 'Resolution'}</p>
+          <div className="flex gap-2">
+            {availableQualityTiers.map(tier => (
+              <button
+                key={tier}
+                onClick={() => setSelectedQualityTier(tier)}
+                className={`flex-1 h-9 rounded-lg text-[13px] font-semibold transition-colors ${
+                  selectedQualityTier === tier
+                    ? 'bg-primary text-primary-foreground'
+                    : 'bg-card border border-surface-border text-muted-foreground hover:text-foreground'
+                }`}
+                title={tier === '1K' ? '1024px' : tier === '2K' ? '2048px' : '4096px'}
+              >
+                {tier}
+              </button>
+            ))}
           </div>
           {availableQualityTiers.length <= 1 && (
             <p className="text-[10px] text-muted-foreground/60 mt-1.5">
