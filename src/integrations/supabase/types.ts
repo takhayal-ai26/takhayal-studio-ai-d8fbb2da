@@ -145,14 +145,18 @@ export type Database = {
       }
       generation_logs: {
         Row: {
+          actual_api_cost: number
           actual_output_height: number | null
           actual_output_width: number | null
           created_at: string
           credits_used: number
+          generation_cost: number
           id: string
           image_url: string | null
           margin: number
+          margin_pct: number
           model_id: string | null
+          profit_usd: number
           prompt: string | null
           provider_cost: number
           provider_id: string | null
@@ -162,19 +166,27 @@ export type Database = {
           requested_ratio: string | null
           resolution: string | null
           revenue: number
+          revenue_usd: number
           tool_id: string | null
+          upscale_cost: number
+          upscale_model: string | null
           used_upscale_pipeline: boolean
           user_id: string | null
+          was_upscaled: boolean
         }
         Insert: {
+          actual_api_cost?: number
           actual_output_height?: number | null
           actual_output_width?: number | null
           created_at?: string
           credits_used?: number
+          generation_cost?: number
           id?: string
           image_url?: string | null
           margin?: number
+          margin_pct?: number
           model_id?: string | null
+          profit_usd?: number
           prompt?: string | null
           provider_cost?: number
           provider_id?: string | null
@@ -184,19 +196,27 @@ export type Database = {
           requested_ratio?: string | null
           resolution?: string | null
           revenue?: number
+          revenue_usd?: number
           tool_id?: string | null
+          upscale_cost?: number
+          upscale_model?: string | null
           used_upscale_pipeline?: boolean
           user_id?: string | null
+          was_upscaled?: boolean
         }
         Update: {
+          actual_api_cost?: number
           actual_output_height?: number | null
           actual_output_width?: number | null
           created_at?: string
           credits_used?: number
+          generation_cost?: number
           id?: string
           image_url?: string | null
           margin?: number
+          margin_pct?: number
           model_id?: string | null
+          profit_usd?: number
           prompt?: string | null
           provider_cost?: number
           provider_id?: string | null
@@ -206,9 +226,13 @@ export type Database = {
           requested_ratio?: string | null
           resolution?: string | null
           revenue?: number
+          revenue_usd?: number
           tool_id?: string | null
+          upscale_cost?: number
+          upscale_model?: string | null
           used_upscale_pipeline?: boolean
           user_id?: string | null
+          was_upscaled?: boolean
         }
         Relationships: [
           {

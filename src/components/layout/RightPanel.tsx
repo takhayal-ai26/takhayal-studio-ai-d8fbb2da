@@ -1,7 +1,8 @@
 import { useState } from 'react';
-import { ChevronDown, X } from 'lucide-react';
+import { ChevronDown, X, Coins } from 'lucide-react';
 import { useApp, TEMPLATE_PROMPTS, STYLE_OPTIONS, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { Badge } from '@/components/ui/badge';
 
 function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);
@@ -35,14 +36,13 @@ export function RightPanel() {
   const canGenerate = prompt.trim().length > 0 && !isGenerating && credits >= cost;
   const templates = Object.keys(TEMPLATE_PROMPTS);
 
-  // Use model-specific ratios from DB, filtered to valid AspectRatio values
   const validRatios: AspectRatio[] = ['1:1', '9:16', '16:9', '4:5'];
   const ratios = availableRatios.length > 0
     ? availableRatios.filter(r => validRatios.includes(r as AspectRatio)) as AspectRatio[]
     : validRatios;
 
-  // Quality tiers come directly from selected model's DB config
   const modelQualityTiers = availableQualityTiers;
+  const isGptImage = selectedModel?.endpoint_id === 'fal-ai/gpt-image-1.5';
 
   const handleTemplateSelect = (tpl: string) => {
     if (selectedTemplate === tpl) { setSelectedTemplate(null); } else { setSelectedTemplate(tpl); setPrompt(TEMPLATE_PROMPTS[tpl]); }
@@ -57,22 +57,28 @@ export function RightPanel() {
         {/* Model Selector */}
         <Section title={language === 'ar' ? 'النموذج' : 'Model'} defaultOpen>
           <div className="space-y-2">
-            {availableModels.map(m => (
-              <button
-                key={m.id}
-                onClick={() => setSelectedModelId(m.id)}
-                className={`w-full text-left px-3 py-2 rounded-lg text-[12px] border transition-colors ${
-                  selectedModelId === m.id
-                    ? 'bg-primary/[0.12] border-primary text-primary font-medium'
-                    : 'bg-card border-surface-border text-foreground hover:border-muted-foreground/40'
-                }`}
-              >
-                <span className="block">{m.model_name}</span>
-                <span className="text-[10px] text-muted-foreground">
-                  {m.supported_quality_tiers.join(' · ')} · {m.credits_per_generation || 2} {t.toolPage.credits}
-                </span>
-              </button>
-            ))}
+            {availableModels.map(m => {
+              const isGpt = m.endpoint_id === 'fal-ai/gpt-image-1.5';
+              return (
+                <button
+                  key={m.id}
+                  onClick={() => setSelectedModelId(m.id)}
+                  className={`w-full text-left px-3 py-2 rounded-lg text-[12px] border transition-colors ${
+                    selectedModelId === m.id
+                      ? 'bg-primary/[0.12] border-primary text-primary font-medium'
+                      : 'bg-card border-surface-border text-foreground hover:border-muted-foreground/40'
+                  }`}
+                >
+                  <div className="flex items-center gap-1.5">
+                    <span className="block">{m.model_name}</span>
+                    {isGpt && <Badge variant="outline" className="text-[7px] py-0 px-1 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">OpenAI · Best for text</Badge>}
+                  </div>
+                  <span className="text-[10px] text-muted-foreground">
+                    {m.supported_quality_tiers.join(' · ')} · {m.credits_per_generation || 2} {t.toolPage.credits}
+                  </span>
+                </button>
+              );
+            })}
           </div>
         </Section>
 
@@ -110,18 +116,19 @@ export function RightPanel() {
                 <button
                   key={tier}
                   onClick={() => setSelectedQualityTier(tier)}
-                  className={`flex-1 min-w-[80px] h-9 rounded-lg text-[13px] font-medium transition-colors flex items-center justify-center gap-1.5 ${
+                  className={`flex-1 min-w-[80px] rounded-lg text-[12px] font-medium transition-colors flex flex-col items-center justify-center gap-0.5 py-2 ${
                     selectedQualityTier === tier
                       ? 'bg-primary text-primary-foreground'
                       : 'bg-card border border-surface-border text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  {language === 'ar' ? display.labelAr : display.label}
-                  {extraCredits > 0 && selectedQualityTier !== tier && (
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-primary/[0.12] text-primary">
-                      +{extraCredits}
-                    </span>
-                  )}
+                  <span>{language === 'ar' ? display.labelAr : display.label}</span>
+                  <span className={`text-[9px] flex items-center gap-0.5 ${selectedQualityTier === tier ? 'opacity-70' : 'text-muted-foreground/50'}`}>
+                    <Coins size={8} />{tierCredits} credits
+                    {extraCredits > 0 && selectedQualityTier !== tier && (
+                      <span className="px-1 py-0 rounded bg-primary/[0.12] text-primary text-[8px]">+{extraCredits}</span>
+                    )}
+                  </span>
                 </button>
               );
             })}
@@ -138,7 +145,10 @@ export function RightPanel() {
           <span className="text-[11px] text-muted-foreground">{selectedModel?.model_name || 'Model'}</span>
           <span className="text-[11px] text-muted-foreground">{selectedQualityTier}</span>
         </div>
-        <div className="flex items-center justify-between mb-2.5"><span className="text-[12px] text-muted-foreground">{t.studio.cost}</span><span className="text-[12px] font-medium text-primary">{cost} {t.toolPage.credits}</span></div>
+        <div className="flex items-center justify-between mb-2.5">
+          <span className="text-[12px] text-muted-foreground">Estimated cost</span>
+          <span className="text-[12px] font-medium text-primary">{cost} {t.toolPage.credits}</span>
+        </div>
         <button onClick={() => generate({ qualityTier: selectedQualityTier })} disabled={!canGenerate} className={`w-full h-[52px] rounded-lg text-base font-medium transition-all duration-150 ${canGenerate ? 'bg-primary text-primary-foreground hover:bg-ember-hover active:scale-[0.99]' : 'bg-surface-border text-muted-foreground cursor-not-allowed'}`}>
           {isGenerating ? (<span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-muted-foreground border-t-transparent rounded-full animate-spin" />{t.studio.generating}</span>) : t.toolPage.generate}
         </button>

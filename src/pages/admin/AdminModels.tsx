@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -12,6 +12,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { useModels, ModelRecord } from '@/hooks/useModels';
 import { ModelDetailDrawer } from '@/components/admin/ModelDetailDrawer';
+import { usePricingTiers, PricingTier } from '@/hooks/usePricingTiers';
+
+const CREDIT_VALUE = 0.016;
 
 // --- Provider types (kept for Providers tab) ---
 interface ProviderConfig {
@@ -56,6 +59,7 @@ export default function AdminModels() {
 
   // Models from hook
   const { models, loading: modelsLoading, updateModel, fetchModels } = useModels();
+  const { allTiers, loading: tiersLoading } = usePricingTiers();
 
   // UI state
   const [searchQuery, setSearchQuery] = useState('');
@@ -65,6 +69,17 @@ export default function AdminModels() {
   const [selectedModel, setSelectedModel] = useState<ModelRecord | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [syncingModels, setSyncingModels] = useState(false);
+
+  // Helper to get tier cost/credits for a model
+  const getTierData = (modelId: string, quality: string) => {
+    const tiers = allTiers[modelId] || [];
+    return tiers.find(t => t.quality_level === quality);
+  };
+  const getMargin = (credits: number, cost: number) => {
+    const rev = credits * CREDIT_VALUE;
+    return rev > 0 ? ((rev - cost) / rev) * 100 : 0;
+  };
+  const marginBadge = (m: number) => m > 70 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : m > 40 ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20';
 
   // Fetch providers
   const fetchProviders = useCallback(async () => {
@@ -293,54 +308,51 @@ export default function AdminModels() {
                 <TableHeader>
                   <TableRow className="border-border/40">
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Model</TableHead>
-                    <TableHead className="text-[11px] uppercase text-muted-foreground">Endpoint ID</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Provider</TableHead>
-                    <TableHead className="text-[11px] uppercase text-muted-foreground">Input Type</TableHead>
-                    <TableHead className="text-[11px] uppercase text-muted-foreground">Quality Tiers</TableHead>
-                    <TableHead className="text-[11px] uppercase text-muted-foreground">Ratios</TableHead>
-                    <TableHead className="text-[11px] uppercase text-muted-foreground">Default Res</TableHead>
-                    <TableHead className="text-[11px] uppercase text-muted-foreground">Cost/Run</TableHead>
-                    <TableHead className="text-[11px] uppercase text-muted-foreground">Best For</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Base Cost</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">2K Cost</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">4K Cost</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Credits (1K/2K/4K)</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Margin %</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Default</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground w-10">Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {filteredModels.map(m => (
+                  {filteredModels.map(m => {
+                    const t1k = getTierData(m.id, '1K');
+                    const t2k = getTierData(m.id, '2K');
+                    const t4k = getTierData(m.id, '4K');
+                    const baseCost = t1k?.cost_per_run ?? m.cost_per_run ?? 0;
+                    const cost2k = t2k?.cost_per_run ?? (baseCost + 0.003);
+                    const cost4k = t4k?.cost_per_run ?? (baseCost + 0.006);
+                    const cr1k = t1k?.credits_charged ?? m.credits_per_generation ?? 2;
+                    const cr2k = t2k?.credits_charged ?? cr1k + 1;
+                    const cr4k = t4k?.credits_charged ?? cr1k + 2;
+                    const avgMargin = getMargin(cr1k, baseCost);
+                    return (
                     <TableRow
                       key={m.id}
                       className="border-border/20 cursor-pointer hover:bg-muted/10 transition-colors"
                       onClick={() => openModelDetail(m)}
                     >
-                      <TableCell className="text-[13px] font-medium">{m.model_name}</TableCell>
-                      <TableCell className="text-[11px] text-muted-foreground font-mono max-w-[180px] truncate">{m.endpoint_id}</TableCell>
-                      <TableCell className="text-[12px]">{m.provider_name}</TableCell>
                       <TableCell>
-                        <Badge variant="outline" className={`text-[10px] ${m.input_type === 'aspect_ratio' ? 'bg-primary/10 text-primary border-primary/20' : 'bg-muted/20 text-muted-foreground'}`}>
-                          {m.input_type}
+                        <div>
+                          <p className="text-[13px] font-medium">{m.model_name}</p>
+                          <p className="text-[10px] text-muted-foreground font-mono truncate max-w-[160px]">{m.endpoint_id}</p>
+                        </div>
+                      </TableCell>
+                      <TableCell className="text-[12px]">{m.provider_name}</TableCell>
+                      <TableCell className="text-[13px] font-medium text-primary font-mono">${baseCost.toFixed(3)}</TableCell>
+                      <TableCell className="text-[13px] font-mono text-muted-foreground">${cost2k.toFixed(3)}</TableCell>
+                      <TableCell className="text-[13px] font-mono text-muted-foreground">${cost4k.toFixed(3)}</TableCell>
+                      <TableCell className="text-[12px] font-mono">{cr1k}/{cr2k}/{cr4k}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={`text-[10px] ${marginBadge(avgMargin)}`}>
+                          {avgMargin.toFixed(0)}%
                         </Badge>
                       </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-0.5 max-w-[120px]">
-                          {(m.supported_quality_tiers || ['1K']).map(q => (
-                            <Badge key={q} variant="outline" className="text-[9px] py-0 px-1 bg-primary/10 text-primary border-primary/20">{q}</Badge>
-                          ))}
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <div className="flex flex-wrap gap-0.5 max-w-[140px]">
-                          {m.supported_ratios.slice(0, 3).map(r => (
-                            <Badge key={r} variant="outline" className="text-[9px] py-0 px-1 bg-muted/10">{r}</Badge>
-                          ))}
-                          {m.supported_ratios.length > 3 && (
-                            <Badge variant="outline" className="text-[9px] py-0 px-1 bg-muted/10">+{m.supported_ratios.length - 3}</Badge>
-                          )}
-                        </div>
-                      </TableCell>
-                      <TableCell className="text-[11px] text-muted-foreground font-mono">{m.default_resolution}</TableCell>
-                      <TableCell className="text-[13px] font-medium text-primary">${m.cost_per_run?.toFixed(3) ?? '-'}</TableCell>
-                      <TableCell className="text-[12px] text-muted-foreground max-w-[160px] truncate" title={m.best_for || ''}>{m.best_for}</TableCell>
                       <TableCell onClick={e => e.stopPropagation()}>
                         {m.is_default ? (
                           <CheckCircle size={14} className="text-emerald-400" />
@@ -359,7 +371,8 @@ export default function AdminModels() {
                         </Button>
                       </TableCell>
                     </TableRow>
-                  ))}
+                    );
+                  })}
                 </TableBody>
               </Table>
             )}
