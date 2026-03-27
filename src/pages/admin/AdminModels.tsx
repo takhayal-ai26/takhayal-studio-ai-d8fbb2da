@@ -46,7 +46,7 @@ const PRICING_TYPE_LABELS: Record<string, { label: string; color: string }> = {
   fixed_per_image: { label: 'Flat', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
 };
 
-
+const statusColor: Record<string, string> = {
   connected: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   not_connected: 'bg-muted/30 text-muted-foreground border-border/40',
 };
