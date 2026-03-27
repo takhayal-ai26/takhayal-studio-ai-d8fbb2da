@@ -40,6 +40,7 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
       credits_charged: newTier.credits,
       pricing_mode: newTier.pricingMode,
       is_default: tiers.length === 0,
+      is_active: true,
       notes: null,
     });
     setAdding(false);
