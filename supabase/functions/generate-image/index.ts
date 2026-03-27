@@ -34,9 +34,9 @@ const VERIFIED: Record<string, { type: string; cost1k: number; cost2k?: number; 
   "fal-ai/qwen-image":      { type: "per_megapixel", cost1k: 0.02 },
   "fal-ai/gpt-image-1.5":   { type: "size_locked", cost1k: 0.009 },
   "fal-ai/ideogram/v3":     { type: "quality_tier", cost1k: 0.03, cost2k: 0.06, cost4k: 0.09 },
-  "fal-ai/imagen4/preview": { type: "flat_per_image", cost1k: 0.04 },
+  "fal-ai/imagen4/preview": { type: "flat_per_image", cost1k: 0.04, cost2k: 0.08 },
   "fal-ai/recraft-v3":      { type: "flat_per_image", cost1k: 0.04, cost4k: 0.08 },
-  "fal-ai/nano-banana-pro":  { type: "flat_per_image", cost1k: 0.15, cost4k: 0.30 },
+  "fal-ai/nano-banana-pro":  { type: "flat_per_image", cost1k: 0.15, cost2k: 0.20, cost4k: 0.30 },
   "fal-ai/nano-banana-2":    { type: "flat_per_image", cost1k: 0.08, cost2k: 0.12, cost4k: 0.16 },
   "fal-ai/seedream-4.5":     { type: "flat_per_image", cost1k: 0.04 },
 };
