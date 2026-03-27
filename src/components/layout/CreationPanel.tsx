@@ -31,7 +31,22 @@ export function CreationPanel() {
   const panelRef = useRef<HTMLDivElement>(null);
   
   const currentModel = activeModels.find(m => m.id === selectedModelId) || defaultModel || activeModels[0];
-  const modelQualityTiers = currentModel?.supported_quality_tiers || ['1K'];
+  
+  // Filter quality tiers: only show tiers that exist AND are active in pricing_tiers
+  const modelQualityTiers = (() => {
+    if (!currentModel) return ['1K'];
+    const dbTiers = currentModel.supported_quality_tiers || ['1K'];
+    // For size_locked models (GPT Image 1.5), just use supported_quality_tiers as-is
+    if (currentModel.pricing_mode === 'size_locked') return dbTiers;
+    // For other models, filter by active pricing tiers if available
+    const activePricingTiers = Object.values(allTiers[currentModel.id] || [])
+      .filter(t => t.is_active && t.quality_level)
+      .map(t => t.quality_level!);
+    if (activePricingTiers.length > 0) {
+      return dbTiers.filter((q: string) => activePricingTiers.includes(q));
+    }
+    return dbTiers;
+  })();
 
   const cost = (() => {
     if (!currentModel) return getCreditCost();
