@@ -309,10 +309,10 @@ export default function AdminModels() {
                   <TableRow className="border-border/40">
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Model</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Provider</TableHead>
-                    <TableHead className="text-[11px] uppercase text-muted-foreground">Base Cost</TableHead>
-                    <TableHead className="text-[11px] uppercase text-muted-foreground">2K Cost</TableHead>
-                    <TableHead className="text-[11px] uppercase text-muted-foreground">4K Cost</TableHead>
-                    <TableHead className="text-[11px] uppercase text-muted-foreground">Credits (1K/2K/4K)</TableHead>
+                     <TableHead className="text-[11px] uppercase text-muted-foreground">1K Cost</TableHead>
+                     <TableHead className="text-[11px] uppercase text-muted-foreground">2K Cost</TableHead>
+                     <TableHead className="text-[11px] uppercase text-muted-foreground">4K Cost</TableHead>
+                     <TableHead className="text-[11px] uppercase text-muted-foreground">Credits (1K/2K/4K)</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Margin %</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Default</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
@@ -324,9 +324,9 @@ export default function AdminModels() {
                     const t1k = getTierData(m.id, '1K');
                     const t2k = getTierData(m.id, '2K');
                     const t4k = getTierData(m.id, '4K');
-                    const baseCost = t1k?.cost_per_run ?? m.cost_per_run ?? 0;
-                    const cost2k = t2k?.cost_per_run ?? (baseCost + 0.003);
-                    const cost4k = t4k?.cost_per_run ?? (baseCost + 0.006);
+                     const baseCost = t1k?.cost_per_run ?? m.cost_per_run ?? 0;
+                     const cost2k = t2k?.cost_per_run ?? (baseCost * 2);
+                     const cost4k = t4k?.cost_per_run ?? (baseCost * 4);
                     const cr1k = t1k?.credits_charged ?? m.credits_per_generation ?? 2;
                     const cr2k = t2k?.credits_charged ?? cr1k + 1;
                     const cr4k = t4k?.credits_charged ?? cr1k + 2;
