@@ -52,13 +52,7 @@ serve(async (req) => {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 
-  const res = await fetch(url, {
-    headers: { Authorization: `Key ${FAL_AI_API_KEY}` },
-  });
-
-  const data = await res.json();
-
-  return new Response(JSON.stringify(data, null, 2), {
+  return new Response(JSON.stringify(results, null, 2), {
     headers: { ...corsHeaders, "Content-Type": "application/json" },
   });
 });
