@@ -13,7 +13,7 @@ function ratioToCSS(ratio: string): string {
 }
 
 export function GenerationGrid() {
-  const { generatedImages, isGenerating, prompt, generate, aspectRatio, quality, generationCards: cards, setGenerationCards: setCards } = useApp();
+  const { generatedImages, isGenerating, prompt, generate, aspectRatio, quality, generationCards: cards, setGenerationCards: setCards, lastGenerationMeta, selectedQualityTier } = useApp();
   const { t } = useLanguage();
   const [selectedCard, setSelectedCard] = useState<GenerationCard | null>(null);
   const [promptExpanded, setPromptExpanded] = useState(false);
@@ -34,9 +34,9 @@ export function GenerationGrid() {
         state: 'queued' as CardState,
         prompt: prompt,
         startedAt: Date.now(),
-        model: 'Flux Schnell',
+        model: lastGenerationMeta?.modelName || 'Unknown',
         aspectRatio: aspectRatio,
-        resolution: quality === 'hd' ? '2K' : '1K',
+        resolution: lastGenerationMeta?.qualityTier || selectedQualityTier || '1K',
       };
       setCards(prev => [newCard, ...prev]);
       // After a brief moment, switch to generating
