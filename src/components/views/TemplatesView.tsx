@@ -79,9 +79,11 @@ export function TemplatesView() {
             {activeCategory === 'All' && !search && featured.length > 0 && (
               <section className="mt-8 mb-10">
                 <h2 className="text-lg font-semibold text-foreground mb-5">{t.templatesView.featured}</h2>
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-4 [column-fill:_balance]">
                   {featured.map(tpl => (
-                    <TemplateCard key={tpl.id} tpl={tpl} onUse={handleUse} isRTL={isRTL} useLabel={t.portal?.use || 'Use'} />
+                    <div key={tpl.id} className="break-inside-avoid mb-4">
+                      <TemplateCard tpl={tpl} onUse={handleUse} isRTL={isRTL} useLabel={t.portal?.use || 'Use'} />
+                    </div>
                   ))}
                 </div>
               </section>
@@ -97,9 +99,11 @@ export function TemplatesView() {
                   <p className="text-sm text-muted-foreground">{t.templatesView.noTemplatesFound}</p>
                 </div>
               ) : (
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
+                <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-4 [column-fill:_balance]">
                   {filtered.map(tpl => (
-                    <TemplateCard key={tpl.id} tpl={tpl} onUse={handleUse} isRTL={isRTL} useLabel={t.portal?.use || 'Use'} />
+                    <div key={tpl.id} className="break-inside-avoid mb-4">
+                      <TemplateCard tpl={tpl} onUse={handleUse} isRTL={isRTL} useLabel={t.portal?.use || 'Use'} />
+                    </div>
                   ))}
                 </div>
               )}
