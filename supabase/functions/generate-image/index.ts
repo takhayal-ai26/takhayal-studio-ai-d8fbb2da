@@ -7,118 +7,83 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// ===== NATIVE RESOLUTION SYSTEM =====
-// Each model resolves its own dimensions — NO upscaling pipeline
+// ===== CENTRALIZED COST ENGINE (server-side mirror) =====
+const CREDIT_VALUE_USD = 0.016;
 
-interface ResolutionResult {
-  payload: Record<string, unknown>;
-  estimatedCost: number;
+const BASE_DIMS: Record<string, { w: number; h: number }> = {
+  "1:1": { w: 1024, h: 1024 }, "16:9": { w: 1344, h: 768 }, "9:16": { w: 768, h: 1344 },
+  "4:3": { w: 1184, h: 896 }, "3:4": { w: 896, h: 1184 }, "4:5": { w: 896, h: 1120 },
+  "5:4": { w: 1120, h: 896 }, "3:2": { w: 1216, h: 832 }, "2:3": { w: 832, h: 1216 },
+  "21:9": { w: 1536, h: 640 },
+};
+
+function getQualityScale(q: string): number {
+  return q === "4K" ? 4 : q === "3K" ? 3 : q === "2K" ? 2 : 1;
 }
 
-// Model-specific resolution resolvers
-function resolveFluxResolution(ratio: string, quality: string, baseCostPerMP: number): ResolutionResult {
-  // Flux/Qwen: per-megapixel pricing, native resolution support
-  const baseMap: Record<string, { w: number; h: number }> = {
-    "1:1": { w: 1024, h: 1024 }, "16:9": { w: 1344, h: 768 }, "9:16": { w: 768, h: 1344 },
-    "4:3": { w: 1184, h: 896 }, "3:4": { w: 896, h: 1184 }, "4:5": { w: 896, h: 1120 },
-    "5:4": { w: 1120, h: 896 }, "3:2": { w: 1216, h: 832 }, "2:3": { w: 832, h: 1216 },
-    "21:9": { w: 1536, h: 640 },
-  };
-  const base = baseMap[ratio] || { w: 1024, h: 1024 };
-  const scale = quality === "4K" ? 4 : quality === "2K" ? 2 : 1;
-  const w = base.w * scale;
-  const h = base.h * scale;
-  const mp = (w * h) / 1_000_000;
-  return {
-    payload: { image_size: { width: w, height: h } },
-    estimatedCost: mp * baseCostPerMP,
-  };
+function getResolutionDims(ratio: string, quality: string) {
+  const base = BASE_DIMS[ratio] || BASE_DIMS["1:1"];
+  const s = getQualityScale(quality);
+  return { width: base.w * s, height: base.h * s };
 }
 
-function resolveGptImageResolution(ratio: string): ResolutionResult {
-  // GPT Image 1.5: strict sizes, forced low quality
-  const sizeMap: Record<string, { size: string; cost: number }> = {
-    "1:1": { size: "1024x1024", cost: 0.011 },
-    "2:3": { size: "1024x1536", cost: 0.016 },
-    "3:2": { size: "1536x1024", cost: 0.016 },
-  };
-  const entry = sizeMap[ratio] || sizeMap["1:1"];
-  return {
-    payload: { quality: "low", image_size: entry.size },
-    estimatedCost: entry.cost,
-  };
-}
+// ===== VERIFIED PRICING =====
+const VERIFIED: Record<string, { type: string; cost1k: number; cost2k?: number; cost4k?: number }> = {
+  "fal-ai/flux/schnell":     { type: "per_megapixel", cost1k: 0.003 },
+  "fal-ai/flux-pro/v1.1":   { type: "per_megapixel", cost1k: 0.04 },
+  "fal-ai/qwen-image":      { type: "per_megapixel", cost1k: 0.02 },
+  "fal-ai/gpt-image-1.5":   { type: "size_locked", cost1k: 0.009 },
+  "fal-ai/ideogram/v3":     { type: "quality_tier", cost1k: 0.03, cost2k: 0.06, cost4k: 0.09 },
+  "fal-ai/imagen4/preview": { type: "flat_per_image", cost1k: 0.04 },
+  "fal-ai/recraft-v3":      { type: "flat_per_image", cost1k: 0.04, cost4k: 0.08 },
+  "fal-ai/nano-banana-pro":  { type: "flat_per_image", cost1k: 0.15, cost4k: 0.30 },
+  "fal-ai/nano-banana-2":    { type: "flat_per_image", cost1k: 0.08, cost2k: 0.12, cost4k: 0.16 },
+  "fal-ai/seedream-4.5":     { type: "flat_per_image", cost1k: 0.04 },
+};
 
-function resolveIdeogramResolution(ratio: string, quality: string): ResolutionResult {
-  // Ideogram V3: quality maps to rendering_speed
-  const costMap: Record<string, { speed: string; cost: number }> = {
-    "1K": { speed: "TURBO", cost: 0.03 },
-    "2K": { speed: "BALANCED", cost: 0.06 },
-    "4K": { speed: "QUALITY", cost: 0.09 },
-  };
-  const entry = costMap[quality] || costMap["1K"];
-  return {
-    payload: { aspect_ratio: ratio, rendering_speed: entry.speed },
-    estimatedCost: entry.cost,
-  };
-}
-
-function resolveAspectRatioModel(ratio: string, quality: string, baseCost: number): ResolutionResult {
-  // Models that accept aspect_ratio param (Recraft, etc.)
-  const scale = quality === "4K" ? 3 : quality === "2K" ? 2 : 1;
-  return {
-    payload: { aspect_ratio: ratio },
-    estimatedCost: baseCost * scale,
-  };
-}
-
-function resolveDefaultResolution(ratio: string, quality: string, inputType: string, baseCost: number): ResolutionResult {
-  // Default: image_size models with standard resolution scaling
-  const baseMap: Record<string, { w: number; h: number }> = {
-    "1:1": { w: 1024, h: 1024 }, "16:9": { w: 1344, h: 768 }, "9:16": { w: 768, h: 1344 },
-    "4:3": { w: 1184, h: 896 }, "3:4": { w: 896, h: 1184 }, "4:5": { w: 896, h: 1120 },
-    "5:4": { w: 1120, h: 896 }, "3:2": { w: 1216, h: 832 }, "2:3": { w: 832, h: 1216 },
-    "21:9": { w: 1536, h: 640 },
-  };
-  const base = baseMap[ratio] || { w: 1024, h: 1024 };
-  const scale = quality === "4K" ? 4 : quality === "2K" ? 2 : 1;
-
-  if (inputType === "aspect_ratio") {
-    return { payload: { aspect_ratio: ratio }, estimatedCost: baseCost * scale };
+function calculateProviderCost(endpoint: string, ratio: string, quality: string, dbBaseCost: number, pricingMode: string): number {
+  const verified = VERIFIED[endpoint];
+  const type = verified?.type || pricingMode || "flat_per_image";
+  
+  if (type === "per_megapixel") {
+    const costPerMP = verified?.cost1k || dbBaseCost;
+    const dims = getResolutionDims(ratio, quality);
+    const mp = (dims.width * dims.height) / 1_000_000;
+    return costPerMP * mp;
   }
-
-  return {
-    payload: { image_size: { width: base.w * scale, height: base.h * scale } },
-    estimatedCost: baseCost * scale,
-  };
+  if (type === "quality_tier") {
+    if (quality === "4K") return verified?.cost4k ?? dbBaseCost * 3;
+    if (quality === "2K") return verified?.cost2k ?? dbBaseCost * 2;
+    return verified?.cost1k ?? dbBaseCost;
+  }
+  if (type === "size_locked") {
+    return verified?.cost1k ?? dbBaseCost;
+  }
+  // flat_per_image
+  if (quality === "4K") return verified?.cost4k ?? dbBaseCost;
+  if (quality === "2K") return verified?.cost2k ?? dbBaseCost;
+  return verified?.cost1k ?? dbBaseCost;
 }
 
-// Main resolution resolver — routes by model endpoint
-function resolveModelResolution(
-  endpoint: string,
-  ratio: string,
-  quality: string,
-  inputType: string,
-  baseCost: number
-): ResolutionResult {
-  // GPT Image 1.5
+// ===== RESOLUTION PAYLOAD RESOLVERS =====
+function resolvePayload(endpoint: string, ratio: string, quality: string, inputType: string): Record<string, unknown> {
+  // GPT Image 1.5: strict sizes
   if (endpoint === "fal-ai/gpt-image-1.5") {
-    return resolveGptImageResolution(ratio);
+    const sizeMap: Record<string, string> = { "1:1": "1024x1024", "2:3": "1024x1536", "3:2": "1536x1024" };
+    return { quality: "low", image_size: sizeMap[ratio] || "1024x1024" };
   }
-  // Ideogram
+  // Ideogram: quality → rendering_speed
   if (endpoint.includes("ideogram")) {
-    return resolveIdeogramResolution(ratio, quality);
+    const speedMap: Record<string, string> = { "1K": "TURBO", "2K": "BALANCED", "4K": "QUALITY" };
+    return { aspect_ratio: ratio, rendering_speed: speedMap[quality] || "TURBO" };
   }
-  // Flux family (per-megapixel)
-  if (endpoint.includes("flux")) {
-    return resolveFluxResolution(ratio, quality, baseCost > 0 ? baseCost : 0.003);
+  // aspect_ratio models
+  if (inputType === "aspect_ratio") {
+    return { aspect_ratio: ratio };
   }
-  // Recraft
-  if (endpoint.includes("recraft")) {
-    return resolveAspectRatioModel(ratio, quality, baseCost > 0 ? baseCost : 0.04);
-  }
-  // Default
-  return resolveDefaultResolution(ratio, quality, inputType, baseCost > 0 ? baseCost : 0.003);
+  // image_size models (Flux, Qwen, etc.) — native resolution
+  const dims = getResolutionDims(ratio, quality);
+  return { image_size: { width: dims.width, height: dims.height } };
 }
 
 // ===== FAL QUEUE RUNNER =====
@@ -160,7 +125,7 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    const { prompt, model_endpoint, aspect_ratio, image_size, num_images, input_type, quality_tier, model_id } = await req.json();
+    const { prompt, model_endpoint, aspect_ratio, num_images, input_type, quality_tier, model_id } = await req.json();
 
     if (!prompt || typeof prompt !== "string") {
       return new Response(JSON.stringify({ error: "prompt is required" }),
@@ -171,7 +136,8 @@ serve(async (req) => {
     let modelInputType = input_type || "image_size";
     let resolvedModelId = model_id || null;
     let creditsUsed = 2;
-    let baseCostPerRun = 0;
+    let dbBaseCost = 0;
+    let pricingMode = "flat_per_image";
 
     // Fetch model config from DB
     const supabase = (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY)
@@ -181,24 +147,21 @@ serve(async (req) => {
     if (supabase) {
       try {
         let modelQuery = supabase.from("models").select("*");
-        if (model_id) {
-          modelQuery = modelQuery.eq("id", model_id);
-        } else if (model_endpoint) {
-          modelQuery = modelQuery.eq("endpoint_id", model_endpoint);
-        } else {
-          modelQuery = modelQuery.eq("is_active", true).eq("is_default", true);
-        }
+        if (model_id) modelQuery = modelQuery.eq("id", model_id);
+        else if (model_endpoint) modelQuery = modelQuery.eq("endpoint_id", model_endpoint);
+        else modelQuery = modelQuery.eq("is_active", true).eq("is_default", true);
 
         const { data: modelData } = await modelQuery.single();
         if (modelData) {
           endpoint = modelData.endpoint_id;
           modelInputType = modelData.input_type;
           resolvedModelId = modelData.id;
-          baseCostPerRun = modelData.cost_per_run ? Number(modelData.cost_per_run) : 0;
+          dbBaseCost = modelData.cost_per_run ? Number(modelData.cost_per_run) : 0;
           creditsUsed = modelData.credits_per_generation || 2;
+          pricingMode = modelData.pricing_mode || "flat_per_image";
         }
 
-        // Check for quality-tier-specific pricing
+        // Check for quality-tier-specific credits from model_pricing_tiers
         if (resolvedModelId && quality_tier) {
           const { data: tierData } = await supabase
             .from("model_pricing_tiers")
@@ -208,7 +171,7 @@ serve(async (req) => {
             .single();
           if (tierData) {
             creditsUsed = tierData.credits_charged;
-            baseCostPerRun = Number(tierData.cost_per_run) || baseCostPerRun;
+            // Don't override cost from tiers — use centralized calculation instead
           }
         }
       } catch (e) {
@@ -220,24 +183,25 @@ serve(async (req) => {
     const selectedRatio = aspect_ratio || "1:1";
     const selectedQuality = quality_tier || "1K";
 
-    // ===== RESOLVE NATIVE RESOLUTION =====
-    const resolution = resolveModelResolution(endpoint, selectedRatio, selectedQuality, modelInputType, baseCostPerRun);
-    const actualApiCost = resolution.estimatedCost;
+    // ===== CALCULATE REAL COST =====
+    const actualApiCost = calculateProviderCost(endpoint, selectedRatio, selectedQuality, dbBaseCost, pricingMode);
+    const dims = getResolutionDims(selectedRatio, selectedQuality);
 
-    // Build payload
+    // ===== BUILD PAYLOAD =====
+    const payloadParams = resolvePayload(endpoint, selectedRatio, selectedQuality, modelInputType);
     const payload: Record<string, unknown> = {
       prompt,
       num_images: num_images || 1,
       enable_safety_checker: true,
-      ...resolution.payload,
+      ...payloadParams,
     };
 
     if (endpoint === "fal-ai/flux/schnell") payload.num_inference_steps = 4;
 
-    console.log(`[generate-image] endpoint=${endpoint} ratio=${selectedRatio} quality=${selectedQuality}`);
+    console.log(`[generate-image] endpoint=${endpoint} ratio=${selectedRatio} quality=${selectedQuality} cost=$${actualApiCost.toFixed(4)}`);
     console.log(`[generate-image] payload:`, JSON.stringify(payload));
 
-    // ===== GENERATE (single step, no upscale) =====
+    // ===== GENERATE =====
     const genResult = await falQueueRun(endpoint, payload, falHeaders);
 
     if (genResult.error) {
@@ -248,8 +212,7 @@ serve(async (req) => {
     const resultData = genResult.data;
 
     // ===== ECONOMICS =====
-    const creditValueUsd = 0.016;
-    const revenueUsd = creditsUsed * creditValueUsd;
+    const revenueUsd = creditsUsed * CREDIT_VALUE_USD;
     const profitUsd = revenueUsd - actualApiCost;
     const marginPct = revenueUsd > 0 ? (profitUsd / revenueUsd) * 100 : 0;
 
@@ -268,7 +231,6 @@ serve(async (req) => {
           margin: profitUsd,
           requested_ratio: selectedRatio,
           requested_quality_tier: selectedQuality,
-          used_upscale_pipeline: false,
           actual_api_cost: actualApiCost,
           generation_cost: actualApiCost,
           upscale_cost: 0,
@@ -276,14 +238,17 @@ serve(async (req) => {
           profit_usd: profitUsd,
           margin_pct: marginPct,
           was_upscaled: false,
+          used_upscale_pipeline: false,
           upscale_model: null,
+          actual_output_width: dims.width,
+          actual_output_height: dims.height,
         });
       } catch (e) {
         console.log("Generation log error (non-fatal):", e);
       }
     }
 
-    console.log(`[generate-image] Complete. images=${resultData?.images?.length} cost=$${actualApiCost.toFixed(4)} revenue=$${revenueUsd.toFixed(4)} margin=${marginPct.toFixed(1)}%`);
+    console.log(`[generate-image] Complete. cost=$${actualApiCost.toFixed(4)} revenue=$${revenueUsd.toFixed(4)} margin=${marginPct.toFixed(1)}%`);
 
     return new Response(JSON.stringify({
       ...resultData,
@@ -295,8 +260,6 @@ serve(async (req) => {
       margin_pct: marginPct,
       requested_ratio: selectedRatio,
       requested_quality: selectedQuality,
-      upscaled: false,
-      upscale_strategy: null,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
