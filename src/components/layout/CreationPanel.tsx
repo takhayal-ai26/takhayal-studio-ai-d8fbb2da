@@ -39,9 +39,9 @@ export function CreationPanel() {
     // For size_locked models (GPT Image 1.5), just use supported_quality_tiers as-is
     if (currentModel.pricing_mode === 'size_locked') return dbTiers;
     // For other models, filter by active pricing tiers if available
-    const activePricingTiers = Object.values(allTiers[currentModel.id] || [])
-      .filter(t => t.is_active && t.quality_level)
-      .map(t => t.quality_level!);
+    const activePricingTiers = (allTiers[currentModel.id] || [])
+      .filter((t: any) => t.is_active && t.quality_level)
+      .map((t: any) => t.quality_level as string);
     if (activePricingTiers.length > 0) {
       return dbTiers.filter((q: string) => activePricingTiers.includes(q));
     }
