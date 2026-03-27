@@ -87,7 +87,7 @@ export function GenerationGrid() {
 
     prevGeneratingRef.current = isGenerating;
     prevImagesRef.current = generatedImages;
-  }, [isGenerating, generatedImages, prompt, aspectRatio, quality]);
+  }, [isGenerating, generatedImages, prompt, aspectRatio, quality, lastGenerationMeta, selectedQualityTier]);
 
   useEffect(() => {
     if (gridRef.current) gridRef.current.scrollTo({ top: 0, behavior: 'smooth' });
