@@ -52,10 +52,7 @@ export default function Community() {
     { key: 'Portraits', label: t.community.portraits },
   ];
 
-  const filtered = activeFilter === 'All' ? images
-    : activeFilter === 'Trending' ? [...images].sort((a, b) => b.likes - a.likes)
-    : activeFilter === 'New' ? [...images].reverse()
-    : images.filter(img => img.category === activeFilter);
+  const filtered = images;
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     const el = e.currentTarget;
@@ -95,15 +92,6 @@ export default function Community() {
           </button>
         </section>
 
-        <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-md px-5 md:px-8 py-3 border-b border-border/30">
-          <div className="flex gap-2 overflow-x-auto scrollbar-hide max-w-6xl mx-auto">
-            {FILTERS_LOCALIZED.map(f => (
-              <button key={f.key} onClick={() => setActiveFilter(f.key)} className={`flex-shrink-0 px-4 py-1.5 rounded-full text-[12px] font-medium transition-all duration-200 ${
-                activeFilter === f.key ? 'bg-primary text-primary-foreground' : 'bg-card border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20'
-              }`}>{f.label}</button>
-            ))}
-          </div>
-        </div>
 
         <section className="max-w-7xl mx-auto px-4 md:px-6 py-6">
           {filtered.length === 0 ? (
@@ -116,7 +104,7 @@ export default function Community() {
               </button>
             </div>
           ) : (
-            <div className="columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3 space-y-3">
+            <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
               {filtered.map((img) => (
                 <div key={img.id} className="group relative break-inside-avoid rounded-2xl overflow-hidden cursor-pointer" onClick={() => setSelectedImage(img)}>
                   <img src={img.image} alt={img.prompt} className="w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" loading="lazy" />
