@@ -108,9 +108,9 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
                   </Badge>
                 </td>
                 <td className="px-3 py-2">
-                  <Button size="icon" variant="ghost" className="h-6 w-6" onClick={() => onDelete(t.id)}>
-                    <Trash2 size={11} className="text-muted-foreground hover:text-destructive" />
-                  </Button>
+                  <Switch checked={true} onCheckedChange={(checked) => {
+                    if (!checked) onDelete(t.id);
+                  }} />
                 </td>
               </tr>
             );
