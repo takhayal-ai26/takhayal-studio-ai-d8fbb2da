@@ -23,7 +23,7 @@ export function CreationPanel() {
   const { t, lang: language } = useLanguage();
   const { activeModels, defaultModel } = useModels();
   const { getCreditsForModel } = usePricing();
-  const { getCreditsForModelQuality, getCostForModelQuality } = usePricingTiers();
+  const { getCreditsForModelQuality, getCostForModelQuality, allTiers } = usePricingTiers();
 
   const [selectedModelId, setSelectedModelId] = useState<string>('');
   const [selectedResolution, setSelectedResolution] = useState<string>('1K');
