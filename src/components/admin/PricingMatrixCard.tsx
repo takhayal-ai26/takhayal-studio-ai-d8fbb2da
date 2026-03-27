@@ -69,7 +69,7 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
             <th className="text-left px-3 py-2 text-muted-foreground font-medium">Revenue</th>
             <th className="text-left px-3 py-2 text-muted-foreground font-medium">Margin</th>
             <th className="text-left px-3 py-2 text-muted-foreground font-medium">Margin %</th>
-            <th className="px-3 py-2 w-16"></th>
+            <th className="px-3 py-2 w-16 text-muted-foreground font-medium">Active</th>
           </tr>
         </thead>
         <tbody>
