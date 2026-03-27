@@ -37,6 +37,15 @@ const healthColor: Record<string, string> = {
   down: 'bg-destructive/10 text-destructive border-destructive/20',
   unknown: 'bg-muted/30 text-muted-foreground border-border/40',
 };
+const PRICING_TYPE_LABELS: Record<string, { label: string; color: string }> = {
+  per_megapixel: { label: 'Per MP', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
+  flat_per_image: { label: 'Flat', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+  quality_tier: { label: 'Quality', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
+  size_locked: { label: 'Locked', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+  manual_pending: { label: 'Manual', color: 'bg-muted/30 text-muted-foreground border-border/20' },
+  fixed_per_image: { label: 'Flat', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+};
+
 const statusColor: Record<string, string> = {
   connected: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   not_connected: 'bg-muted/30 text-muted-foreground border-border/40',
@@ -310,10 +319,10 @@ export default function AdminModels() {
                   <TableRow className="border-border/40">
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Model</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Provider</TableHead>
-                     <TableHead className="text-[11px] uppercase text-muted-foreground">1K Cost</TableHead>
-                     <TableHead className="text-[11px] uppercase text-muted-foreground">2K Cost</TableHead>
-                     <TableHead className="text-[11px] uppercase text-muted-foreground">4K Cost</TableHead>
-                     <TableHead className="text-[11px] uppercase text-muted-foreground">Credits (1K/2K/4K)</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Pricing Type</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Quality Tiers</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">1K Cost</TableHead>
+                    <TableHead className="text-[11px] uppercase text-muted-foreground">Credits (1K)</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Margin %</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Default</TableHead>
                     <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
@@ -322,8 +331,10 @@ export default function AdminModels() {
                 </TableHeader>
                 <TableBody>
                   {filteredModels.map(m => {
-                    const { c1k, c2k, c4k } = getModelCosts(m);
+                    const { c1k } = getModelCosts(m);
                     const avgMargin = c1k.marginPct;
+                    const supportedTiers = Array.isArray(m.supported_quality_tiers) ? m.supported_quality_tiers : ['1K'];
+                    const pricingLabel = PRICING_TYPE_LABELS[m.pricing_mode] || PRICING_TYPE_LABELS['flat_per_image'];
                     return (
                     <TableRow
                       key={m.id}
@@ -337,10 +348,18 @@ export default function AdminModels() {
                         </div>
                       </TableCell>
                       <TableCell className="text-[12px]">{m.provider_name}</TableCell>
+                      <TableCell>
+                        <Badge variant="outline" className={`text-[10px] ${pricingLabel.color}`}>{pricingLabel.label}</Badge>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-1 flex-wrap">
+                          {supportedTiers.map((t: string) => (
+                            <Badge key={t} variant="outline" className="text-[9px] bg-primary/5 border-primary/20 text-primary">{t}</Badge>
+                          ))}
+                        </div>
+                      </TableCell>
                       <TableCell className="text-[13px] font-medium text-primary font-mono">${c1k.providerCost.toFixed(3)}</TableCell>
-                      <TableCell className="text-[13px] font-mono text-muted-foreground">${c2k.providerCost.toFixed(3)}</TableCell>
-                      <TableCell className="text-[13px] font-mono text-muted-foreground">${c4k.providerCost.toFixed(3)}</TableCell>
-                      <TableCell className="text-[12px] font-mono">{c1k.credits}/{c2k.credits}/{c4k.credits}</TableCell>
+                      <TableCell className="text-[12px] font-mono">{c1k.credits}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className={`text-[10px] ${marginBadge(avgMargin)}`}>
                           {avgMargin.toFixed(0)}%
