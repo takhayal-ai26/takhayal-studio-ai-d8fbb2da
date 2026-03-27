@@ -142,6 +142,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [gallery, setGallery] = useState<GeneratedImage[]>([]);
   const [generationCards, setGenerationCards] = useState<GenerationCard[]>([]);
+  const [lastGenerationMeta, setLastGenerationMeta] = useState<{ modelName: string; modelId: string; qualityTier: string; endpointId: string } | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<'login' | 'signup'>('signup');
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
