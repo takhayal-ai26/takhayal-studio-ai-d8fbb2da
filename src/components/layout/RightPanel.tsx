@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { ChevronDown, X, Coins, Check } from 'lucide-react';
 import { useApp, TEMPLATE_PROMPTS, STYLE_OPTIONS, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { Badge } from '@/components/ui/badge';
+
 
 function Section({ title, defaultOpen = false, children }: { title: string; defaultOpen?: boolean; children: React.ReactNode }) {
   const [open, setOpen] = useState(defaultOpen);

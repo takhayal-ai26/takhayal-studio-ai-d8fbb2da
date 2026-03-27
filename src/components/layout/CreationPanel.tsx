@@ -70,7 +70,7 @@ export function CreationPanel() {
   const handleResolution = (r: string) => { setSelectedResolution(r); setQuality(r === '1K' ? 'standard' : 'hd'); setOpenDropdown(null); };
   const ratioIcons: Record<string, string> = { '1:1': '◻', '4:3': '▭', '16:9': '▬', '9:16': '▯', '4:5': '▭', '3:4': '▭', '3:2': '▬', '2:3': '▯', '5:4': '▭', '21:9': '▬' };
 
-  const isGptImage = currentModel?.endpoint_id === 'fal-ai/gpt-image-1.5';
+  
 
   return (
     <aside ref={panelRef} className="w-[340px] xl:w-[380px] flex flex-col bg-background flex-shrink-0 overflow-visible relative z-30 border-r border-border/5">
@@ -105,7 +105,6 @@ export function CreationPanel() {
                 <p className="text-[13px] font-medium text-foreground">{t.studio.model}</p>
                 <div className="flex items-center gap-1.5">
                   <p className="text-[12px] text-primary/70">{currentModel?.model_name || 'Select model'}</p>
-                  {isGptImage && <Badge variant="outline" className="text-[8px] py-0 px-1 bg-emerald-500/10 text-emerald-400 border-emerald-500/20">OpenAI · Best for text</Badge>}
                 </div>
               </div>
             </div>
