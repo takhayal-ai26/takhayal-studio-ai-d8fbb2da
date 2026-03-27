@@ -194,4 +194,5 @@ export const VERIFIED_PRICING: Record<string, { type: PricingType; cost1k: numbe
   'fal-ai/nano-banana-pro':  { type: 'flat_per_image', cost1k: 0.15, cost2k: 0.20, cost4k: 0.30 },
   'fal-ai/nano-banana-2':    { type: 'flat_per_image', cost1k: 0.08, cost2k: 0.12, cost4k: 0.16 },
   'fal-ai/bytedance/seedream/v4.5/text-to-image': { type: 'flat_per_image', cost1k: 0.06, cost2k: 0.08, cost4k: 0.12 },
+  'fal-ai/bytedance/seedream/v5/lite/text-to-image': { type: 'flat_per_image', cost1k: 0.04, cost2k: 0.06, cost4k: 0.10 },
 };
