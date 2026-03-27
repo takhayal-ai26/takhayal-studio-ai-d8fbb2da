@@ -59,6 +59,7 @@ export default function AdminModels() {
 
   // Models from hook
   const { models, loading: modelsLoading, updateModel, fetchModels } = useModels();
+  const { allTiers, loading: tiersLoading } = usePricingTiers();
 
   // UI state
   const [searchQuery, setSearchQuery] = useState('');
@@ -68,6 +69,17 @@ export default function AdminModels() {
   const [selectedModel, setSelectedModel] = useState<ModelRecord | null>(null);
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [syncingModels, setSyncingModels] = useState(false);
+
+  // Helper to get tier cost/credits for a model
+  const getTierData = (modelId: string, quality: string) => {
+    const tiers = allTiers[modelId] || [];
+    return tiers.find(t => t.quality_level === quality);
+  };
+  const getMargin = (credits: number, cost: number) => {
+    const rev = credits * CREDIT_VALUE;
+    return rev > 0 ? ((rev - cost) / rev) * 100 : 0;
+  };
+  const marginBadge = (m: number) => m > 70 ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : m > 40 ? 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20';
 
   // Fetch providers
   const fetchProviders = useCallback(async () => {
