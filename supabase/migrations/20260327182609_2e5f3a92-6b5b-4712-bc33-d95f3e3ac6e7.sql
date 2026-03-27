@@ -1,0 +1,1 @@
+UPDATE models SET endpoint_id = 'fal-ai/bytedance/seedream/v4.5/text-to-image' WHERE id = '80225ee4-1930-4431-b484-43b448969b3b';
