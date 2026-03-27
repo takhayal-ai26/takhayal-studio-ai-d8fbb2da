@@ -97,7 +97,7 @@ export function TemplatesView() {
                   <p className="text-sm text-muted-foreground">{t.templatesView.noTemplatesFound}</p>
                 </div>
               ) : (
-                <div className="columns-2 md:columns-3 lg:columns-4 gap-4 space-y-4">
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
                   {filtered.map(tpl => (
                     <TemplateCard key={tpl.id} tpl={tpl} onUse={handleUse} isRTL={isRTL} useLabel={t.portal?.use || 'Use'} />
                   ))}
