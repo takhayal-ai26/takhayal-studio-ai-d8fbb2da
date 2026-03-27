@@ -10,6 +10,7 @@ export interface ModelRecord {
   speed: string | null;
   cost_per_run: number | null;
   best_for: string | null;
+  best_for_ar: string | null;
   input_type: 'image_size' | 'aspect_ratio';
   supported_ratios: string[];
   supported_sizes: string[];
@@ -37,6 +38,7 @@ function parseModel(row: any): ModelRecord {
     supported_ratios: Array.isArray(row.supported_ratios) ? row.supported_ratios : [],
     supported_sizes: Array.isArray(row.supported_sizes) ? row.supported_sizes : [],
     supported_quality_tiers: Array.isArray(row.supported_quality_tiers) ? row.supported_quality_tiers : ['1K'],
+    best_for_ar: row.best_for_ar ?? null,
     admin_overrides: row.admin_overrides || {},
     pricing_mode: row.pricing_mode || 'fixed_per_image',
     credits_per_generation: row.credits_per_generation ?? null,
