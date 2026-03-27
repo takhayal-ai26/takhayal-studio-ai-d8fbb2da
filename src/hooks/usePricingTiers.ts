@@ -15,6 +15,7 @@ export interface PricingTier {
   credits_charged: number;
   pricing_mode: string;
   is_default: boolean;
+  is_active: boolean;
   notes: string | null;
 }
 

@@ -108,9 +108,7 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
                   </Badge>
                 </td>
                 <td className="px-3 py-2">
-                  <Switch checked={true} onCheckedChange={(checked) => {
-                    if (!checked) onDelete(t.id);
-                  }} />
+                  <Switch checked={t.is_active !== false} onCheckedChange={(checked) => onUpdate(t.id, { is_active: checked } as any)} />
                 </td>
               </tr>
             );
