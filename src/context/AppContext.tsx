@@ -89,6 +89,7 @@ interface AppState {
   gallery: GeneratedImage[];
   generationCards: GenerationCard[];
   setGenerationCards: React.Dispatch<React.SetStateAction<GenerationCard[]>>;
+  lastGenerationMeta: { modelName: string; modelId: string; qualityTier: string; endpointId: string } | null;
   authModalOpen: boolean;
   authModalTab: 'login' | 'signup';
   upgradeModalOpen: boolean;
