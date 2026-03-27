@@ -27,6 +27,10 @@ export interface GeneratedImage {
   aspectRatio: AspectRatio;
   quality: Quality;
   createdAt: Date;
+  modelName?: string;
+  modelId?: string;
+  qualityTier?: string;
+  endpointId?: string;
 }
 
 export interface StudioModel {
@@ -85,6 +89,7 @@ interface AppState {
   gallery: GeneratedImage[];
   generationCards: GenerationCard[];
   setGenerationCards: React.Dispatch<React.SetStateAction<GenerationCard[]>>;
+  lastGenerationMeta: { modelName: string; modelId: string; qualityTier: string; endpointId: string } | null;
   authModalOpen: boolean;
   authModalTab: 'login' | 'signup';
   upgradeModalOpen: boolean;
@@ -138,6 +143,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [gallery, setGallery] = useState<GeneratedImage[]>([]);
   const [generationCards, setGenerationCards] = useState<GenerationCard[]>([]);
+  const [lastGenerationMeta, setLastGenerationMeta] = useState<{ modelName: string; modelId: string; qualityTier: string; endpointId: string } | null>(null);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [authModalTab, setAuthModalTab] = useState<'login' | 'signup'>('signup');
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
@@ -267,6 +273,18 @@ export function AppProvider({ children }: { children: ReactNode }) {
       return;
     }
 
+    // Capture model metadata at generation time (before async)
+    const genModelId = opts?.modelId || selectedModelId || undefined;
+    const genModel = availableModels.find(m => m.id === genModelId);
+    const genQualityTier = opts?.qualityTier || selectedQualityTier;
+    const genMeta = {
+      modelName: genModel?.model_name || 'Unknown',
+      modelId: genModelId || '',
+      qualityTier: genQualityTier,
+      endpointId: genModel?.endpoint_id || '',
+    };
+    setLastGenerationMeta(genMeta);
+
     setIsGenerating(true);
     setCredits(prev => prev - cost);
 
@@ -299,6 +317,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
         aspectRatio,
         quality,
         createdAt: new Date(),
+        modelName: genMeta.modelName,
+        modelId: genMeta.modelId,
+        qualityTier: genMeta.qualityTier,
+        endpointId: genMeta.endpointId,
       }));
 
       setGeneratedImages(newImages);
@@ -317,7 +339,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       isAuthenticated, userName, userEmail, activePage, credits, plan,
       prompt, selectedTemplate, selectedStyle, aspectRatio, quality,
       selectedQualityTier, enhancePrompt, isGenerating, generatedImages, currentImageIndex, gallery,
-      generationCards, setGenerationCards,
+      generationCards, setGenerationCards, lastGenerationMeta,
       authModalOpen, authModalTab, upgradeModalOpen,
       availableModels, selectedModelId, selectedModel, availableQualityTiers, availableRatios, tierCreditsMap,
       login, logout, openAuthModal, closeAuthModal, openUpgradeModal, closeUpgradeModal, requireAuth,
