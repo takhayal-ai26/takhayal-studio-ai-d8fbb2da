@@ -37,7 +37,16 @@ const healthColor: Record<string, string> = {
   down: 'bg-destructive/10 text-destructive border-destructive/20',
   unknown: 'bg-muted/30 text-muted-foreground border-border/40',
 };
-const statusColor: Record<string, string> = {
+const PRICING_TYPE_LABELS: Record<string, { label: string; color: string }> = {
+  per_megapixel: { label: 'Per MP', color: 'bg-blue-500/10 text-blue-400 border-blue-500/20' },
+  flat_per_image: { label: 'Flat', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+  quality_tier: { label: 'Quality', color: 'bg-purple-500/10 text-purple-400 border-purple-500/20' },
+  size_locked: { label: 'Locked', color: 'bg-amber-500/10 text-amber-400 border-amber-500/20' },
+  manual_pending: { label: 'Manual', color: 'bg-muted/30 text-muted-foreground border-border/20' },
+  fixed_per_image: { label: 'Flat', color: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
+};
+
+
   connected: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
   not_connected: 'bg-muted/30 text-muted-foreground border-border/40',
 };
