@@ -743,7 +743,9 @@ export type Database = {
           id: string
           prompt: string
           ratio: string
+          show_on_studio: boolean
           sort_order: number
+          studio_sort_order: number
           title_ar: string
           title_en: string
           updated_at: string
@@ -757,7 +759,9 @@ export type Database = {
           id?: string
           prompt?: string
           ratio?: string
+          show_on_studio?: boolean
           sort_order?: number
+          studio_sort_order?: number
           title_ar?: string
           title_en: string
           updated_at?: string
@@ -771,7 +775,9 @@ export type Database = {
           id?: string
           prompt?: string
           ratio?: string
+          show_on_studio?: boolean
           sort_order?: number
+          studio_sort_order?: number
           title_ar?: string
           title_en?: string
           updated_at?: string
