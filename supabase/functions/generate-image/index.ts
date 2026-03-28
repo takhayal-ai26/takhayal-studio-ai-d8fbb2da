@@ -7,7 +7,7 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
-// ===== CENTRALIZED COST ENGINE (server-side mirror) =====
+// ===== CENTRALIZED COST ENGINE =====
 const CREDIT_VALUE_USD = 0.016;
 
 const BASE_DIMS: Record<string, { w: number; h: number }> = {
@@ -27,7 +27,6 @@ function getResolutionDims(ratio: string, quality: string) {
   return { width: base.w * s, height: base.h * s };
 }
 
-// ===== VERIFIED PRICING =====
 const VERIFIED: Record<string, { type: string; cost1k: number; cost2k?: number; cost4k?: number }> = {
   "fal-ai/flux/schnell":     { type: "per_megapixel", cost1k: 0.003 },
   "fal-ai/flux-pro/v1.1":   { type: "per_megapixel", cost1k: 0.04 },
@@ -45,7 +44,6 @@ const VERIFIED: Record<string, { type: string; cost1k: number; cost2k?: number; 
 function calculateProviderCost(endpoint: string, ratio: string, quality: string, dbBaseCost: number, pricingMode: string): number {
   const verified = VERIFIED[endpoint];
   const type = verified?.type || pricingMode || "flat_per_image";
-  
   if (type === "per_megapixel") {
     const costPerMP = verified?.cost1k || dbBaseCost;
     const dims = getResolutionDims(ratio, quality);
@@ -57,10 +55,7 @@ function calculateProviderCost(endpoint: string, ratio: string, quality: string,
     if (quality === "2K") return verified?.cost2k ?? dbBaseCost * 2;
     return verified?.cost1k ?? dbBaseCost;
   }
-  if (type === "size_locked") {
-    return verified?.cost1k ?? dbBaseCost;
-  }
-  // flat_per_image
+  if (type === "size_locked") return verified?.cost1k ?? dbBaseCost;
   if (quality === "4K") return verified?.cost4k ?? dbBaseCost;
   if (quality === "2K") return verified?.cost2k ?? dbBaseCost;
   return verified?.cost1k ?? dbBaseCost;
@@ -68,34 +63,21 @@ function calculateProviderCost(endpoint: string, ratio: string, quality: string,
 
 // ===== RESOLUTION PAYLOAD RESOLVERS =====
 function resolvePayload(endpoint: string, ratio: string, quality: string, inputType: string): Record<string, unknown> {
-  // GPT Image 1.5: strict sizes
   if (endpoint === "fal-ai/gpt-image-1.5") {
     const sizeMap: Record<string, string> = { "1:1": "1024x1024", "2:3": "1024x1536", "3:2": "1536x1024" };
     return { quality: "low", image_size: sizeMap[ratio] || "1024x1024" };
   }
-  // Ideogram: quality → rendering_speed
   if (endpoint.includes("ideogram")) {
     const speedMap: Record<string, string> = { "1K": "TURBO", "2K": "BALANCED", "4K": "QUALITY" };
     return { aspect_ratio: ratio, rendering_speed: speedMap[quality] || "TURBO" };
   }
-  // Nano Banana models: use resolution parameter (expects '0.5K', '1K', '2K', '4K')
-  if (endpoint.includes("nano-banana")) {
-    return { aspect_ratio: ratio, resolution: quality };
-  }
-  // Imagen 4: aspect_ratio + resolution param (expects '1K', '2K' etc.)
-  if (endpoint.includes("imagen4")) {
-    return { aspect_ratio: ratio, resolution: quality };
-  }
-  // Seedream: image_size with computed dimensions
+  if (endpoint.includes("nano-banana")) return { aspect_ratio: ratio, resolution: quality };
+  if (endpoint.includes("imagen4")) return { aspect_ratio: ratio, resolution: quality };
   if (endpoint.includes("seedream")) {
     const dims = getResolutionDims(ratio, quality);
     return { image_size: { width: dims.width, height: dims.height } };
   }
-  // aspect_ratio models
-  if (inputType === "aspect_ratio") {
-    return { aspect_ratio: ratio };
-  }
-  // image_size models (Flux, Qwen, etc.) — native resolution
+  if (inputType === "aspect_ratio") return { aspect_ratio: ratio };
   const dims = getResolutionDims(ratio, quality);
   return { image_size: { width: dims.width, height: dims.height } };
 }
@@ -128,6 +110,27 @@ async function falQueueRun(endpoint: string, payload: Record<string, unknown>, f
   return { data: null, error: "Generation timed out" };
 }
 
+// ===== UPSCALE WITH CLARITY UPSCALER (replaces ESRGAN) =====
+async function upscaleWithClarity(imageUrl: string, falHeaders: Record<string, string>): Promise<{ url: string; cost: number } | null> {
+  console.log("[upscale] Using Clarity Upscaler for 2K/4K pipeline");
+  const result = await falQueueRun("fal-ai/clarity-upscaler", {
+    image_url: imageUrl,
+    scale_factor: 2,
+    creativity: 0.35,
+    resemblance: 0.6,
+    detail: 1.0,
+  }, falHeaders);
+
+  if (result.error) {
+    console.error("[upscale] Clarity Upscaler failed:", result.error);
+    return null;
+  }
+
+  const url = result.data?.image?.url;
+  if (!url) return null;
+  return { url, cost: 0.03 };
+}
+
 // ===== MAIN HANDLER =====
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
@@ -152,8 +155,8 @@ serve(async (req) => {
     let creditsUsed = 2;
     let dbBaseCost = 0;
     let pricingMode = "flat_per_image";
+    let upscaleStrategy = "clarity"; // Default to clarity now
 
-    // Fetch model config from DB
     const supabase = (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY)
       ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
       : null;
@@ -173,9 +176,9 @@ serve(async (req) => {
           dbBaseCost = modelData.cost_per_run ? Number(modelData.cost_per_run) : 0;
           creditsUsed = modelData.credits_per_generation || 2;
           pricingMode = modelData.pricing_mode || "flat_per_image";
+          upscaleStrategy = modelData.upscale_strategy || "clarity";
         }
 
-        // Check for quality-tier-specific credits from model_pricing_tiers
         if (resolvedModelId && quality_tier) {
           const { data: tierData } = await supabase
             .from("model_pricing_tiers")
@@ -183,10 +186,7 @@ serve(async (req) => {
             .eq("model_id", resolvedModelId)
             .eq("quality_level", quality_tier)
             .single();
-          if (tierData) {
-            creditsUsed = tierData.credits_charged;
-            // Don't override cost from tiers — use centralized calculation instead
-          }
+          if (tierData) creditsUsed = tierData.credits_charged;
         }
       } catch (e) {
         console.log("DB lookup error (non-fatal):", e);
@@ -197,12 +197,16 @@ serve(async (req) => {
     const selectedRatio = aspect_ratio || "1:1";
     const selectedQuality = quality_tier || "1K";
 
-    // ===== CALCULATE REAL COST =====
     const actualApiCost = calculateProviderCost(endpoint, selectedRatio, selectedQuality, dbBaseCost, pricingMode);
     const dims = getResolutionDims(selectedRatio, selectedQuality);
 
-    // ===== BUILD PAYLOAD =====
-    const payloadParams = resolvePayload(endpoint, selectedRatio, selectedQuality, modelInputType);
+    // Determine if we need upscale pipeline
+    // Models that support native high-res generate at target resolution directly
+    // Others generate at 1K and upscale with Clarity
+    const needsUpscale = (selectedQuality === "2K" || selectedQuality === "4K") && upscaleStrategy === "clarity";
+    const generateQuality = needsUpscale ? "1K" : selectedQuality;
+
+    const payloadParams = resolvePayload(endpoint, selectedRatio, generateQuality, modelInputType);
     const payload: Record<string, unknown> = {
       prompt,
       num_images: num_images || 1,
@@ -212,7 +216,7 @@ serve(async (req) => {
 
     if (endpoint === "fal-ai/flux/schnell") payload.num_inference_steps = 4;
 
-    console.log(`[generate-image] endpoint=${endpoint} ratio=${selectedRatio} quality=${selectedQuality} cost=$${actualApiCost.toFixed(4)}`);
+    console.log(`[generate-image] endpoint=${endpoint} ratio=${selectedRatio} quality=${selectedQuality} needsUpscale=${needsUpscale} cost=$${actualApiCost.toFixed(4)}`);
     console.log(`[generate-image] payload:`, JSON.stringify(payload));
 
     // ===== GENERATE =====
@@ -223,11 +227,46 @@ serve(async (req) => {
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    const resultData = genResult.data;
+    let resultData = genResult.data;
+    let upscaleCost = 0;
+    let wasUpscaled = false;
+    let upscaleModel: string | null = null;
+    let finalWidth = dims.width;
+    let finalHeight = dims.height;
+
+    // ===== UPSCALE PIPELINE (Clarity Upscaler) =====
+    if (needsUpscale) {
+      const generatedUrl = resultData?.images?.[0]?.url;
+      if (generatedUrl) {
+        console.log(`[generate-image] Upscaling with Clarity Upscaler for ${selectedQuality}`);
+        
+        // For 4K, we may need to upscale twice (1K → 2K → 4K)
+        let currentUrl = generatedUrl;
+        const upscaleSteps = selectedQuality === "4K" ? 2 : 1;
+        
+        for (let step = 0; step < upscaleSteps; step++) {
+          const upscaleResult = await upscaleWithClarity(currentUrl, falHeaders);
+          if (upscaleResult) {
+            currentUrl = upscaleResult.url;
+            upscaleCost += upscaleResult.cost;
+            wasUpscaled = true;
+            upscaleModel = "fal-ai/clarity-upscaler";
+          } else {
+            console.log(`[generate-image] Upscale step ${step + 1} failed, using previous result`);
+            break;
+          }
+        }
+
+        if (wasUpscaled) {
+          resultData = { ...resultData, images: [{ url: currentUrl, ...resultData.images[0] }] };
+        }
+      }
+    }
 
     // ===== ECONOMICS =====
+    const totalCost = actualApiCost + upscaleCost;
     const revenueUsd = creditsUsed * CREDIT_VALUE_USD;
-    const profitUsd = revenueUsd - actualApiCost;
+    const profitUsd = revenueUsd - totalCost;
     const marginPct = revenueUsd > 0 ? (profitUsd / revenueUsd) * 100 : 0;
 
     // ===== LOG GENERATION =====
@@ -240,40 +279,42 @@ serve(async (req) => {
           resolution: selectedQuality,
           quality_tier: selectedQuality,
           credits_used: creditsUsed,
-          provider_cost: actualApiCost,
+          provider_cost: totalCost,
           revenue: revenueUsd,
           margin: profitUsd,
           requested_ratio: selectedRatio,
           requested_quality_tier: selectedQuality,
-          actual_api_cost: actualApiCost,
+          actual_api_cost: totalCost,
           generation_cost: actualApiCost,
-          upscale_cost: 0,
+          upscale_cost: upscaleCost,
           revenue_usd: revenueUsd,
           profit_usd: profitUsd,
           margin_pct: marginPct,
-          was_upscaled: false,
-          used_upscale_pipeline: false,
-          upscale_model: null,
-          actual_output_width: dims.width,
-          actual_output_height: dims.height,
+          was_upscaled: wasUpscaled,
+          used_upscale_pipeline: wasUpscaled,
+          upscale_model: upscaleModel,
+          actual_output_width: finalWidth,
+          actual_output_height: finalHeight,
         });
       } catch (e) {
         console.log("Generation log error (non-fatal):", e);
       }
     }
 
-    console.log(`[generate-image] Complete. cost=$${actualApiCost.toFixed(4)} revenue=$${revenueUsd.toFixed(4)} margin=${marginPct.toFixed(1)}%`);
+    console.log(`[generate-image] Complete. genCost=$${actualApiCost.toFixed(4)} upscaleCost=$${upscaleCost.toFixed(4)} total=$${totalCost.toFixed(4)} revenue=$${revenueUsd.toFixed(4)} margin=${marginPct.toFixed(1)}%`);
 
     return new Response(JSON.stringify({
       ...resultData,
       model_used: endpoint,
       credits_used: creditsUsed,
-      actual_api_cost: actualApiCost,
+      actual_api_cost: totalCost,
       revenue_usd: revenueUsd,
       profit_usd: profitUsd,
       margin_pct: marginPct,
       requested_ratio: selectedRatio,
       requested_quality: selectedQuality,
+      was_upscaled: wasUpscaled,
+      upscale_model: upscaleModel,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

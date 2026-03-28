@@ -26,7 +26,9 @@ async function falQueueRun(
   const { status_url, response_url } = submitData;
   if (!status_url || !response_url) return { data: submitData };
 
-  for (let i = 0; i < 60; i++) {
+  // Advanced upscaler can take up to 60s, so poll up to 90 iterations (180s)
+  const maxPolls = endpoint.includes("flux-vision") ? 90 : 60;
+  for (let i = 0; i < maxPolls; i++) {
     await new Promise((r) => setTimeout(r, 2000));
     const statusRes = await fetch(status_url, { headers: falHeaders });
     const statusData = await statusRes.json();
@@ -38,7 +40,7 @@ async function falQueueRun(
     if (statusData.status === "FAILED")
       return { data: null, error: `Processing failed: ${JSON.stringify(statusData)}` };
   }
-  return { data: null, error: "Processing timed out after 120s" };
+  return { data: null, error: "Processing timed out" };
 }
 
 serve(async (req) => {
@@ -82,9 +84,8 @@ serve(async (req) => {
       "Content-Type": "application/json",
     };
 
-    const endpoint = tool.provider_endpoint;
-    const creditCost = tool.default_credit_cost;
-    const estimatedCost = Number(tool.internal_provider_cost_estimate);
+    let endpoint = tool.provider_endpoint;
+    let creditCost = tool.default_credit_cost;
     const creditValueUsd = 0.016;
 
     // Create tool_run record as "processing"
@@ -98,7 +99,7 @@ serve(async (req) => {
       input_options_json: options || {},
       status: "processing",
       credits_charged: creditCost,
-      estimated_provider_cost: estimatedCost,
+      estimated_provider_cost: Number(tool.internal_provider_cost_estimate),
       started_at: new Date().toISOString(),
     }).select().single();
 
@@ -107,13 +108,12 @@ serve(async (req) => {
     let resultData: any = null;
     let outputUrl: string | null = null;
     let outputImages: any[] = [];
+    let actualCost = Number(tool.internal_provider_cost_estimate);
 
     try {
       // =================== TOOL-SPECIFIC LOGIC ===================
 
       if (tool_slug === "generate") {
-        // Generate uses the existing generate-image function logic
-        // but we route through here for consistency
         const ratio = options?.ratio || "1:1";
         const payload: Record<string, unknown> = {
           prompt,
@@ -121,8 +121,6 @@ serve(async (req) => {
           enable_safety_checker: true,
           image_size: "square_hd",
         };
-
-        // Map ratio to preset
         const presetMap: Record<string, string> = {
           "1:1": "square_hd", "16:9": "landscape_16_9", "9:16": "portrait_16_9",
           "4:3": "landscape_4_3", "3:4": "portrait_4_3",
@@ -136,9 +134,37 @@ serve(async (req) => {
         outputUrl = outputImages[0]?.url || null;
 
       } else if (tool_slug === "upscale") {
+        // ===== NEW UPSCALE SYSTEM: Standard (Clarity) / Advanced (Flux Vision) =====
         if (!image_url) throw new Error("image_url is required for upscale");
-        const scale = options?.scale === "4x" ? 4 : 2;
-        resultData = await falQueueRun(endpoint, { image_url, scale }, falHeaders);
+
+        const tier = options?.tier || "standard";
+
+        if (tier === "advanced") {
+          // Flux Vision Upscaler
+          endpoint = "fal-ai/flux-vision-upscaler";
+          creditCost = 15;
+          actualCost = 0.10;
+          const payload = {
+            image_url,
+            scale_factor: 2,
+            prompt: "highly detailed, sharp, professional quality, enhanced textures",
+          };
+          resultData = await falQueueRun(endpoint, payload, falHeaders);
+        } else {
+          // Clarity Upscaler (standard)
+          endpoint = "fal-ai/clarity-upscaler";
+          creditCost = 5;
+          actualCost = 0.03;
+          const payload = {
+            image_url,
+            scale_factor: 2,
+            creativity: 0.35,
+            resemblance: 0.6,
+            detail: 1.0,
+          };
+          resultData = await falQueueRun(endpoint, payload, falHeaders);
+        }
+
         if (resultData.error) throw new Error(resultData.error);
 
         outputUrl = resultData.data?.image?.url || null;
@@ -146,19 +172,11 @@ serve(async (req) => {
 
       } else if (tool_slug === "logo") {
         if (!prompt) throw new Error("prompt is required for logo generation");
-        const style = options?.style || "digital_illustration";
-        const styleMap: Record<string, string> = {
-          "Minimal": "digital_illustration",
-          "Modern": "digital_illustration",
-          "Arabic": "digital_illustration",
-          "Geometric": "digital_illustration",
-          "Playful": "digital_illustration",
-        };
 
         const payload: Record<string, unknown> = {
           prompt: `Logo design: ${prompt}. Style: ${options?.style || 'minimal modern'}. ${options?.brandName ? `Brand name: ${options.brandName}.` : ''} Clean, professional, vector-style logo on white background.`,
           image_size: { width: 1024, height: 1024 },
-          style: styleMap[options?.style] || "digital_illustration",
+          style: "digital_illustration",
         };
 
         resultData = await falQueueRun(endpoint, payload, falHeaders);
@@ -203,7 +221,7 @@ serve(async (req) => {
 
       // Calculate economics
       const revenue = creditCost * creditValueUsd;
-      const margin = revenue - estimatedCost;
+      const margin = revenue - actualCost;
 
       // Update run as completed
       if (runId) {
@@ -211,13 +229,16 @@ serve(async (req) => {
           status: "completed",
           output_image_url: outputUrl,
           output_images_json: outputImages,
+          credits_charged: creditCost,
+          provider_endpoint: endpoint,
+          estimated_provider_cost: actualCost,
           revenue,
           margin,
           completed_at: new Date().toISOString(),
         }).eq("id", runId);
       }
 
-      console.log(`[run-tool] ${tool_slug} completed. output=${outputUrl} cost=$${estimatedCost} revenue=$${revenue}`);
+      console.log(`[run-tool] ${tool_slug} completed. output=${outputUrl} cost=$${actualCost} revenue=$${revenue}`);
 
       return new Response(JSON.stringify({
         success: true,
@@ -226,19 +247,18 @@ serve(async (req) => {
         output_url: outputUrl,
         output_images: outputImages,
         credits_charged: creditCost,
-        estimated_cost: estimatedCost,
+        estimated_cost: actualCost,
       }), {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
 
     } catch (toolError) {
-      // Mark run as failed
       if (runId) {
         await supabase.from("tool_runs").update({
           status: "failed",
           error_message: toolError instanceof Error ? toolError.message : "Unknown error",
           failed_at: new Date().toISOString(),
-          credits_charged: 0, // Don't charge on failure
+          credits_charged: 0,
         }).eq("id", runId);
       }
 

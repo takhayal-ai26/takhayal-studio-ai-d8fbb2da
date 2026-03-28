@@ -6,6 +6,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useToolsDB, ToolView } from '@/hooks/useToolsDB';
 import { useToolRunner, ToolRunStatus } from '@/hooks/useToolRunner';
 import { Progress } from '@/components/ui/progress';
+import { UpscaleTierSelector, UpscaleTier } from '@/components/tools/UpscaleTierSelector';
 
 function StatusBadge({ status }: { status: ToolRunStatus }) {
   if (status === 'uploading') return <div className="flex items-center gap-2 text-primary"><Loader2 size={14} className="animate-spin" /><span className="text-[13px]">Uploading...</span></div>;
@@ -72,6 +73,8 @@ export default function ToolPage() {
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [outputLoaded, setOutputLoaded] = useState(false);
+  const [upscaleTier, setUpscaleTier] = useState<UpscaleTier>('standard');
+  const [processingMessage, setProcessingMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Tool-specific option definitions
@@ -79,9 +82,7 @@ export default function ToolPage() {
     'generate': [
       { label: 'Ratio', values: ['1:1', '9:16', '16:9', '4:5'], defaultValue: '1:1' },
     ],
-    'upscale': [
-      { label: 'Scale', values: ['2x', '4x'], defaultValue: '2x' },
-    ],
+    'upscale': [], // Tier selection handled by UpscaleTierSelector
     'logo': [
       { label: 'Style', values: ['Minimal', 'Modern', 'Geometric', 'Playful'], defaultValue: 'Minimal' },
       { label: 'Type', values: ['Icon', 'Wordmark', 'Combination'], defaultValue: 'Icon' },
@@ -124,12 +125,40 @@ export default function ToolPage() {
   const handleRun = () => {
     requireAuth(async () => {
       setOutputLoaded(false);
-      await runTool({
-        toolSlug: tool!.slug,
-        prompt: inputValue || undefined,
-        imageFile: selectedFile || undefined,
-        options: { ...selectedOptions, ratio: selectedOptions['Ratio'] },
-      });
+      
+      // Set up processing messages for upscale
+      if (tool?.slug === 'upscale' && upscaleTier === 'advanced') {
+        setProcessingMessage('Analyzing your image...');
+        const timers = [
+          setTimeout(() => setProcessingMessage('Enhancing details...'), 10000),
+          setTimeout(() => setProcessingMessage('Refining textures...'), 25000),
+          setTimeout(() => setProcessingMessage('Almost done...'), 40000),
+        ];
+        await runTool({
+          toolSlug: tool!.slug,
+          prompt: inputValue || undefined,
+          imageFile: selectedFile || undefined,
+          options: { ...selectedOptions, tier: upscaleTier },
+        });
+        timers.forEach(clearTimeout);
+        setProcessingMessage('');
+      } else if (tool?.slug === 'upscale') {
+        setProcessingMessage('Enhancing your image...');
+        await runTool({
+          toolSlug: tool!.slug,
+          prompt: inputValue || undefined,
+          imageFile: selectedFile || undefined,
+          options: { ...selectedOptions, tier: upscaleTier },
+        });
+        setProcessingMessage('');
+      } else {
+        await runTool({
+          toolSlug: tool!.slug,
+          prompt: inputValue || undefined,
+          imageFile: selectedFile || undefined,
+          options: { ...selectedOptions, ratio: selectedOptions['Ratio'] },
+        });
+      }
     });
   };
 
@@ -277,8 +306,13 @@ export default function ToolPage() {
                     />
                   )}
 
-                  {/* Options */}
-                  {currentOptions.length > 0 && (
+                  {/* Upscale Tier Selector */}
+                  {tool.slug === 'upscale' && (
+                    <UpscaleTierSelector selected={upscaleTier} onSelect={setUpscaleTier} />
+                  )}
+
+                  {/* Options (non-upscale tools) */}
+                  {tool.slug !== 'upscale' && currentOptions.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-4">
                       {currentOptions.map(opt => (
                         <div key={opt.label} className="flex-1 min-w-[120px]">
@@ -300,7 +334,7 @@ export default function ToolPage() {
                     <div className="mt-4 space-y-2">
                       <Progress value={status === 'uploading' ? 30 : 70} className="h-1.5" />
                       <p className="text-[11px] text-muted-foreground text-center">
-                        {status === 'uploading' ? 'Uploading image...' : 'Processing with AI...'}
+                        {status === 'uploading' ? 'Uploading image...' : (processingMessage || 'Processing with AI...')}
                       </p>
                     </div>
                   )}
@@ -312,12 +346,12 @@ export default function ToolPage() {
                     className="w-full mt-5 h-12 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium flex items-center justify-center gap-3 hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {(status === 'uploading' || status === 'processing') ? (
-                      <span className="flex items-center gap-2"><Loader2 size={16} className="animate-spin" /> Processing...</span>
+                      <span className="flex items-center gap-2"><Loader2 size={16} className="animate-spin" /> {processingMessage || 'Processing...'}</span>
                     ) : (
                       <>
-                        <span>{isUpload ? t.toolPage.uploadProcess : t.toolPage.generate}</span>
+                        <span>{isUpload ? (tool.slug === 'upscale' ? 'Enhance' : t.toolPage.uploadProcess) : t.toolPage.generate}</span>
                         <span className="flex items-center gap-1 text-primary-foreground/70 text-[12px]">
-                          <Coins size={12} /> {tool.creditCost} {t.toolPage.credits}
+                          <Coins size={12} /> {tool.slug === 'upscale' ? (upscaleTier === 'advanced' ? 15 : 5) : tool.creditCost} {t.toolPage.credits}
                         </span>
                       </>
                     )}
