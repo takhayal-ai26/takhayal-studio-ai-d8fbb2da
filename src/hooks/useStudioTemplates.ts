@@ -19,12 +19,12 @@ export function useStudioTemplates() {
   useEffect(() => {
     const fetch = async () => {
       setLoading(true);
-      const { data } = await supabase
+      const { data } = await (supabase
         .from('templates')
-        .select('*')
+        .select('*') as any)
         .eq('active', true)
-        .eq('show_on_studio' as any, true)
-        .order('studio_sort_order' as any)
+        .eq('show_on_studio', true)
+        .order('studio_sort_order')
         .limit(3);
 
       if (data) {
