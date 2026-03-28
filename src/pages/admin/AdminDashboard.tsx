@@ -193,6 +193,3 @@ export default function AdminDashboard() {
     </div>
   );
 }
-
-// Using DollarSign import
-import { DollarSign } from 'lucide-react';
