@@ -45,7 +45,7 @@ export default function ToolsDirectory() {
             {filtered.map(tool => {
               const Icon = tool.icon;
               return (
-                <button key={tool.id} onClick={() => navigate(`/tools/${tool.slug}`)} className="group relative rounded-[20px] overflow-hidden text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/10 focus:outline-none">
+                <button key={tool.id} onClick={() => navigate(tool.slug === 'generate' ? '/studio' : `/tools/${tool.slug}`)} className="group relative rounded-[20px] overflow-hidden text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/10 focus:outline-none">
                   <div className="aspect-[4/3] bg-muted/20">
                     {tool.image && <img src={tool.image} alt={tool.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />}
                   </div>
