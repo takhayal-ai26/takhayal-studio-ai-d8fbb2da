@@ -21,8 +21,6 @@ interface DBTemplate {
   active: boolean;
   featured: boolean;
   sort_order: number;
-  show_on_studio: boolean;
-  studio_sort_order: number;
 }
 
 interface Props {
@@ -46,8 +44,6 @@ function emptyTemplate(): DBTemplate {
     active: true,
     featured: false,
     sort_order: 0,
-    show_on_studio: false,
-    studio_sort_order: 0,
   };
 }
 
@@ -154,16 +150,6 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
                 <div><Label className="text-xs">Featured</Label><p className="text-[10px] text-muted-foreground">Show in featured section</p></div>
                 <Switch checked={form.featured} onCheckedChange={v => set('featured', v)} />
               </div>
-              <div className="flex items-center justify-between py-2 border-b border-border/20">
-                <div><Label className="text-xs">Show on Studio</Label><p className="text-[10px] text-muted-foreground">Display as featured template on the Studio page (max 3)</p></div>
-                <Switch checked={form.show_on_studio} onCheckedChange={v => set('show_on_studio', v)} />
-              </div>
-              {form.show_on_studio && (
-                <div className="space-y-1.5 w-32">
-                  <Label className="text-xs">Studio Order</Label>
-                  <Input type="number" value={form.studio_sort_order} onChange={e => set('studio_sort_order', parseInt(e.target.value) || 0)} className="h-9 text-sm bg-muted/30 border-border/40" />
-                </div>
-              )}
             </div>
           </div>
         </ScrollArea>
