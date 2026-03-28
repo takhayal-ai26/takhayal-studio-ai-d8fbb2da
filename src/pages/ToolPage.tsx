@@ -82,9 +82,7 @@ export default function ToolPage() {
     'generate': [
       { label: 'Ratio', values: ['1:1', '9:16', '16:9', '4:5'], defaultValue: '1:1' },
     ],
-    'upscale': [
-      { label: 'Scale', values: ['2x', '4x'], defaultValue: '2x' },
-    ],
+    'upscale': [], // Tier selection handled by UpscaleTierSelector
     'logo': [
       { label: 'Style', values: ['Minimal', 'Modern', 'Geometric', 'Playful'], defaultValue: 'Minimal' },
       { label: 'Type', values: ['Icon', 'Wordmark', 'Combination'], defaultValue: 'Icon' },
