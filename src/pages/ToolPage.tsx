@@ -308,8 +308,13 @@ export default function ToolPage() {
                     />
                   )}
 
-                  {/* Options */}
-                  {currentOptions.length > 0 && (
+                  {/* Upscale Tier Selector */}
+                  {tool.slug === 'upscale' && (
+                    <UpscaleTierSelector selected={upscaleTier} onSelect={setUpscaleTier} />
+                  )}
+
+                  {/* Options (non-upscale tools) */}
+                  {tool.slug !== 'upscale' && currentOptions.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-4">
                       {currentOptions.map(opt => (
                         <div key={opt.label} className="flex-1 min-w-[120px]">
@@ -331,7 +336,7 @@ export default function ToolPage() {
                     <div className="mt-4 space-y-2">
                       <Progress value={status === 'uploading' ? 30 : 70} className="h-1.5" />
                       <p className="text-[11px] text-muted-foreground text-center">
-                        {status === 'uploading' ? 'Uploading image...' : 'Processing with AI...'}
+                        {status === 'uploading' ? 'Uploading image...' : (processingMessage || 'Processing with AI...')}
                       </p>
                     </div>
                   )}
@@ -343,12 +348,12 @@ export default function ToolPage() {
                     className="w-full mt-5 h-12 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium flex items-center justify-center gap-3 hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
                   >
                     {(status === 'uploading' || status === 'processing') ? (
-                      <span className="flex items-center gap-2"><Loader2 size={16} className="animate-spin" /> Processing...</span>
+                      <span className="flex items-center gap-2"><Loader2 size={16} className="animate-spin" /> {processingMessage || 'Processing...'}</span>
                     ) : (
                       <>
-                        <span>{isUpload ? t.toolPage.uploadProcess : t.toolPage.generate}</span>
+                        <span>{isUpload ? (tool.slug === 'upscale' ? 'Enhance' : t.toolPage.uploadProcess) : t.toolPage.generate}</span>
                         <span className="flex items-center gap-1 text-primary-foreground/70 text-[12px]">
-                          <Coins size={12} /> {tool.creditCost} {t.toolPage.credits}
+                          <Coins size={12} /> {tool.slug === 'upscale' ? (upscaleTier === 'advanced' ? 15 : 5) : tool.creditCost} {t.toolPage.credits}
                         </span>
                       </>
                     )}
