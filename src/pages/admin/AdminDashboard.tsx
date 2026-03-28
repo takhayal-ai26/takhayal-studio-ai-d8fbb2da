@@ -3,7 +3,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
   Users, CreditCard, Zap, Image, TrendingUp, AlertTriangle,
-  Plus, FileText, Eye, BarChart3, ArrowUpRight, Activity, Loader2
+  Plus, FileText, Eye, BarChart3, ArrowUpRight, Activity, Loader2, DollarSign
 } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
 import { useQuery } from '@tanstack/react-query';
