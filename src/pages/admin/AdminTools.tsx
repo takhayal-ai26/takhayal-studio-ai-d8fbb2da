@@ -133,6 +133,8 @@ export default function AdminTools() {
               <TableHead className="text-[11px] uppercase text-muted-foreground">Arabic</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Credits</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Provider</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Providers</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Default Model</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Runs</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Featured</TableHead>
