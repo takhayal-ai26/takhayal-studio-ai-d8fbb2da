@@ -24,6 +24,8 @@ interface DBTemplate {
   active: boolean;
   featured: boolean;
   sort_order: number;
+  show_on_studio: boolean;
+  studio_sort_order: number;
   created_at: string;
   updated_at: string;
 }
