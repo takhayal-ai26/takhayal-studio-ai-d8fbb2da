@@ -20,6 +20,7 @@ interface DBTemplate {
   prompt: string;
   active: boolean;
   featured: boolean;
+  show_on_studio: boolean;
   sort_order: number;
 }
 
@@ -43,6 +44,7 @@ function emptyTemplate(): DBTemplate {
     prompt: '',
     active: true,
     featured: false,
+    show_on_studio: false,
     sort_order: 0,
   };
 }
@@ -149,6 +151,10 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
               <div className="flex items-center justify-between py-2 border-b border-border/20">
                 <div><Label className="text-xs">Featured</Label><p className="text-[10px] text-muted-foreground">Show in featured section</p></div>
                 <Switch checked={form.featured} onCheckedChange={v => set('featured', v)} />
+              </div>
+              <div className="flex items-center justify-between py-2 border-b border-border/20">
+                <div><Label className="text-xs">Show on Studio</Label><p className="text-[10px] text-muted-foreground">Include in Studio page template rotation (3 random shown)</p></div>
+                <Switch checked={form.show_on_studio} onCheckedChange={v => set('show_on_studio', v)} />
               </div>
             </div>
           </div>
