@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
-  LayoutDashboard, Users, CreditCard, Wrench, Cpu, FileText,
-  Layers, Shield, Image, BarChart3, LifeBuoy, Bell, Plug,
-  Lock, Settings, ChevronLeft, ChevronRight, LogOut, Languages
+  LayoutDashboard, Users, Palette, ShoppingCart, Layers,
+  BarChart3, LifeBuoy, Plug, Settings, ChevronLeft, ChevronRight, LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -12,20 +11,12 @@ import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip
 const NAV_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
   { label: 'Users', icon: Users, path: '/admin/users' },
-  { label: 'Billing & Credits', icon: CreditCard, path: '/admin/billing' },
-  { label: 'Pricing & Economics', icon: CreditCard, path: '/admin/pricing' },
-  { label: 'Tools', icon: Wrench, path: '/admin/tools' },
-  { label: 'Models & Providers', icon: Cpu, path: '/admin/models' },
-  { label: 'Templates', icon: FileText, path: '/admin/templates' },
+  { label: 'Studio Config', icon: Palette, path: '/admin/studio' },
+  { label: 'Commerce', icon: ShoppingCart, path: '/admin/commerce' },
   { label: 'Content', icon: Layers, path: '/admin/content' },
-  { label: 'Community', icon: Shield, path: '/admin/community' },
-  { label: 'Media Library', icon: Image, path: '/admin/media' },
   { label: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
-  { label: 'Support & Reports', icon: LifeBuoy, path: '/admin/support' },
-  { label: 'Notifications', icon: Bell, path: '/admin/notifications' },
+  { label: 'Support', icon: LifeBuoy, path: '/admin/support' },
   { label: 'Integrations', icon: Plug, path: '/admin/integrations' },
-  { label: 'Roles & Permissions', icon: Lock, path: '/admin/roles' },
-  { label: 'Translations', icon: Languages, path: '/admin/translations' },
   { label: 'Settings', icon: Settings, path: '/admin/settings' },
 ];
 
@@ -41,14 +32,12 @@ export default function AdminLayout() {
 
   return (
     <div className="flex h-screen w-full bg-background text-foreground overflow-hidden">
-      {/* Sidebar */}
       <aside
         className={cn(
           'flex flex-col border-r border-border/40 bg-[hsl(0,0%,4%)] transition-all duration-300',
           collapsed ? 'w-[68px]' : 'w-[240px]'
         )}
       >
-        {/* Logo */}
         <div className="flex items-center justify-between h-14 px-4 border-b border-border/40">
           {!collapsed && (
             <span className="text-sm font-bold tracking-tight text-foreground">
@@ -63,7 +52,6 @@ export default function AdminLayout() {
           </button>
         </div>
 
-        {/* Nav */}
         <ScrollArea className="flex-1 py-2">
           <nav className="flex flex-col gap-0.5 px-2">
             {NAV_ITEMS.map((item) => {
@@ -98,7 +86,6 @@ export default function AdminLayout() {
           </nav>
         </ScrollArea>
 
-        {/* Footer */}
         <div className="border-t border-border/40 p-2">
           <button
             onClick={() => navigate('/')}
@@ -113,7 +100,6 @@ export default function AdminLayout() {
         </div>
       </aside>
 
-      {/* Main */}
       <main className="flex-1 flex flex-col overflow-hidden">
         <ScrollArea className="flex-1">
           <div className="p-6 lg:p-8 max-w-[1400px]">
