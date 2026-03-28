@@ -71,6 +71,7 @@ export default function AdminTemplates() {
     if (statusFilter === 'featured') list = list.filter(t => t.featured);
     if (statusFilter === 'active') list = list.filter(t => t.active);
     if (statusFilter === 'inactive') list = list.filter(t => !t.active);
+    if (statusFilter === 'studio') list = list.filter(t => t.show_on_studio);
     return list;
   }, [templates, search, categoryFilter, statusFilter]);
 
@@ -125,6 +126,7 @@ export default function AdminTemplates() {
       <div className="grid grid-cols-3 gap-4">
         <Card className="border-border/40 bg-card/50"><CardContent className="p-4"><p className="text-lg font-bold">{templates.length}</p><p className="text-[11px] text-muted-foreground">Total Templates</p></CardContent></Card>
         <Card className="border-border/40 bg-card/50"><CardContent className="p-4"><p className="text-lg font-bold">{templates.filter(t => t.featured).length}</p><p className="text-[11px] text-muted-foreground">Featured</p></CardContent></Card>
+        <Card className="border-border/40 bg-card/50"><CardContent className="p-4"><p className="text-lg font-bold">{templates.filter(t => t.show_on_studio).length}</p><p className="text-[11px] text-muted-foreground">On Studio</p></CardContent></Card>
         <Card className="border-border/40 bg-card/50"><CardContent className="p-4"><p className="text-lg font-bold">{templates.filter(t => t.active).length}</p><p className="text-[11px] text-muted-foreground">Active</p></CardContent></Card>
       </div>
 
