@@ -40,7 +40,6 @@ export function InspirationFeed() {
   const filtered = activeCategory === 'All' ? feedItems : feedItems.filter(item => item.category === activeCategory);
   const handleUse = (item: typeof feedItems[0]) => { setPrompt(item.prompt); setSelectedTemplate(null); };
 
-  // Show generation grid if user has ever generated or is generating
   const hasActivity = gallery.length > 0 || isGenerating;
 
   if (hasActivity) {
@@ -50,22 +49,37 @@ export function InspirationFeed() {
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
       <div className="flex-shrink-0 px-5 pt-5 pb-3">
-        <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">{t.studio.exploreIdeas}</p>
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
+        <p className="text-[10px] font-semibold text-muted-foreground/40 uppercase tracking-[0.15em] mb-3">{t.studio.exploreIdeas}</p>
+        <div className="flex gap-1.5 overflow-x-auto scrollbar-hide pb-1">
           {CATEGORIES_LOCALIZED.map(cat => (
-            <button key={cat.key} onClick={() => setActiveCategory(cat.key)} className={`px-3.5 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors duration-150 ${activeCategory === cat.key ? 'bg-primary text-primary-foreground' : 'bg-card text-muted-foreground hover:text-foreground'}`}>{cat.label}</button>
+            <button
+              key={cat.key}
+              onClick={() => setActiveCategory(cat.key)}
+              className={`px-3.5 py-1.5 rounded-full text-[11px] font-medium whitespace-nowrap transition-all duration-200 ${
+                activeCategory === cat.key
+                  ? 'bg-primary text-primary-foreground shadow-[0_2px_12px_-2px] shadow-primary/30'
+                  : 'bg-card/40 text-muted-foreground/60 hover:text-foreground/80 hover:bg-card/80'
+              }`}
+            >
+              {cat.label}
+            </button>
           ))}
         </div>
       </div>
       <div className="flex-1 overflow-y-auto px-5 pb-5">
-        <div className="columns-2 lg:columns-3 gap-3 space-y-3">
+        <div className="columns-2 lg:columns-3 gap-2.5 space-y-2.5">
           {filtered.map((item, i) => (
-            <button key={`${item.image}-${i}`} onClick={() => handleUse(item)} className="group relative break-inside-avoid w-full rounded-xl overflow-hidden block">
-              <img src={item.image} alt="" className={`w-full ${item.height} object-cover transition-transform duration-300 group-hover:scale-[1.03]`} loading="lazy" />
-              <div className="absolute inset-0 bg-gradient-to-t from-background/90 via-background/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-end p-3">
-                <p className="text-xs text-foreground/90 line-clamp-2 mb-2">{item.prompt}</p>
-                <span className="self-start px-3 py-1 rounded-full bg-primary text-primary-foreground text-[11px] font-medium">{t.studio.useThis}</span>
+            <button
+              key={`${item.image}-${i}`}
+              onClick={() => handleUse(item)}
+              className="group relative break-inside-avoid w-full rounded-xl overflow-hidden block"
+            >
+              <img src={item.image} alt="" className={`w-full ${item.height} object-cover transition-all duration-500 group-hover:scale-[1.04] group-hover:brightness-110`} loading="lazy" />
+              <div className="absolute inset-0 bg-gradient-to-t from-background/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-all duration-300 flex flex-col justify-end p-3">
+                <p className="text-[11px] text-foreground/90 line-clamp-2 leading-relaxed mb-2">{item.prompt}</p>
+                <span className="self-start px-3 py-1 rounded-full bg-primary text-primary-foreground text-[10px] font-semibold shadow-lg shadow-primary/20">{t.studio.useThis}</span>
               </div>
+              <div className="absolute inset-0 rounded-xl ring-1 ring-inset ring-white/[0.04] group-hover:ring-primary/15 transition-all duration-300 pointer-events-none" />
             </button>
           ))}
         </div>
