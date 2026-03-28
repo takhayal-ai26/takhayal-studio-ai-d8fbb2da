@@ -197,7 +197,7 @@ function PageContentEditor({ item, onClose }: { item: Partial<PricingPageContent
 }
 
 // ── Main Page ──
-export default function AdminBilling() {
+export default function AdminBilling({ embedded }: { embedded?: boolean } = {}) {
   const { data: plans = [], isLoading: loadingPlans } = usePricingPlans();
   const { data: packages = [], isLoading: loadingPkgs } = useCreditPackages();
   const { data: faqs = [] } = usePricingFaqs();

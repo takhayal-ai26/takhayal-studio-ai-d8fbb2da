@@ -37,7 +37,7 @@ interface DBCategory {
   active: boolean;
 }
 
-export default function AdminTemplates() {
+export default function AdminTemplates({ embedded }: { embedded?: boolean } = {}) {
   const [templates, setTemplates] = useState<DBTemplate[]>([]);
   const [categories, setCategories] = useState<DBCategory[]>([]);
   const [search, setSearch] = useState('');

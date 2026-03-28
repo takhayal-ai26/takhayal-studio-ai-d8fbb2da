@@ -23,7 +23,7 @@ const statusStyle: Record<string, string> = {
   expired: 'bg-muted/30 text-muted-foreground border-border/40',
 };
 
-export default function AdminNotifications() {
+export default function AdminNotifications({ embedded }: { embedded?: boolean } = {}) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

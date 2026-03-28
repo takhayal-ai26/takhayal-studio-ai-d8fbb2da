@@ -18,7 +18,7 @@ const iconLookup: Record<string, LucideIcon> = {
   Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2, Image, Palette, Layers,
 };
 
-export default function AdminTools() {
+export default function AdminTools({ embedded }: { embedded?: boolean } = {}) {
   const { rawTools, isLoading, updateTool, deleteTool: deleteToolMutation } = useToolsDB();
   const { providers: allProviders } = useToolProviders();
   const [search, setSearch] = useState('');

@@ -24,7 +24,7 @@ const statusColor: Record<string, string> = {
   banned: 'bg-destructive/10 text-destructive border-destructive/20',
 };
 
-export default function AdminUsers() {
+export default function AdminUsers({ embedded }: { embedded?: boolean } = {}) {
   const [search, setSearch] = useState('');
   const filtered = MOCK_USERS.filter(u =>
     u.name.toLowerCase().includes(search.toLowerCase()) || u.email.toLowerCase().includes(search.toLowerCase())
