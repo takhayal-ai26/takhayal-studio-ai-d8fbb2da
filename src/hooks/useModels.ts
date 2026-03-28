@@ -79,13 +79,28 @@ export function useModels() {
   }, [fetchModels]);
 
   const updateModel = useCallback(async (id: string, updates: Partial<ModelRecord>) => {
+    const existing = models.find(m => m.id === id);
     const { error } = await supabase
       .from('models')
       .update({ ...updates, updated_at: new Date().toISOString() } as any)
       .eq('id', id);
     if (error) throw error;
+    // Audit log for significant changes
+    const significantKeys = ['is_active', 'is_default', 'credits_per_generation', 'cost_per_run', 'pricing_mode'];
+    const hasSignificant = Object.keys(updates).some(k => significantKeys.includes(k));
+    if (hasSignificant && existing) {
+      const oldVals: Record<string, any> = {};
+      for (const k of Object.keys(updates)) { oldVals[k] = (existing as any)[k]; }
+      await supabase.from('admin_audit_log').insert({
+        action: 'model_update',
+        entity_type: 'model',
+        entity_id: id,
+        old_value: { model_name: existing.model_name, ...oldVals },
+        new_value: updates,
+      } as any);
+    }
     await fetchModels();
-  }, [fetchModels]);
+  }, [fetchModels, models]);
 
   const activeModels = models.filter(m => m.is_active);
   const defaultModel = models.find(m => m.is_default) || activeModels[0] || null;

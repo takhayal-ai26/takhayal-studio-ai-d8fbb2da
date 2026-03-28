@@ -66,20 +66,43 @@ export function usePricingTiers(modelId?: string) {
   const addTier = useCallback(async (tier: Omit<PricingTier, 'id'>) => {
     const { error } = await supabase.from('model_pricing_tiers').insert(tier as any);
     if (error) throw error;
+    await supabase.from('admin_audit_log').insert({
+      action: 'pricing_tier_create',
+      entity_type: 'model_pricing_tier',
+      entity_id: tier.model_id,
+      old_value: {},
+      new_value: { tier_label: tier.tier_label, quality_level: tier.quality_level, cost_per_run: tier.cost_per_run, credits_charged: tier.credits_charged },
+    } as any);
     await fetchTiers();
   }, [fetchTiers]);
 
   const updateTier = useCallback(async (id: string, updates: Partial<PricingTier>) => {
+    const existing = tiers.find(t => t.id === id) || Object.values(allTiers).flat().find(t => t.id === id);
     const { error } = await supabase.from('model_pricing_tiers').update({ ...updates, updated_at: new Date().toISOString() } as any).eq('id', id);
     if (error) throw error;
+    await supabase.from('admin_audit_log').insert({
+      action: 'pricing_tier_update',
+      entity_type: 'model_pricing_tier',
+      entity_id: id,
+      old_value: existing ? { tier_label: existing.tier_label, cost_per_run: existing.cost_per_run, credits_charged: existing.credits_charged, is_active: existing.is_active } : {},
+      new_value: updates,
+    } as any);
     await fetchTiers();
-  }, [fetchTiers]);
+  }, [fetchTiers, tiers, allTiers]);
 
   const deleteTier = useCallback(async (id: string) => {
+    const existing = tiers.find(t => t.id === id) || Object.values(allTiers).flat().find(t => t.id === id);
     const { error } = await supabase.from('model_pricing_tiers').delete().eq('id', id);
     if (error) throw error;
+    await supabase.from('admin_audit_log').insert({
+      action: 'pricing_tier_delete',
+      entity_type: 'model_pricing_tier',
+      entity_id: id,
+      old_value: existing ? { tier_label: existing.tier_label, quality_level: existing.quality_level, cost_per_run: existing.cost_per_run, credits_charged: existing.credits_charged } : {},
+      new_value: {},
+    } as any);
     await fetchTiers();
-  }, [fetchTiers]);
+  }, [fetchTiers, tiers, allTiers]);
 
   const getCreditsForModelQuality = useCallback((mId: string, quality: string): number | null => {
     const modelTiers = (allTiers[mId] || tiers.filter(t => t.model_id === mId)).filter(t => t.is_active !== false);
