@@ -127,12 +127,40 @@ export default function ToolPage() {
   const handleRun = () => {
     requireAuth(async () => {
       setOutputLoaded(false);
-      await runTool({
-        toolSlug: tool!.slug,
-        prompt: inputValue || undefined,
-        imageFile: selectedFile || undefined,
-        options: { ...selectedOptions, ratio: selectedOptions['Ratio'] },
-      });
+      
+      // Set up processing messages for upscale
+      if (tool?.slug === 'upscale' && upscaleTier === 'advanced') {
+        setProcessingMessage('Analyzing your image...');
+        const timers = [
+          setTimeout(() => setProcessingMessage('Enhancing details...'), 10000),
+          setTimeout(() => setProcessingMessage('Refining textures...'), 25000),
+          setTimeout(() => setProcessingMessage('Almost done...'), 40000),
+        ];
+        await runTool({
+          toolSlug: tool!.slug,
+          prompt: inputValue || undefined,
+          imageFile: selectedFile || undefined,
+          options: { ...selectedOptions, tier: upscaleTier },
+        });
+        timers.forEach(clearTimeout);
+        setProcessingMessage('');
+      } else if (tool?.slug === 'upscale') {
+        setProcessingMessage('Enhancing your image...');
+        await runTool({
+          toolSlug: tool!.slug,
+          prompt: inputValue || undefined,
+          imageFile: selectedFile || undefined,
+          options: { ...selectedOptions, tier: upscaleTier },
+        });
+        setProcessingMessage('');
+      } else {
+        await runTool({
+          toolSlug: tool!.slug,
+          prompt: inputValue || undefined,
+          imageFile: selectedFile || undefined,
+          options: { ...selectedOptions, ratio: selectedOptions['Ratio'] },
+        });
+      }
     });
   };
 
