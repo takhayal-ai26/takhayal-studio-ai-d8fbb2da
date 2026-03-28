@@ -5,8 +5,9 @@ import { ArrowRight, Upload, Coins, Sparkles, Download, RotateCcw, Loader2, Chec
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useToolsDB, ToolView } from '@/hooks/useToolsDB';
 import { useToolRunner, ToolRunStatus } from '@/hooks/useToolRunner';
+import { useToolProviders, ToolProvider } from '@/hooks/useToolProviders';
 import { Progress } from '@/components/ui/progress';
-import { UpscaleTierSelector, UpscaleTier } from '@/components/tools/UpscaleTierSelector';
+import { ToolProviderSelector } from '@/components/tools/ToolProviderSelector';
 
 function StatusBadge({ status }: { status: ToolRunStatus }) {
   if (status === 'uploading') return <div className="flex items-center gap-2 text-primary"><Loader2 size={14} className="animate-spin" /><span className="text-[13px]">Uploading...</span></div>;
@@ -67,27 +68,38 @@ export default function ToolPage() {
 
   const tool = tools.find(t => t.slug === toolId || t.id === toolId);
 
+  // Load providers for this tool from DB
+  const { activeProviders, defaultProvider, isLoading: providersLoading } = useToolProviders(tool?.id);
+
   const [inputValue, setInputValue] = useState('');
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [outputLoaded, setOutputLoaded] = useState(false);
-  const [upscaleTier, setUpscaleTier] = useState<UpscaleTier>('standard');
+  const [selectedProviderId, setSelectedProviderId] = useState<string>('');
   const [processingMessage, setProcessingMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Tool-specific option definitions
+  // Set default provider when loaded
+  useEffect(() => {
+    if (defaultProvider && !selectedProviderId) {
+      setSelectedProviderId(defaultProvider.id);
+    }
+  }, [defaultProvider, selectedProviderId]);
+
+  // Get selected provider object
+  const selectedProvider = activeProviders.find(p => p.id === selectedProviderId) || defaultProvider;
+
+  // Tool-specific option definitions (only for tools without multi-provider)
   const toolOptions: Record<string, Array<{ label: string; values: string[]; defaultValue: string }>> = {
     'generate': [
       { label: 'Ratio', values: ['1:1', '9:16', '16:9', '4:5'], defaultValue: '1:1' },
     ],
-    'upscale': [], // Tier selection handled by UpscaleTierSelector
     'logo': [
       { label: 'Style', values: ['Minimal', 'Modern', 'Geometric', 'Playful'], defaultValue: 'Minimal' },
       { label: 'Type', values: ['Icon', 'Wordmark', 'Combination'], defaultValue: 'Icon' },
     ],
-    'remove-bg': [],
     'enhance': [
       { label: 'Mode', values: ['General', 'Portrait', 'Landscape', 'Product'], defaultValue: 'General' },
     ],
@@ -125,9 +137,11 @@ export default function ToolPage() {
   const handleRun = () => {
     requireAuth(async () => {
       setOutputLoaded(false);
-      
-      // Set up processing messages for upscale
-      if (tool?.slug === 'upscale' && upscaleTier === 'advanced') {
+
+      const isAdvanced = selectedProvider?.tier === 'advanced' || selectedProvider?.tier === 'premium';
+
+      // Set up processing messages for advanced tiers
+      if (isAdvanced) {
         setProcessingMessage('Analyzing your image...');
         const timers = [
           setTimeout(() => setProcessingMessage('Enhancing details...'), 10000),
@@ -138,26 +152,29 @@ export default function ToolPage() {
           toolSlug: tool!.slug,
           prompt: inputValue || undefined,
           imageFile: selectedFile || undefined,
-          options: { ...selectedOptions, tier: upscaleTier },
+          options: {
+            ...selectedOptions,
+            provider_endpoint: selectedProvider?.provider_endpoint,
+            ratio: selectedOptions['Ratio'],
+          },
         });
         timers.forEach(clearTimeout);
         setProcessingMessage('');
-      } else if (tool?.slug === 'upscale') {
-        setProcessingMessage('Enhancing your image...');
+      } else {
+        if (selectedProvider && (tool?.slug === 'upscale' || tool?.slug === 'enhance' || tool?.slug === 'remove-bg')) {
+          setProcessingMessage('Processing...');
+        }
         await runTool({
           toolSlug: tool!.slug,
           prompt: inputValue || undefined,
           imageFile: selectedFile || undefined,
-          options: { ...selectedOptions, tier: upscaleTier },
+          options: {
+            ...selectedOptions,
+            provider_endpoint: selectedProvider?.provider_endpoint,
+            ratio: selectedOptions['Ratio'],
+          },
         });
         setProcessingMessage('');
-      } else {
-        await runTool({
-          toolSlug: tool!.slug,
-          prompt: inputValue || undefined,
-          imageFile: selectedFile || undefined,
-          options: { ...selectedOptions, ratio: selectedOptions['Ratio'] },
-        });
       }
     });
   };
@@ -183,6 +200,7 @@ export default function ToolPage() {
     setPreviewUrl(null);
     setUploadedImageUrl(null);
     setOutputLoaded(false);
+    setSelectedProviderId(defaultProvider?.id || '');
   };
 
   if (!tool) {
@@ -200,6 +218,7 @@ export default function ToolPage() {
   const isUpload = tool.inputType === 'upload';
   const canRun = isUpload ? !!selectedFile && status !== 'processing' && status !== 'uploading' : inputValue.trim().length > 0 && status !== 'processing';
   const showBeforeAfter = (tool.slug === 'upscale' || tool.slug === 'enhance' || tool.slug === 'remove-bg') && status === 'completed' && result?.output_url && previewUrl;
+  const creditCost = selectedProvider?.credit_cost ?? tool.creditCost;
 
   return (
     <div className="flex-1 pt-16">
@@ -228,7 +247,6 @@ export default function ToolPage() {
 
               {/* Input Area */}
               {status === 'completed' && result?.output_url ? (
-                /* Result View */
                 <div className="space-y-4">
                   {showBeforeAfter ? (
                     <BeforeAfterSlider before={previewUrl!} after={result.output_url} />
@@ -239,20 +257,14 @@ export default function ToolPage() {
                           <Loader2 size={24} className="animate-spin text-primary" />
                         </div>
                       )}
-                      <img
-                        src={result.output_url}
-                        alt="Result"
+                      <img src={result.output_url} alt="Result"
                         className={`w-full rounded-xl transition-opacity duration-500 ${outputLoaded ? 'opacity-100' : 'opacity-0 absolute inset-0'}`}
-                        onLoad={() => setOutputLoaded(true)}
-                      />
+                        onLoad={() => setOutputLoaded(true)} />
                     </div>
                   )}
-
                   <div className="flex items-center gap-2 text-[11px] text-muted-foreground">
-                    <Coins size={11} />
-                    <span>{result.credits_charged} credits used</span>
+                    <Coins size={11} /><span>{result.credits_charged} credits used</span>
                   </div>
-
                   <div className="flex gap-2">
                     <button onClick={handleDownload} className="flex-1 h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
                       <Download size={14} /> Download
@@ -284,12 +296,8 @@ export default function ToolPage() {
                           </button>
                         </div>
                       ) : (
-                        <div
-                          onClick={() => fileInputRef.current?.click()}
-                          onDrop={handleDrop}
-                          onDragOver={e => e.preventDefault()}
-                          className="w-full h-40 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary/50 transition-colors cursor-pointer bg-background/40"
-                        >
+                        <div onClick={() => fileInputRef.current?.click()} onDrop={handleDrop} onDragOver={e => e.preventDefault()}
+                          className="w-full h-40 border-2 border-dashed border-border rounded-xl flex flex-col items-center justify-center gap-2 hover:border-primary/50 transition-colors cursor-pointer bg-background/40">
                           <Upload size={24} className="text-muted-foreground" />
                           <span className="text-[13px] text-muted-foreground">{t.toolPage.dropImage}</span>
                           <span className="text-[11px] text-muted-foreground/50">{t.toolPage.fileTypes}</span>
@@ -298,30 +306,28 @@ export default function ToolPage() {
                       <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileSelect} className="hidden" />
                     </div>
                   ) : (
-                    <textarea
-                      value={inputValue}
-                      onChange={e => setInputValue(e.target.value)}
-                      placeholder={t.toolPage.describePrompt}
-                      className="w-full h-28 bg-background/80 border border-border rounded-xl px-4 py-3 text-[13px] text-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none focus:border-primary transition-colors"
+                    <textarea value={inputValue} onChange={e => setInputValue(e.target.value)} placeholder={t.toolPage.describePrompt}
+                      className="w-full h-28 bg-background/80 border border-border rounded-xl px-4 py-3 text-[13px] text-foreground placeholder:text-muted-foreground/50 resize-none focus:outline-none focus:border-primary transition-colors" />
+                  )}
+
+                  {/* Provider Selector (replaces hardcoded upscale tier selector) */}
+                  {activeProviders.length > 1 && tool.slug !== 'generate' && (
+                    <ToolProviderSelector
+                      providers={activeProviders}
+                      selected={selectedProviderId}
+                      onSelect={setSelectedProviderId}
                     />
                   )}
 
-                  {/* Upscale Tier Selector */}
-                  {tool.slug === 'upscale' && (
-                    <UpscaleTierSelector selected={upscaleTier} onSelect={setUpscaleTier} />
-                  )}
-
-                  {/* Options (non-upscale tools) */}
-                  {tool.slug !== 'upscale' && currentOptions.length > 0 && (
+                  {/* Options (for tools like generate/logo) */}
+                  {currentOptions.length > 0 && (
                     <div className="flex flex-wrap gap-2 mt-4">
                       {currentOptions.map(opt => (
                         <div key={opt.label} className="flex-1 min-w-[120px]">
                           <label className="text-[11px] text-muted-foreground mb-1 block">{opt.label}</label>
-                          <select
-                            value={selectedOptions[opt.label] || opt.defaultValue}
+                          <select value={selectedOptions[opt.label] || opt.defaultValue}
                             onChange={e => setSelectedOptions(prev => ({ ...prev, [opt.label]: e.target.value }))}
-                            className="w-full h-9 bg-background/80 border border-border rounded-lg px-3 text-[12px] text-foreground focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer"
-                          >
+                            className="w-full h-9 bg-background/80 border border-border rounded-lg px-3 text-[12px] text-foreground focus:outline-none focus:border-primary transition-colors appearance-none cursor-pointer">
                             {opt.values.map(v => <option key={v} value={v}>{v}</option>)}
                           </select>
                         </div>
@@ -329,7 +335,7 @@ export default function ToolPage() {
                     </div>
                   )}
 
-                  {/* Progress / Status */}
+                  {/* Progress */}
                   {(status === 'uploading' || status === 'processing') && (
                     <div className="mt-4 space-y-2">
                       <Progress value={status === 'uploading' ? 30 : 70} className="h-1.5" />
@@ -340,18 +346,15 @@ export default function ToolPage() {
                   )}
 
                   {/* Action Button */}
-                  <button
-                    onClick={handleRun}
-                    disabled={!canRun}
-                    className="w-full mt-5 h-12 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium flex items-center justify-center gap-3 hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
+                  <button onClick={handleRun} disabled={!canRun}
+                    className="w-full mt-5 h-12 rounded-xl bg-primary text-primary-foreground text-[14px] font-medium flex items-center justify-center gap-3 hover:opacity-90 transition-opacity disabled:opacity-40 disabled:cursor-not-allowed">
                     {(status === 'uploading' || status === 'processing') ? (
                       <span className="flex items-center gap-2"><Loader2 size={16} className="animate-spin" /> {processingMessage || 'Processing...'}</span>
                     ) : (
                       <>
                         <span>{isUpload ? (tool.slug === 'upscale' ? 'Enhance' : t.toolPage.uploadProcess) : t.toolPage.generate}</span>
                         <span className="flex items-center gap-1 text-primary-foreground/70 text-[12px]">
-                          <Coins size={12} /> {tool.slug === 'upscale' ? (upscaleTier === 'advanced' ? 15 : 5) : tool.creditCost} {t.toolPage.credits}
+                          <Coins size={12} /> {creditCost} {t.toolPage.credits}
                         </span>
                       </>
                     )}

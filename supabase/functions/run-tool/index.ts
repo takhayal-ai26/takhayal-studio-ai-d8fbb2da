@@ -26,7 +26,6 @@ async function falQueueRun(
   const { status_url, response_url } = submitData;
   if (!status_url || !response_url) return { data: submitData };
 
-  // Advanced upscaler can take up to 60s, so poll up to 90 iterations (180s)
   const maxPolls = endpoint.includes("flux-vision") ? 90 : 60;
   for (let i = 0; i < maxPolls; i++) {
     await new Promise((r) => setTimeout(r, 2000));
@@ -84,9 +83,50 @@ serve(async (req) => {
       "Content-Type": "application/json",
     };
 
+    // ── RESOLVE PROVIDER ──
+    // Frontend may pass options.provider_endpoint to select a specific provider
     let endpoint = tool.provider_endpoint;
     let creditCost = tool.default_credit_cost;
+    let actualCost = Number(tool.internal_provider_cost_estimate);
     const creditValueUsd = 0.016;
+
+    const requestedEndpoint = options?.provider_endpoint;
+
+    if (requestedEndpoint) {
+      // Look up the provider in tool_providers to get correct costs
+      const { data: provider } = await supabase
+        .from("tool_providers")
+        .select("*")
+        .eq("tool_id", tool.id)
+        .eq("provider_endpoint", requestedEndpoint)
+        .eq("is_active", true)
+        .single();
+
+      if (provider) {
+        endpoint = provider.provider_endpoint;
+        creditCost = provider.credit_cost;
+        actualCost = Number(provider.internal_cost_usd);
+        console.log(`[run-tool] Using provider: ${provider.display_name} (${endpoint}) — ${creditCost} credits`);
+      } else {
+        console.warn(`[run-tool] Requested endpoint ${requestedEndpoint} not found in tool_providers, using tool default`);
+      }
+    } else {
+      // No endpoint specified — use the default provider from tool_providers
+      const { data: defaultProvider } = await supabase
+        .from("tool_providers")
+        .select("*")
+        .eq("tool_id", tool.id)
+        .eq("is_default", true)
+        .eq("is_active", true)
+        .single();
+
+      if (defaultProvider) {
+        endpoint = defaultProvider.provider_endpoint;
+        creditCost = defaultProvider.credit_cost;
+        actualCost = Number(defaultProvider.internal_cost_usd);
+        console.log(`[run-tool] Using default provider: ${defaultProvider.display_name} (${endpoint})`);
+      }
+    }
 
     // Create tool_run record as "processing"
     const { data: runRecord } = await supabase.from("tool_runs").insert({
@@ -99,7 +139,7 @@ serve(async (req) => {
       input_options_json: options || {},
       status: "processing",
       credits_charged: creditCost,
-      estimated_provider_cost: Number(tool.internal_provider_cost_estimate),
+      estimated_provider_cost: actualCost,
       started_at: new Date().toISOString(),
     }).select().single();
 
@@ -108,7 +148,6 @@ serve(async (req) => {
     let resultData: any = null;
     let outputUrl: string | null = null;
     let outputImages: any[] = [];
-    let actualCost = Number(tool.internal_provider_cost_estimate);
 
     try {
       // =================== TOOL-SPECIFIC LOGIC ===================
@@ -133,41 +172,47 @@ serve(async (req) => {
         outputImages = resultData.data?.images || [];
         outputUrl = outputImages[0]?.url || null;
 
-      } else if (tool_slug === "upscale") {
-        // ===== NEW UPSCALE SYSTEM: Standard (Clarity) / Advanced (Flux Vision) =====
-        if (!image_url) throw new Error("image_url is required for upscale");
+      } else if (tool_slug === "upscale" || tool_slug === "enhance") {
+        // ===== UNIFIED UPSCALE/ENHANCE: Uses provider endpoint from DB =====
+        if (!image_url) throw new Error("image_url is required");
 
-        const tier = options?.tier || "standard";
+        let payload: Record<string, unknown> = { image_url };
 
-        if (tier === "advanced") {
-          // Flux Vision Upscaler
-          endpoint = "fal-ai/flux-vision-upscaler";
-          creditCost = 15;
-          actualCost = 0.10;
-          const payload = {
+        // Build payload based on endpoint type
+        if (endpoint.includes("clarity-upscaler")) {
+          payload = {
+            image_url,
+            scale_factor: 2,
+            creativity: tool_slug === "enhance" ? 0.3 : 0.35,
+            resemblance: 0.6,
+            detail: 1.0,
+            ...(tool_slug === "enhance" ? {
+              prompt: options?.mode === "Portrait" ? "enhance portrait photo, sharp details, natural skin tones" :
+                      options?.mode === "Landscape" ? "enhance landscape photo, vivid colors, sharp details" :
+                      options?.mode === "Product" ? "enhance product photo, sharp details, clean background" :
+                      "enhance photo, improve quality, sharpen details",
+              shape_preservation: 0.25,
+            } : {}),
+          };
+        } else if (endpoint.includes("flux-vision")) {
+          payload = {
             image_url,
             scale_factor: 2,
             prompt: "highly detailed, sharp, professional quality, enhanced textures",
           };
-          resultData = await falQueueRun(endpoint, payload, falHeaders);
+        } else if (endpoint.includes("esrgan")) {
+          payload = { image_url, scale: 2 };
+        } else if (endpoint.includes("creative-upscaler")) {
+          payload = { image_url, scale: 2, creativity: 0.5 };
         } else {
-          // Clarity Upscaler (standard)
-          endpoint = "fal-ai/clarity-upscaler";
-          creditCost = 5;
-          actualCost = 0.03;
-          const payload = {
-            image_url,
-            scale_factor: 2,
-            creativity: 0.35,
-            resemblance: 0.6,
-            detail: 1.0,
-          };
-          resultData = await falQueueRun(endpoint, payload, falHeaders);
+          // Generic fallback
+          payload = { image_url, scale_factor: 2 };
         }
 
+        resultData = await falQueueRun(endpoint, payload, falHeaders);
         if (resultData.error) throw new Error(resultData.error);
 
-        outputUrl = resultData.data?.image?.url || null;
+        outputUrl = resultData.data?.image?.url || resultData.data?.images?.[0]?.url || null;
         if (outputUrl) outputImages = [{ url: outputUrl }];
 
       } else if (tool_slug === "logo") {
@@ -179,6 +224,12 @@ serve(async (req) => {
           style: "digital_illustration",
         };
 
+        // Ideogram uses slightly different params
+        if (endpoint.includes("ideogram")) {
+          payload.prompt = `Logo: ${prompt}. ${options?.style || 'minimal'} style. Clean professional design.`;
+          delete payload.style;
+        }
+
         resultData = await falQueueRun(endpoint, payload, falHeaders);
         if (resultData.error) throw new Error(resultData.error);
 
@@ -189,27 +240,6 @@ serve(async (req) => {
         if (!image_url) throw new Error("image_url is required for background removal");
 
         resultData = await falQueueRun(endpoint, { image_url }, falHeaders);
-        if (resultData.error) throw new Error(resultData.error);
-
-        outputUrl = resultData.data?.image?.url || null;
-        if (outputUrl) outputImages = [{ url: outputUrl }];
-
-      } else if (tool_slug === "enhance") {
-        if (!image_url) throw new Error("image_url is required for enhancement");
-
-        const payload: Record<string, unknown> = {
-          image_url,
-          scale: 2,
-          creativity: 0.3,
-          detail: 1,
-          shape_preservation: 0.25,
-          prompt: options?.mode === "Portrait" ? "enhance portrait photo, sharp details, natural skin tones" :
-                  options?.mode === "Landscape" ? "enhance landscape photo, vivid colors, sharp details" :
-                  options?.mode === "Product" ? "enhance product photo, sharp details, clean background" :
-                  "enhance photo, improve quality, sharpen details",
-        };
-
-        resultData = await falQueueRun(endpoint, payload, falHeaders);
         if (resultData.error) throw new Error(resultData.error);
 
         outputUrl = resultData.data?.image?.url || null;
@@ -238,7 +268,7 @@ serve(async (req) => {
         }).eq("id", runId);
       }
 
-      console.log(`[run-tool] ${tool_slug} completed. output=${outputUrl} cost=$${actualCost} revenue=$${revenue}`);
+      console.log(`[run-tool] ${tool_slug} completed via ${endpoint}. output=${outputUrl} cost=$${actualCost} revenue=$${revenue}`);
 
       return new Response(JSON.stringify({
         success: true,
