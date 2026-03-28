@@ -38,15 +38,15 @@ export function UpscaleTierSelector({ selected, onSelect }: UpscaleTierSelectorP
         className={cn(
           'relative flex flex-col items-start p-4 rounded-xl transition-all text-left',
           selected === 'advanced'
-            ? 'border-[1.5px] border-[#F03E1B] bg-[#F03E1B]/5'
+            ? 'border-[1.5px] border-primary bg-primary/5'
             : 'border border-border bg-card/40 hover:border-muted-foreground/30'
         )}
       >
-        <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-[#F03E1B] text-white text-[9px] font-semibold">
+        <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-primary text-primary-foreground text-[9px] font-semibold">
           Best Quality
         </div>
-        <div className="w-8 h-8 rounded-lg bg-[#F03E1B]/10 flex items-center justify-center mb-2">
-          <Wand2 size={16} className="text-[#F03E1B]" />
+        <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center mb-2">
+          <Wand2 size={16} className="text-primary" />
         </div>
         <span className="text-[13px] font-medium text-foreground">Advanced Enhance</span>
         <span className="text-[11px] text-muted-foreground mt-0.5">AI adds texture, depth, and detail</span>
