@@ -48,8 +48,16 @@ export function useToolProviders(toolId?: string) {
 
   const updateProvider = useMutation({
     mutationFn: async ({ id, updates }: { id: string; updates: Partial<ToolProvider> }) => {
+      const old = providers.find(p => p.id === id);
       const { error } = await supabase.from('tool_providers').update(updates as any).eq('id', id);
       if (error) throw error;
+      await supabase.from('admin_audit_log').insert({
+        action: 'tool_provider_update',
+        entity_type: 'tool_provider',
+        entity_id: id,
+        old_value: old ? { display_name: old.display_name, credit_cost: old.credit_cost, internal_cost_usd: old.internal_cost_usd, is_active: old.is_active, is_default: old.is_default } : {},
+        new_value: updates,
+      } as any);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tool-providers'] }),
   });
@@ -58,25 +66,47 @@ export function useToolProviders(toolId?: string) {
     mutationFn: async (provider: Partial<ToolProvider>) => {
       const { error } = await supabase.from('tool_providers').insert(provider as any);
       if (error) throw error;
+      await supabase.from('admin_audit_log').insert({
+        action: 'tool_provider_create',
+        entity_type: 'tool_provider',
+        entity_id: provider.tool_id || null,
+        old_value: {},
+        new_value: { display_name: provider.display_name, credit_cost: provider.credit_cost, internal_cost_usd: provider.internal_cost_usd, tier: provider.tier },
+      } as any);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tool-providers'] }),
   });
 
   const deleteProvider = useMutation({
     mutationFn: async (id: string) => {
+      const old = providers.find(p => p.id === id);
       const { error } = await supabase.from('tool_providers').delete().eq('id', id);
       if (error) throw error;
+      await supabase.from('admin_audit_log').insert({
+        action: 'tool_provider_delete',
+        entity_type: 'tool_provider',
+        entity_id: id,
+        old_value: old ? { display_name: old.display_name, provider_endpoint: old.provider_endpoint } : {},
+        new_value: {},
+      } as any);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tool-providers'] }),
   });
 
   const setDefault = useMutation({
     mutationFn: async ({ providerId, toolId: tId }: { providerId: string; toolId: string }) => {
-      // Unset all defaults for this tool
+      const oldDefault = providers.find(p => p.tool_id === tId && p.is_default);
       await supabase.from('tool_providers').update({ is_default: false } as any).eq('tool_id', tId);
-      // Set the new default
       const { error } = await supabase.from('tool_providers').update({ is_default: true } as any).eq('id', providerId);
       if (error) throw error;
+      const newDefault = providers.find(p => p.id === providerId);
+      await supabase.from('admin_audit_log').insert({
+        action: 'tool_provider_set_default',
+        entity_type: 'tool_provider',
+        entity_id: providerId,
+        old_value: oldDefault ? { display_name: oldDefault.display_name } : {},
+        new_value: { display_name: newDefault?.display_name || providerId },
+      } as any);
     },
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ['tool-providers'] }),
   });
