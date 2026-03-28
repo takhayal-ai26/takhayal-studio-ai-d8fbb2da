@@ -13,6 +13,7 @@ import { useQuery } from '@tanstack/react-query';
 import AdminNotifications from './AdminNotifications';
 import AdminTranslations from './AdminTranslations';
 import AdminRoles from './AdminRoles';
+import BrandThemeTab from '@/components/admin/BrandThemeTab';
 import {
   usePricingPlans, useCreditPackages,
   useSavePlan, useDeletePlan, useSavePackage, useDeletePackage,
@@ -252,6 +253,7 @@ export default function AdminSettingsMerged() {
           <TabsTrigger value="localization" className="text-xs gap-1.5"><Languages size={14} /> Localization</TabsTrigger>
           <TabsTrigger value="roles" className="text-xs gap-1.5"><Lock size={14} /> Roles</TabsTrigger>
           <TabsTrigger value="audit" className="text-xs gap-1.5"><Clock size={14} /> Audit Log</TabsTrigger>
+          <TabsTrigger value="brand" className="text-xs gap-1.5"><Palette size={14} /> Brand & Theme</TabsTrigger>
         </TabsList>
 
         <TabsContent value="general"><GeneralTab /></TabsContent>
@@ -260,6 +262,7 @@ export default function AdminSettingsMerged() {
         <TabsContent value="localization"><AdminTranslations embedded /></TabsContent>
         <TabsContent value="roles"><AdminRoles embedded /></TabsContent>
         <TabsContent value="audit"><AuditLogTab /></TabsContent>
+        <TabsContent value="brand"><BrandThemeTab /></TabsContent>
       </Tabs>
     </div>
   );
