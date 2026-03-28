@@ -166,6 +166,12 @@ export default function AdminTools() {
                     </div>
                   </TableCell>
                   <TableCell className="text-[13px]">{getToolRunCount(tool.slug)}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-[10px]">{getActiveProviderCount(tool.id)} active</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-[12px] text-muted-foreground">{getDefaultProviderName(tool.id)}</span>
+                  </TableCell>
                   <TableCell onClick={e => e.stopPropagation()}>
                     <Switch checked={tool.active} onCheckedChange={() => handleToggleActive(tool)} className="scale-75" />
                   </TableCell>
