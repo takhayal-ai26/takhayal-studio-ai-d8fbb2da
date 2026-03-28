@@ -20,6 +20,7 @@ interface DBTemplate {
   prompt: string;
   active: boolean;
   featured: boolean;
+  show_on_studio: boolean;
   sort_order: number;
 }
 
