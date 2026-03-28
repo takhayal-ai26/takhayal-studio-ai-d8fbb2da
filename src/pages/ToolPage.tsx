@@ -6,6 +6,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { useToolsDB, ToolView } from '@/hooks/useToolsDB';
 import { useToolRunner, ToolRunStatus } from '@/hooks/useToolRunner';
 import { Progress } from '@/components/ui/progress';
+import { UpscaleTierSelector, UpscaleTier } from '@/components/tools/UpscaleTierSelector';
 
 function StatusBadge({ status }: { status: ToolRunStatus }) {
   if (status === 'uploading') return <div className="flex items-center gap-2 text-primary"><Loader2 size={14} className="animate-spin" /><span className="text-[13px]">Uploading...</span></div>;
