@@ -148,6 +148,7 @@ export default function AdminTemplates() {
           <SelectContent>
             <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="featured">Featured</SelectItem>
+            <SelectItem value="studio">On Studio</SelectItem>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
           </SelectContent>
@@ -165,6 +166,7 @@ export default function AdminTemplates() {
               <TableHead className="text-[11px] uppercase text-muted-foreground">Template</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Category</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Ratio</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Studio</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Featured</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
               <TableHead className="w-10" />
@@ -188,6 +190,12 @@ export default function AdminTemplates() {
                 </TableCell>
                 <TableCell><Badge variant="outline" className="text-[10px]">{t.category}</Badge></TableCell>
                 <TableCell className="text-[13px] text-muted-foreground">{t.ratio}</TableCell>
+                <TableCell onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center gap-1.5">
+                    <Switch checked={t.show_on_studio} onCheckedChange={() => toggleField(t.id, 'show_on_studio' as any, t.show_on_studio)} className="scale-75" />
+                    {t.show_on_studio && <span className="text-[10px] text-muted-foreground">#{t.studio_sort_order}</span>}
+                  </div>
+                </TableCell>
                 <TableCell onClick={e => e.stopPropagation()}>
                   <Switch checked={t.featured} onCheckedChange={() => toggleField(t.id, 'featured', t.featured)} className="scale-75" />
                 </TableCell>
