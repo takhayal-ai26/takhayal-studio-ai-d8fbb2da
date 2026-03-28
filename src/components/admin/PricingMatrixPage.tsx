@@ -225,12 +225,20 @@ export default function PricingMatrixPage() {
 
   if (loading) return <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">Loading pricing matrix…</div>;
 
-  const renderTierCell = (tier: TierRow | undefined, quality: string) => {
-    if (!tier || !tier.is_active) return <td className="px-2 py-2.5 text-center text-muted-foreground/30 text-[11px]" colSpan={1}>—</td>;
+  const renderTierCells = (tier: TierRow | undefined) => {
+    if (!tier || !tier.is_active) {
+      return (
+        <>
+          <td className="px-2 py-2.5 text-center text-muted-foreground/30 text-[11px] border-l border-border/10">—</td>
+          <td className="px-2 py-2.5 text-center text-muted-foreground/30 text-[11px]">—</td>
+          <td className="px-2 py-2.5 text-center text-muted-foreground/30 text-[11px]">—</td>
+        </>
+      );
+    }
     const margin = calcMargin(tier.cost_per_run, tier.credits_charged);
     return (
       <>
-        <td className="px-2 py-2.5 text-[11px] text-center font-mono">${tier.cost_per_run.toFixed(3)}</td>
+        <td className="px-2 py-2.5 text-[11px] text-center font-mono border-l border-border/10">${tier.cost_per_run.toFixed(3)}</td>
         <td className="px-2 py-2.5 text-[11px] text-center font-semibold">{tier.credits_charged}</td>
         <td className={`px-2 py-2.5 text-[11px] text-center font-semibold ${marginColor(margin)} ${marginBg(margin)}`}>{margin.toFixed(0)}%</td>
       </>
@@ -320,13 +328,9 @@ export default function PricingMatrixPage() {
                       <td className="px-2 py-2.5">
                         <Badge variant="outline" className="text-[9px]">{r.category}</Badge>
                       </td>
-                      {/* 1K */}
-                      <td className="border-l border-border/10" />
-                      {r.tiers['1K'] && r.tiers['1K'].is_active ? renderTierCell(r.tiers['1K'], '1K') : <><td className="px-2 py-2.5 text-center text-muted-foreground/30 text-[11px] border-l border-border/10" colSpan={3}>—</td></>}
-                      {/* 2K */}
-                      {r.tiers['2K'] && r.tiers['2K'].is_active ? <><td className="border-l border-border/10" />{renderTierCell(r.tiers['2K'], '2K')}</> : <td className="px-2 py-2.5 text-center text-muted-foreground/30 text-[11px] border-l border-border/10" colSpan={3}>—</td>}
-                      {/* 4K */}
-                      {r.tiers['4K'] && r.tiers['4K'].is_active ? <><td className="border-l border-border/10" />{renderTierCell(r.tiers['4K'], '4K')}</> : <td className="px-2 py-2.5 text-center text-muted-foreground/30 text-[11px] border-l border-border/10" colSpan={3}>—</td>}
+                      {renderTierCells(r.tiers['1K'])}
+                      {renderTierCells(r.tiers['2K'])}
+                      {renderTierCells(r.tiers['4K'])}
                       {/* Status */}
                       <td className="px-2 py-2.5 text-center border-l border-border/10">
                         {r.model.is_active ? (
