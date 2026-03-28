@@ -86,6 +86,9 @@ export default function AdminTools() {
   };
 
   const getToolRunCount = (slug: string) => runStats.filter((r: any) => r.tool_slug === slug).length;
+  const getToolProviders = (toolId: string) => allProviders.filter(p => p.tool_id === toolId);
+  const getActiveProviderCount = (toolId: string) => getToolProviders(toolId).filter(p => p.is_active).length;
+  const getDefaultProviderName = (toolId: string) => getToolProviders(toolId).find(p => p.is_default)?.display_name || '—';
 
   if (isLoading) {
     return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary" size={24} /></div>;
