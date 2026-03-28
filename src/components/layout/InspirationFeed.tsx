@@ -84,7 +84,7 @@ export function InspirationFeed() {
                     {title}
                   </h3>
                   <button
-                    className="self-start px-3.5 py-1.5 rounded-lg bg-white/15 backdrop-blur-sm border border-white/20 text-white text-[11px] font-medium opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hover:bg-white/25"
+                    className="self-start px-3.5 py-1.5 rounded-lg bg-white/15 backdrop-blur-sm border border-white/20 text-white text-[11px] font-medium transition-all duration-300 hover:bg-white/25"
                   >
                     {isAr ? 'استخدم هذا' : 'Use This Prompt'}
                   </button>
