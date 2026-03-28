@@ -123,7 +123,7 @@ export default function AdminTemplates() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <Card className="border-border/40 bg-card/50"><CardContent className="p-4"><p className="text-lg font-bold">{templates.length}</p><p className="text-[11px] text-muted-foreground">Total Templates</p></CardContent></Card>
         <Card className="border-border/40 bg-card/50"><CardContent className="p-4"><p className="text-lg font-bold">{templates.filter(t => t.featured).length}</p><p className="text-[11px] text-muted-foreground">Featured</p></CardContent></Card>
         <Card className="border-border/40 bg-card/50"><CardContent className="p-4"><p className="text-lg font-bold">{templates.filter(t => t.show_on_studio).length}</p><p className="text-[11px] text-muted-foreground">On Studio</p></CardContent></Card>
