@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Search, Plus, Edit, BarChart3, Eye, Zap, ArrowUpRight, Trash2, Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2, Image, Palette, Layers, Loader2 } from 'lucide-react';
 import { useToolsDB, ToolRecord } from '@/hooks/useToolsDB';
+import { useToolProviders } from '@/hooks/useToolProviders';
 import AdminToolEditorDialog from '@/components/admin/AdminToolEditorDialog';
 import { toast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
