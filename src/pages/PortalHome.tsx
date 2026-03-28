@@ -182,16 +182,20 @@ export default function PortalHome() {
               ))}
             </div>
 
-            <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
+            <div className="columns-2 md:columns-3 lg:columns-4 gap-1.5 [column-fill:_balance]">
               {filteredMasonry.map((item, i) => (
-                <button key={i} onClick={() => goToCanvas(isAr ? item.promptAr : item.promptEn, item.template)} className="group relative w-full rounded-2xl overflow-hidden break-inside-avoid block">
-                  <img src={item.image} alt={isAr ? item.promptAr : item.promptEn} className="w-full object-cover transition-transform duration-700 group-hover:scale-[1.06]" loading="lazy" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute bottom-0 left-0 right-0 p-4 opacity-0 group-hover:opacity-100 transition-all duration-300 translate-y-1 group-hover:translate-y-0">
-                    <p className="text-[12px] text-foreground/90 line-clamp-1 mb-2">{isAr ? item.promptAr : item.promptEn}</p>
-                    <span className="inline-flex items-center gap-1 h-7 px-3 rounded-md bg-primary text-primary-foreground text-[11px] font-medium">
-                      {t.portal.use} <ArrowRight size={10} className={isRTL ? 'rotate-180' : ''} />
-                    </span>
+                <button key={i} onClick={() => goToCanvas(isAr ? item.promptAr : item.promptEn, item.template)} className="group w-full rounded-lg overflow-hidden break-inside-avoid mb-1.5 block text-left">
+                  <div className="relative overflow-hidden">
+                    <img src={item.image} alt={item.template} className="w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                    <h3 className="absolute bottom-2.5 left-3 right-3 text-sm font-semibold text-white leading-tight drop-shadow-md">
+                      {item.template}
+                    </h3>
+                    <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                      <span className="h-7 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium flex items-center gap-1 shadow-lg">
+                        {t.portal.use}
+                      </span>
+                    </div>
                   </div>
                 </button>
               ))}
