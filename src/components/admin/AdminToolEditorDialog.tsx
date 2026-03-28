@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -8,10 +8,11 @@ import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2, Upload, X, ImageIcon, Link as LinkIcon } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { useToolsDB, ToolRecord } from '@/hooks/useToolsDB';
+import { supabase } from '@/integrations/supabase/client';
 
 interface Props {
   open: boolean;
@@ -20,49 +21,86 @@ interface Props {
 }
 
 const ICON_OPTIONS = ['Sparkles', 'ArrowUpCircle', 'Hexagon', 'Scissors', 'Wand2', 'Image', 'Palette', 'Layers'];
+const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
+const MAX_SIZE = 10 * 1024 * 1024; // 10MB
 
 function emptyTool(): Partial<ToolRecord> {
   return {
-    slug: '',
-    route: '/tools/',
-    input_type: 'prompt',
-    icon_name: 'Sparkles',
-    active: true,
-    featured: false,
-    title_en: '',
-    title_ar: '',
-    description_en: '',
-    description_ar: '',
-    short_desc_en: '',
-    short_desc_ar: '',
-    hero_title_en: '',
-    hero_title_ar: '',
-    hero_subtitle_en: '',
-    hero_subtitle_ar: '',
-    cover_image_url: '',
-    provider_name: 'fal.ai',
-    provider_endpoint: '',
-    default_credit_cost: 2,
-    internal_provider_cost_estimate: 0,
-    result_type: 'image',
-    sort_order: 0,
+    slug: '', route: '/tools/', input_type: 'prompt', icon_name: 'Sparkles',
+    active: true, featured: false, title_en: '', title_ar: '',
+    description_en: '', description_ar: '', short_desc_en: '', short_desc_ar: '',
+    hero_title_en: '', hero_title_ar: '', hero_subtitle_en: '', hero_subtitle_ar: '',
+    cover_image_url: '', provider_name: 'fal.ai', provider_endpoint: '',
+    default_credit_cost: 2, internal_provider_cost_estimate: 0, result_type: 'image', sort_order: 0,
   };
 }
 
 export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Props) {
   const [form, setForm] = useState<Partial<ToolRecord>>(emptyTool());
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const [urlMode, setUrlMode] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const { updateTool, addTool } = useToolsDB();
   const isEdit = !!tool;
 
   useEffect(() => {
-    if (open) setForm(tool ? { ...tool } : emptyTool());
+    if (open) {
+      setForm(tool ? { ...tool } : emptyTool());
+      setUrlMode(false);
+    }
   }, [open, tool]);
 
   const set = (key: keyof ToolRecord, value: any) => setForm(p => ({ ...p, [key]: value }));
 
   const missingArabic = ['title_ar', 'description_ar', 'short_desc_ar', 'hero_title_ar', 'hero_subtitle_ar']
     .filter(k => !form[k as keyof ToolRecord]);
+
+  const uploadFile = useCallback(async (file: File) => {
+    if (!ACCEPTED_TYPES.includes(file.type)) {
+      toast({ title: 'Invalid file type', description: 'Only JPG, PNG, and WEBP are accepted', variant: 'destructive' });
+      return;
+    }
+    if (file.size > MAX_SIZE) {
+      toast({ title: 'File too large', description: 'Maximum file size is 10MB', variant: 'destructive' });
+      return;
+    }
+
+    setUploading(true);
+    const slug = form.slug || 'tool';
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `${slug}-${Date.now()}.${ext}`;
+
+    const { error } = await supabase.storage.from('tool-covers').upload(path, file, {
+      cacheControl: '3600',
+      upsert: true,
+    });
+
+    if (error) {
+      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+      setUploading(false);
+      return;
+    }
+
+    const { data: urlData } = supabase.storage.from('tool-covers').getPublicUrl(path);
+    set('cover_image_url', urlData.publicUrl);
+    toast({ title: 'Image uploaded' });
+    setUploading(false);
+  }, [form.slug]);
+
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) uploadFile(file);
+    if (e.target) e.target.value = '';
+  };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) uploadFile(file);
+  };
+
+  const handleRemoveImage = () => set('cover_image_url', '');
 
   const handleSave = async () => {
     if (!form.title_en?.trim()) {
@@ -105,6 +143,8 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
     );
   };
 
+  const coverUrl = form.cover_image_url || '';
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] p-0 bg-card border-border/40">
@@ -138,9 +178,107 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
             <TabsContent value="hero" className="space-y-4 pb-4">
               <BiField label="Hero Title" enKey="hero_title_en" arKey="hero_title_ar" />
               <BiField label="Hero Subtitle" enKey="hero_subtitle_en" arKey="hero_subtitle_ar" textarea />
-              <div className="space-y-1.5">
-                <Label className="text-xs">Cover Image URL</Label>
-                <Input value={form.cover_image_url || ''} onChange={e => set('cover_image_url', e.target.value)} className="h-9 text-xs bg-muted/30 border-border/40" placeholder="https://..." />
+
+              {/* Cover Image Section */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <Label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Cover Image</Label>
+                  <button
+                    type="button"
+                    onClick={() => setUrlMode(!urlMode)}
+                    className="text-[10px] text-primary hover:underline flex items-center gap-1"
+                  >
+                    <LinkIcon size={10} /> {urlMode ? 'Switch to Upload' : 'Paste URL instead'}
+                  </button>
+                </div>
+
+                {coverUrl ? (
+                  /* Preview */
+                  <div className="relative rounded-xl overflow-hidden border border-border/40 bg-muted/10">
+                    <img
+                      src={coverUrl}
+                      alt="Cover preview"
+                      className="w-full h-48 object-cover"
+                      onError={(e) => {
+                        (e.target as HTMLImageElement).style.display = 'none';
+                      }}
+                    />
+                    <div className="absolute top-2 right-2 flex gap-1.5">
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="px-2.5 py-1 rounded-lg bg-black/60 backdrop-blur-sm text-white text-[10px] font-medium hover:bg-black/80 transition-colors"
+                      >
+                        Replace
+                      </button>
+                      <button
+                        type="button"
+                        onClick={handleRemoveImage}
+                        className="w-7 h-7 rounded-lg bg-black/60 backdrop-blur-sm text-white flex items-center justify-center hover:bg-destructive/80 transition-colors"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                    <div className="absolute bottom-2 left-2">
+                      <span className="px-2 py-0.5 rounded bg-black/50 backdrop-blur-sm text-[9px] text-white/70 font-mono truncate max-w-[250px] block">
+                        {coverUrl.split('/').pop()}
+                      </span>
+                    </div>
+                  </div>
+                ) : urlMode ? (
+                  /* URL input */
+                  <div className="space-y-2">
+                    <Input
+                      value={coverUrl}
+                      onChange={e => set('cover_image_url', e.target.value)}
+                      className="h-9 text-xs bg-muted/30 border-border/40 font-mono"
+                      placeholder="https://example.com/image.jpg"
+                    />
+                    <p className="text-[10px] text-muted-foreground">Paste a direct image URL</p>
+                  </div>
+                ) : (
+                  /* Upload drop zone */
+                  <div
+                    onClick={() => !uploading && fileInputRef.current?.click()}
+                    onDrop={handleDrop}
+                    onDragOver={e => e.preventDefault()}
+                    className={`relative w-full h-40 border-2 border-dashed rounded-xl flex flex-col items-center justify-center gap-2 transition-colors cursor-pointer ${
+                      uploading
+                        ? 'border-primary/50 bg-primary/5'
+                        : 'border-border/40 hover:border-primary/40 bg-muted/10 hover:bg-muted/20'
+                    }`}
+                  >
+                    {uploading ? (
+                      <>
+                        <Loader2 size={24} className="animate-spin text-primary" />
+                        <span className="text-[12px] text-primary font-medium">Uploading...</span>
+                      </>
+                    ) : (
+                      <>
+                        <div className="w-12 h-12 rounded-xl bg-muted/30 flex items-center justify-center">
+                          <Upload size={20} className="text-muted-foreground" />
+                        </div>
+                        <span className="text-[12px] text-muted-foreground font-medium">
+                          Click to upload or drag & drop
+                        </span>
+                        <span className="text-[10px] text-muted-foreground/60">
+                          JPG, PNG, WEBP • Max 10MB
+                        </span>
+                        <span className="text-[10px] text-muted-foreground/40">
+                          Recommended: 1200×800px or 4:3 aspect ratio
+                        </span>
+                      </>
+                    )}
+                  </div>
+                )}
+
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp"
+                  onChange={handleFileSelect}
+                  className="hidden"
+                />
               </div>
             </TabsContent>
 
@@ -241,7 +379,7 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
 
         <DialogFooter className="px-6 pb-6 pt-2 border-t border-border/20">
           <Button variant="outline" size="sm" className="text-xs" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button size="sm" className="text-xs gap-1.5" onClick={handleSave} disabled={saving}>
+          <Button size="sm" className="text-xs gap-1.5" onClick={handleSave} disabled={saving || uploading}>
             {saving && <Loader2 size={12} className="animate-spin" />}
             {isEdit ? 'Save Changes' : 'Add Tool'}
           </Button>

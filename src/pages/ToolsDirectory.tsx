@@ -44,10 +44,27 @@ export default function ToolsDirectory() {
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filtered.map(tool => {
               const Icon = tool.icon;
+              const hasImage = !!tool.image;
               return (
-                <button key={tool.id} onClick={() => navigate(tool.slug === 'generate' ? '/studio' : `/tools/${tool.slug}`)} className="group relative rounded-[20px] overflow-hidden text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/10 focus:outline-none">
-                  <div className="aspect-[4/3] bg-muted/20">
-                    {tool.image && <img src={tool.image} alt={tool.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy" />}
+                <button
+                  key={tool.id}
+                  onClick={() => navigate(tool.slug === 'generate' ? '/studio' : `/tools/${tool.slug}`)}
+                  className="group relative rounded-[20px] overflow-hidden text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/10 focus:outline-none"
+                >
+                  <div className="aspect-[4/3] relative">
+                    {hasImage ? (
+                      <img
+                        src={tool.image}
+                        alt={tool.name}
+                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                        loading="lazy"
+                      />
+                    ) : (
+                      /* Gradient fallback when no image */
+                      <div className="w-full h-full bg-gradient-to-br from-primary/20 via-muted/30 to-background flex items-center justify-center">
+                        <Icon size={48} className="text-primary/30" />
+                      </div>
+                    )}
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                   <div className="absolute top-4 left-4">

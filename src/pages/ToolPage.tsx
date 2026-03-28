@@ -176,7 +176,11 @@ export default function ToolPage() {
     <div className="flex-1 pt-16">
       {/* Hero Section */}
       <section className="relative w-full overflow-hidden" style={{ minHeight: '520px' }}>
-        {tool.image && <img src={tool.image} alt={tool.name} className="absolute inset-0 w-full h-full object-cover" />}
+        {tool.image ? (
+          <img src={tool.image} alt={tool.name} className="absolute inset-0 w-full h-full object-cover" />
+        ) : (
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/15 via-muted/20 to-background" />
+        )}
         <div className={`absolute inset-0 bg-gradient-to-${isRTL ? 'l' : 'r'} from-background via-background/85 to-background/40`} />
         <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-background/40" />
 
