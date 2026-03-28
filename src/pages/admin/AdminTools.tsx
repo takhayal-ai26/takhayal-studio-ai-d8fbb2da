@@ -191,7 +191,7 @@ export default function AdminTools() {
             })}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-sm text-muted-foreground py-8">
+                <TableCell colSpan={10} className="text-center text-sm text-muted-foreground py-8">
                   No tools found
                 </TableCell>
               </TableRow>
