@@ -266,7 +266,7 @@ export function CreationPanel() {
             <>
               {t.toolPage.generate}
               <span className="flex items-center gap-1 text-[11px] opacity-60">
-                <Coins size={12} />{cost} {t.toolPage.credits}
+                <Coins size={12} />{cost} {t.toolPage.credits} · ~${(cost * CREDIT_VALUE).toFixed(2)}
               </span>
             </>
           )}
