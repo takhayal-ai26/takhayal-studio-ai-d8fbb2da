@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
-import { Settings, Globe, Shield, Zap, FileText, Bell, Languages, Lock, Clock } from 'lucide-react';
+import { Settings, Globe, Shield, Zap, FileText, Bell, Languages, Lock, Clock, Palette } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import AdminNotifications from './AdminNotifications';
