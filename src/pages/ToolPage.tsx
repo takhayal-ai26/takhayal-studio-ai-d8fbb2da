@@ -73,6 +73,9 @@ export default function ToolPage() {
   const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
   const [selectedOptions, setSelectedOptions] = useState<Record<string, string>>({});
   const [outputLoaded, setOutputLoaded] = useState(false);
+  const [upscaleTier, setUpscaleTier] = useState<UpscaleTier>('standard');
+  const [processingMessage, setProcessingMessage] = useState('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Tool-specific option definitions
