@@ -24,6 +24,8 @@ interface DBTemplate {
   active: boolean;
   featured: boolean;
   sort_order: number;
+  show_on_studio: boolean;
+  studio_sort_order: number;
   created_at: string;
   updated_at: string;
 }
@@ -69,6 +71,7 @@ export default function AdminTemplates() {
     if (statusFilter === 'featured') list = list.filter(t => t.featured);
     if (statusFilter === 'active') list = list.filter(t => t.active);
     if (statusFilter === 'inactive') list = list.filter(t => !t.active);
+    if (statusFilter === 'studio') list = list.filter(t => t.show_on_studio);
     return list;
   }, [templates, search, categoryFilter, statusFilter]);
 
@@ -120,9 +123,10 @@ export default function AdminTemplates() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-4 gap-4">
         <Card className="border-border/40 bg-card/50"><CardContent className="p-4"><p className="text-lg font-bold">{templates.length}</p><p className="text-[11px] text-muted-foreground">Total Templates</p></CardContent></Card>
         <Card className="border-border/40 bg-card/50"><CardContent className="p-4"><p className="text-lg font-bold">{templates.filter(t => t.featured).length}</p><p className="text-[11px] text-muted-foreground">Featured</p></CardContent></Card>
+        <Card className="border-border/40 bg-card/50"><CardContent className="p-4"><p className="text-lg font-bold">{templates.filter(t => t.show_on_studio).length}</p><p className="text-[11px] text-muted-foreground">On Studio</p></CardContent></Card>
         <Card className="border-border/40 bg-card/50"><CardContent className="p-4"><p className="text-lg font-bold">{templates.filter(t => t.active).length}</p><p className="text-[11px] text-muted-foreground">Active</p></CardContent></Card>
       </div>
 
@@ -144,6 +148,7 @@ export default function AdminTemplates() {
           <SelectContent>
             <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="featured">Featured</SelectItem>
+            <SelectItem value="studio">On Studio</SelectItem>
             <SelectItem value="active">Active</SelectItem>
             <SelectItem value="inactive">Inactive</SelectItem>
           </SelectContent>
@@ -161,6 +166,7 @@ export default function AdminTemplates() {
               <TableHead className="text-[11px] uppercase text-muted-foreground">Template</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Category</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Ratio</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Studio</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Featured</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
               <TableHead className="w-10" />
@@ -184,6 +190,12 @@ export default function AdminTemplates() {
                 </TableCell>
                 <TableCell><Badge variant="outline" className="text-[10px]">{t.category}</Badge></TableCell>
                 <TableCell className="text-[13px] text-muted-foreground">{t.ratio}</TableCell>
+                <TableCell onClick={e => e.stopPropagation()}>
+                  <div className="flex items-center gap-1.5">
+                    <Switch checked={t.show_on_studio} onCheckedChange={() => toggleField(t.id, 'show_on_studio' as any, t.show_on_studio)} className="scale-75" />
+                    {t.show_on_studio && <span className="text-[10px] text-muted-foreground">#{t.studio_sort_order}</span>}
+                  </div>
+                </TableCell>
                 <TableCell onClick={e => e.stopPropagation()}>
                   <Switch checked={t.featured} onCheckedChange={() => toggleField(t.id, 'featured', t.featured)} className="scale-75" />
                 </TableCell>
@@ -209,7 +221,7 @@ export default function AdminTemplates() {
             ))}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={6} className="text-center text-sm text-muted-foreground py-8">No templates found</TableCell>
+                <TableCell colSpan={7} className="text-center text-sm text-muted-foreground py-8">No templates found</TableCell>
               </TableRow>
             )}
           </TableBody>
