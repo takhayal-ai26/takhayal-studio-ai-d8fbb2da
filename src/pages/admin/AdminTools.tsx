@@ -20,6 +20,7 @@ const iconLookup: Record<string, LucideIcon> = {
 
 export default function AdminTools() {
   const { rawTools, isLoading, updateTool, deleteTool: deleteToolMutation } = useToolsDB();
+  const { providers: allProviders } = useToolProviders();
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTool, setEditingTool] = useState<ToolRecord | null>(null);
