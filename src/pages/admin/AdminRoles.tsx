@@ -21,7 +21,7 @@ const admins = [
   { name: 'Moderator 1', email: 'mod1@takhayal.ai', role: 'Community Moderator', lastActive: '30m ago' },
 ];
 
-export default function AdminRoles() {
+export default function AdminRoles({ embedded }: { embedded?: boolean } = {}) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

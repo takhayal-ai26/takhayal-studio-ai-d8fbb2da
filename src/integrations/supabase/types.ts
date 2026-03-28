@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      admin_audit_log: {
+        Row: {
+          action: string
+          admin_user_id: string | null
+          created_at: string
+          entity_id: string | null
+          entity_type: string
+          id: string
+          new_value: Json | null
+          old_value: Json | null
+        }
+        Insert: {
+          action: string
+          admin_user_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+        }
+        Update: {
+          action?: string
+          admin_user_id?: string | null
+          created_at?: string
+          entity_id?: string | null
+          entity_type?: string
+          id?: string
+          new_value?: Json | null
+          old_value?: Json | null
+        }
+        Relationships: []
+      }
       credit_packages: {
         Row: {
           active: boolean

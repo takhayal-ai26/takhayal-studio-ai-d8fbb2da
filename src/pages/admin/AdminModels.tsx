@@ -61,7 +61,7 @@ const ROUTING_RULES = [
   { tool: 'Enhance Image', defaultModel: '-', fallback: '-', planRouting: 'Not connected' },
 ];
 
-export default function AdminModels() {
+export default function AdminModels({ embedded }: { embedded?: boolean } = {}) {
   // Provider state
   const [providers, setProviders] = useState<ProviderConfig[]>([]);
   const [providersLoading, setProvidersLoading] = useState(true);

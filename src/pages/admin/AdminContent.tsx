@@ -20,7 +20,7 @@ const statusStyle: Record<string, string> = {
   scheduled: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
 };
 
-export default function AdminContent() {
+export default function AdminContent({ embedded }: { embedded?: boolean } = {}) {
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between">

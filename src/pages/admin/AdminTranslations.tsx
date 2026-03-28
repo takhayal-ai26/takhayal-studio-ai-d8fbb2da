@@ -57,7 +57,7 @@ const SECTIONS = ['All', 'Navigation', 'Home', 'Portal', 'Studio', 'Tools', 'Too
 const STATUSES = ['All', 'complete', 'missing', 'review'];
 const PAGE_SIZE = 100;
 
-export default function AdminTranslations() {
+export default function AdminTranslations({ embedded }: { embedded?: boolean } = {}) {
   const enFlat = useMemo(() => flattenObj(translations.en), []);
   const arFlat = useMemo(() => flattenObj(translations.ar), []);
   const { overrides, setBothOverrides, removeOverride, addKey } = useTranslationOverridesStore();
