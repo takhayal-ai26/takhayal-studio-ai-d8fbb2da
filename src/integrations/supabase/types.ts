@@ -819,6 +819,62 @@ export type Database = {
           },
         ]
       }
+      tool_providers: {
+        Row: {
+          created_at: string
+          credit_cost: number
+          description: string
+          display_name: string
+          id: string
+          internal_cost_usd: number
+          is_active: boolean
+          is_default: boolean
+          provider_endpoint: string
+          provider_name: string
+          sort_order: number
+          tier: string
+          tool_id: string
+        }
+        Insert: {
+          created_at?: string
+          credit_cost?: number
+          description?: string
+          display_name?: string
+          id?: string
+          internal_cost_usd?: number
+          is_active?: boolean
+          is_default?: boolean
+          provider_endpoint?: string
+          provider_name?: string
+          sort_order?: number
+          tier?: string
+          tool_id: string
+        }
+        Update: {
+          created_at?: string
+          credit_cost?: number
+          description?: string
+          display_name?: string
+          id?: string
+          internal_cost_usd?: number
+          is_active?: boolean
+          is_default?: boolean
+          provider_endpoint?: string
+          provider_name?: string
+          sort_order?: number
+          tier?: string
+          tool_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tool_providers_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "tools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tool_runs: {
         Row: {
           completed_at: string | null

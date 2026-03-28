@@ -7,6 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
 import { Search, Plus, Edit, BarChart3, Eye, Zap, ArrowUpRight, Trash2, Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2, Image, Palette, Layers, Loader2 } from 'lucide-react';
 import { useToolsDB, ToolRecord } from '@/hooks/useToolsDB';
+import { useToolProviders } from '@/hooks/useToolProviders';
 import AdminToolEditorDialog from '@/components/admin/AdminToolEditorDialog';
 import { toast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
@@ -19,6 +20,7 @@ const iconLookup: Record<string, LucideIcon> = {
 
 export default function AdminTools() {
   const { rawTools, isLoading, updateTool, deleteTool: deleteToolMutation } = useToolsDB();
+  const { providers: allProviders } = useToolProviders();
   const [search, setSearch] = useState('');
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editingTool, setEditingTool] = useState<ToolRecord | null>(null);
@@ -84,6 +86,9 @@ export default function AdminTools() {
   };
 
   const getToolRunCount = (slug: string) => runStats.filter((r: any) => r.tool_slug === slug).length;
+  const getToolProviders = (toolId: string) => allProviders.filter(p => p.tool_id === toolId);
+  const getActiveProviderCount = (toolId: string) => getToolProviders(toolId).filter(p => p.is_active).length;
+  const getDefaultProviderName = (toolId: string) => getToolProviders(toolId).find(p => p.is_default)?.display_name || '—';
 
   if (isLoading) {
     return <div className="flex items-center justify-center py-20"><Loader2 className="animate-spin text-primary" size={24} /></div>;
@@ -128,6 +133,8 @@ export default function AdminTools() {
               <TableHead className="text-[11px] uppercase text-muted-foreground">Arabic</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Credits</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Provider</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Providers</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Default Model</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Runs</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Featured</TableHead>
@@ -159,6 +166,12 @@ export default function AdminTools() {
                     </div>
                   </TableCell>
                   <TableCell className="text-[13px]">{getToolRunCount(tool.slug)}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-[10px]">{getActiveProviderCount(tool.id)} active</Badge>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-[12px] text-muted-foreground">{getDefaultProviderName(tool.id)}</span>
+                  </TableCell>
                   <TableCell onClick={e => e.stopPropagation()}>
                     <Switch checked={tool.active} onCheckedChange={() => handleToggleActive(tool)} className="scale-75" />
                   </TableCell>
@@ -178,7 +191,7 @@ export default function AdminTools() {
             })}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={8} className="text-center text-sm text-muted-foreground py-8">
+                <TableCell colSpan={10} className="text-center text-sm text-muted-foreground py-8">
                   No tools found
                 </TableCell>
               </TableRow>
