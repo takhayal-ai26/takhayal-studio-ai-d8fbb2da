@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -308,7 +308,7 @@ export default function PricingMatrixPage() {
               {matrix.map(r => {
                 const isEditing = editingModelId === r.model.id;
                 return (
-                  <tr key={r.model.id}>
+                  <React.Fragment key={r.model.id}>
                     <tr
                       className={`border-b border-border/5 transition-colors group ${!r.model.is_active ? 'opacity-40' : 'hover:bg-muted/5'} ${isEditing ? 'bg-amber-500/5 border-l-2 border-l-amber-500' : ''}`}
                     >
