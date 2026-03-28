@@ -1,13 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Badge } from '@/components/ui/badge';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
-import { DollarSign, TrendingUp, Percent, BarChart3, RefreshCw, AlertTriangle, Info } from 'lucide-react';
+import { DollarSign, TrendingUp, Percent, BarChart3, RefreshCw, Info, Grid3X3 } from 'lucide-react';
 import { useToolProviders } from '@/hooks/useToolProviders';
 import EconomicsTab from '@/components/admin/EconomicsTab';
+import PricingMatrixPage from '@/components/admin/PricingMatrixPage';
+import { Badge } from '@/components/ui/badge';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Card, CardHeader, CardTitle } from '@/components/ui/card';
 
 function MetricCard({ label, value, sub, icon: Icon, color = 'primary' }: { label: string; value: string; sub?: string; icon: any; color?: string }) {
   const colorClasses: Record<string, string> = {
@@ -55,35 +56,39 @@ export default function AdminCommerce() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-foreground">Commerce</h1>
-          <p className="text-sm text-muted-foreground mt-1">Read-only reporting — revenue, costs, and margins</p>
+          <p className="text-sm text-muted-foreground mt-1">Pricing matrix, revenue, costs, and margins</p>
         </div>
         <Button variant="outline" size="sm" onClick={load} className="gap-2"><RefreshCw size={14} />Refresh</Button>
       </div>
 
-      {/* Read-only banner */}
-      <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 flex items-center gap-3">
-        <Info size={16} className="text-blue-400 flex-shrink-0" />
-        <span className="text-sm text-blue-300">This is a reporting view. Edit pricing in <strong>Studio Config → Tools → Providers</strong>. Edit model costs in <strong>Studio Config → Models</strong>.</span>
-      </div>
-
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <MetricCard label="Total Revenue" value={`$${stats.total_revenue.toFixed(2)}`} icon={DollarSign} color="green" />
+        <MetricCard label="Total Revenue (USD)" value={`$${stats.total_revenue.toFixed(2)}`} icon={DollarSign} color="green" />
         <MetricCard label="Total COGS" value={`$${stats.total_cost.toFixed(2)}`} icon={TrendingUp} color="red" />
         <MetricCard label="Total Profit" value={`$${stats.total_margin.toFixed(2)}`} icon={DollarSign} color={stats.total_margin >= 0 ? 'green' : 'red'} />
         <MetricCard label="Avg Margin" value={`${avgMarginPct}%`} icon={Percent} color={Number(avgMarginPct) < 20 ? 'yellow' : 'green'} />
       </div>
 
-      <Tabs defaultValue="economics">
+      <Tabs defaultValue="pricing-matrix">
         <TabsList className="bg-card/80 border border-border/10">
+          <TabsTrigger value="pricing-matrix" className="gap-1.5"><Grid3X3 size={14} />Pricing Matrix</TabsTrigger>
           <TabsTrigger value="economics" className="gap-1.5"><BarChart3 size={14} />Economics</TabsTrigger>
           <TabsTrigger value="providers" className="gap-1.5"><DollarSign size={14} />Tool Provider Margins</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="pricing-matrix" className="mt-4">
+          <PricingMatrixPage />
+        </TabsContent>
 
         <TabsContent value="economics" className="mt-4">
           <EconomicsTab />
         </TabsContent>
 
         <TabsContent value="providers" className="mt-4">
+          {/* Read-only banner */}
+          <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 flex items-center gap-3 mb-4">
+            <Info size={16} className="text-blue-400 flex-shrink-0" />
+            <span className="text-sm text-blue-300">This is a reporting view. Edit pricing in <strong>Studio Config → Tools → Providers</strong>.</span>
+          </div>
           <Card className="border-border/40 bg-card/50">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold">Tool Provider Pricing (Read-Only)</CardTitle>
@@ -111,9 +116,7 @@ export default function AdminCommerce() {
                     <TableRow key={p.id} className={`border-border/20 ${!p.is_active ? 'opacity-40' : ''}`}>
                       <TableCell className="text-[13px] font-medium">{p.display_name}</TableCell>
                       <TableCell className="text-[12px] text-muted-foreground font-mono">{p.provider_endpoint}</TableCell>
-                      <TableCell>
-                        <Badge variant="outline" className="text-[10px] capitalize">{p.tier}</Badge>
-                      </TableCell>
+                      <TableCell><Badge variant="outline" className="text-[10px] capitalize">{p.tier}</Badge></TableCell>
                       <TableCell className="text-[13px]">{p.credit_cost}</TableCell>
                       <TableCell className="text-[13px]">${p.internal_cost_usd.toFixed(4)}</TableCell>
                       <TableCell className="text-[13px]">${revenue.toFixed(4)}</TableCell>
