@@ -464,7 +464,7 @@ export default function PricingMatrixPage() {
                         </td>
                       </tr>
                     )}
-                  </tr>
+                  </React.Fragment>
                 );
               })}
             </tbody>
