@@ -76,7 +76,6 @@ export default function ToolPage() {
   const [upscaleTier, setUpscaleTier] = useState<UpscaleTier>('standard');
   const [processingMessage, setProcessingMessage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Tool-specific option definitions
   const toolOptions: Record<string, Array<{ label: string; values: string[]; defaultValue: string }>> = {
