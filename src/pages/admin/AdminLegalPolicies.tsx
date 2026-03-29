@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Textarea } from '@/components/ui/textarea';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, FileText, Shield, RefreshCw } from 'lucide-react';
@@ -79,22 +79,10 @@ function PolicyEditor({ policy, onSaved }: { policy: Policy; onSaved: () => void
             <TabsTrigger value="ar" className="text-xs">العربية</TabsTrigger>
           </TabsList>
           <TabsContent value="en">
-            <Textarea
-              value={en}
-              onChange={e => setEn(e.target.value)}
-              className="min-h-[280px] text-[13px] font-mono leading-relaxed bg-background"
-              placeholder="HTML content for English..."
-            />
-            <p className="text-[10px] text-muted-foreground mt-2">Supports HTML: &lt;h1&gt;, &lt;h2&gt;, &lt;p&gt;, &lt;ul&gt;, &lt;li&gt;, &lt;strong&gt;, &lt;a&gt;</p>
+            <RichTextEditor content={en} onChange={setEn} />
           </TabsContent>
           <TabsContent value="ar">
-            <Textarea
-              value={ar}
-              onChange={e => setAr(e.target.value)}
-              className="min-h-[280px] text-[13px] font-mono leading-relaxed bg-background"
-              dir="rtl"
-              placeholder="محتوى HTML بالعربية..."
-            />
+            <RichTextEditor content={ar} onChange={setAr} dir="rtl" />
             <p className="text-[10px] text-muted-foreground mt-2">If empty, English content will be used as fallback.</p>
           </TabsContent>
         </Tabs>
