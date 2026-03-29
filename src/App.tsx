@@ -44,9 +44,10 @@ const App = () => (
             <AppThemeProvider>
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
               <Route path="/terms" element={<LegalPage />} />
               <Route path="/privacy" element={<LegalPage />} />
-              
+
 
               {/* Portal pages share persistent navbar */}
               <Route element={<AppLayout />}>
