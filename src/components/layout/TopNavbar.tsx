@@ -5,6 +5,8 @@ import { Logo } from '@/components/Logo';
 import { Flame, Menu, X, Crown, CreditCard, Settings, LogOut } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { LanguageToggle } from '@/components/LanguageToggle';
+import { ThemeToggle } from '@/components/ThemeToggle';
+import { useAppTheme } from '@/context/AppThemeContext';
 
 const navItemDefs: { id: string; labelKey: string; route: string; studioPage?: NavPage }[] = [
   { id: 'home', labelKey: 'home', route: '/home' },
@@ -19,6 +21,7 @@ const navItemDefs: { id: string; labelKey: string; route: string; studioPage?: N
 export function TopNavbar() {
   const { activePage, setActivePage, credits, userName, isAuthenticated, plan, openAuthModal, logout } = useApp();
   const { t, isRTL } = useLanguage();
+  const { isAdmin } = useAppTheme();
   const navigate = useNavigate();
   const location = useLocation();
   const initials = userName ? userName.slice(0, 2).toUpperCase() : 'U';
@@ -88,6 +91,7 @@ export function TopNavbar() {
 
         {/* Right: State-dependent */}
         <div className="hidden md:flex items-center gap-3 flex-shrink-0">
+          {!isAdmin && <ThemeToggle />}
           <LanguageToggle />
           {isAuthenticated ? (
             <>
