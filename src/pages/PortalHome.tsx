@@ -81,7 +81,7 @@ export default function PortalHome() {
             {featuredItems.map((item, i) => (
               <div key={i} className="w-full flex-shrink-0 relative aspect-[21/9] min-h-[260px] max-h-[400px]">
                 <img src={item.image} alt={(t.portal as any)[item.labelKey]} className="w-full h-full object-cover" loading={i === 0 ? 'eager' : 'lazy'} />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                 <div className={`absolute bottom-0 ${isRTL ? 'right-0' : 'left-0'} p-6 md:p-10`}>
                   <span className="text-[11px] uppercase tracking-widest text-primary font-medium">{t.portal.featured}</span>
                   <h2 className="text-2xl md:text-3xl font-extralight text-white mt-1">{(t.portal as any)[item.labelKey]}</h2>
