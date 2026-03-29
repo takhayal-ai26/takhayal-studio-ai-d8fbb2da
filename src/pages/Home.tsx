@@ -330,6 +330,7 @@ export default function Home() {
           <Logo size="small" />
           <p className="text-[12px] text-muted-foreground">{t.landing.allRightsReserved}</p>
           <div className="flex items-center gap-6">
+            <button onClick={() => navigate('/about')} className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">{isRTL ? 'من نحن' : 'About Us'}</button>
             <button onClick={() => navigate('/pricing')} className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">{t.nav.pricing}</button>
             <button onClick={() => navigate('/tools')} className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">{t.nav.tools}</button>
             <button onClick={() => navigate('/community')} className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">{t.nav.community}</button>

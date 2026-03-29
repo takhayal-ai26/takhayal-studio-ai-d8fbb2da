@@ -17,6 +17,7 @@ import Community from "./pages/Community";
 import Templates from "./pages/Templates";
 import NotFound from "./pages/NotFound";
 import LegalPage from "./pages/LegalPage";
+import About from "./pages/About";
 
 // Admin
 import AdminLayout from "./components/admin/AdminLayout";
@@ -43,9 +44,10 @@ const App = () => (
             <AppThemeProvider>
             <Routes>
               <Route path="/" element={<Home />} />
+              <Route path="/about" element={<About />} />
               <Route path="/terms" element={<LegalPage />} />
               <Route path="/privacy" element={<LegalPage />} />
-              
+
 
               {/* Portal pages share persistent navbar */}
               <Route element={<AppLayout />}>
