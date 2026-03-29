@@ -7,7 +7,7 @@ import { useMedia } from '@/hooks/useMedia';
 
 export function AuthModal() {
   const { authModalOpen, authModalTab, login, closeAuthModal } = useApp();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { getUrlByName } = useMedia();
   const authVisual = getUrlByName('auth-visual.jpg');
   const [tab, setTab] = useState<'login' | 'signup'>('signup');
@@ -75,11 +75,11 @@ export function AuthModal() {
             </p>
             <p className="text-[10px] text-[hsl(0,0%,30%)] text-center mt-3 leading-relaxed">
               {t.auth.termsAndPrivacy}{' '}
-              <a href="/terms" target="_blank" className="text-primary hover:underline">Terms</a>
+              <a href="/terms" target="_blank" className="text-primary hover:underline">{lang === 'ar' ? 'الشروط والأحكام' : 'Terms'}</a>
               {' · '}
-              <a href="/privacy" target="_blank" className="text-primary hover:underline">Privacy</a>
+              <a href="/privacy" target="_blank" className="text-primary hover:underline">{lang === 'ar' ? 'الخصوصية' : 'Privacy'}</a>
               {' · '}
-              <a href="/refund" target="_blank" className="text-primary hover:underline">Refund</a>
+              <a href="/refund" target="_blank" className="text-primary hover:underline">{lang === 'ar' ? 'الاسترجاع' : 'Refund'}</a>
             </p>
           </div>
         </div>
