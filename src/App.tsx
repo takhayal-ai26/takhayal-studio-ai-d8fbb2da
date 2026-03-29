@@ -17,6 +17,7 @@ import Community from "./pages/Community";
 import Templates from "./pages/Templates";
 import NotFound from "./pages/NotFound";
 import LegalPage from "./pages/LegalPage";
+import About from "./pages/About";
 
 // Admin
 import AdminLayout from "./components/admin/AdminLayout";
