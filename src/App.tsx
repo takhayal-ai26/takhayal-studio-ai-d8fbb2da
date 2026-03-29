@@ -5,6 +5,7 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppProvider } from "@/context/AppContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { ThemeProvider } from "@/context/ThemeProvider";
+import { AppThemeProvider } from "@/context/AppThemeContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Home from "./pages/Home";
 import PortalHome from "./pages/PortalHome";
@@ -38,6 +39,7 @@ const App = () => (
         <AppProvider>
           <Toaster />
           <BrowserRouter>
+            <AppThemeProvider>
             <Routes>
               <Route path="/" element={<Home />} />
 
@@ -94,6 +96,8 @@ const App = () => (
 
               <Route path="*" element={<NotFound />} />
             </Routes>
+            </AppThemeProvider>
+          </BrowserRouter>
           </BrowserRouter>
         </AppProvider>
         </ThemeProvider>
