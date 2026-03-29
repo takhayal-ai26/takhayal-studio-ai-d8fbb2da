@@ -1,11 +1,14 @@
-import { useState, useEffect, useRef } from 'react';
-import { Upload, ChevronDown, Sparkles, X, Coins, Cpu, Maximize, Image as ImageIcon, Check, Wand2, Zap } from 'lucide-react';
+import { useState, useEffect, useRef, useCallback } from 'react';
+import { Upload, ChevronRight, Sparkles, X, Coins, Cpu, Maximize, Image as ImageIcon, Check, Wand2, Zap, Lock } from 'lucide-react';
 import { useApp, TEMPLATE_PROMPTS, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useModels, ModelRecord } from '@/hooks/useModels';
 import { usePricing } from '@/hooks/usePricing';
 import { usePricingTiers } from '@/hooks/usePricingTiers';
 import { CREDIT_VALUE_USD } from '@/lib/pricing-engine';
+import { ModelDropdown } from './dropdowns/ModelDropdown';
+import { SizeDropdown } from './dropdowns/SizeDropdown';
+import { ResolutionDropdown } from './dropdowns/ResolutionDropdown';
 
 const CREDIT_VALUE = CREDIT_VALUE_USD;
 type OpenDropdown = 'model' | 'size' | 'resolution' | null;
@@ -21,6 +24,9 @@ export function CreationPanel() {
   const [selectedResolution, setSelectedResolution] = useState<string>('1K');
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
   const panelRef = useRef<HTMLDivElement>(null);
+  const modelRowRef = useRef<HTMLButtonElement>(null);
+  const sizeRowRef = useRef<HTMLButtonElement>(null);
+  const resRowRef = useRef<HTMLButtonElement>(null);
 
   const currentModel = activeModels.find(m => m.id === selectedModelId) || defaultModel || activeModels[0];
 
@@ -70,7 +76,14 @@ export function CreationPanel() {
   useEffect(() => { const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenDropdown(null); if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); generate(); } }; window.addEventListener('keydown', handler); return () => window.removeEventListener('keydown', handler); }, [generate]);
 
   const handleResolution = (r: string) => { setSelectedResolution(r); setQuality(r === '1K' ? 'standard' : 'hd'); setOpenDropdown(null); };
-  const ratioIcons: Record<string, string> = { '1:1': '◻', '4:3': '▭', '16:9': '▬', '9:16': '▯', '4:5': '▭', '3:4': '▭', '3:2': '▬', '2:3': '▯', '5:4': '▭', '21:9': '▬' };
+
+  // Get the vertical offset for each dropdown relative to panelRef
+  const getDropdownTop = (ref: React.RefObject<HTMLElement>) => {
+    if (!ref.current || !panelRef.current) return 0;
+    const panelRect = panelRef.current.getBoundingClientRect();
+    const rowRect = ref.current.getBoundingClientRect();
+    return rowRect.top - panelRect.top;
+  };
 
   return (
     <aside ref={panelRef} className="w-[340px] xl:w-[370px] flex flex-col bg-background flex-shrink-0 overflow-visible relative z-30 border-r border-border/5">
@@ -127,123 +140,68 @@ export function CreationPanel() {
           <span className="text-[10px] text-muted-foreground/25">JPG / PNG up to 10MB</span>
         </button>
 
-        {/* Model selector */}
-        <div className="relative">
-          <button
-            onClick={() => toggleDropdown('model')}
-            className={`w-full flex items-center justify-between p-3.5 rounded-2xl bg-card/60 border transition-all duration-200 ${
-              openDropdown === 'model' ? 'border-primary/25 bg-card/80 shadow-[0_0_20px_-6px] shadow-primary/10' : 'border-border/8 hover:border-border/15'
-            }`}
-          >
-            <div className="flex items-center gap-3">
-              <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${openDropdown === 'model' ? 'bg-primary/15' : 'bg-primary/[0.06]'}`}>
-                <Cpu size={14} className="text-primary" />
-              </div>
-              <div className="text-left">
-                <p className="text-[11px] text-muted-foreground/50 font-medium">{t.studio.model}</p>
-                <p className="text-[13px] font-semibold text-primary/80">{currentModel?.model_name || 'Select model'}</p>
-              </div>
+        {/* Model selector row */}
+        <button
+          ref={modelRowRef}
+          onClick={() => toggleDropdown('model')}
+          className={`w-full flex items-center justify-between p-3.5 rounded-2xl bg-card/60 border transition-all duration-200 ${
+            openDropdown === 'model' ? 'border-primary/40 bg-card/80' : 'border-border/8 hover:border-border/15'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${openDropdown === 'model' ? 'bg-primary/15' : 'bg-primary/[0.06]'}`}>
+              <Cpu size={14} className="text-primary" />
             </div>
-            <ChevronDown size={14} className={`text-muted-foreground/40 transition-transform duration-200 ${openDropdown === 'model' ? 'rotate-180' : ''}`} />
-          </button>
-          {openDropdown === 'model' && (
-            <div className="absolute left-0 right-0 bottom-full mb-1.5 bg-card/95 backdrop-blur-xl border border-border/15 rounded-2xl p-1.5 shadow-2xl shadow-black/50 z-50 max-h-[320px] overflow-y-auto" style={{ animation: 'modalScaleIn 0.15s ease-out' }}>
-              <p className="text-[9px] text-muted-foreground/30 uppercase tracking-widest font-semibold px-3 pt-2 pb-1.5">{t.studio.selectModel}</p>
-              {activeModels.map(m => {
-                const isActive = selectedModelId === m.id;
-                const bestForText = language === 'ar' ? (m.best_for_ar || m.best_for) : m.best_for;
-                return (
-                  <button key={m.id} onClick={() => { setSelectedModelId(m.id); setOpenDropdown(null); }} className={`w-full flex items-center gap-2.5 p-2.5 rounded-xl transition-all duration-150 ${isActive ? 'bg-primary/8' : 'hover:bg-muted/8'}`}>
-                    <div className={`w-7 h-7 rounded-lg flex items-center justify-center ${isActive ? 'bg-primary/15' : 'bg-muted/10'}`}>
-                      <Cpu size={12} className={isActive ? 'text-primary' : 'text-muted-foreground/50'} />
-                    </div>
-                    <div className={`text-left flex-1 min-w-0 ${language === 'ar' ? 'text-right' : ''}`}>
-                      <p className={`text-[12px] font-semibold ${isActive ? 'text-primary' : 'text-foreground/90'}`}>{m.model_name}</p>
-                      {bestForText && <p className="text-[10px] text-muted-foreground/40 mt-0.5 truncate">{bestForText}</p>}
-                    </div>
-                    {isActive && <Check size={12} className="text-primary flex-shrink-0" />}
-                  </button>
-                );
-              })}
-              {activeModels.length === 0 && (
-                <p className="text-[11px] text-muted-foreground/30 text-center py-4">No active models</p>
-              )}
+            <div className="text-left">
+              <p className="text-[10px] text-muted-foreground/50 font-medium uppercase tracking-wider">{t.studio.model}</p>
+              <p className="text-[14px] font-semibold text-foreground">{currentModel?.model_name || 'Select model'}</p>
             </div>
-          )}
-        </div>
+          </div>
+          <ChevronRight size={14} className={`text-muted-foreground/40 transition-transform duration-200 ${openDropdown === 'model' ? 'rotate-90' : ''}`} />
+        </button>
 
-        {/* Size + Resolution */}
-        <div className="flex gap-2">
-          <div className="relative flex-1">
-            <button
-              onClick={() => toggleDropdown('size')}
-              className={`w-full flex items-center justify-between p-3 rounded-2xl bg-card/60 border transition-all duration-200 ${
-                openDropdown === 'size' ? 'border-primary/25 bg-card/80 shadow-[0_0_20px_-6px] shadow-primary/10' : 'border-border/8 hover:border-border/15'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <Maximize size={13} className="text-primary/60" />
-                <div className="text-left">
-                  <p className="text-[10px] text-muted-foreground/40">{t.studio.size}</p>
-                  <p className="text-[14px] font-semibold text-foreground">{aspectRatio}</p>
-                </div>
-              </div>
-              <ChevronDown size={12} className={`text-muted-foreground/30 transition-transform duration-200 ${openDropdown === 'size' ? 'rotate-180' : ''}`} />
-            </button>
-            {openDropdown === 'size' && (
-              <div className="absolute left-0 right-0 bottom-full mb-1.5 bg-card/95 backdrop-blur-xl border border-border/15 rounded-2xl p-1.5 shadow-2xl shadow-black/50 z-50" style={{ animation: 'modalScaleIn 0.15s ease-out' }}>
-                <p className="text-[9px] text-muted-foreground/30 uppercase tracking-widest font-semibold px-3 pt-2 pb-1.5">{t.studio.aspectRatio}</p>
-                {availableRatios.map(r => {
-                  const isActive = aspectRatio === r;
-                  return (
-                    <button key={r} onClick={() => { setAspectRatio(r as AspectRatio); setOpenDropdown(null); }} className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-medium transition-all duration-150 ${isActive ? 'bg-primary/8 text-primary' : 'text-foreground/80 hover:bg-muted/8'}`}>
-                      <span>{r}</span>
-                      <div className="flex items-center gap-2">
-                        <span className={`text-[13px] ${isActive ? 'text-primary/50' : 'opacity-20'}`}>{ratioIcons[r] || '◻'}</span>
-                        {isActive && <Check size={12} className="text-primary" />}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+        {/* Size selector row */}
+        <button
+          ref={sizeRowRef}
+          onClick={() => toggleDropdown('size')}
+          className={`w-full flex items-center justify-between p-3.5 rounded-2xl bg-card/60 border transition-all duration-200 ${
+            openDropdown === 'size' ? 'border-primary/40 bg-card/80' : 'border-border/8 hover:border-border/15'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${openDropdown === 'size' ? 'bg-primary/15' : 'bg-primary/[0.06]'}`}>
+              <Maximize size={14} className="text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="text-[10px] text-muted-foreground/50 font-medium uppercase tracking-wider">{t.studio.size}</p>
+              <p className="text-[14px] font-semibold text-foreground">{aspectRatio}</p>
+            </div>
           </div>
-          <div className="relative flex-1">
-            <button
-              onClick={() => toggleDropdown('resolution')}
-              className={`w-full flex items-center justify-between p-3 rounded-2xl bg-card/60 border transition-all duration-200 ${
-                openDropdown === 'resolution' ? 'border-primary/25 bg-card/80 shadow-[0_0_20px_-6px] shadow-primary/10' : 'border-border/8 hover:border-border/15'
-              }`}
-            >
-              <div className="flex items-center gap-2">
-                <ImageIcon size={13} className="text-primary/60" />
-                <div className="text-left">
-                  <p className="text-[10px] text-muted-foreground/40">{t.studio.resolution}</p>
-                  <p className="text-[14px] font-semibold text-foreground">{selectedResolution}</p>
-                </div>
-              </div>
-              <ChevronDown size={12} className={`text-muted-foreground/30 transition-transform duration-200 ${openDropdown === 'resolution' ? 'rotate-180' : ''}`} />
-            </button>
-            {openDropdown === 'resolution' && (
-              <div className="absolute left-0 right-0 bottom-full mb-1.5 bg-card/95 backdrop-blur-xl border border-border/15 rounded-2xl p-1.5 shadow-2xl shadow-black/50 z-50" style={{ animation: 'modalScaleIn 0.15s ease-out' }}>
-                {modelQualityTiers.map(tierKey => {
-                  const isActive = selectedResolution === tierKey;
-                  return (
-                    <button
-                      key={tierKey}
-                      onClick={() => handleResolution(tierKey)}
-                      title={tierKey === '1K' ? '1024px' : tierKey === '2K' ? '2048px' : '4096px'}
-                      className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-[13px] font-semibold transition-all duration-150 ${isActive ? 'bg-primary/8 text-primary' : 'text-foreground/80 hover:bg-muted/8'}`}
-                    >
-                      <span>{tierKey}</span>
-                      {isActive && <Check size={12} className="text-primary" />}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
+          <ChevronRight size={14} className={`text-muted-foreground/40 transition-transform duration-200 ${openDropdown === 'size' ? 'rotate-90' : ''}`} />
+        </button>
+
+        {/* Resolution selector row */}
+        <button
+          ref={resRowRef}
+          onClick={() => toggleDropdown('resolution')}
+          className={`w-full flex items-center justify-between p-3.5 rounded-2xl bg-card/60 border transition-all duration-200 ${
+            openDropdown === 'resolution' ? 'border-primary/40 bg-card/80' : 'border-border/8 hover:border-border/15'
+          }`}
+        >
+          <div className="flex items-center gap-3">
+            <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${openDropdown === 'resolution' ? 'bg-primary/15' : 'bg-primary/[0.06]'}`}>
+              <ImageIcon size={14} className="text-primary" />
+            </div>
+            <div className="text-left">
+              <p className="text-[10px] text-muted-foreground/50 font-medium uppercase tracking-wider">{t.studio.resolution}</p>
+              <p className="text-[14px] font-semibold text-foreground">{selectedResolution}</p>
+            </div>
           </div>
-        </div>
+          <div className="flex items-center gap-2">
+            <span className="text-[11px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">{cost} cr</span>
+            <ChevronRight size={14} className={`text-muted-foreground/40 transition-transform duration-200 ${openDropdown === 'resolution' ? 'rotate-90' : ''}`} />
+          </div>
+        </button>
       </div>
 
       {/* Generate button */}
@@ -251,7 +209,7 @@ export function CreationPanel() {
         <button
           onClick={() => generate({ modelId: currentModel?.id, qualityTier: selectedResolution, creditCost: cost })}
           disabled={!canGenerate}
-          className={`w-full h-[52px] rounded-2xl text-[14px] font-semibold transition-all duration-200 flex items-center justify-center gap-2.5 ${
+          className={`w-full h-[52px] rounded-2xl text-[15px] font-semibold transition-all duration-200 flex items-center justify-center gap-3 ${
             canGenerate
               ? 'bg-primary text-primary-foreground hover:brightness-110 active:scale-[0.98] shadow-[0_4px_24px_-4px] shadow-primary/30'
               : 'bg-card/60 border border-border/10 text-muted-foreground/40 cursor-not-allowed'
@@ -265,14 +223,50 @@ export function CreationPanel() {
           ) : (
             <>
               {t.toolPage.generate}
-              <span className="flex items-center gap-1 text-[11px] opacity-60">
-                <Coins size={12} />{cost} {t.toolPage.credits} · ~${(cost * CREDIT_VALUE).toFixed(2)}
+              <span className="flex items-center gap-1.5 text-[12px] bg-primary-foreground/10 px-3 py-1 rounded-full">
+                <Coins size={13} />{cost} credits · ~${(cost * CREDIT_VALUE).toFixed(2)}
               </span>
             </>
           )}
         </button>
         <p className="text-[10px] text-muted-foreground/20 text-center mt-2">⌘ Enter</p>
       </div>
+
+      {/* Floating dropdown panels — positioned to the RIGHT of the panel */}
+      {openDropdown === 'model' && (
+        <ModelDropdown
+          models={activeModels}
+          selectedModelId={selectedModelId}
+          allTiers={allTiers}
+          language={language}
+          topOffset={getDropdownTop(modelRowRef)}
+          onSelect={(id) => { setSelectedModelId(id); setOpenDropdown(null); }}
+          onClose={() => setOpenDropdown(null)}
+        />
+      )}
+      {openDropdown === 'size' && (
+        <SizeDropdown
+          availableRatios={availableRatios}
+          selectedRatio={aspectRatio}
+          modelName={currentModel?.model_name}
+          topOffset={getDropdownTop(sizeRowRef)}
+          onSelect={(r) => { setAspectRatio(r as AspectRatio); setOpenDropdown(null); }}
+          onClose={() => setOpenDropdown(null)}
+        />
+      )}
+      {openDropdown === 'resolution' && (
+        <ResolutionDropdown
+          tiers={modelQualityTiers}
+          allTiers={allTiers}
+          currentModelId={currentModel?.id || ''}
+          currentModelName={currentModel?.model_name || ''}
+          selectedResolution={selectedResolution}
+          topOffset={getDropdownTop(resRowRef)}
+          onSelect={handleResolution}
+          onClose={() => setOpenDropdown(null)}
+          getCreditsForModelQuality={getCreditsForModelQuality}
+        />
+      )}
     </aside>
   );
 }
