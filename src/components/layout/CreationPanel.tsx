@@ -77,12 +77,8 @@ export function CreationPanel() {
 
   const handleResolution = (r: string) => { setSelectedResolution(r); setQuality(r === '1K' ? 'standard' : 'hd'); setOpenDropdown(null); };
 
-  // Get the vertical offset for each dropdown relative to panelRef
-  const getDropdownTop = (ref: React.RefObject<HTMLElement>) => {
-    if (!ref.current || !panelRef.current) return 0;
-    const panelRect = panelRef.current.getBoundingClientRect();
-    const rowRect = ref.current.getBoundingClientRect();
-    return rowRect.top - panelRect.top;
+  const getAnchorRect = (ref: React.RefObject<HTMLElement>): DOMRect | null => {
+    return ref.current?.getBoundingClientRect() ?? null;
   };
 
   return (
@@ -223,14 +219,13 @@ export function CreationPanel() {
         <p className="text-[10px] text-muted-foreground/20 text-center mt-2">⌘ Enter</p>
       </div>
 
-      {/* Floating dropdown panels — positioned to the RIGHT of the panel */}
       {openDropdown === 'model' && (
         <ModelDropdown
           models={activeModels}
           selectedModelId={selectedModelId}
           allTiers={allTiers}
           language={language}
-          topOffset={getDropdownTop(modelRowRef)}
+          anchorRect={getAnchorRect(modelRowRef)}
           onSelect={(id) => { setSelectedModelId(id); setOpenDropdown(null); }}
           onClose={() => setOpenDropdown(null)}
         />
@@ -240,7 +235,7 @@ export function CreationPanel() {
           availableRatios={availableRatios}
           selectedRatio={aspectRatio}
           modelName={currentModel?.model_name}
-          topOffset={getDropdownTop(sizeRowRef)}
+          anchorRect={getAnchorRect(sizeRowRef)}
           onSelect={(r) => { setAspectRatio(r as AspectRatio); setOpenDropdown(null); }}
           onClose={() => setOpenDropdown(null)}
         />
@@ -252,7 +247,7 @@ export function CreationPanel() {
           currentModelId={currentModel?.id || ''}
           currentModelName={currentModel?.model_name || ''}
           selectedResolution={selectedResolution}
-          topOffset={getDropdownTop(resRowRef)}
+          anchorRect={getAnchorRect(resRowRef)}
           onSelect={handleResolution}
           onClose={() => setOpenDropdown(null)}
           getCreditsForModelQuality={getCreditsForModelQuality}
