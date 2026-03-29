@@ -199,7 +199,8 @@ export function TopNavbar() {
       {mobileOpen && (
         <div className="fixed inset-0 z-40 bg-background pt-16 flex flex-col md:hidden overflow-y-auto">
           <div className="flex flex-col p-6 gap-1">
-            <div className="mb-4">
+            <div className="mb-4 flex items-center gap-3">
+              {!isAdmin && <ThemeToggle />}
               <LanguageToggle />
             </div>
             {navItemDefs.filter(item => !(isAuthenticated && item.id === 'pricing')).map(item => (
