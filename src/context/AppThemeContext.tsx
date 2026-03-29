@@ -21,8 +21,22 @@ export const useAppTheme = () => useContext(AppThemeContext);
 
 const STORAGE_KEY = 'takhayal-theme';
 
+// These vars are managed by [data-theme] in CSS — remove any inline overrides
+const THEME_MANAGED_VARS = [
+  '--background', '--foreground', '--card', '--card-foreground',
+  '--popover', '--popover-foreground', '--secondary', '--secondary-foreground',
+  '--muted', '--muted-foreground', '--accent', '--accent-foreground',
+  '--border', '--input', '--surface', '--surface-border',
+  '--text-secondary', '--text-tertiary', '--text-disabled',
+  '--sidebar-background', '--sidebar-foreground', '--sidebar-accent',
+  '--sidebar-accent-foreground', '--sidebar-border',
+];
+
 function applyTheme(mode: Mode) {
-  document.documentElement.setAttribute('data-theme', mode);
+  const root = document.documentElement;
+  root.setAttribute('data-theme', mode);
+  // Clear any inline overrides so [data-theme] CSS rules take effect
+  THEME_MANAGED_VARS.forEach(v => root.style.removeProperty(v));
 }
 
 export function AppThemeProvider({ children }: { children: ReactNode }) {

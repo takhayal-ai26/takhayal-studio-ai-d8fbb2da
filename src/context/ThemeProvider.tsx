@@ -111,21 +111,16 @@ function hexToHSL(hex: string): string | null {
 
 function applyThemeToDOM(colors: ThemeColors) {
   const root = document.documentElement;
-  // Set raw theme vars
+  // Set raw theme vars for components that read them directly
   Object.entries(colors).forEach(([key, value]) => {
     root.style.setProperty(`--${key}`, value);
   });
 
-  // Bridge to shadcn HSL variables so entire app responds
+  // Bridge ONLY accent/primary colors to shadcn HSL variables.
+  // Background/foreground/surface colors are handled by [data-theme] in CSS
+  // and must NOT be overridden here to allow light/dark mode switching.
   const primaryHSL = hexToHSL(colors['cta-primary']);
   const primaryHoverHSL = hexToHSL(colors['cta-primary-hover']);
-  const sidebarBgHSL = hexToHSL(colors['sidebar-bg']);
-  const panelBgHSL = hexToHSL(colors['panel-bg']);
-  const cardBgHSL = hexToHSL(colors['card-bg']);
-  const borderHSL = hexToHSL(colors['border']);
-  const textPrimaryHSL = hexToHSL(colors['text-primary']);
-  const textSecondaryHSL = hexToHSL(colors['text-secondary']);
-  const textMutedHSL = hexToHSL(colors['text-muted']);
   const ctaTextHSL = hexToHSL(colors['cta-primary-text']);
 
   if (primaryHSL) {
@@ -140,43 +135,6 @@ function applyThemeToDOM(colors: ThemeColors) {
   if (ctaTextHSL) {
     root.style.setProperty('--primary-foreground', ctaTextHSL);
     root.style.setProperty('--sidebar-primary-foreground', ctaTextHSL);
-  }
-  if (sidebarBgHSL) {
-    root.style.setProperty('--sidebar-background', sidebarBgHSL);
-    root.style.setProperty('--background', sidebarBgHSL);
-  }
-  if (panelBgHSL) {
-    root.style.setProperty('--secondary', panelBgHSL);
-    root.style.setProperty('--muted', panelBgHSL);
-    root.style.setProperty('--input', panelBgHSL);
-    root.style.setProperty('--popover', panelBgHSL);
-  }
-  if (cardBgHSL) {
-    root.style.setProperty('--card', cardBgHSL);
-    root.style.setProperty('--accent', cardBgHSL);
-    root.style.setProperty('--sidebar-accent', cardBgHSL);
-    root.style.setProperty('--surface', cardBgHSL);
-  }
-  if (borderHSL) {
-    root.style.setProperty('--border', borderHSL);
-    root.style.setProperty('--sidebar-border', borderHSL);
-    root.style.setProperty('--surface-border', borderHSL);
-  }
-  if (textPrimaryHSL) {
-    root.style.setProperty('--foreground', textPrimaryHSL);
-    root.style.setProperty('--card-foreground', textPrimaryHSL);
-    root.style.setProperty('--popover-foreground', textPrimaryHSL);
-    root.style.setProperty('--secondary-foreground', textPrimaryHSL);
-    root.style.setProperty('--accent-foreground', textPrimaryHSL);
-    root.style.setProperty('--sidebar-accent-foreground', textPrimaryHSL);
-  }
-  if (textSecondaryHSL) {
-    root.style.setProperty('--text-secondary', textSecondaryHSL);
-    root.style.setProperty('--sidebar-foreground', textSecondaryHSL);
-    root.style.setProperty('--muted-foreground', textSecondaryHSL);
-  }
-  if (textMutedHSL) {
-    root.style.setProperty('--text-tertiary', textMutedHSL);
   }
 }
 
