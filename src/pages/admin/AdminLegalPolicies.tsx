@@ -114,7 +114,7 @@ export default function AdminLegalPolicies() {
           Edit legal pages displayed at /terms, /privacy, and /refund. Content supports HTML formatting.
         </p>
       </div>
-      {['terms', 'privacy', 'refund'].map(type => {
+      {['terms', 'privacy'].map(type => {
         const p = policies.find(pol => pol.type === type);
         if (!p) return null;
         return <PolicyEditor key={p.id} policy={p} onSaved={fetchPolicies} />;

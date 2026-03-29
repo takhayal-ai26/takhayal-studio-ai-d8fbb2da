@@ -74,12 +74,10 @@ export function AuthModal() {
               {tab === 'login' ? (<>{t.auth.dontHaveAccount}{' '}<button onClick={() => { setTab('signup'); setShowEmailForm(false); }} className="text-primary hover:underline">{t.auth.signUp}</button></>) : (<>{t.auth.alreadyHaveAccount}{' '}<button onClick={() => { setTab('login'); setShowEmailForm(false); }} className="text-primary hover:underline">{t.auth.logIn}</button></>)}
             </p>
             <p className="text-[10px] text-[hsl(0,0%,30%)] text-center mt-3 leading-relaxed">
-              {t.auth.termsAndPrivacy}{' '}
-              <a href="/terms" target="_blank" className="text-primary hover:underline">{lang === 'ar' ? 'الشروط والأحكام' : 'Terms'}</a>
-              {' · '}
-              <a href="/privacy" target="_blank" className="text-primary hover:underline">{lang === 'ar' ? 'الخصوصية' : 'Privacy'}</a>
-              {' · '}
-              <a href="/refund" target="_blank" className="text-primary hover:underline">{lang === 'ar' ? 'الاسترجاع' : 'Refund'}</a>
+              {lang === 'ar' ? 'بالمتابعة، أنت توافق على ' : 'By continuing, you agree to our '}
+              <a href="/terms" target="_blank" className="text-primary hover:underline">{lang === 'ar' ? 'الشروط والأحكام' : 'Terms & Conditions'}</a>
+              {lang === 'ar' ? ' و' : ' and '}
+              <a href="/privacy" target="_blank" className="text-primary hover:underline">{lang === 'ar' ? 'سياسة الخصوصية' : 'Privacy Policy'}</a>
             </p>
           </div>
         </div>

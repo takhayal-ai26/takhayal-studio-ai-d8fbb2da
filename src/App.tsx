@@ -45,7 +45,7 @@ const App = () => (
               <Route path="/" element={<Home />} />
               <Route path="/terms" element={<LegalPage />} />
               <Route path="/privacy" element={<LegalPage />} />
-              <Route path="/refund" element={<LegalPage />} />
+              
 
               {/* Portal pages share persistent navbar */}
               <Route element={<AppLayout />}>
