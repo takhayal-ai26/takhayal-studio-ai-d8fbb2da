@@ -98,7 +98,6 @@ const App = () => (
             </Routes>
             </AppThemeProvider>
           </BrowserRouter>
-          </BrowserRouter>
         </AppProvider>
         </ThemeProvider>
       </LanguageProvider>
