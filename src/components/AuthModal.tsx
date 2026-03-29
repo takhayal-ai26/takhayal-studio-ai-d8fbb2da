@@ -7,7 +7,7 @@ import { useMedia } from '@/hooks/useMedia';
 
 export function AuthModal() {
   const { authModalOpen, authModalTab, login, closeAuthModal } = useApp();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { getUrlByName } = useMedia();
   const authVisual = getUrlByName('auth-visual.jpg');
   const [tab, setTab] = useState<'login' | 'signup'>('signup');
