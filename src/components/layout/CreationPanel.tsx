@@ -211,7 +211,7 @@ export function CreationPanel() {
             <>
               {t.toolPage.generate}
               <span className="flex items-center gap-1 text-[12px] bg-primary-foreground/10 px-2 py-0.5 rounded-full">
-                <Coins size={12} />{cost} · ~${(cost * CREDIT_VALUE).toFixed(2)}
+                <Coins size={12} />{cost}
               </span>
             </>
           )}
