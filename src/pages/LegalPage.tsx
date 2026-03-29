@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useParams, Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { LogoMark } from '@/components/Logo';
@@ -12,7 +12,8 @@ const TITLES: Record<string, { en: string; ar: string }> = {
 };
 
 export default function LegalPage() {
-  const { type } = useParams<{ type: string }>();
+  const location = useLocation();
+  const type = location.pathname.replace('/', ''); // "terms" | "privacy" | "refund"
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
   const [content, setContent] = useState('');
