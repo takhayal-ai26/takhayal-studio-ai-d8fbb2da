@@ -4,44 +4,37 @@
 
 @layer base {
   :root {
-    --background: 0 0% 0%;
-    --foreground: 0 0% 100%;
-
-    --card: 0 0% 12%;
-    --card-foreground: 0 0% 100%;
-
-    --popover: 0 0% 12%;
-    --popover-foreground: 0 0% 100%;
-
+    --radius: 0.5rem;
     --primary: 10 88% 52%;
     --primary-foreground: 0 0% 100%;
-
-    --secondary: 0 0% 12%;
-    --secondary-foreground: 0 0% 100%;
-
-    --muted: 0 0% 16%;
-    --muted-foreground: 0 2% 41%;
-
-    --accent: 0 0% 12%;
-    --accent-foreground: 0 0% 100%;
-
     --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
+    --ring: 10 88% 52%;
+    --ember-hover: 12 90% 45%;
+  }
 
+  /* ── Dark Mode (default for app) ── */
+  :root,
+  [data-theme="dark"] {
+    --background: 0 0% 0%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 12%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 12%;
+    --popover-foreground: 0 0% 100%;
+    --secondary: 0 0% 12%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 16%;
+    --muted-foreground: 0 2% 41%;
+    --accent: 0 0% 12%;
+    --accent-foreground: 0 0% 100%;
     --border: 0 0% 12%;
     --input: 0 0% 16%;
-    --ring: 10 88% 52%;
-
-    --radius: 0.5rem;
-
-    /* Extended palette */
     --surface: 0 0% 12%;
     --surface-border: 0 0% 16%;
     --text-secondary: 0 2% 41%;
     --text-tertiary: 0 1% 26%;
     --text-disabled: 0 2% 78%;
-    --ember-hover: 12 90% 45%;
-
     --sidebar-background: 0 0% 0%;
     --sidebar-foreground: 0 2% 41%;
     --sidebar-primary: 10 88% 52%;
@@ -50,6 +43,39 @@
     --sidebar-accent-foreground: 0 0% 100%;
     --sidebar-border: 0 0% 12%;
     --sidebar-ring: 10 88% 52%;
+    --shadow-color: 0 0% 0% / 0.3;
+  }
+
+  /* ── Light Mode ── */
+  [data-theme="light"] {
+    --background: 30 7% 97%;
+    --foreground: 0 0% 5%;
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 5%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 5%;
+    --secondary: 30 7% 97%;
+    --secondary-foreground: 0 0% 5%;
+    --muted: 30 4% 94%;
+    --muted-foreground: 0 1% 26%;
+    --accent: 0 0% 100%;
+    --accent-foreground: 0 0% 5%;
+    --border: 0 1% 93%;
+    --input: 0 0% 100%;
+    --surface: 0 0% 100%;
+    --surface-border: 0 1% 93%;
+    --text-secondary: 0 1% 26%;
+    --text-tertiary: 0 2% 41%;
+    --text-disabled: 0 2% 78%;
+    --sidebar-background: 0 0% 100%;
+    --sidebar-foreground: 0 1% 26%;
+    --sidebar-primary: 10 88% 52%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 30 7% 97%;
+    --sidebar-accent-foreground: 0 0% 5%;
+    --sidebar-border: 0 1% 93%;
+    --sidebar-ring: 10 88% 52%;
+    --shadow-color: 0 0% 0% / 0.08;
   }
 }
 
