@@ -22,7 +22,8 @@ export function ModelDropdown({ models, selectedModelId, language, anchorRect, o
   const panelMaxH = 420;
   let top = 0, left = 0;
   if (anchorRect) {
-    top = anchorRect.top;
+    // Position higher up so the list is fully visible without page scrolling
+    top = Math.max(8, anchorRect.top - panelMaxH + anchorRect.height + 60);
     left = anchorRect.right + 8;
     if (top + panelMaxH > window.innerHeight - 16) top = window.innerHeight - panelMaxH - 16;
     if (left + panelW > window.innerWidth - 16) left = anchorRect.left - panelW - 8;
