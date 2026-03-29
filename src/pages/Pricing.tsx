@@ -132,6 +132,17 @@ const Pricing = () => {
           </Accordion>
         </section>
       )}
+
+      {/* Legal links */}
+      <section className="max-w-2xl mx-auto px-6 pb-16 text-center">
+        <p className="text-[12px] text-muted-foreground">
+          <a href="/terms" className="hover:text-foreground transition-colors">Terms & Conditions</a>
+          {' · '}
+          <a href="/privacy" className="hover:text-foreground transition-colors">Privacy Policy</a>
+          {' · '}
+          <a href="/refund" className="hover:text-foreground transition-colors">Refund Policy</a>
+        </p>
+      </section>
     </div>
   );
 };

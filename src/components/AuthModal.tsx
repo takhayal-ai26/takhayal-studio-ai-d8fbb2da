@@ -73,7 +73,14 @@ export function AuthModal() {
             <p className="text-[12px] text-[hsl(0,0%,42%)] text-center">
               {tab === 'login' ? (<>{t.auth.dontHaveAccount}{' '}<button onClick={() => { setTab('signup'); setShowEmailForm(false); }} className="text-primary hover:underline">{t.auth.signUp}</button></>) : (<>{t.auth.alreadyHaveAccount}{' '}<button onClick={() => { setTab('login'); setShowEmailForm(false); }} className="text-primary hover:underline">{t.auth.logIn}</button></>)}
             </p>
-            <p className="text-[10px] text-[hsl(0,0%,30%)] text-center mt-3 leading-relaxed">{t.auth.termsAndPrivacy}</p>
+            <p className="text-[10px] text-[hsl(0,0%,30%)] text-center mt-3 leading-relaxed">
+              {t.auth.termsAndPrivacy}{' '}
+              <a href="/terms" target="_blank" className="text-primary hover:underline">Terms</a>
+              {' · '}
+              <a href="/privacy" target="_blank" className="text-primary hover:underline">Privacy</a>
+              {' · '}
+              <a href="/refund" target="_blank" className="text-primary hover:underline">Refund</a>
+            </p>
           </div>
         </div>
         <div className="hidden lg:block w-[54%] relative">

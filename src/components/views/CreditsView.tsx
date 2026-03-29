@@ -54,6 +54,15 @@ export function CreditsView() {
           </div>
         ))}
       </div>
+      <div className="mt-6 text-center">
+        <p className="text-[11px] text-muted-foreground">
+          <a href="/terms" className="hover:text-foreground transition-colors">Terms</a>
+          {' · '}
+          <a href="/privacy" className="hover:text-foreground transition-colors">Privacy</a>
+          {' · '}
+          <a href="/refund" className="hover:text-foreground transition-colors">Refund Policy</a>
+        </p>
+      </div>
     </div>
   );
 }
