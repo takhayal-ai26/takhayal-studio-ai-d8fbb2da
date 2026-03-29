@@ -87,7 +87,7 @@ export function CreationPanel() {
 
   return (
     <aside ref={panelRef} className="w-[340px] xl:w-[370px] flex flex-col bg-background flex-shrink-0 overflow-visible relative z-30 border-r border-border/5">
-      <div className="flex-1 overflow-y-auto overflow-x-visible p-4 space-y-2.5 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto overflow-x-visible p-4 space-y-1.5 scrollbar-thin">
         {/* Prompt */}
         <div className="rounded-2xl bg-card/60 p-4 border border-border/8 hover:border-border/15 transition-colors">
           <div className="flex items-center justify-between mb-3">
@@ -144,62 +144,53 @@ export function CreationPanel() {
         <button
           ref={modelRowRef}
           onClick={() => toggleDropdown('model')}
-          className={`w-full flex items-center justify-between p-3.5 rounded-2xl bg-card/60 border transition-all duration-200 ${
+          className={`w-full flex items-center justify-between h-[48px] px-3.5 rounded-xl bg-card/60 border transition-all duration-200 ${
             openDropdown === 'model' ? 'border-primary/40 bg-card/80' : 'border-border/8 hover:border-border/15'
           }`}
         >
-          <div className="flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${openDropdown === 'model' ? 'bg-primary/15' : 'bg-primary/[0.06]'}`}>
-              <Cpu size={14} className="text-primary" />
-            </div>
-            <div className="text-left">
-              <p className="text-[10px] text-muted-foreground/50 font-medium uppercase tracking-wider">{t.studio.model}</p>
-              <p className="text-[14px] font-semibold text-foreground">{currentModel?.model_name || 'Select model'}</p>
-            </div>
+          <div className="flex items-center gap-2.5">
+            <Cpu size={14} className="text-muted-foreground/40" />
+            <span className="text-[10px] text-muted-foreground/40 uppercase tracking-[1px] font-medium">{t.studio.model}</span>
           </div>
-          <ChevronRight size={14} className={`text-muted-foreground/40 transition-transform duration-200 ${openDropdown === 'model' ? 'rotate-90' : ''}`} />
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] font-medium text-foreground">{currentModel?.model_name || 'Select'}</span>
+            <ChevronRight size={14} className={`text-muted-foreground/30 transition-transform duration-200 ${openDropdown === 'model' ? 'rotate-90' : ''}`} />
+          </div>
         </button>
 
         {/* Size selector row */}
         <button
           ref={sizeRowRef}
           onClick={() => toggleDropdown('size')}
-          className={`w-full flex items-center justify-between p-3.5 rounded-2xl bg-card/60 border transition-all duration-200 ${
+          className={`w-full flex items-center justify-between h-[48px] px-3.5 rounded-xl bg-card/60 border transition-all duration-200 ${
             openDropdown === 'size' ? 'border-primary/40 bg-card/80' : 'border-border/8 hover:border-border/15'
           }`}
         >
-          <div className="flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${openDropdown === 'size' ? 'bg-primary/15' : 'bg-primary/[0.06]'}`}>
-              <Maximize size={14} className="text-primary" />
-            </div>
-            <div className="text-left">
-              <p className="text-[10px] text-muted-foreground/50 font-medium uppercase tracking-wider">{t.studio.size}</p>
-              <p className="text-[14px] font-semibold text-foreground">{aspectRatio}</p>
-            </div>
+          <div className="flex items-center gap-2.5">
+            <Maximize size={14} className="text-muted-foreground/40" />
+            <span className="text-[10px] text-muted-foreground/40 uppercase tracking-[1px] font-medium">{t.studio.size}</span>
           </div>
-          <ChevronRight size={14} className={`text-muted-foreground/40 transition-transform duration-200 ${openDropdown === 'size' ? 'rotate-90' : ''}`} />
+          <div className="flex items-center gap-2">
+            <span className="text-[13px] font-medium text-foreground">{aspectRatio}</span>
+            <ChevronRight size={14} className={`text-muted-foreground/30 transition-transform duration-200 ${openDropdown === 'size' ? 'rotate-90' : ''}`} />
+          </div>
         </button>
 
         {/* Resolution selector row */}
         <button
           ref={resRowRef}
           onClick={() => toggleDropdown('resolution')}
-          className={`w-full flex items-center justify-between p-3.5 rounded-2xl bg-card/60 border transition-all duration-200 ${
+          className={`w-full flex items-center justify-between h-[48px] px-3.5 rounded-xl bg-card/60 border transition-all duration-200 ${
             openDropdown === 'resolution' ? 'border-primary/40 bg-card/80' : 'border-border/8 hover:border-border/15'
           }`}
         >
-          <div className="flex items-center gap-3">
-            <div className={`w-8 h-8 rounded-xl flex items-center justify-center transition-all ${openDropdown === 'resolution' ? 'bg-primary/15' : 'bg-primary/[0.06]'}`}>
-              <ImageIcon size={14} className="text-primary" />
-            </div>
-            <div className="text-left">
-              <p className="text-[10px] text-muted-foreground/50 font-medium uppercase tracking-wider">{t.studio.resolution}</p>
-              <p className="text-[14px] font-semibold text-foreground">{selectedResolution}</p>
-            </div>
+          <div className="flex items-center gap-2.5">
+            <ImageIcon size={14} className="text-muted-foreground/40" />
+            <span className="text-[10px] text-muted-foreground/40 uppercase tracking-[1px] font-medium">{t.studio.resolution}</span>
           </div>
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">{cost} cr</span>
-            <ChevronRight size={14} className={`text-muted-foreground/40 transition-transform duration-200 ${openDropdown === 'resolution' ? 'rotate-90' : ''}`} />
+            <span className="text-[13px] font-medium text-foreground">{selectedResolution}</span>
+            <ChevronRight size={14} className={`text-muted-foreground/30 transition-transform duration-200 ${openDropdown === 'resolution' ? 'rotate-90' : ''}`} />
           </div>
         </button>
       </div>
@@ -209,7 +200,7 @@ export function CreationPanel() {
         <button
           onClick={() => generate({ modelId: currentModel?.id, qualityTier: selectedResolution, creditCost: cost })}
           disabled={!canGenerate}
-          className={`w-full h-[52px] rounded-2xl text-[15px] font-semibold transition-all duration-200 flex items-center justify-center gap-3 ${
+          className={`w-full h-[44px] rounded-xl text-[14px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
             canGenerate
               ? 'bg-primary text-primary-foreground hover:brightness-110 active:scale-[0.98] shadow-[0_4px_24px_-4px] shadow-primary/30'
               : 'bg-card/60 border border-border/10 text-muted-foreground/40 cursor-not-allowed'
@@ -223,8 +214,8 @@ export function CreationPanel() {
           ) : (
             <>
               {t.toolPage.generate}
-              <span className="flex items-center gap-1.5 text-[12px] bg-primary-foreground/10 px-3 py-1 rounded-full">
-                <Coins size={13} />{cost} credits · ~${(cost * CREDIT_VALUE).toFixed(2)}
+              <span className="flex items-center gap-1 text-[12px] bg-primary-foreground/10 px-2 py-0.5 rounded-full">
+                <Coins size={12} />{cost} · ~${(cost * CREDIT_VALUE).toFixed(2)}
               </span>
             </>
           )}
