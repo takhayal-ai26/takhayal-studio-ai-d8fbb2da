@@ -213,7 +213,6 @@ export function CreationPanel() {
               <span className="flex items-center gap-1 text-[12px] bg-primary-foreground/10 px-2 py-0.5 rounded-full">
                 <Coins size={12} />{cost}
               </span>
-              </span>
             </>
           )}
         </button>
