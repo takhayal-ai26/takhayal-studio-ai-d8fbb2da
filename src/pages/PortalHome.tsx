@@ -81,10 +81,10 @@ export default function PortalHome() {
             {featuredItems.map((item, i) => (
               <div key={i} className="w-full flex-shrink-0 relative aspect-[21/9] min-h-[260px] max-h-[400px]">
                 <img src={item.image} alt={(t.portal as any)[item.labelKey]} className="w-full h-full object-cover" loading={i === 0 ? 'eager' : 'lazy'} />
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-background/40 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
                 <div className={`absolute bottom-0 ${isRTL ? 'right-0' : 'left-0'} p-6 md:p-10`}>
                   <span className="text-[11px] uppercase tracking-widest text-primary font-medium">{t.portal.featured}</span>
-                  <h2 className="text-2xl md:text-3xl font-extralight text-foreground mt-1">{(t.portal as any)[item.labelKey]}</h2>
+                  <h2 className="text-2xl md:text-3xl font-extralight text-white mt-1">{(t.portal as any)[item.labelKey]}</h2>
                   <button onClick={() => goToCanvas(isAr ? item.promptAr : item.promptEn, item.template)} className="mt-4 h-10 px-5 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:opacity-80 transition-opacity">
                     {t.portal.tryThisStyle}
                   </button>
@@ -105,10 +105,10 @@ export default function PortalHome() {
           <section className="my-8">
             <button onClick={() => goToCanvas(TEMPLATE_PROMPTS['Ramadan'], 'Ramadan')} className="group w-full relative h-36 md:h-44 rounded-xl overflow-hidden border border-border hover:border-primary transition-colors">
               <img src="https://picsum.photos/seed/banner-ramadan/1200/400" alt={t.portal.ramadanCampaign} className="w-full h-full object-cover" loading="lazy" />
-              <div className={`absolute inset-0 bg-gradient-to-${isRTL ? 'l' : 'r'} from-background/90 via-background/50 to-transparent`} />
+              <div className={`absolute inset-0 bg-gradient-to-${isRTL ? 'l' : 'r'} from-black/90 via-black/50 to-transparent`} />
               <div className={`absolute inset-0 flex flex-col justify-center px-6 md:px-10`}>
                 <span className="text-[11px] uppercase tracking-widest text-primary font-medium">{t.portal.seasonal}</span>
-                <h3 className="text-xl md:text-2xl font-extralight text-foreground mt-1">{t.portal.ramadanCampaign}</h3>
+                <h3 className="text-xl md:text-2xl font-extralight text-white mt-1">{t.portal.ramadanCampaign}</h3>
                 <span className="mt-3 inline-flex items-center gap-1 text-[13px] text-primary font-medium group-hover:gap-2 transition-all">
                   {t.portal.tryThisStyle} <ArrowRight size={14} className={isRTL ? 'rotate-180' : ''} />
                 </span>
@@ -145,8 +145,8 @@ export default function PortalHome() {
                           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                           <div className="absolute inset-0 bg-primary/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                           <div className="absolute bottom-0 left-0 right-0 p-4">
-                            <span className="text-[14px] font-medium text-foreground block">{tool.name}</span>
-                            <span className="text-[11px] text-foreground/50 mt-0.5 block">{tool.shortDesc}</span>
+                            <span className="text-[14px] font-medium text-white block">{tool.name}</span>
+                            <span className="text-[11px] text-white/50 mt-0.5 block">{tool.shortDesc}</span>
                             <ArrowRight size={13} className={`text-primary mt-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 ${isRTL ? 'rotate-180' : ''}`} />
                           </div>
                         </button>
@@ -234,7 +234,7 @@ export default function PortalHome() {
                   <img src={item.img} alt={isAr ? item.promptAr : item.promptEn} className="w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]" loading="lazy" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <p className="text-[11px] text-foreground/80 line-clamp-1">{isAr ? item.promptAr : item.promptEn}</p>
+                    <p className="text-[11px] text-white/80 line-clamp-1">{isAr ? item.promptAr : item.promptEn}</p>
                   </div>
                 </button>
               ))}
