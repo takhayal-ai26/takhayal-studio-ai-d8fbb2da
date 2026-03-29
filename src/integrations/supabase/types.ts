@@ -284,6 +284,30 @@ export type Database = {
           },
         ]
       }
+      legal_policies: {
+        Row: {
+          content_ar: string
+          content_en: string
+          id: string
+          last_updated: string
+          type: string
+        }
+        Insert: {
+          content_ar?: string
+          content_en?: string
+          id?: string
+          last_updated?: string
+          type: string
+        }
+        Update: {
+          content_ar?: string
+          content_en?: string
+          id?: string
+          last_updated?: string
+          type?: string
+        }
+        Relationships: []
+      }
       model_pricing_tiers: {
         Row: {
           aspect_ratio: string | null
