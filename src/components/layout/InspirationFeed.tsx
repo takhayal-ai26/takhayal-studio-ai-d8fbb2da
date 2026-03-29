@@ -79,12 +79,12 @@ export function InspirationFeed() {
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
                 {/* Title + CTA */}
-                <div className="absolute bottom-0 left-0 right-0 p-4 flex flex-col gap-2">
-                  <h3 className="text-white text-sm font-medium leading-snug drop-shadow-lg">
+                <div className="absolute bottom-0 left-0 right-0 p-5 flex flex-col gap-3">
+                  <h3 className="text-white text-lg font-semibold leading-snug drop-shadow-lg">
                     {title}
                   </h3>
                   <button
-                    className="self-start px-3.5 py-1.5 rounded-lg bg-white/15 backdrop-blur-sm border border-white/20 text-white text-[11px] font-medium transition-all duration-300 hover:bg-white/25"
+                    className="self-start px-4 py-2 rounded-lg bg-white/15 backdrop-blur-sm border border-white/20 text-white text-sm font-medium transition-all duration-300 hover:bg-white/25"
                   >
                     {isAr ? 'استخدم هذا' : 'Use This Prompt'}
                   </button>
