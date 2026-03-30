@@ -6,7 +6,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { LogoMark } from '@/components/Logo';
 import { useMedia } from '@/hooks/useMedia';
 import { supabase } from '@/integrations/supabase/client';
-import { lovable } from '@/integrations/lovable/index';
+import { lovable } from '@/integrations/lovable/index'; // kept for Apple OAuth
 import { useNavigate } from 'react-router-dom';
 
 export function AuthModal() {
