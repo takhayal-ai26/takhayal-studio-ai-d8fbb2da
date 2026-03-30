@@ -222,27 +222,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     fetchTierCredits();
   }, [selectedModelId]);
 
+  // Bridge auth methods from AuthContext
   const login = useCallback((email: string, name?: string) => {
-    setIsAuthenticated(true);
-    setUserEmail(email);
-    setUserName(name || email.split('@')[0]);
-    setCredits(20);
-    setAuthModalOpen(false);
-  }, []);
+    // Legacy — real auth handled by AuthContext now
+    auth.closeAuthModal();
+  }, [auth]);
 
-  const logout = useCallback(() => {
-    setIsAuthenticated(false);
-    setUserName('');
-    setUserEmail('');
-    setPlan('free');
-  }, []);
+  const logout = useCallback(async () => {
+    await auth.logout();
+  }, [auth]);
 
-  const openAuthModal = useCallback((tab: 'login' | 'signup' = 'signup') => {
-    setAuthModalTab(tab);
-    setAuthModalOpen(true);
-  }, []);
-
-  const closeAuthModal = useCallback(() => setAuthModalOpen(false), []);
+  const openAuthModal = auth.openAuthModal;
+  const closeAuthModal = auth.closeAuthModal;
+  const authModalOpen = auth.authModalOpen;
+  const authModalTab = auth.authModalTab;
   const openUpgradeModal = useCallback(() => setUpgradeModalOpen(true), []);
   const closeUpgradeModal = useCallback(() => setUpgradeModalOpen(false), []);
 
@@ -250,10 +243,9 @@ export function AppProvider({ children }: { children: ReactNode }) {
     if (isAuthenticated) {
       action();
     } else {
-      setAuthModalTab('signup');
-      setAuthModalOpen(true);
+      auth.openAuthModal('signup');
     }
-  }, [isAuthenticated]);
+  }, [isAuthenticated, auth]);
 
   const getCreditCost = useCallback(() => {
     // Use tier-specific credits from DB, fallback to model default
