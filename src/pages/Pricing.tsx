@@ -49,6 +49,16 @@ const Pricing = () => {
 
   const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
   const [selectedPlanPill, setSelectedPlanPill] = useState('creator');
+  const [currency, setCurrency] = useState<'USD' | 'KWD'>('USD');
+
+  const KWD_RATE = 0.308;
+  const fmt = (usd: number) => {
+    if (currency === 'KWD') {
+      const kwd = usd * KWD_RATE;
+      return `${kwd % 1 === 0 ? kwd.toFixed(0) : kwd.toFixed(2)} KD`;
+    }
+    return `$${usd % 1 === 0 ? usd.toFixed(0) : usd.toFixed(2)}`;
+  };
 
   const activePlans = plans.filter((p: any) => p.active).sort((a: any, b: any) => a.sort_order - b.sort_order);
   const activePackages = packages.filter((p: any) => p.active).sort((a: any, b: any) => a.sort_order - b.sort_order);
@@ -116,6 +126,18 @@ const Pricing = () => {
         </div>
       </div>
 
+      {/* Currency toggle */}
+      <div className="flex justify-center mb-10">
+        <div className="flex p-1 rounded-full bg-muted">
+          <button onClick={() => setCurrency('USD')} className={`px-4 py-2 rounded-full text-[12px] font-medium transition-all ${currency === 'USD' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+            USD $
+          </button>
+          <button onClick={() => setCurrency('KWD')} className={`px-4 py-2 rounded-full text-[12px] font-medium transition-all ${currency === 'KWD' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+            KWD د.ك
+          </button>
+        </div>
+      </div>
+
       {/* Plan cards */}
       <section className="max-w-5xl mx-auto px-6 pb-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -160,15 +182,15 @@ const Pricing = () => {
 
                 <div className="mt-4 flex items-baseline gap-1">
                   {billing === 'annual' && p.price_monthly_usd > 0 && (
-                    <span className="text-sm text-muted-foreground line-through mr-1">${p.price_monthly_usd}</span>
+                    <span className="text-sm text-muted-foreground line-through mr-1">{fmt(p.price_monthly_usd)}</span>
                   )}
-                  <span className="text-[36px] font-extralight text-foreground">${price}</span>
+                  <span className="text-[36px] font-extralight text-foreground">{fmt(price)}</span>
                   {p.price_monthly_usd > 0 && <span className="text-sm text-muted-foreground">/{isAr ? 'شهر' : 'mo'}</span>}
                 </div>
 
                 {billing === 'annual' && p.price_annual_usd > 0 && (
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    {isAr ? `يُفوتر سنوياً بمبلغ $${p.price_annual_usd}` : `Billed as $${p.price_annual_usd}/year`}
+                    {isAr ? `يُفوتر سنوياً بمبلغ ${fmt(p.price_annual_usd)}` : `Billed as ${fmt(p.price_annual_usd)}/year`}
                   </p>
                 )}
 
@@ -288,7 +310,7 @@ const Pricing = () => {
                     +{pkg.bonus_credits} {isAr ? 'مكافأة' : 'bonus'}
                   </span>
                 )}
-                <p className="text-lg font-medium text-foreground mt-3">${pkg.price}</p>
+                <p className="text-lg font-medium text-foreground mt-3">{fmt(pkg.price)}</p>
                 <button
                   onClick={() => {
                     if (!isAuthenticated) {
