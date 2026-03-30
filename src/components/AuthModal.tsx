@@ -168,10 +168,10 @@ export function AuthModal() {
         </div>
 
         {/* Tabs */}
-        <div className="flex p-1 rounded-full bg-muted/10 mb-6 w-fit mx-auto">
-          {(['signup', 'login'] as const).map(tb => (
+        <div className="flex p-1 rounded-full border border-border bg-muted/10 mb-6 w-fit mx-auto">
+          {(isRTL ? ['login', 'signup'] as const : ['signup', 'login'] as const).map(tb => (
             <button key={tb} onClick={() => { setTab(tb); setView('main'); setError(''); setSuccess(''); }}
-              className={`px-5 py-1.5 rounded-full text-[13px] font-medium transition-all ${tab === tb ? 'text-white' : 'text-muted-foreground hover:text-foreground'}`}
+              className={`px-6 py-2 rounded-full text-[13px] font-medium transition-all ${tab === tb ? 'text-white shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
               style={tab === tb ? { backgroundColor: 'hsl(var(--cta-primary))' } : {}}>
               {tb === 'login' ? t.login : t.signup}
             </button>
