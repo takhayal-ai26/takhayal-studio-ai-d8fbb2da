@@ -110,8 +110,8 @@ const App = () => (
             </Routes>
             </AppThemeProvider>
           </BrowserRouter>
-        </AppProvider>
-        </AuthProvider>
+            </AppProvider>
+          </AuthProvider>
         </ThemeProvider>
       </LanguageProvider>
     </TooltipProvider>
