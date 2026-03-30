@@ -41,6 +41,7 @@ const App = () => (
     <TooltipProvider>
       <LanguageProvider>
         <ThemeProvider>
+        <AuthProvider>
         <AppProvider>
           <Toaster />
           <BrowserRouter>
@@ -50,6 +51,8 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/terms" element={<LegalPage />} />
               <Route path="/privacy" element={<LegalPage />} />
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/reset-password" element={<ResetPassword />} />
 
 
               {/* Portal pages share persistent navbar */}
@@ -108,6 +111,7 @@ const App = () => (
             </AppThemeProvider>
           </BrowserRouter>
         </AppProvider>
+        </AuthProvider>
         </ThemeProvider>
       </LanguageProvider>
     </TooltipProvider>
