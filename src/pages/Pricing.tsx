@@ -49,6 +49,16 @@ const Pricing = () => {
 
   const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
   const [selectedPlanPill, setSelectedPlanPill] = useState('creator');
+  const [currency, setCurrency] = useState<'USD' | 'KWD'>('USD');
+
+  const KWD_RATE = 0.308;
+  const fmt = (usd: number) => {
+    if (currency === 'KWD') {
+      const kwd = usd * KWD_RATE;
+      return `${kwd % 1 === 0 ? kwd.toFixed(0) : kwd.toFixed(2)} KD`;
+    }
+    return `$${usd % 1 === 0 ? usd.toFixed(0) : usd.toFixed(2)}`;
+  };
 
   const activePlans = plans.filter((p: any) => p.active).sort((a: any, b: any) => a.sort_order - b.sort_order);
   const activePackages = packages.filter((p: any) => p.active).sort((a: any, b: any) => a.sort_order - b.sort_order);
