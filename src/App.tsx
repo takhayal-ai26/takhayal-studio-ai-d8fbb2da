@@ -26,8 +26,10 @@ import Checkout from "./pages/Checkout";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 
 // Admin
-import AdminLayout from "./components/admin/AdminLayout";
+import { AdminProtectedRoute } from "./components/AdminProtectedRoute";
+import AdminLogin from "./pages/admin/AdminLogin";
 import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminLayout from "./components/admin/AdminLayout";
 import AdminUsersMerged from "./pages/admin/AdminUsersMerged";
 import AdminStudioConfig from "./pages/admin/AdminStudioConfig";
 import AdminCommerce from "./pages/admin/AdminCommerce";
@@ -70,8 +72,11 @@ const App = () => (
                 <Route path="/templates" element={<Templates />} />
               </Route>
 
+              {/* Admin Login */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+
               {/* Admin Panel */}
-              <Route path="/admin" element={<AdminLayout />}>
+              <Route path="/admin" element={<AdminProtectedRoute><AdminLayout /></AdminProtectedRoute>}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="users" element={<AdminUsersMerged />} />
                 <Route path="studio" element={<AdminStudioConfig />} />
