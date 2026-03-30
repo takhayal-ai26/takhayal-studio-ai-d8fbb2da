@@ -1,9 +1,8 @@
 import { useApp, NavPage } from '@/context/AppContext';
-import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Logo } from '@/components/Logo';
-import { Flame, Menu, X, Crown, CreditCard, Settings, LogOut, ImageIcon } from 'lucide-react';
+import { Flame, Menu, X, Crown, CreditCard, Settings, LogOut } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -20,13 +19,12 @@ const navItemDefs: { id: string; labelKey: string; route: string; studioPage?: N
 ];
 
 export function TopNavbar() {
-  const { activePage, setActivePage, credits, userName, userEmail, userAvatarUrl, isAuthenticated, plan, openAuthModal, logout } = useApp();
-  const auth = useAuth();
+  const { activePage, setActivePage, credits, userName, isAuthenticated, plan, openAuthModal, logout } = useApp();
   const { t, isRTL } = useLanguage();
   const { isAdmin } = useAppTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const initials = userName ? userName.slice(0, 2).toUpperCase() : (userEmail ? userEmail[0].toUpperCase() : 'U');
+  const initials = userName ? userName.slice(0, 2).toUpperCase() : 'U';
   const [mobileOpen, setMobileOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
@@ -132,27 +130,17 @@ export function TopNavbar() {
               <div ref={avatarRef} className="relative">
                 <button
                   onClick={() => setAvatarOpen(!avatarOpen)}
-                  className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-medium overflow-hidden border border-border hover:border-primary/40 transition-colors"
-                  style={!userAvatarUrl ? { backgroundColor: 'hsl(var(--cta-primary))', color: '#fff' } : {}}
+                  className="w-8 h-8 rounded-full bg-card border border-surface-border flex items-center justify-center text-xs font-medium text-foreground hover:border-primary/40 transition-colors"
                 >
-                  {userAvatarUrl ? (
-                    <img src={userAvatarUrl} alt={userName} className="w-full h-full object-cover" />
-                  ) : initials}
+                  {initials}
                 </button>
 
                 {avatarOpen && (
                   <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-full mt-2 w-52 bg-card border border-border/20 rounded-xl p-1.5 shadow-2xl shadow-black/50 z-50 animate-fade-in`}>
                     <div className="px-3 py-2.5 border-b border-border/10 mb-1">
                       <p className="text-[13px] font-medium text-foreground">{userName}</p>
-                      <p className="text-[11px] text-muted-foreground">{userEmail}</p>
+                      <p className="text-[11px] text-muted-foreground">{plan === 'pro' ? t.avatar.proPlan : t.avatar.freePlan}</p>
                     </div>
-                    <button
-                      onClick={() => { setAvatarOpen(false); setActivePage('gallery'); navigate('/studio'); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-foreground hover:bg-muted/10 transition-colors"
-                    >
-                      <ImageIcon size={14} className="text-muted-foreground" />
-                      {isRTL ? 'معرضي' : 'My Gallery'}
-                    </button>
                     <button
                       onClick={() => { setAvatarOpen(false); setActivePage('credits'); navigate('/studio'); }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-foreground hover:bg-muted/10 transition-colors"
@@ -169,7 +157,7 @@ export function TopNavbar() {
                     </button>
                     <div className="border-t border-border/10 mt-1 pt-1">
                       <button
-                        onClick={async () => { setAvatarOpen(false); await auth.logout(); navigate('/'); }}
+                        onClick={() => { setAvatarOpen(false); logout(); }}
                         className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-red-400 hover:bg-red-500/10 transition-colors"
                       >
                         <LogOut size={14} />
@@ -255,7 +243,7 @@ export function TopNavbar() {
                   {t.avatar.billingCredits}
                 </button>
                 <button
-                  onClick={async () => { setMobileOpen(false); await auth.logout(); navigate('/'); }}
+                  onClick={() => { setMobileOpen(false); logout(); }}
                   className="w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-[14px] text-red-400 hover:bg-red-500/10 transition-colors"
                 >
                   <LogOut size={16} />

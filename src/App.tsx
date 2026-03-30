@@ -3,7 +3,6 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppProvider } from "@/context/AppContext";
-import { AuthProvider } from "@/context/AuthContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { ThemeProvider } from "@/context/ThemeProvider";
 import { AppThemeProvider } from "@/context/AppThemeContext";
@@ -19,8 +18,6 @@ import Templates from "./pages/Templates";
 import NotFound from "./pages/NotFound";
 import LegalPage from "./pages/LegalPage";
 import About from "./pages/About";
-import AuthCallback from "./pages/AuthCallback";
-import ResetPassword from "./pages/ResetPassword";
 
 // Admin
 import AdminLayout from "./components/admin/AdminLayout";
@@ -41,9 +38,8 @@ const App = () => (
     <TooltipProvider>
       <LanguageProvider>
         <ThemeProvider>
-          <AuthProvider>
-            <AppProvider>
-              <Toaster />
+        <AppProvider>
+          <Toaster />
           <BrowserRouter>
             <AppThemeProvider>
             <Routes>
@@ -51,8 +47,6 @@ const App = () => (
               <Route path="/about" element={<About />} />
               <Route path="/terms" element={<LegalPage />} />
               <Route path="/privacy" element={<LegalPage />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/reset-password" element={<ResetPassword />} />
 
 
               {/* Portal pages share persistent navbar */}
@@ -110,8 +104,7 @@ const App = () => (
             </Routes>
             </AppThemeProvider>
           </BrowserRouter>
-            </AppProvider>
-          </AuthProvider>
+        </AppProvider>
         </ThemeProvider>
       </LanguageProvider>
     </TooltipProvider>
