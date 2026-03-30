@@ -10,6 +10,11 @@ export interface PricingPlan {
   description_en: string;
   description_ar: string;
   price: number;
+  price_monthly_usd: number;
+  price_annual_usd: number;
+  price_annual_monthly_equivalent: number;
+  annual_discount_percent: number;
+  credits_monthly: number;
   currency: string;
   billing_period: string;
   included_credits: number;
@@ -24,7 +29,8 @@ export interface PricingPlan {
   is_default: boolean;
   visible_logged_out: boolean;
   visible_logged_in: boolean;
-  features?: PlanFeature[];
+  features: Array<{en: string; ar: string}>;
+  plan_features?: PlanFeature[];
 }
 
 export interface PlanFeature {
@@ -52,6 +58,8 @@ export interface CreditPackage {
   featured: boolean;
   active: boolean;
   sort_order: number;
+  bonus_credits: number;
+  is_popular: boolean;
 }
 
 export interface PricingFaq {
@@ -94,14 +102,9 @@ const fetchPlans = async (): Promise<PricingPlan[]> => {
     .order('sort_order');
   if (error) throw error;
   
-  const { data: features } = await supabase
-    .from('pricing_plan_features' as any)
-    .select('*')
-    .order('sort_order');
-
   return ((plans as any[]) || []).map((p: any) => ({
     ...p,
-    features: ((features as any[]) || []).filter((f: any) => f.plan_id === p.id),
+    features: p.features || [],
   }));
 };
 
@@ -150,9 +153,8 @@ export function usePricingPageContent() {
 export function useSavePlan() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ plan, features }: { plan: Partial<PricingPlan>; features?: Partial<PlanFeature>[] }) => {
-      const { id, ...rest } = plan as any;
-      delete rest.features;
+    mutationFn: async ({ plan }: { plan: Partial<PricingPlan>; features?: any[] }) => {
+      const { id, plan_features, ...rest } = plan as any;
       rest.updated_at = new Date().toISOString();
       
       let planId = id;
@@ -163,22 +165,6 @@ export function useSavePlan() {
         const { data, error } = await supabase.from('pricing_plans' as any).insert(rest).select().single();
         if (error) throw error;
         planId = (data as any).id;
-      }
-      
-      if (features) {
-        // Delete existing and re-insert
-        await supabase.from('pricing_plan_features' as any).delete().eq('plan_id', planId);
-        if (features.length > 0) {
-          const rows = features.map((f, i) => ({
-            plan_id: planId,
-            text_en: f.text_en || '',
-            text_ar: f.text_ar || '',
-            sort_order: f.sort_order ?? i,
-            active: f.active ?? true,
-          }));
-          const { error } = await supabase.from('pricing_plan_features' as any).insert(rows);
-          if (error) throw error;
-        }
       }
       return planId;
     },

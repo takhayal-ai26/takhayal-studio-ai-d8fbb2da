@@ -52,6 +52,7 @@ export type Database = {
           active: boolean
           badge_ar: string
           badge_en: string
+          bonus_credits: number
           created_at: string
           credits: number
           cta_label_ar: string
@@ -61,6 +62,7 @@ export type Database = {
           description_en: string
           featured: boolean
           id: string
+          is_popular: boolean
           name_ar: string
           name_en: string
           price: number
@@ -71,6 +73,7 @@ export type Database = {
           active?: boolean
           badge_ar?: string
           badge_en?: string
+          bonus_credits?: number
           created_at?: string
           credits?: number
           cta_label_ar?: string
@@ -80,6 +83,7 @@ export type Database = {
           description_en?: string
           featured?: boolean
           id?: string
+          is_popular?: boolean
           name_ar?: string
           name_en: string
           price?: number
@@ -90,6 +94,7 @@ export type Database = {
           active?: boolean
           badge_ar?: string
           badge_en?: string
+          bonus_credits?: number
           created_at?: string
           credits?: number
           cta_label_ar?: string
@@ -99,6 +104,7 @@ export type Database = {
           description_en?: string
           featured?: boolean
           id?: string
+          is_popular?: boolean
           name_ar?: string
           name_en?: string
           price?: number
@@ -605,10 +611,12 @@ export type Database = {
       pricing_plans: {
         Row: {
           active: boolean
+          annual_discount_percent: number
           badge_ar: string
           badge_en: string
           billing_period: string
           created_at: string
+          credits_monthly: number
           cta_action: string
           cta_label_ar: string
           cta_label_en: string
@@ -616,12 +624,16 @@ export type Database = {
           description_ar: string
           description_en: string
           featured: boolean
+          features: Json
           id: string
           included_credits: number
           is_default: boolean
           name_ar: string
           name_en: string
           price: number
+          price_annual_monthly_equivalent: number
+          price_annual_usd: number
+          price_monthly_usd: number
           slug: string
           sort_order: number
           updated_at: string
@@ -630,10 +642,12 @@ export type Database = {
         }
         Insert: {
           active?: boolean
+          annual_discount_percent?: number
           badge_ar?: string
           badge_en?: string
           billing_period?: string
           created_at?: string
+          credits_monthly?: number
           cta_action?: string
           cta_label_ar?: string
           cta_label_en?: string
@@ -641,12 +655,16 @@ export type Database = {
           description_ar?: string
           description_en?: string
           featured?: boolean
+          features?: Json
           id?: string
           included_credits?: number
           is_default?: boolean
           name_ar?: string
           name_en: string
           price?: number
+          price_annual_monthly_equivalent?: number
+          price_annual_usd?: number
+          price_monthly_usd?: number
           slug: string
           sort_order?: number
           updated_at?: string
@@ -655,10 +673,12 @@ export type Database = {
         }
         Update: {
           active?: boolean
+          annual_discount_percent?: number
           badge_ar?: string
           badge_en?: string
           billing_period?: string
           created_at?: string
+          credits_monthly?: number
           cta_action?: string
           cta_label_ar?: string
           cta_label_en?: string
@@ -666,12 +686,16 @@ export type Database = {
           description_ar?: string
           description_en?: string
           featured?: boolean
+          features?: Json
           id?: string
           included_credits?: number
           is_default?: boolean
           name_ar?: string
           name_en?: string
           price?: number
+          price_annual_monthly_equivalent?: number
+          price_annual_usd?: number
+          price_monthly_usd?: number
           slug?: string
           sort_order?: number
           updated_at?: string

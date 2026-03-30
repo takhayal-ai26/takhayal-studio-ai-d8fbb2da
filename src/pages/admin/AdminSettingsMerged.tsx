@@ -26,13 +26,13 @@ import { toast } from 'sonner';
 
 // ── Plan Editor (from AdminBilling) ──
 function PlanEditor({ plan, onClose }: { plan: Partial<PricingPlan> | null; onClose: () => void }) {
-  const [form, setForm] = useState<any>(plan || { slug: '', name_en: '', name_ar: '', price: 0, currency: 'USD', billing_period: 'monthly', included_credits: 0, description_en: '', description_ar: '', badge_en: '', badge_ar: '', cta_label_en: 'Get Started', cta_label_ar: '', cta_action: 'signup', featured: false, active: true, sort_order: 0, is_default: false, visible_logged_out: true, visible_logged_in: true });
-  const [features, setFeatures] = useState<Partial<PlanFeature>[]>(plan?.features || []);
+  const [form, setForm] = useState<any>(plan || { slug: '', name_en: '', name_ar: '', price: 0, price_monthly_usd: 0, price_annual_usd: 0, price_annual_monthly_equivalent: 0, annual_discount_percent: 20, credits_monthly: 0, currency: 'USD', billing_period: 'monthly', included_credits: 0, description_en: '', description_ar: '', badge_en: '', badge_ar: '', cta_label_en: 'Get Started', cta_label_ar: '', cta_action: 'signup', featured: false, active: true, sort_order: 0, is_default: false, visible_logged_out: true, visible_logged_in: true, features: [] });
+  const [features, setFeatures] = useState<Array<{en: string; ar: string}>>(plan?.features || []);
   const savePlan = useSavePlan();
 
   const save = async () => {
     try {
-      await savePlan.mutateAsync({ plan: form, features });
+      await savePlan.mutateAsync({ plan: { ...form, features } });
       toast.success('Plan saved');
       onClose();
     } catch (e: any) { toast.error(e.message); }
@@ -59,14 +59,14 @@ function PlanEditor({ plan, onClose }: { plan: Partial<PricingPlan> | null; onCl
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
             <Label className="text-sm font-semibold">Features</Label>
-            <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => setFeatures(p => [...p, { text_en: '', text_ar: '', sort_order: p.length, active: true }])}>
+            <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => setFeatures(p => [...p, { en: '', ar: '' }])}>
               <Plus size={12} /> Add Feature
             </Button>
           </div>
           {features.map((feat, i) => (
             <div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-2 mb-2">
-              <Input placeholder="EN" value={feat.text_en} onChange={e => { const n = [...features]; n[i] = { ...n[i], text_en: e.target.value }; setFeatures(n); }} className="text-xs" />
-              <Input dir="rtl" placeholder="AR" value={feat.text_ar} onChange={e => { const n = [...features]; n[i] = { ...n[i], text_ar: e.target.value }; setFeatures(n); }} className="text-xs" />
+              <Input placeholder="EN" value={feat.en} onChange={e => { const n = [...features]; n[i] = { ...n[i], en: e.target.value }; setFeatures(n); }} className="text-xs" />
+              <Input dir="rtl" placeholder="AR" value={feat.ar} onChange={e => { const n = [...features]; n[i] = { ...n[i], ar: e.target.value }; setFeatures(n); }} className="text-xs" />
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setFeatures(p => p.filter((_, j) => j !== i))}><Trash2 size={12} /></Button>
             </div>
           ))}
@@ -149,8 +149,9 @@ function PlansTab() {
           <TableHeader>
             <TableRow className="border-border/40">
               <TableHead className="text-[11px] uppercase text-muted-foreground">Plan</TableHead>
-              <TableHead className="text-[11px] uppercase text-muted-foreground">Price</TableHead>
-              <TableHead className="text-[11px] uppercase text-muted-foreground">Credits</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Monthly</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Annual</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Credits/Mo</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Status</TableHead>
               <TableHead className="w-20" />
             </TableRow>
@@ -164,8 +165,9 @@ function PlansTab() {
                     <p className="text-[11px] text-muted-foreground">{p.slug}</p>
                   </div>
                 </TableCell>
-                <TableCell className="text-[13px]">{p.price > 0 ? `$${p.price}/${p.billing_period}` : 'Free'}</TableCell>
-                <TableCell className="text-[13px]">{p.included_credits}</TableCell>
+                <TableCell className="text-[13px]">${p.price_monthly_usd || 0}</TableCell>
+                <TableCell className="text-[13px]">${p.price_annual_usd || 0}/yr</TableCell>
+                <TableCell className="text-[13px]">{(p.credits_monthly || 0).toLocaleString()}</TableCell>
                 <TableCell><Badge variant={p.active ? 'default' : 'secondary'} className="text-[10px]">{p.active ? 'Active' : 'Inactive'}</Badge></TableCell>
                 <TableCell onClick={e => e.stopPropagation()}>
                   <div className="flex gap-1">
