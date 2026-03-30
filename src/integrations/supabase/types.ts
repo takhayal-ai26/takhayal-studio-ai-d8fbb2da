@@ -721,6 +721,48 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          credits: number
+          email: string
+          first_login_complete: boolean
+          full_name: string
+          id: string
+          plan: string
+          theme_preference: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          credits?: number
+          email?: string
+          first_login_complete?: boolean
+          full_name?: string
+          id?: string
+          plan?: string
+          theme_preference?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          credits?: number
+          email?: string
+          first_login_complete?: boolean
+          full_name?: string
+          id?: string
+          plan?: string
+          theme_preference?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       provider_configs: {
         Row: {
           api_key_set: boolean
