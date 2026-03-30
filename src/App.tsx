@@ -35,8 +35,6 @@ import AdminStudioConfig from "./pages/admin/AdminStudioConfig";
 import AdminCommerce from "./pages/admin/AdminCommerce";
 import AdminContentMerged from "./pages/admin/AdminContentMerged";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
-import AdminSupport from "./pages/admin/AdminSupport";
-import AdminIntegrations from "./pages/admin/AdminIntegrations";
 import AdminSettingsMerged from "./pages/admin/AdminSettingsMerged";
 
 const queryClient = new QueryClient();
