@@ -255,7 +255,7 @@ export function TopNavbar() {
                   {t.avatar.billingCredits}
                 </button>
                 <button
-                  onClick={() => { setMobileOpen(false); logout(); }}
+                  onClick={async () => { setMobileOpen(false); await auth.logout(); navigate('/'); }}
                   className="w-full flex items-center gap-2.5 px-4 py-3 rounded-lg text-[14px] text-red-400 hover:bg-red-500/10 transition-colors"
                 >
                   <LogOut size={16} />
