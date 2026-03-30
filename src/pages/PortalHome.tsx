@@ -175,7 +175,6 @@ export default function PortalHome() {
                 <button key={cat.key} onClick={() => setActiveCategory(cat.key)} className={`filter-pill flex-shrink-0 transition-all duration-300 ${
                   activeCategory === cat.key ? 'active' : ''
                 }`}>
-                }`}>
                   {cat.label}
                 </button>
               ))}
