@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
 export type NavPage = 'home' | 'canvas' | 'gallery' | 'templates' | 'credits' | 'settings';
 export type AspectRatio = '1:1' | '9:16' | '16:9' | '4:5';
@@ -75,6 +76,7 @@ interface AppState {
   isAuthenticated: boolean;
   userName: string;
   userEmail: string;
+  userAvatarUrl: string | null;
   activePage: NavPage;
   credits: number;
   plan: UserPlan;
@@ -127,12 +129,14 @@ interface AppState {
 const AppContext = createContext<AppState | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userName, setUserName] = useState('');
-  const [userEmail, setUserEmail] = useState('');
+  const auth = useAuth();
+  const isAuthenticated = !!auth.user;
+  const userName = auth.profile?.full_name || auth.user?.user_metadata?.full_name || auth.user?.email?.split('@')[0] || '';
+  const userEmail = auth.profile?.email || auth.user?.email || '';
+  const userAvatarUrl = auth.profile?.avatar_url || auth.user?.user_metadata?.avatar_url || null;
   const [activePage, setActivePage] = useState<NavPage>('canvas');
-  const [credits, setCredits] = useState(10);
-  const [plan, setPlan] = useState<UserPlan>('free');
+  const credits = auth.profile?.credits ?? 10;
+  const plan: UserPlan = (auth.profile?.plan as UserPlan) || 'free';
   const [prompt, setPrompt] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
@@ -217,20 +221,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     fetchTierCredits();
   }, [selectedModelId]);
 
-  const login = useCallback((email: string, name?: string) => {
-    setIsAuthenticated(true);
-    setUserEmail(email);
-    setUserName(name || email.split('@')[0]);
-    setCredits(20);
+  const login = useCallback((_email: string, _name?: string) => {
+    // Legacy — real auth now handled by AuthContext
     setAuthModalOpen(false);
   }, []);
 
-  const logout = useCallback(() => {
-    setIsAuthenticated(false);
-    setUserName('');
-    setUserEmail('');
-    setPlan('free');
-  }, []);
+  const logout = useCallback(async () => {
+    await auth.signOut();
+  }, [auth]);
 
   const openAuthModal = useCallback((tab: 'login' | 'signup' = 'signup') => {
     setAuthModalTab(tab);
@@ -288,7 +286,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLastGenerationMeta(genMeta);
 
     setIsGenerating(true);
-    setCredits(prev => prev - cost);
+    // Credits will be deducted server-side; refresh profile after generation
 
     try {
       const fullPrompt = selectedTemplate
@@ -330,7 +328,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setGallery(prev => [...newImages, ...prev]);
     } catch (err) {
       console.error('Generation failed:', err);
-      setCredits(prev => prev + cost);
+      // Credits refund would happen server-side
     } finally {
       setIsGenerating(false);
     }
@@ -338,7 +336,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider value={{
-      isAuthenticated, userName, userEmail, activePage, credits, plan,
+      isAuthenticated, userName, userEmail, userAvatarUrl, activePage, credits, plan,
       prompt, selectedTemplate, selectedStyle, aspectRatio, quality,
       selectedQualityTier, enhancePrompt, isGenerating, generatedImages, currentImageIndex, gallery,
       generationCards, setGenerationCards, lastGenerationMeta,

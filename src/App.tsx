@@ -3,10 +3,12 @@ import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppProvider } from "@/context/AppContext";
+import { AuthProvider } from "@/context/AuthContext";
 import { LanguageProvider } from "@/i18n/LanguageContext";
 import { ThemeProvider } from "@/context/ThemeProvider";
 import { AppThemeProvider } from "@/context/AppThemeContext";
 import { AppLayout } from "@/components/layout/AppLayout";
+import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Home from "./pages/Home";
 import PortalHome from "./pages/PortalHome";
 import Canvas from "./pages/Canvas";
@@ -18,6 +20,8 @@ import Templates from "./pages/Templates";
 import NotFound from "./pages/NotFound";
 import LegalPage from "./pages/LegalPage";
 import About from "./pages/About";
+import AuthCallback from "./pages/AuthCallback";
+import ResetPassword from "./pages/ResetPassword";
 
 // Admin
 import AdminLayout from "./components/admin/AdminLayout";
@@ -38,29 +42,31 @@ const App = () => (
     <TooltipProvider>
       <LanguageProvider>
         <ThemeProvider>
+        <BrowserRouter>
+        <AuthProvider>
         <AppProvider>
           <Toaster />
-          <BrowserRouter>
             <AppThemeProvider>
             <Routes>
               <Route path="/" element={<Home />} />
               <Route path="/about" element={<About />} />
               <Route path="/terms" element={<LegalPage />} />
               <Route path="/privacy" element={<LegalPage />} />
-
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/auth/reset" element={<ResetPassword />} />
 
               {/* Portal pages share persistent navbar */}
               <Route element={<AppLayout />}>
                 <Route path="/home" element={<PortalHome />} />
-                <Route path="/studio" element={<Canvas />} />
+                <Route path="/studio" element={<ProtectedRoute><Canvas /></ProtectedRoute>} />
                 <Route path="/pricing" element={<Pricing />} />
-                <Route path="/tools" element={<ToolsDirectory />} />
-                <Route path="/tools/:toolId" element={<ToolPage />} />
+                <Route path="/tools" element={<ProtectedRoute><ToolsDirectory /></ProtectedRoute>} />
+                <Route path="/tools/:toolId" element={<ProtectedRoute><ToolPage /></ProtectedRoute>} />
                 <Route path="/community" element={<Community />} />
                 <Route path="/templates" element={<Templates />} />
               </Route>
 
-              {/* Admin Panel — 9 items */}
+              {/* Admin Panel */}
               <Route path="/admin" element={<AdminLayout />}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="users" element={<AdminUsersMerged />} />
@@ -103,8 +109,9 @@ const App = () => (
               <Route path="*" element={<NotFound />} />
             </Routes>
             </AppThemeProvider>
-          </BrowserRouter>
         </AppProvider>
+        </AuthProvider>
+        </BrowserRouter>
         </ThemeProvider>
       </LanguageProvider>
     </TooltipProvider>
