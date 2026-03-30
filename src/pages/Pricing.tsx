@@ -182,15 +182,15 @@ const Pricing = () => {
 
                 <div className="mt-4 flex items-baseline gap-1">
                   {billing === 'annual' && p.price_monthly_usd > 0 && (
-                    <span className="text-sm text-muted-foreground line-through mr-1">${p.price_monthly_usd}</span>
+                    <span className="text-sm text-muted-foreground line-through mr-1">{fmt(p.price_monthly_usd)}</span>
                   )}
-                  <span className="text-[36px] font-extralight text-foreground">${price}</span>
+                  <span className="text-[36px] font-extralight text-foreground">{fmt(price)}</span>
                   {p.price_monthly_usd > 0 && <span className="text-sm text-muted-foreground">/{isAr ? 'شهر' : 'mo'}</span>}
                 </div>
 
                 {billing === 'annual' && p.price_annual_usd > 0 && (
                   <p className="text-[11px] text-muted-foreground mt-1">
-                    {isAr ? `يُفوتر سنوياً بمبلغ $${p.price_annual_usd}` : `Billed as $${p.price_annual_usd}/year`}
+                    {isAr ? `يُفوتر سنوياً بمبلغ ${fmt(p.price_annual_usd)}` : `Billed as ${fmt(p.price_annual_usd)}/year`}
                   </p>
                 )}
 
