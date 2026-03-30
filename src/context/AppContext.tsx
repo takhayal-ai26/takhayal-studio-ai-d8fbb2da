@@ -336,7 +336,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider value={{
-      isAuthenticated, userName, userEmail, activePage, credits, plan,
+      isAuthenticated, userName, userEmail, userAvatarUrl, activePage, credits, plan,
       prompt, selectedTemplate, selectedStyle, aspectRatio, quality,
       selectedQualityTier, enhancePrompt, isGenerating, generatedImages, currentImageIndex, gallery,
       generationCards, setGenerationCards, lastGenerationMeta,
