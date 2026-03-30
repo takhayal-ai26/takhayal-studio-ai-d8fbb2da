@@ -34,7 +34,7 @@ export default function AdminLayout() {
     <div className="flex h-screen w-full bg-background text-foreground overflow-hidden">
       <aside
         className={cn(
-          'flex flex-col border-r border-border/40 bg-[hsl(0,0%,4%)] transition-all duration-300',
+          'flex flex-col border-r border-border bg-card transition-all duration-300',
           collapsed ? 'w-[68px]' : 'w-[240px]'
         )}
       >
