@@ -48,18 +48,18 @@ export function ModelDropdown({ models, selectedModelId, language, anchorRect, o
         style={{ top, left, width: panelW }}
       >
         <div
-          className="rounded-xl border border-border/20 overflow-hidden"
+          className="rounded-xl border border-border overflow-hidden"
           style={{
-            background: '#161616',
-            boxShadow: '0 8px 32px rgba(0,0,0,0.6)',
+            background: 'var(--dropdown-bg)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.3)',
             maxHeight: panelMaxH,
             display: 'flex',
             flexDirection: 'column',
           }}
         >
           {/* Sticky header */}
-          <div className="sticky top-0 z-[1] px-3.5 py-2.5 border-b border-border/10" style={{ background: '#161616' }}>
-            <p className="text-[10px] uppercase tracking-[2.5px] font-medium" style={{ color: '#555' }}>Select Model</p>
+          <div className="sticky top-0 z-[1] px-3.5 py-2.5 border-b border-border" style={{ background: 'var(--dropdown-bg)' }}>
+            <p className="text-[10px] uppercase tracking-[2.5px] font-medium text-muted-foreground">Select Model</p>
           </div>
           {/* Scrollable list */}
           <div className="overflow-y-auto flex-1 scrollbar-thin" style={{ maxHeight: panelMaxH - 40 }}>
@@ -78,22 +78,22 @@ export function ModelDropdown({ models, selectedModelId, language, anchorRect, o
                   style={{
                     padding: '10px 14px',
                     minHeight: 52,
-                    borderBottom: isLast ? 'none' : '1px solid #1A1A1A',
+                    borderBottom: isLast ? 'none' : `1px solid var(--dropdown-divider)`,
                     borderLeft: isActive ? '2px solid hsl(var(--primary))' : '2px solid transparent',
                     background: isActive ? 'hsla(var(--primary) / 0.06)' : 'transparent',
                   }}
-                  onMouseEnter={e => { if (!isActive) (e.currentTarget.style.background = '#1E1E1E'); }}
+                  onMouseEnter={e => { if (!isActive) (e.currentTarget.style.background = 'hsl(var(--muted))'); }}
                   onMouseLeave={e => { if (!isActive) (e.currentTarget.style.background = 'transparent'); }}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-medium leading-tight" style={{ color: isActive ? 'hsl(var(--primary))' : '#FFFFFF' }}>
+                    <p className="text-[14px] font-medium leading-tight" style={{ color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--foreground))' }}>
                       {m.model_name}
                     </p>
                     {bestFor && (
-                      <p className="text-[11px] mt-0.5 truncate" style={{ color: '#555' }}>{bestFor}</p>
+                      <p className="text-[11px] mt-0.5 truncate text-muted-foreground">{bestFor}</p>
                     )}
                   </div>
-                  <span className="text-[9px] flex-shrink-0" style={{ color: '#555' }}>
+                  <span className="text-[9px] flex-shrink-0 text-muted-foreground">
                     {pills.join('  ')}
                   </span>
                   {isActive && <Check size={14} className="text-primary flex-shrink-0" />}
