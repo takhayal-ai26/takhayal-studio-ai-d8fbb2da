@@ -58,7 +58,7 @@ export const DEFAULT_THEME: ThemeColors = {
   'sidebar-bg': '#000000',
   'panel-bg': '#111111',
   'card-bg': '#1E1E1E',
-  border: '#2A2A2A',
+  border: 'rgba(255,255,255,0.08)',
   'text-primary': '#FFFFFF',
   'text-secondary': '#6B6969',
   'text-muted': '#444444',
