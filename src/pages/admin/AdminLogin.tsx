@@ -15,7 +15,9 @@ export default function AdminLogin() {
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [mode, setMode] = useState<'login' | 'reset'>('login');
 
   // If already logged in, check admin and redirect
   useEffect(() => {
