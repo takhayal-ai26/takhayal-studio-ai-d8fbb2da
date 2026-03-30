@@ -132,9 +132,12 @@ export function TopNavbar() {
               <div ref={avatarRef} className="relative">
                 <button
                   onClick={() => setAvatarOpen(!avatarOpen)}
-                  className="w-8 h-8 rounded-full bg-card border border-surface-border flex items-center justify-center text-xs font-medium text-foreground hover:border-primary/40 transition-colors"
+                  className="w-9 h-9 rounded-full flex items-center justify-center text-xs font-medium overflow-hidden border border-border hover:border-primary/40 transition-colors"
+                  style={!userAvatarUrl ? { backgroundColor: 'hsl(var(--cta-primary))', color: '#fff' } : {}}
                 >
-                  {initials}
+                  {userAvatarUrl ? (
+                    <img src={userAvatarUrl} alt={userName} className="w-full h-full object-cover" />
+                  ) : initials}
                 </button>
 
                 {avatarOpen && (
