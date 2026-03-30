@@ -5,6 +5,7 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTools } from '@/hooks/useTools';
 import { useMedia } from '@/hooks/useMedia';
+import { DashboardHero } from '@/components/home/DashboardHero';
 
 const featuredItems = [
   { image: 'https://picsum.photos/seed/feat-cinema/800/450', labelKey: 'cinematicAd', promptEn: 'Cinematic product advertisement, dramatic studio lighting, dark moody tones, volumetric fog, 4K commercial quality', promptAr: 'إعلان منتج سينمائي، إضاءة استوديو درامية، ألوان داكنة، ضباب حجمي، جودة تجارية 4K', template: 'Product Shot' },
