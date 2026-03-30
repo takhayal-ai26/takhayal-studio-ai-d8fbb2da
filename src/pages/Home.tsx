@@ -7,6 +7,7 @@ import { Logo } from '@/components/Logo';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { useState, useEffect, useRef } from 'react';
 import { useMedia } from '@/hooks/useMedia';
+import { HeroPromptComposer } from '@/components/home/HeroPromptComposer';
 
 function useScrollReveal() {
   const ref = useRef<HTMLDivElement>(null);
