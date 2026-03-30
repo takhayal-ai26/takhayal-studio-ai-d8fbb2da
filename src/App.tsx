@@ -41,9 +41,9 @@ const App = () => (
     <TooltipProvider>
       <LanguageProvider>
         <ThemeProvider>
-        <AuthProvider>
-        <AppProvider>
-          <Toaster />
+          <AuthProvider>
+            <AppProvider>
+              <Toaster />
           <BrowserRouter>
             <AppThemeProvider>
             <Routes>
@@ -110,8 +110,8 @@ const App = () => (
             </Routes>
             </AppThemeProvider>
           </BrowserRouter>
-        </AppProvider>
-        </AuthProvider>
+            </AppProvider>
+          </AuthProvider>
         </ThemeProvider>
       </LanguageProvider>
     </TooltipProvider>
