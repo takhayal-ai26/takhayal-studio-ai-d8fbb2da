@@ -94,6 +94,10 @@ interface AppState {
   generationCards: GenerationCard[];
   setGenerationCards: React.Dispatch<React.SetStateAction<GenerationCard[]>>;
   lastGenerationMeta: { modelName: string; modelId: string; qualityTier: string; endpointId: string } | null;
+  authModalOpen: boolean;
+  authModalTab: 'login' | 'signup';
+  upgradeModalOpen: boolean;
+  // Model-aware state
   availableModels: StudioModel[];
   selectedModelId: string | null;
   selectedModel: StudioModel | null;
@@ -125,12 +129,17 @@ interface AppState {
 const AppContext = createContext<AppState | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userName, setUserName] = useState('');
-  const [userEmail, setUserEmail] = useState('');
+  const auth = useAuth();
+  
+  // Derive from auth context
+  const isAuthenticated = auth.isAuthenticated;
+  const userName = auth.profile?.full_name || auth.user?.user_metadata?.full_name || auth.user?.email?.split('@')[0] || '';
+  const userEmail = auth.profile?.email || auth.user?.email || '';
+  const userAvatarUrl = auth.profile?.avatar_url || auth.user?.user_metadata?.avatar_url || '';
+  const credits = auth.profile?.credits ?? 10;
+  const plan: UserPlan = (auth.profile?.plan as UserPlan) || 'free';
+
   const [activePage, setActivePage] = useState<NavPage>('canvas');
-  const [credits, setCredits] = useState(10);
-  const [plan, setPlan] = useState<UserPlan>('free');
   const [prompt, setPrompt] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
@@ -144,8 +153,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [gallery, setGallery] = useState<GeneratedImage[]>([]);
   const [generationCards, setGenerationCards] = useState<GenerationCard[]>([]);
   const [lastGenerationMeta, setLastGenerationMeta] = useState<{ modelName: string; modelId: string; qualityTier: string; endpointId: string } | null>(null);
-  const [authModalOpen, setAuthModalOpen] = useState(false);
-  const [authModalTab, setAuthModalTab] = useState<'login' | 'signup'>('signup');
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
   // Model-aware state
