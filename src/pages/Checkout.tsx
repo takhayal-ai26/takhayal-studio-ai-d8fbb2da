@@ -3,28 +3,12 @@ import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { LogoMark } from '@/components/Logo';
-import { ArrowLeft, Lock, RotateCcw, Zap, CreditCard, Shield, Info } from 'lucide-react';
+import { ArrowLeft, Lock, RotateCcw, Zap, CreditCard, Shield, Info, Check } from 'lucide-react';
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip';
+import { usePricingPlans } from '@/hooks/useBillingData';
 
 const GCC_COUNTRIES = ['Kuwait', 'Saudi Arabia', 'UAE', 'Bahrain', 'Qatar', 'Oman'];
 const OTHER_COUNTRIES = ['Egypt', 'Jordan', 'Lebanon', 'Iraq', 'Morocco', 'Tunisia', 'Other'];
-
-const PLAN_DATA: Record<string, { name: string; nameAr: string; tagline: string; taglineAr: string; monthly: number; annual: number; credits: number; features: string[]; featuresAr: string[] }> = {
-  creator: {
-    name: 'Creator', nameAr: 'المبدع',
-    tagline: 'For creators who need more power', taglineAr: 'للمبدعين الذين يحتاجون المزيد',
-    monthly: 12, annual: 9.60, credits: 300,
-    features: ['300 credits per month', 'All 14+ AI models', 'Up to 2K resolution', 'No watermark', 'Priority generation queue', 'Email support'],
-    featuresAr: ['300 رصيد شهرياً', 'جميع النماذج 14+', 'دقة تصل إلى 2K', 'بدون علامة مائية', 'أولوية في التوليد', 'دعم بالبريد الإلكتروني'],
-  },
-  studio: {
-    name: 'Studio', nameAr: 'الاستوديو',
-    tagline: 'For professionals and teams', taglineAr: 'للمحترفين والفرق',
-    monthly: 29, annual: 23.20, credits: 1000,
-    features: ['1000 credits per month', 'All models + early access', 'Up to 4K resolution', 'No watermark', 'Fastest generation queue', 'Brand kit & project workspace', 'Priority email support'],
-    featuresAr: ['1000 رصيد شهرياً', 'جميع النماذج + وصول مبكر', 'دقة تصل إلى 4K', 'بدون علامة مائية', 'أسرع توليد', 'مجموعة العلامة التجارية', 'دعم بريد إلكتروني أولوي'],
-  },
-};
 
 function formatCardNumber(v: string) {
   return v.replace(/\D/g, '').replace(/(.{4})/g, '$1 ').trim().slice(0, 19);
@@ -42,12 +26,17 @@ export default function Checkout() {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
 
-  const planSlug = params.get('plan') || '';
-  const creditsAmount = params.get('credits');
-  const isCreditsCheckout = !!creditsAmount;
-  const plan = PLAN_DATA[planSlug];
+  const { data: plans = [] } = usePricingPlans();
 
-  const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
+  const planSlug = params.get('plan') || '';
+  const creditsParam = params.get('credits');
+  const priceParam = params.get('price');
+  const isCreditsCheckout = !!creditsParam;
+  const billingParam = params.get('billing') || 'monthly';
+
+  const plan = plans.find((p: any) => p.slug === planSlug);
+
+  const [billing, setBilling] = useState<'monthly' | 'annual'>(billingParam as any);
   const [cardName, setCardName] = useState('');
   const [cardNumber, setCardNumber] = useState('');
   const [expiry, setExpiry] = useState('');
@@ -63,6 +52,7 @@ export default function Checkout() {
   }, [user, navigate]);
 
   if (!plan && !isCreditsCheckout) {
+    if (plans.length === 0) return <div className="min-h-screen bg-background flex items-center justify-center"><div className="animate-pulse text-muted-foreground">Loading...</div></div>;
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
         <div className="text-center">
@@ -73,11 +63,18 @@ export default function Checkout() {
     );
   }
 
-  const creditsNum = isCreditsCheckout ? parseInt(creditsAmount!, 10) : 0;
-  const creditPrice = isCreditsCheckout ? (creditsNum * 0.016) : 0;
-  const price = isCreditsCheckout ? creditPrice : (billing === 'annual' ? (plan!.annual * 12) : plan!.monthly);
-  const monthlyPrice = isCreditsCheckout ? creditPrice : (billing === 'annual' ? plan!.annual : plan!.monthly);
-  const displayName = isCreditsCheckout ? `${creditsNum} Credits` : (isAr ? plan!.nameAr : plan!.name);
+  const creditsNum = isCreditsCheckout ? parseInt(creditsParam!, 10) : 0;
+  const creditPrice = isCreditsCheckout ? parseFloat(priceParam || '0') : 0;
+
+  const monthlyPrice = plan ? (billing === 'annual' ? plan.price_annual_monthly_equivalent : plan.price_monthly_usd) : 0;
+  const totalPrice = isCreditsCheckout ? creditPrice : (billing === 'annual' ? plan!.price_annual_usd : plan!.price_monthly_usd);
+  const annualSavings = plan ? ((plan.price_monthly_usd * 12) - plan.price_annual_usd) : 0;
+
+  const displayName = isCreditsCheckout 
+    ? `${creditsNum.toLocaleString()} ${isAr ? 'رصيد' : 'Credits'}` 
+    : (isAr ? plan!.name_ar : plan!.name_en);
+
+  const features: Array<{en: string; ar: string}> = plan?.features || [];
 
   const validate = () => {
     const e: Record<string, string> = {};
@@ -133,14 +130,13 @@ export default function Checkout() {
   return (
     <div className="min-h-screen bg-background" dir={isAr ? 'rtl' : 'ltr'}>
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
-        {/* Back */}
         <button onClick={() => navigate('/pricing')} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
           <ArrowLeft size={16} />
           {isAr ? 'العودة للأسعار' : 'Back to Pricing'}
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
-          {/* LEFT — Order Summary (3 cols) */}
+          {/* LEFT — Order Summary */}
           <div className="lg:col-span-3 space-y-6">
             <h1 className="text-[28px] font-medium text-foreground">{isAr ? 'أكمل طلبك' : 'Complete your order'}</h1>
 
@@ -161,21 +157,23 @@ export default function Checkout() {
               <div className="flex items-center justify-between mb-4">
                 <div>
                   <h3 className="text-lg font-medium text-foreground">{displayName} {!isCreditsCheckout && (isAr ? 'خطة' : 'Plan')}</h3>
-                  {!isCreditsCheckout && <p className="text-sm text-muted-foreground mt-1">{isAr ? plan!.taglineAr : plan!.tagline}</p>}
                   {isCreditsCheckout && <p className="text-sm text-muted-foreground mt-1">{isAr ? 'الأرصدة لا تنتهي صلاحيتها' : 'Credits never expire'}</p>}
                 </div>
                 <div className="text-right">
                   {billing === 'annual' && !isCreditsCheckout && (
-                    <span className="text-sm text-muted-foreground line-through">${plan!.monthly}/mo</span>
+                    <span className="text-sm text-muted-foreground line-through">${plan!.price_monthly_usd}/mo</span>
                   )}
-                  <p className="text-2xl font-medium text-foreground">${monthlyPrice.toFixed(2)}{!isCreditsCheckout && <span className="text-sm text-muted-foreground">/{isAr ? 'شهر' : 'mo'}</span>}</p>
+                  <p className="text-2xl font-medium text-foreground">
+                    ${isCreditsCheckout ? creditPrice.toFixed(2) : monthlyPrice.toFixed(2)}
+                    {!isCreditsCheckout && <span className="text-sm text-muted-foreground">/{isAr ? 'شهر' : 'mo'}</span>}
+                  </p>
                 </div>
               </div>
-              {!isCreditsCheckout && (
+              {!isCreditsCheckout && features.length > 0 && (
                 <ul className="space-y-2 pt-4 border-t border-border">
-                  {(isAr ? plan!.featuresAr : plan!.features).map((f, i) => (
+                  {features.map((f: any, i: number) => (
                     <li key={i} className="flex items-center gap-2 text-sm text-foreground">
-                      <span className="text-primary">✓</span> {f}
+                      <Check size={14} className="text-primary" /> {isAr ? f.ar : f.en}
                     </li>
                   ))}
                 </ul>
@@ -187,15 +185,26 @@ export default function Checkout() {
               <h4 className="text-sm font-medium text-foreground">{isAr ? 'ملخص الطلب' : 'Order Summary'}</h4>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">{displayName} {!isCreditsCheckout && `(${billing === 'annual' ? (isAr ? 'سنوي' : 'Annual') : (isAr ? 'شهري' : 'Monthly')})`}</span>
-                <span className="text-foreground">${price.toFixed(2)}</span>
+                <span className="text-foreground">${totalPrice.toFixed(2)}</span>
               </div>
+              {billing === 'annual' && !isCreditsCheckout && annualSavings > 0 && (
+                <>
+                  <div className="flex justify-between text-sm text-muted-foreground">
+                    <span>{isAr ? 'ما يعادل' : 'Equivalent to'}</span>
+                    <span>${monthlyPrice.toFixed(2)}/{isAr ? 'شهر' : 'month'}</span>
+                  </div>
+                  <div className="flex justify-between text-sm text-primary">
+                    <span>{isAr ? 'توفيرك' : 'You save'}</span>
+                    <span>${annualSavings.toFixed(2)} {isAr ? 'مقارنة بالشهري' : 'vs monthly'}</span>
+                  </div>
+                </>
+              )}
               <div className="border-t border-border pt-3 flex justify-between text-sm font-medium">
                 <span className="text-foreground">{isAr ? 'المجموع المستحق اليوم' : 'Total due today'}</span>
-                <span className="text-foreground">${price.toFixed(2)}</span>
+                <span className="text-foreground">${totalPrice.toFixed(2)}</span>
               </div>
             </div>
 
-            {/* Trust badges */}
             <div className="flex items-center gap-6">
               {[
                 { icon: Lock, label: isAr ? 'دفع آمن' : 'Secure checkout' },
@@ -209,11 +218,10 @@ export default function Checkout() {
             </div>
           </div>
 
-          {/* RIGHT — Payment Form (2 cols) */}
+          {/* RIGHT — Payment Form */}
           <div className="lg:col-span-2 space-y-6">
             <h2 className="text-lg font-medium text-foreground">{isAr ? 'تفاصيل الدفع' : 'Payment details'}</h2>
 
-            {/* User info */}
             {profile && (
               <div className="flex items-center gap-3 p-3 bg-muted/50 rounded-lg">
                 <div className="w-8 h-8 rounded-full bg-primary/15 flex items-center justify-center text-xs font-medium text-foreground">
@@ -226,27 +234,21 @@ export default function Checkout() {
               </div>
             )}
 
-            {/* Card details */}
             <div className="space-y-4">
               <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{isAr ? 'بيانات البطاقة' : 'Card details'}</p>
-
               <div>
                 <label className="text-xs text-muted-foreground mb-1.5 block">{isAr ? 'الاسم على البطاقة' : 'Name on card'}</label>
                 <input value={cardName} onChange={e => setCardName(e.target.value)} placeholder={isAr ? 'كما يظهر على البطاقة' : 'As it appears on card'} className={inputCls('cardName')} />
                 {errors.cardName && <p className="text-xs text-red-500 mt-1">{errors.cardName}</p>}
               </div>
-
               <div>
                 <label className="text-xs text-muted-foreground mb-1.5 block">{isAr ? 'رقم البطاقة' : 'Card number'}</label>
                 <div className="relative">
                   <input value={cardNumber} onChange={e => setCardNumber(formatCardNumber(e.target.value))} placeholder="1234 5678 9012 3456" className={inputCls('cardNumber')} />
-                  <div className="absolute right-3 top-1/2 -translate-y-1/2 flex gap-1">
-                    <CreditCard size={18} className="text-muted-foreground" />
-                  </div>
+                  <div className="absolute right-3 top-1/2 -translate-y-1/2"><CreditCard size={18} className="text-muted-foreground" /></div>
                 </div>
                 {errors.cardNumber && <p className="text-xs text-red-500 mt-1">{errors.cardNumber}</p>}
               </div>
-
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="text-xs text-muted-foreground mb-1.5 block">{isAr ? 'تاريخ الانتهاء' : 'Expiry date'}</label>
@@ -267,7 +269,6 @@ export default function Checkout() {
               </div>
             </div>
 
-            {/* Billing address */}
             <div className="space-y-4">
               <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">{isAr ? 'عنوان الفوترة' : 'Billing address'}</p>
               <div>
@@ -285,7 +286,6 @@ export default function Checkout() {
               </div>
             </div>
 
-            {/* Pay button */}
             <button
               onClick={handlePay}
               disabled={!cardName || !cardNumber || !expiry || !cvv || !city}
@@ -293,7 +293,7 @@ export default function Checkout() {
             >
               {isCreditsCheckout
                 ? `${isAr ? 'ادفع' : 'Pay'} $${creditPrice.toFixed(2)}`
-                : `${isAr ? 'ادفع' : 'Pay'} $${price.toFixed(2)} / ${billing === 'annual' ? (isAr ? 'سنة' : 'year') : (isAr ? 'شهر' : 'month')}`}
+                : `${isAr ? 'ادفع' : 'Pay'} $${totalPrice.toFixed(2)} / ${billing === 'annual' ? (isAr ? 'سنة' : 'year') : (isAr ? 'شهر' : 'month')}`}
             </button>
 
             <p className="text-[11px] text-muted-foreground text-center flex items-center justify-center gap-1">
