@@ -35,8 +35,6 @@ import AdminStudioConfig from "./pages/admin/AdminStudioConfig";
 import AdminCommerce from "./pages/admin/AdminCommerce";
 import AdminContentMerged from "./pages/admin/AdminContentMerged";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
-import AdminSupport from "./pages/admin/AdminSupport";
-import AdminIntegrations from "./pages/admin/AdminIntegrations";
 import AdminSettingsMerged from "./pages/admin/AdminSettingsMerged";
 
 const queryClient = new QueryClient();
@@ -79,40 +77,44 @@ const App = () => (
               <Route path="/admin" element={<AdminProtectedRoute><AdminLayout /></AdminProtectedRoute>}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="users" element={<AdminUsersMerged />} />
-                <Route path="studio" element={<AdminStudioConfig />} />
-                <Route path="commerce" element={<AdminCommerce />} />
+                <Route path="pricing" element={<AdminCommerce />} />
+                <Route path="models" element={<AdminStudioConfig />} />
+                <Route path="tools" element={<AdminStudioConfig />} />
+                <Route path="templates" element={<AdminContentMerged />} />
                 <Route path="content" element={<AdminContentMerged />} />
                 <Route path="analytics" element={<AdminAnalytics />} />
-                <Route path="support" element={<AdminSupport />} />
-                <Route path="integrations" element={<AdminIntegrations />} />
                 <Route path="settings" element={<AdminSettingsMerged />} />
               </Route>
 
-              {/* Legacy redirects */}
+              {/* Legacy redirects → new clean paths */}
+              <Route path="/admin/studio" element={<Navigate to="/admin/models" replace />} />
+              <Route path="/admin/commerce" element={<Navigate to="/admin/pricing" replace />} />
               <Route path="/admin/billing" element={<Navigate to="/admin/users" replace />} />
-              <Route path="/admin/pricing" element={<Navigate to="/admin/commerce" replace />} />
-              <Route path="/admin/tools" element={<Navigate to="/admin/studio" replace />} />
-              <Route path="/admin/models" element={<Navigate to="/admin/studio" replace />} />
-              <Route path="/admin/templates" element={<Navigate to="/admin/content" replace />} />
               <Route path="/admin/media" element={<Navigate to="/admin/content" replace />} />
               <Route path="/admin/community" element={<Navigate to="/admin/content" replace />} />
               <Route path="/admin/notifications" element={<Navigate to="/admin/settings" replace />} />
               <Route path="/admin/translations" element={<Navigate to="/admin/settings" replace />} />
               <Route path="/admin/roles" element={<Navigate to="/admin/settings" replace />} />
+              <Route path="/admin/support" element={<Navigate to="/admin/settings" replace />} />
+              <Route path="/admin/integrations" element={<Navigate to="/admin/settings" replace />} />
 
               {/* Old top-level redirects */}
               <Route path="/users" element={<Navigate to="/admin/users" replace />} />
               <Route path="/billing" element={<Navigate to="/admin/users" replace />} />
-              <Route path="/pricing-economics" element={<Navigate to="/admin/commerce" replace />} />
-              <Route path="/models" element={<Navigate to="/admin/studio" replace />} />
+              <Route path="/pricing-economics" element={<Navigate to="/admin/pricing" replace />} />
+              <Route path="/models" element={<Navigate to="/admin/models" replace />} />
               <Route path="/content" element={<Navigate to="/admin/content" replace />} />
               <Route path="/media" element={<Navigate to="/admin/content" replace />} />
               <Route path="/analytics" element={<Navigate to="/admin/analytics" replace />} />
-              <Route path="/support" element={<Navigate to="/admin/support" replace />} />
+              <Route path="/support" element={<Navigate to="/admin/settings" replace />} />
               <Route path="/notifications" element={<Navigate to="/admin/settings" replace />} />
-              <Route path="/integrations" element={<Navigate to="/admin/integrations" replace />} />
+              <Route path="/integrations" element={<Navigate to="/admin/settings" replace />} />
               <Route path="/roles" element={<Navigate to="/admin/settings" replace />} />
               <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
+              <Route path="/translations" element={<Navigate to="/admin/settings" replace />} />
+              <Route path="/dashboard/admin" element={<Navigate to="/admin" replace />} />
+              <Route path="/admin-panel" element={<Navigate to="/admin" replace />} />
+              <Route path="/internal/*" element={<Navigate to="/admin" replace />} />
               <Route path="/translations" element={<Navigate to="/admin/settings" replace />} />
 
               <Route path="*" element={<NotFound />} />
