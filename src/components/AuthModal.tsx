@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { LogoMark } from '@/components/Logo';
 import { useMedia } from '@/hooks/useMedia';
+import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 
@@ -58,13 +59,10 @@ export function AuthModal() {
     setLoading(true);
     setError('');
     try {
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: 'google',
-        options: {
-          redirectTo: authRedirectUrl,
-        },
+      const result = await lovable.auth.signInWithOAuth('google', {
+        redirect_uri: window.location.origin,
       });
-      if (oauthError) {
+      if (result.error) {
         setError('Google sign in failed. Please try again.');
       }
     } catch {
@@ -78,13 +76,10 @@ export function AuthModal() {
     setLoading(true);
     setError('');
     try {
-      const { error: oauthError } = await supabase.auth.signInWithOAuth({
-        provider: 'apple',
-        options: {
-          redirectTo: authRedirectUrl,
-        },
+      const result = await lovable.auth.signInWithOAuth('apple', {
+        redirect_uri: window.location.origin,
       });
-      if (oauthError) {
+      if (result.error) {
         setError('Apple sign in failed. Please try again.');
       }
     } catch {
