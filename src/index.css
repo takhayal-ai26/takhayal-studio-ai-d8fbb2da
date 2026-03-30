@@ -89,6 +89,144 @@
   }
 }
 
+/* ══════════════════════════════════════════
+   GLOBAL BORDER & VISUAL OVERRIDES
+   ══════════════════════════════════════════ */
+
+/* ── LIGHT MODE border overrides ── */
+[data-theme="light"] input,
+[data-theme="light"] textarea,
+[data-theme="light"] select,
+[data-theme="light"] button:not(.btn-primary),
+[data-theme="light"] [class*="card"],
+[data-theme="light"] [class*="panel"],
+[data-theme="light"] [class*="section"],
+[data-theme="light"] [class*="pill"],
+[data-theme="light"] [class*="tag"],
+[data-theme="light"] [class*="badge"],
+[data-theme="light"] [class*="filter"],
+[data-theme="light"] [class*="chip"],
+[data-theme="light"] [class*="dropdown"],
+[data-theme="light"] [class*="modal"],
+[data-theme="light"] [class*="container"] {
+  border-color: rgba(0,0,0,0.07) !important;
+}
+
+/* ── DARK MODE border overrides ── */
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select,
+[data-theme="dark"] button:not(.btn-primary),
+[data-theme="dark"] [class*="card"],
+[data-theme="dark"] [class*="panel"],
+[data-theme="dark"] [class*="section"],
+[data-theme="dark"] [class*="pill"],
+[data-theme="dark"] [class*="tag"],
+[data-theme="dark"] [class*="badge"],
+[data-theme="dark"] [class*="filter"],
+[data-theme="dark"] [class*="chip"],
+[data-theme="dark"] [class*="dropdown"],
+[data-theme="dark"] [class*="modal"],
+[data-theme="dark"] [class*="container"] {
+  border-color: rgba(255,255,255,0.07) !important;
+}
+
+/* ── Global card styling ── */
+[data-theme="light"] [class*="card"] {
+  background: #FFFFFF;
+  border: 1px solid rgba(0,0,0,0.06) !important;
+  border-radius: 14px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+[data-theme="dark"] [class*="card"] {
+  background: #141414;
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  border-radius: 14px;
+  box-shadow: none;
+}
+
+/* ── Global input styling ── */
+[data-theme="light"] input,
+[data-theme="light"] textarea,
+[data-theme="light"] select {
+  background: #FFFFFF !important;
+  border: 1px solid rgba(0,0,0,0.10) !important;
+  border-radius: 10px;
+  color: #0D0D0D;
+}
+[data-theme="light"] input:focus,
+[data-theme="light"] textarea:focus,
+[data-theme="light"] select:focus {
+  border-color: rgba(240,62,27,0.5) !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(240,62,27,0.08);
+}
+[data-theme="dark"] input,
+[data-theme="dark"] textarea,
+[data-theme="dark"] select {
+  background: #1A1A1A !important;
+  border: 1px solid rgba(255,255,255,0.08) !important;
+  border-radius: 10px;
+  color: #FFFFFF;
+}
+[data-theme="dark"] input:focus,
+[data-theme="dark"] textarea:focus,
+[data-theme="dark"] select:focus {
+  border-color: rgba(240,62,27,0.5) !important;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(240,62,27,0.08);
+}
+
+/* ── Secondary button borders ── */
+[data-theme="light"] button:not(.btn-primary) {
+  border-color: rgba(0,0,0,0.10) !important;
+}
+[data-theme="light"] button:not(.btn-primary):hover {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.18) !important;
+}
+[data-theme="dark"] button:not(.btn-primary) {
+  border-color: rgba(255,255,255,0.10) !important;
+}
+[data-theme="dark"] button:not(.btn-primary):hover {
+  background: rgba(255,255,255,0.05);
+}
+
+/* ── Category / Filter pill styling ── */
+.filter-pill {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.10);
+  border-radius: 999px;
+  color: #9A9A9A;
+  font-size: 13px;
+  font-weight: 500;
+  padding: 6px 16px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.filter-pill:hover {
+  background: rgba(255,255,255,0.05);
+  border-color: rgba(255,255,255,0.15);
+}
+.filter-pill.active {
+  background: #F03E1B;
+  border-color: #F03E1B;
+  color: #FFFFFF;
+}
+[data-theme="light"] .filter-pill {
+  border-color: rgba(0,0,0,0.10);
+  color: #434242;
+}
+[data-theme="light"] .filter-pill:hover {
+  background: rgba(0,0,0,0.04);
+  border-color: rgba(0,0,0,0.15);
+}
+[data-theme="light"] .filter-pill.active {
+  background: #F03E1B;
+  border-color: #F03E1B;
+  color: #FFFFFF;
+}
+
 @layer base {
   * {
     @apply border-border;
@@ -97,20 +235,6 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'DM Sans', sans-serif;
-  }
-
-  /* ── Global input/textarea/select border fix ── */
-  input, textarea, select,
-  [role="combobox"],
-  [data-slot="input"] {
-    border-color: hsl(var(--input)) !important;
-    border-radius: 10px;
-    transition: border-color 0.2s ease;
-  }
-  input:focus, textarea:focus, select:focus,
-  [role="combobox"]:focus,
-  input:focus-within, textarea:focus-within {
-    border-color: hsl(var(--input-focus)) !important;
   }
 
   [lang="ar"], .arabic {
