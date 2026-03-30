@@ -86,7 +86,7 @@ export default function AdminLayout() {
           </nav>
         </ScrollArea>
 
-        <div className="border-t border-border/40 p-2">
+        <div className="border-t border-border p-2">
           <button
             onClick={() => navigate('/')}
             className={cn(
