@@ -76,29 +76,8 @@ export default function PortalHome() {
   return (
     <div className="flex-1 pt-16 overflow-y-auto">
 
-        {/* ── Section 1: Featured Carousel ── */}
-        <section className="relative w-full overflow-hidden">
-          <div className="flex transition-transform duration-500 ease-out" style={{ transform: `translateX(${isRTL ? '' : '-'}${carouselIndex * 100}%)` }}>
-            {featuredItems.map((item, i) => (
-              <div key={i} className="w-full flex-shrink-0 relative aspect-[21/9] min-h-[260px] max-h-[400px]">
-                <img src={item.image} alt={(t.portal as any)[item.labelKey]} className="w-full h-full object-cover" loading={i === 0 ? 'eager' : 'lazy'} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
-                <div className={`absolute bottom-0 ${isRTL ? 'right-0' : 'left-0'} p-6 md:p-10`}>
-                  <span className="text-[11px] uppercase tracking-widest text-primary font-medium">{t.portal.featured}</span>
-                  <h2 className="text-2xl md:text-3xl font-extralight text-white mt-1">{(t.portal as any)[item.labelKey]}</h2>
-                  <button onClick={() => goToCanvas(isAr ? item.promptAr : item.promptEn, item.template)} className="mt-4 h-10 px-5 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:opacity-80 transition-opacity">
-                    {t.portal.tryThisStyle}
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-          <div className={`absolute bottom-4 ${isRTL ? 'left-6' : 'right-6'} flex gap-1.5`}>
-            {featuredItems.map((_, i) => (
-              <button key={i} onClick={() => setCarouselIndex(i)} className={`w-2 h-2 rounded-full transition-colors ${i === carouselIndex ? 'bg-primary' : 'bg-foreground/20'}`} />
-            ))}
-          </div>
-        </section>
+        {/* ── Dashboard Hero with Prompt Bar ── */}
+        <DashboardHero />
 
         <div className="max-w-7xl mx-auto px-5 md:px-8">
 
