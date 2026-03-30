@@ -76,6 +76,7 @@ interface AppState {
   isAuthenticated: boolean;
   userName: string;
   userEmail: string;
+  userAvatarUrl: string | null;
   activePage: NavPage;
   credits: number;
   plan: UserPlan;
