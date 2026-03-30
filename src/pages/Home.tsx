@@ -344,6 +344,8 @@ export default function Home() {
             <button onClick={() => navigate('/pricing')} className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">{t.nav.pricing}</button>
             <button onClick={() => navigate('/tools')} className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">{t.nav.tools}</button>
             <button onClick={() => navigate('/community')} className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">{t.nav.community}</button>
+            <button onClick={() => navigate('/privacy')} className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">{isRTL ? 'سياسة الخصوصية' : 'Privacy Policy'}</button>
+            <button onClick={() => navigate('/terms')} className="text-[12px] text-muted-foreground hover:text-foreground transition-colors">{isRTL ? 'الشروط والأحكام' : 'Terms & Conditions'}</button>
           </div>
         </div>
       </footer>
