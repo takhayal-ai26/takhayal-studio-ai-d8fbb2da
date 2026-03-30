@@ -26,7 +26,7 @@ function RatioIcon({ w, h, active }: { w: number; h: number; active: boolean }) 
         className="rounded-[2px] transition-colors"
         style={{
           width: rw, height: rh,
-          border: `1.5px solid ${active ? 'hsl(var(--primary))' : '#555'}`,
+          border: `1.5px solid ${active ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))'}`,
         }}
       />
     </div>
