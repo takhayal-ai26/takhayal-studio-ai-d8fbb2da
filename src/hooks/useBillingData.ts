@@ -10,6 +10,11 @@ export interface PricingPlan {
   description_en: string;
   description_ar: string;
   price: number;
+  price_monthly_usd: number;
+  price_annual_usd: number;
+  price_annual_monthly_equivalent: number;
+  annual_discount_percent: number;
+  credits_monthly: number;
   currency: string;
   billing_period: string;
   included_credits: number;
@@ -24,7 +29,8 @@ export interface PricingPlan {
   is_default: boolean;
   visible_logged_out: boolean;
   visible_logged_in: boolean;
-  features?: PlanFeature[];
+  features: Array<{en: string; ar: string}>;
+  plan_features?: PlanFeature[];
 }
 
 export interface PlanFeature {
@@ -52,6 +58,8 @@ export interface CreditPackage {
   featured: boolean;
   active: boolean;
   sort_order: number;
+  bonus_credits: number;
+  is_popular: boolean;
 }
 
 export interface PricingFaq {
