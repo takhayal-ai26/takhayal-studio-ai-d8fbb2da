@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { Check, Image, Sparkles, Zap } from 'lucide-react';
 import {
@@ -14,6 +15,7 @@ const iconMap: Record<string, React.ComponentType<any>> = { Image, Sparkles, Zap
 const Pricing = () => {
   const navigate = useNavigate();
   const { isAuthenticated, plan, openAuthModal } = useApp();
+  const { loading: authLoading } = useAuth();
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
 
@@ -67,11 +69,41 @@ const Pricing = () => {
             const badge = isAr ? p.badge_ar : p.badge_en;
             const cta = isAr ? p.cta_label_ar : p.cta_label_en;
             const features = (p.features || []).filter(f => f.active);
-            const isCurrent = plan === p.slug;
+            const isCurrent = isAuthenticated && plan === p.slug;
+            const isHigherPlan = isAuthenticated && !isCurrent;
+
+            // Determine button text & state
+            let btnText = cta;
+            let btnDisabled = false;
+            let btnStyle = p.featured
+              ? 'bg-primary text-primary-foreground hover:brightness-90'
+              : 'border border-border text-foreground hover:bg-muted';
+
+            if (authLoading) {
+              // skeleton state handled below
+            } else if (!isAuthenticated) {
+              // Logged out: show default CTA text, never "Current Plan"
+              btnText = cta;
+            } else if (isCurrent) {
+              btnText = isAr ? 'الخطة الحالية' : 'Current Plan';
+              btnDisabled = true;
+              btnStyle = 'bg-card border border-border text-muted-foreground cursor-default';
+            } else {
+              // Logged in, not current plan
+              const slugOrder = ['free', 'creator', 'pro', 'studio'];
+              const currentIdx = slugOrder.indexOf(plan);
+              const thisIdx = slugOrder.indexOf(p.slug);
+              if (thisIdx < currentIdx) {
+                btnText = isAr ? 'تخفيض' : 'Downgrade';
+                btnStyle = 'border border-border text-muted-foreground hover:bg-muted';
+              } else {
+                btnText = isAr ? `ترقية إلى ${name}` : `Upgrade to ${name}`;
+              }
+            }
 
             return (
               <div key={p.id} className={`rounded-2xl p-8 flex flex-col transition-transform duration-200 hover:scale-[1.02] ${
-                p.featured ? 'bg-card border-[1.5px] border-primary relative' : 'bg-card border border-surface-border'
+                p.featured ? 'bg-card border-[1.5px] border-primary relative' : 'bg-card border border-border'
               }`}>
                 {badge && (
                   <span className="absolute -top-3 left-6 px-3 py-1 rounded-full text-[11px] font-medium bg-primary text-primary-foreground">{badge}</span>
@@ -90,11 +122,17 @@ const Pricing = () => {
                     </li>
                   ))}
                 </ul>
-                <button onClick={() => handleCta(p)} className={`mt-8 w-full h-12 rounded-xl text-[14px] font-medium transition-colors ${
-                  p.featured ? 'bg-primary text-primary-foreground hover:bg-ember-hover' : 'border border-surface-border text-foreground hover:bg-muted'
-                }`}>
-                  {isCurrent ? (isAr ? 'الخطة الحالية' : 'Current Plan') : cta}
-                </button>
+                {authLoading ? (
+                  <div className="mt-8 w-full h-12 rounded-xl bg-card border border-border animate-pulse" />
+                ) : (
+                  <button
+                    onClick={() => !btnDisabled && handleCta(p)}
+                    disabled={btnDisabled}
+                    className={`mt-8 w-full h-12 rounded-xl text-[14px] font-medium transition-all ${btnStyle} ${btnDisabled ? 'opacity-70' : ''}`}
+                  >
+                    {btnText}
+                  </button>
+                )}
               </div>
             );
           })}
