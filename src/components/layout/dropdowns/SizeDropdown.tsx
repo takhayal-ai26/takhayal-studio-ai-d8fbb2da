@@ -69,7 +69,7 @@ export function SizeDropdown({ availableRatios, selectedRatio, anchorRect, onSel
                 onMouseEnter={e => { if (!isActive) (e.currentTarget.style.background = 'hsl(var(--muted))'); }}
                 onMouseLeave={e => { if (!isActive) (e.currentTarget.style.background = 'transparent'); }}
               >
-                <span className="text-[14px] font-medium" style={{ color: isActive ? 'hsl(var(--primary))' : '#FFFFFF' }}>{r}</span>
+                <span className="text-[14px] font-medium" style={{ color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--foreground))' }}>{r}</span>
                 <RatioIcon w={shape.w} h={shape.h} active={isActive} />
               </button>
             );
