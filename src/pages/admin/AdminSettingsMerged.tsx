@@ -32,7 +32,7 @@ function PlanEditor({ plan, onClose }: { plan: Partial<PricingPlan> | null; onCl
 
   const save = async () => {
     try {
-      await savePlan.mutateAsync({ plan: form, features });
+      await savePlan.mutateAsync({ plan: { ...form, features } });
       toast.success('Plan saved');
       onClose();
     } catch (e: any) { toast.error(e.message); }
@@ -59,14 +59,14 @@ function PlanEditor({ plan, onClose }: { plan: Partial<PricingPlan> | null; onCl
         <div className="mt-4">
           <div className="flex items-center justify-between mb-2">
             <Label className="text-sm font-semibold">Features</Label>
-            <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => setFeatures(p => [...p, { text_en: '', text_ar: '', sort_order: p.length, active: true }])}>
+            <Button size="sm" variant="outline" className="text-xs gap-1" onClick={() => setFeatures(p => [...p, { en: '', ar: '' }])}>
               <Plus size={12} /> Add Feature
             </Button>
           </div>
           {features.map((feat, i) => (
             <div key={i} className="grid grid-cols-[1fr_1fr_auto] gap-2 mb-2">
-              <Input placeholder="EN" value={feat.text_en} onChange={e => { const n = [...features]; n[i] = { ...n[i], text_en: e.target.value }; setFeatures(n); }} className="text-xs" />
-              <Input dir="rtl" placeholder="AR" value={feat.text_ar} onChange={e => { const n = [...features]; n[i] = { ...n[i], text_ar: e.target.value }; setFeatures(n); }} className="text-xs" />
+              <Input placeholder="EN" value={feat.en} onChange={e => { const n = [...features]; n[i] = { ...n[i], en: e.target.value }; setFeatures(n); }} className="text-xs" />
+              <Input dir="rtl" placeholder="AR" value={feat.ar} onChange={e => { const n = [...features]; n[i] = { ...n[i], ar: e.target.value }; setFeatures(n); }} className="text-xs" />
               <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => setFeatures(p => p.filter((_, j) => j !== i))}><Trash2 size={12} /></Button>
             </div>
           ))}
