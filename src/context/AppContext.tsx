@@ -262,8 +262,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const generate = useCallback(async (opts?: { modelId?: string; qualityTier?: string; creditCost?: number }) => {
     if (!prompt.trim() || isGenerating) return;
     if (!isAuthenticated) {
-      setAuthModalTab('signup');
-      setAuthModalOpen(true);
+      auth.openAuthModal('signup');
       return;
     }
     const cost = opts?.creditCost ?? getCreditCost();
@@ -285,7 +284,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLastGenerationMeta(genMeta);
 
     setIsGenerating(true);
-    setCredits(prev => prev - cost);
+    // Credits will be deducted server-side in production; local tracking for UI
 
     try {
       const fullPrompt = selectedTemplate
@@ -327,7 +326,6 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setGallery(prev => [...newImages, ...prev]);
     } catch (err) {
       console.error('Generation failed:', err);
-      setCredits(prev => prev + cost);
     } finally {
       setIsGenerating(false);
     }
@@ -335,7 +333,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
   return (
     <AppContext.Provider value={{
-      isAuthenticated, userName, userEmail, activePage, credits, plan,
+      isAuthenticated, userName, userEmail, userAvatarUrl, activePage, credits, plan,
       prompt, selectedTemplate, selectedStyle, aspectRatio, quality,
       selectedQualityTier, enhancePrompt, isGenerating, generatedImages, currentImageIndex, gallery,
       generationCards, setGenerationCards, lastGenerationMeta,
