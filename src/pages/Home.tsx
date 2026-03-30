@@ -7,7 +7,6 @@ import { Logo } from '@/components/Logo';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { useState, useEffect, useRef } from 'react';
 import { useMedia } from '@/hooks/useMedia';
-import { HeroPromptComposer } from '@/components/home/HeroPromptComposer';
 
 function useScrollReveal() {
   const ref = useRef<HTMLDivElement>(null);
@@ -110,8 +109,48 @@ export default function Home() {
         </div>
       </header>
 
-      {/* ━━━ HERO WITH PROMPT COMPOSER ━━━ */}
-      <HeroPromptComposer />
+      {/* ━━━ HERO ━━━ */}
+      <section className="relative flex flex-col items-center justify-center text-center px-6 pt-44 pb-28 md:pt-52 md:pb-36">
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          <div className="absolute inset-0 opacity-[0.12] animate-[heroWave_20s_ease-in-out_infinite]"
+            style={{ background: 'radial-gradient(ellipse 80% 50% at 20% 50%, hsl(var(--primary) / 0.6), transparent), radial-gradient(ellipse 60% 40% at 70% 60%, hsl(var(--primary) / 0.4), transparent)', filter: 'blur(80px)' }}
+          />
+          <div className="absolute inset-0 opacity-[0.08] animate-[heroWave2_25s_ease-in-out_infinite]"
+            style={{ background: 'radial-gradient(ellipse 70% 50% at 60% 40%, hsl(var(--primary) / 0.5), transparent), radial-gradient(ellipse 50% 60% at 30% 70%, hsl(10 90% 40% / 0.3), transparent)', filter: 'blur(100px)' }}
+          />
+          <div className="absolute top-[40%] left-[48%] -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] rounded-full animate-[heroBreathe_8s_ease-in-out_infinite]"
+            style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.35) 0%, hsl(var(--primary) / 0.12) 35%, transparent 70%)', filter: 'blur(120px)' }}
+          />
+        </div>
+        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[0.03]">
+          <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)', backgroundSize: '80px 80px' }} />
+        </div>
+
+        <span className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/[0.12] border border-primary/30 text-primary text-[13px] font-medium mb-8 animate-fade-in">
+          <Sparkles size={14} />
+          {t.landing.heroBadge}
+        </span>
+        <h1 className="relative text-5xl md:text-7xl font-extralight text-foreground leading-[1.1] max-w-[800px] animate-fade-in" style={{ animationDelay: '100ms' }}>
+          {t.landing.heroTitle1}{' '}
+          <br className="hidden md:block" />
+          <span className="bg-gradient-to-r from-primary to-primary/70 bg-clip-text text-transparent">{t.landing.heroTitle2}</span>
+        </h1>
+        <p className="relative text-base md:text-lg font-light text-muted-foreground mt-6 max-w-lg animate-fade-in" style={{ animationDelay: '200ms' }}>
+          {t.landing.heroSubtitle}
+        </p>
+        <div className="relative flex items-center gap-4 mt-11 animate-fade-in" style={{ animationDelay: '300ms' }}>
+          <button onClick={handleStartCreating} className="group h-12 md:h-14 px-8 md:px-10 rounded-full bg-primary text-primary-foreground text-[15px] md:text-base font-medium hover:brightness-110 transition-all duration-300 hover:shadow-[0_0_40px_rgba(245,81,48,0.35)] hover:scale-[1.02]">
+            {t.landing.startCreating}
+            <ArrowRight size={16} className={`inline ${isRTL ? 'mr-2 rotate-180' : 'ml-2'} group-hover:translate-x-1 transition-transform`} />
+          </button>
+          <button onClick={() => document.getElementById('create-anything')?.scrollIntoView({ behavior: 'smooth' })} className="h-12 md:h-14 px-8 md:px-10 rounded-full border border-muted/60 text-foreground text-[15px] md:text-base font-medium hover:bg-card hover:border-muted transition-all duration-300 inline-flex items-center gap-2">
+            {t.landing.explore}
+          </button>
+        </div>
+        <div className="relative mt-16 animate-fade-in" style={{ animationDelay: '500ms' }}>
+          <p className="text-[12px] text-muted-foreground/50 uppercase tracking-[0.2em]">{t.landing.trustedBy}</p>
+        </div>
+      </section>
 
       {/* ━━━ CREATE ANYTHING ━━━ */}
       <section id="create-anything" className="px-6 md:px-12 pb-32 md:pb-40">
