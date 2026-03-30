@@ -284,7 +284,7 @@ export function DashboardHero() {
                   <span className="flex-shrink-0 uppercase" style={{ fontSize: '10px', color: '#666', letterSpacing: '0.08em', width: '80px' }}>
                     {t.studio.size}
                   </span>
-                  <div className="flex gap-1.5">
+                  <div className="flex gap-1.5 overflow-x-auto scrollbar-hide" style={{ maxWidth: 'calc(100% - 90px)' }}>
                     {availableRatios.map((r: string) => {
                       const shape = RATIO_SHAPE[r] || { w: 1, h: 1 };
                       const active = r === aspectRatio;
