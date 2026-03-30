@@ -144,8 +144,15 @@ export function TopNavbar() {
                   <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-full mt-2 w-52 bg-card border border-border/20 rounded-xl p-1.5 shadow-2xl shadow-black/50 z-50 animate-fade-in`}>
                     <div className="px-3 py-2.5 border-b border-border/10 mb-1">
                       <p className="text-[13px] font-medium text-foreground">{userName}</p>
-                      <p className="text-[11px] text-muted-foreground">{plan === 'pro' ? t.avatar.proPlan : t.avatar.freePlan}</p>
+                      <p className="text-[11px] text-muted-foreground">{userEmail}</p>
                     </div>
+                    <button
+                      onClick={() => { setAvatarOpen(false); setActivePage('gallery'); navigate('/studio'); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-foreground hover:bg-muted/10 transition-colors"
+                    >
+                      <ImageIcon size={14} className="text-muted-foreground" />
+                      {isRTL ? 'معرضي' : 'My Gallery'}
+                    </button>
                     <button
                       onClick={() => { setAvatarOpen(false); setActivePage('credits'); navigate('/studio'); }}
                       className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-foreground hover:bg-muted/10 transition-colors"
@@ -162,7 +169,7 @@ export function TopNavbar() {
                     </button>
                     <div className="border-t border-border/10 mt-1 pt-1">
                       <button
-                        onClick={() => { setAvatarOpen(false); logout(); }}
+                        onClick={async () => { setAvatarOpen(false); await auth.logout(); navigate('/'); }}
                         className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[13px] text-red-400 hover:bg-red-500/10 transition-colors"
                       >
                         <LogOut size={14} />
