@@ -34,7 +34,7 @@ const PRESETS: Record<string, { label: string; colors: ThemeColors }> = {
       'cta-secondary': '#14532D', 'cta-secondary-hover': '#166534', 'cta-secondary-text': '#F0FDF4',
       accent: '#16A34A', 'accent-muted': 'rgba(22,163,74,0.12)', 'accent-border': 'rgba(22,163,74,0.4)',
       'nav-active': '#16A34A', 'nav-active-bg': 'rgba(22,163,74,0.08)',
-      'sidebar-bg': '#052E16', 'panel-bg': '#14532D', 'card-bg': '#166534', border: '#15803D',
+      'sidebar-bg': '#052E16', 'panel-bg': '#14532D', 'card-bg': '#166534', border: 'rgba(255,255,255,0.08)',
       'text-primary': '#F0FDF4', 'text-secondary': '#86EFAC', 'text-muted': '#4ADE80',
     },
   },
