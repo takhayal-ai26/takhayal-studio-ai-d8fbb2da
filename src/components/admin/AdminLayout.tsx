@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Palette, ShoppingCart, Layers,
-  BarChart3, LifeBuoy, Plug, Settings, ChevronLeft, ChevronRight, LogOut
+  BarChart3, Settings, ChevronLeft, ChevronRight, LogOut
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
