@@ -172,10 +172,9 @@ export default function PortalHome() {
 
             <div className="flex gap-2 overflow-x-auto pb-4 scrollbar-hide">
               {categoryKeys.map(cat => (
-                <button key={cat.key} onClick={() => setActiveCategory(cat.key)} className={`flex-shrink-0 px-5 py-2 rounded-full text-[13px] font-medium transition-all duration-300 ${
-                  activeCategory === cat.key
-                    ? 'bg-primary text-primary-foreground shadow-[0_0_16px_hsl(var(--primary)/0.3)]'
-                    : 'bg-card/60 border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20'
+                <button key={cat.key} onClick={() => setActiveCategory(cat.key)} className={`filter-pill flex-shrink-0 transition-all duration-300 ${
+                  activeCategory === cat.key ? 'active' : ''
+                }`}>
                 }`}>
                   {cat.label}
                 </button>

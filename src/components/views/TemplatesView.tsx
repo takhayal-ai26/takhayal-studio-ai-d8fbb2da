@@ -56,10 +56,8 @@ export function TemplatesView() {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`flex-shrink-0 px-6 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                activeCategory === cat
-                  ? 'bg-primary text-primary-foreground shadow-md'
-                  : 'bg-card border border-border text-muted-foreground hover:text-foreground hover:border-foreground/20'
+              className={`filter-pill flex-shrink-0 transition-all duration-200 ${
+                activeCategory === cat ? 'active' : ''
               }`}
             >
               {cat}
