@@ -65,10 +65,13 @@
     --muted-foreground: 0 1% 26%;
     --accent: 0 0% 100%;
     --accent-foreground: 0 0% 5%;
-    --border: 0 1% 93%;
-    --input: 0 0% 100%;
+    --border: 0 0% 0% / 0.08;
+    --input: 0 0% 0% / 0.12;
+    --input-focus: 10 88% 52% / 0.4;
     --surface: 0 0% 100%;
-    --surface-border: 0 1% 93%;
+    --surface-border: 0 0% 0% / 0.08;
+    --card-border: 0 0% 0% / 0.06;
+    --card-shadow: 0 1px 3px rgba(0,0,0,0.06);
     --text-secondary: 0 1% 26%;
     --text-tertiary: 0 2% 41%;
     --text-disabled: 0 2% 78%;
@@ -78,9 +81,11 @@
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 30 7% 97%;
     --sidebar-accent-foreground: 0 0% 5%;
-    --sidebar-border: 0 1% 93%;
+    --sidebar-border: 0 0% 0% / 0.08;
     --sidebar-ring: 10 88% 52%;
     --shadow-color: 0 0% 0% / 0.08;
+    --dropdown-bg: #ffffff;
+    --dropdown-divider: rgba(0,0,0,0.06);
   }
 }
 
@@ -92,6 +97,20 @@
   body {
     @apply bg-background text-foreground;
     font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ── Global input/textarea/select border fix ── */
+  input, textarea, select,
+  [role="combobox"],
+  [data-slot="input"] {
+    border-color: hsl(var(--input)) !important;
+    border-radius: 10px;
+    transition: border-color 0.2s ease;
+  }
+  input:focus, textarea:focus, select:focus,
+  [role="combobox"]:focus,
+  input:focus-within, textarea:focus-within {
+    border-color: hsl(var(--input-focus)) !important;
   }
 
   [lang="ar"], .arabic {
