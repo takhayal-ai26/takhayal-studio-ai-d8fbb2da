@@ -153,9 +153,8 @@ export function usePricingPageContent() {
 export function useSavePlan() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: async ({ plan, features }: { plan: Partial<PricingPlan>; features?: Partial<PlanFeature>[] }) => {
-      const { id, ...rest } = plan as any;
-      delete rest.features;
+    mutationFn: async ({ plan }: { plan: Partial<PricingPlan>; features?: any[] }) => {
+      const { id, plan_features, ...rest } = plan as any;
       rest.updated_at = new Date().toISOString();
       
       let planId = id;
@@ -166,22 +165,6 @@ export function useSavePlan() {
         const { data, error } = await supabase.from('pricing_plans' as any).insert(rest).select().single();
         if (error) throw error;
         planId = (data as any).id;
-      }
-      
-      if (features) {
-        // Delete existing and re-insert
-        await supabase.from('pricing_plan_features' as any).delete().eq('plan_id', planId);
-        if (features.length > 0) {
-          const rows = features.map((f, i) => ({
-            plan_id: planId,
-            text_en: f.text_en || '',
-            text_ar: f.text_ar || '',
-            sort_order: f.sort_order ?? i,
-            active: f.active ?? true,
-          }));
-          const { error } = await supabase.from('pricing_plan_features' as any).insert(rows);
-          if (error) throw error;
-        }
       }
       return planId;
     },
