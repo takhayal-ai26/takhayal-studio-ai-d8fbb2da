@@ -26,8 +26,8 @@ import { toast } from 'sonner';
 
 // ── Plan Editor (from AdminBilling) ──
 function PlanEditor({ plan, onClose }: { plan: Partial<PricingPlan> | null; onClose: () => void }) {
-  const [form, setForm] = useState<any>(plan || { slug: '', name_en: '', name_ar: '', price: 0, currency: 'USD', billing_period: 'monthly', included_credits: 0, description_en: '', description_ar: '', badge_en: '', badge_ar: '', cta_label_en: 'Get Started', cta_label_ar: '', cta_action: 'signup', featured: false, active: true, sort_order: 0, is_default: false, visible_logged_out: true, visible_logged_in: true });
-  const [features, setFeatures] = useState<Partial<PlanFeature>[]>(plan?.features || []);
+  const [form, setForm] = useState<any>(plan || { slug: '', name_en: '', name_ar: '', price: 0, price_monthly_usd: 0, price_annual_usd: 0, price_annual_monthly_equivalent: 0, annual_discount_percent: 20, credits_monthly: 0, currency: 'USD', billing_period: 'monthly', included_credits: 0, description_en: '', description_ar: '', badge_en: '', badge_ar: '', cta_label_en: 'Get Started', cta_label_ar: '', cta_action: 'signup', featured: false, active: true, sort_order: 0, is_default: false, visible_logged_out: true, visible_logged_in: true, features: [] });
+  const [features, setFeatures] = useState<Array<{en: string; ar: string}>>(plan?.features || []);
   const savePlan = useSavePlan();
 
   const save = async () => {
