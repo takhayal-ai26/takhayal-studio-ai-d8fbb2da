@@ -22,6 +22,8 @@ import LegalPage from "./pages/LegalPage";
 import About from "./pages/About";
 import AuthCallback from "./pages/AuthCallback";
 import ResetPassword from "./pages/ResetPassword";
+import Checkout from "./pages/Checkout";
+import CheckoutSuccess from "./pages/CheckoutSuccess";
 
 // Admin
 import AdminLayout from "./components/admin/AdminLayout";
@@ -54,6 +56,8 @@ const App = () => (
               <Route path="/privacy" element={<LegalPage />} />
               <Route path="/auth/callback" element={<AuthCallback />} />
               <Route path="/auth/reset" element={<ResetPassword />} />
+              <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+              <Route path="/checkout/success" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
 
               {/* Portal pages share persistent navbar */}
               <Route element={<AppLayout />}>

@@ -32,8 +32,18 @@ const Pricing = () => {
   const activeExplanations = explanations.filter(e => e.active);
 
   const handleCta = (p: any) => {
-    if (!isAuthenticated) { openAuthModal('signup'); return; }
-    navigate('/studio');
+    const slug = p.slug;
+    if (slug === 'free') {
+      if (!isAuthenticated) { openAuthModal('signup'); return; }
+      // Already on free — do nothing
+      return;
+    }
+    if (!isAuthenticated) {
+      sessionStorage.setItem('redirectAfterLogin', `/checkout?plan=${slug}`);
+      openAuthModal('signup');
+      return;
+    }
+    navigate(`/checkout?plan=${slug}`);
   };
 
   return (
