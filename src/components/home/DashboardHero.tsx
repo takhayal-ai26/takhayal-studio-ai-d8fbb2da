@@ -280,7 +280,7 @@ export function DashboardHero() {
                 </div>
 
                 {/* Size row */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 min-w-0">
                   <span className="flex-shrink-0 uppercase" style={{ fontSize: '10px', color: '#666', letterSpacing: '0.08em', width: '80px' }}>
                     {t.studio.size}
                   </span>
