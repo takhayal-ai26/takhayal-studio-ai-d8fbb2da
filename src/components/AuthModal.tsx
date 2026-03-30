@@ -6,7 +6,6 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { LogoMark } from '@/components/Logo';
 import { useMedia } from '@/hooks/useMedia';
 import { supabase } from '@/integrations/supabase/client';
-import { lovable } from '@/integrations/lovable/index'; // kept for Apple OAuth
 import { useNavigate } from 'react-router-dom';
 
 export function AuthModal() {
@@ -26,6 +25,7 @@ export function AuthModal() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
+  const authRedirectUrl = `${window.location.origin}/auth/callback`;
 
   useEffect(() => { setTab(authModalTab); }, [authModalTab]);
   useEffect(() => {
@@ -61,7 +61,7 @@ export function AuthModal() {
       const { error: oauthError } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
-          redirectTo: window.location.origin,
+          redirectTo: authRedirectUrl,
         },
       });
       if (oauthError) {
@@ -78,10 +78,13 @@ export function AuthModal() {
     setLoading(true);
     setError('');
     try {
-      const result = await lovable.auth.signInWithOAuth('apple', {
-        redirect_uri: window.location.origin,
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'apple',
+        options: {
+          redirectTo: authRedirectUrl,
+        },
       });
-      if (result.error) {
+      if (oauthError) {
         setError('Apple sign in failed. Please try again.');
       }
     } catch {
@@ -106,7 +109,7 @@ export function AuthModal() {
         password,
         options: {
           data: { full_name: name },
-          emailRedirectTo: window.location.origin,
+          emailRedirectTo: authRedirectUrl,
         },
       });
       setLoading(false);
