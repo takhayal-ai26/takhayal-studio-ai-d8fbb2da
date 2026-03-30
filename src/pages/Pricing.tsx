@@ -126,6 +126,18 @@ const Pricing = () => {
         </div>
       </div>
 
+      {/* Currency toggle */}
+      <div className="flex justify-center mb-10">
+        <div className="flex p-1 rounded-full bg-muted">
+          <button onClick={() => setCurrency('USD')} className={`px-4 py-2 rounded-full text-[12px] font-medium transition-all ${currency === 'USD' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+            USD $
+          </button>
+          <button onClick={() => setCurrency('KWD')} className={`px-4 py-2 rounded-full text-[12px] font-medium transition-all ${currency === 'KWD' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+            KWD د.ك
+          </button>
+        </div>
+      </div>
+
       {/* Plan cards */}
       <section className="max-w-5xl mx-auto px-6 pb-20">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
