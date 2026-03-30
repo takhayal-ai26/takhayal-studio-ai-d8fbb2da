@@ -101,7 +101,7 @@ export function ModelDropdown({ models, selectedModelId, language, anchorRect, o
               );
             })}
             {models.length === 0 && (
-              <p className="text-[12px] text-center py-6" style={{ color: '#555' }}>No active models</p>
+              <p className="text-[12px] text-center py-6 text-muted-foreground">No active models</p>
             )}
           </div>
         </div>
