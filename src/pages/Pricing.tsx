@@ -310,7 +310,7 @@ const Pricing = () => {
                     +{pkg.bonus_credits} {isAr ? 'مكافأة' : 'bonus'}
                   </span>
                 )}
-                <p className="text-lg font-medium text-foreground mt-3">${pkg.price}</p>
+                <p className="text-lg font-medium text-foreground mt-3">{fmt(pkg.price)}</p>
                 <button
                   onClick={() => {
                     if (!isAuthenticated) {
