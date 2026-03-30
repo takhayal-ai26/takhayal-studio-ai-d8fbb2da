@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
 export type NavPage = 'home' | 'canvas' | 'gallery' | 'templates' | 'credits' | 'settings';
 export type AspectRatio = '1:1' | '9:16' | '16:9' | '4:5';
@@ -127,12 +128,14 @@ interface AppState {
 const AppContext = createContext<AppState | null>(null);
 
 export function AppProvider({ children }: { children: ReactNode }) {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userName, setUserName] = useState('');
-  const [userEmail, setUserEmail] = useState('');
+  const auth = useAuth();
+  const isAuthenticated = !!auth.user;
+  const userName = auth.profile?.full_name || auth.user?.user_metadata?.full_name || auth.user?.email?.split('@')[0] || '';
+  const userEmail = auth.profile?.email || auth.user?.email || '';
+  const userAvatarUrl = auth.profile?.avatar_url || auth.user?.user_metadata?.avatar_url || null;
   const [activePage, setActivePage] = useState<NavPage>('canvas');
-  const [credits, setCredits] = useState(10);
-  const [plan, setPlan] = useState<UserPlan>('free');
+  const credits = auth.profile?.credits ?? 10;
+  const plan: UserPlan = (auth.profile?.plan as UserPlan) || 'free';
   const [prompt, setPrompt] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
   const [selectedStyle, setSelectedStyle] = useState<string | null>(null);
