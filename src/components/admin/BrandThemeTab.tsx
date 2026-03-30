@@ -23,7 +23,7 @@ const PRESETS: Record<string, { label: string; colors: ThemeColors }> = {
       'cta-secondary': '#1E293B', 'cta-secondary-hover': '#334155', 'cta-secondary-text': '#F8FAFC',
       accent: '#2563EB', 'accent-muted': 'rgba(37,99,235,0.12)', 'accent-border': 'rgba(37,99,235,0.4)',
       'nav-active': '#2563EB', 'nav-active-bg': 'rgba(37,99,235,0.08)',
-      'sidebar-bg': '#0F172A', 'panel-bg': '#1E293B', 'card-bg': '#1E293B', border: '#334155',
+      'sidebar-bg': '#0F172A', 'panel-bg': '#1E293B', 'card-bg': '#1E293B', border: 'rgba(255,255,255,0.08)',
       'text-primary': '#F8FAFC', 'text-secondary': '#64748B', 'text-muted': '#475569',
     },
   },
