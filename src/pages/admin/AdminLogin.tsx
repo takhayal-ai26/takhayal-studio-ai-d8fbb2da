@@ -37,9 +37,31 @@ export default function AdminLogin() {
       });
   }, [user, loading, navigate]);
 
+  const handleReset = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setSuccess('');
+    setSubmitting(true);
+    try {
+      const { error: resetError } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/auth/reset`,
+      });
+      if (resetError) {
+        setError(resetError.message);
+      } else {
+        setSuccess('Password reset link sent! Check your email.');
+      }
+    } catch {
+      setError('An unexpected error occurred.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    setSuccess('');
     setSubmitting(true);
 
     try {
@@ -55,7 +77,6 @@ export default function AdminLogin() {
       }
 
       if (data.user) {
-        // Verify admin role
         const { data: roleData } = await supabase
           .from('user_roles')
           .select('role')
