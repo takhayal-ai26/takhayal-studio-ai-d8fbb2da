@@ -56,10 +56,6 @@ export default function PortalHome() {
     { key: 'Architecture', label: t.portal.architecture },
   ];
 
-  useEffect(() => {
-    const timer = setInterval(() => setCarouselIndex(i => (i + 1) % featuredItems.length), 5000);
-    return () => clearInterval(timer);
-  }, []);
 
   const goToCanvas = (prompt: string, template: string) => {
     setPrompt(prompt);
