@@ -34,11 +34,11 @@ export default function AdminLayout() {
     <div className="flex h-screen w-full bg-background text-foreground overflow-hidden">
       <aside
         className={cn(
-          'flex flex-col border-r border-border/40 bg-[hsl(0,0%,4%)] transition-all duration-300',
+          'flex flex-col border-r border-border bg-card transition-all duration-300',
           collapsed ? 'w-[68px]' : 'w-[240px]'
         )}
       >
-        <div className="flex items-center justify-between h-14 px-4 border-b border-border/40">
+        <div className="flex items-center justify-between h-14 px-4 border-b border-border">
           {!collapsed && (
             <span className="text-sm font-bold tracking-tight text-foreground">
               Takhayal <span className="text-primary">Admin</span>
@@ -86,7 +86,7 @@ export default function AdminLayout() {
           </nav>
         </ScrollArea>
 
-        <div className="border-t border-border/40 p-2">
+        <div className="border-t border-border p-2">
           <button
             onClick={() => navigate('/')}
             className={cn(

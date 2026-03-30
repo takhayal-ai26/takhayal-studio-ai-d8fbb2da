@@ -26,7 +26,7 @@ function RatioIcon({ w, h, active }: { w: number; h: number; active: boolean }) 
         className="rounded-[2px] transition-colors"
         style={{
           width: rw, height: rh,
-          border: `1.5px solid ${active ? 'hsl(var(--primary))' : '#555'}`,
+          border: `1.5px solid ${active ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))'}`,
         }}
       />
     </div>
@@ -49,7 +49,7 @@ export function SizeDropdown({ availableRatios, selectedRatio, anchorRect, onSel
     <>
       <div className="fixed inset-0 z-[9998]" onClick={onClose} />
       <div className="fixed z-[9999] animate-in fade-in slide-in-from-left-2 duration-150" style={{ top, left, width: panelW }}>
-        <div className="rounded-xl border border-border/20 overflow-hidden overflow-y-auto" style={{ background: '#161616', boxShadow: '0 8px 32px rgba(0,0,0,0.6)', maxHeight: panelMaxH }}>
+        <div className="rounded-xl border border-border overflow-hidden overflow-y-auto" style={{ background: 'var(--dropdown-bg)', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', maxHeight: panelMaxH }}>
           {availableRatios.map((r, i) => {
             const isActive = selectedRatio === r;
             const shape = RATIO_SHAPE[r] || { w: 1, h: 1 };
@@ -62,14 +62,14 @@ export function SizeDropdown({ availableRatios, selectedRatio, anchorRect, onSel
                 style={{
                   padding: '10px 14px',
                   height: 44,
-                  borderBottom: isLast ? 'none' : '1px solid #1A1A1A',
+                  borderBottom: isLast ? 'none' : `1px solid var(--dropdown-divider)`,
                   borderLeft: isActive ? '2px solid hsl(var(--primary))' : '2px solid transparent',
                   background: isActive ? 'hsla(var(--primary) / 0.06)' : 'transparent',
                 }}
-                onMouseEnter={e => { if (!isActive) (e.currentTarget.style.background = '#1E1E1E'); }}
+                onMouseEnter={e => { if (!isActive) (e.currentTarget.style.background = 'hsl(var(--muted))'); }}
                 onMouseLeave={e => { if (!isActive) (e.currentTarget.style.background = 'transparent'); }}
               >
-                <span className="text-[14px] font-medium" style={{ color: isActive ? 'hsl(var(--primary))' : '#FFFFFF' }}>{r}</span>
+                <span className="text-[14px] font-medium" style={{ color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--foreground))' }}>{r}</span>
                 <RatioIcon w={shape.w} h={shape.h} active={isActive} />
               </button>
             );

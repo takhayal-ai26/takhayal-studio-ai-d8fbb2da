@@ -32,7 +32,7 @@ export function ResolutionDropdown({ tiers, selectedResolution, anchorRect, onSe
     <>
       <div className="fixed inset-0 z-[9998]" onClick={onClose} />
       <div className="fixed z-[9999] animate-in fade-in slide-in-from-left-2 duration-150" style={{ top, left, width: panelW }}>
-        <div className="rounded-xl border border-border/20 overflow-hidden" style={{ background: '#161616', boxShadow: '0 8px 32px rgba(0,0,0,0.6)' }}>
+        <div className="rounded-xl border border-border overflow-hidden" style={{ background: 'var(--dropdown-bg)', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
           {ALL_TIERS.filter(t => tiers.includes(t)).map((tierKey, i, arr) => {
             const isActive = selectedResolution === tierKey;
             const isLast = i === arr.length - 1;
@@ -44,14 +44,14 @@ export function ResolutionDropdown({ tiers, selectedResolution, anchorRect, onSe
                 style={{
                   padding: '10px 14px',
                   height: 44,
-                  borderBottom: isLast ? 'none' : '1px solid #1A1A1A',
+                  borderBottom: isLast ? 'none' : `1px solid var(--dropdown-divider)`,
                   borderLeft: isActive ? '2px solid hsl(var(--primary))' : '2px solid transparent',
                   background: isActive ? 'hsla(var(--primary) / 0.06)' : 'transparent',
                 }}
-                onMouseEnter={e => { if (!isActive) (e.currentTarget.style.background = '#1E1E1E'); }}
+                onMouseEnter={e => { if (!isActive) (e.currentTarget.style.background = 'hsl(var(--muted))'); }}
                 onMouseLeave={e => { if (!isActive) (e.currentTarget.style.background = 'transparent'); }}
               >
-                <span className="text-[14px] font-medium" style={{ color: isActive ? 'hsl(var(--primary))' : '#FFFFFF' }}>{tierKey}</span>
+                <span className="text-[14px] font-medium" style={{ color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--foreground))' }}>{tierKey}</span>
               </button>
             );
           })}
