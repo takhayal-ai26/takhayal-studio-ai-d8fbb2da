@@ -1,8 +1,9 @@
 import { useApp, NavPage } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Logo } from '@/components/Logo';
-import { Flame, Menu, X, Crown, CreditCard, Settings, LogOut } from 'lucide-react';
+import { Flame, Menu, X, Crown, CreditCard, Settings, LogOut, ImageIcon } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -19,12 +20,13 @@ const navItemDefs: { id: string; labelKey: string; route: string; studioPage?: N
 ];
 
 export function TopNavbar() {
-  const { activePage, setActivePage, credits, userName, isAuthenticated, plan, openAuthModal, logout } = useApp();
+  const { activePage, setActivePage, credits, userName, userEmail, userAvatarUrl, isAuthenticated, plan, openAuthModal, logout } = useApp();
+  const auth = useAuth();
   const { t, isRTL } = useLanguage();
   const { isAdmin } = useAppTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const initials = userName ? userName.slice(0, 2).toUpperCase() : 'U';
+  const initials = userName ? userName.slice(0, 2).toUpperCase() : (userEmail ? userEmail[0].toUpperCase() : 'U');
   const [mobileOpen, setMobileOpen] = useState(false);
   const [avatarOpen, setAvatarOpen] = useState(false);
   const avatarRef = useRef<HTMLDivElement>(null);
