@@ -6,7 +6,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { LogoMark } from '@/components/Logo';
 import { useMedia } from '@/hooks/useMedia';
 import { supabase } from '@/integrations/supabase/client';
-import { lovable } from '@/integrations/lovable/index';
+import { lovable } from '@/integrations/lovable/index'; // kept for Apple OAuth
 import { useNavigate } from 'react-router-dom';
 
 export function AuthModal() {
@@ -58,10 +58,13 @@ export function AuthModal() {
     setLoading(true);
     setError('');
     try {
-      const result = await lovable.auth.signInWithOAuth('google', {
-        redirect_uri: window.location.origin,
+      const { error: oauthError } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: window.location.origin,
+        },
       });
-      if (result.error) {
+      if (oauthError) {
         setError('Google sign in failed. Please try again.');
       }
     } catch {
