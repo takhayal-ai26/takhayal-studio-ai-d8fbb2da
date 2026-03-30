@@ -36,7 +36,6 @@ export default function PortalHome() {
   const isAr = lang === 'ar';
   const { tools: toolsData } = useTools();
   const { getUrlByName } = useMedia();
-  const [carouselIndex, setCarouselIndex] = useState(0);
   const [activeCategory, setActiveCategory] = useState('All');
 
   const toolImages: Record<string, string> = {
