@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
 export type NavPage = 'home' | 'canvas' | 'gallery' | 'templates' | 'credits' | 'settings';
 export type AspectRatio = '1:1' | '9:16' | '16:9' | '4:5';
@@ -93,10 +94,6 @@ interface AppState {
   generationCards: GenerationCard[];
   setGenerationCards: React.Dispatch<React.SetStateAction<GenerationCard[]>>;
   lastGenerationMeta: { modelName: string; modelId: string; qualityTier: string; endpointId: string } | null;
-  authModalOpen: boolean;
-  authModalTab: 'login' | 'signup';
-  upgradeModalOpen: boolean;
-  // Model-aware state
   availableModels: StudioModel[];
   selectedModelId: string | null;
   selectedModel: StudioModel | null;
