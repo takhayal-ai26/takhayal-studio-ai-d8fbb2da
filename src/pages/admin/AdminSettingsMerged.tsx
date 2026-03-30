@@ -149,8 +149,9 @@ function PlansTab() {
           <TableHeader>
             <TableRow className="border-border/40">
               <TableHead className="text-[11px] uppercase text-muted-foreground">Plan</TableHead>
-              <TableHead className="text-[11px] uppercase text-muted-foreground">Price</TableHead>
-              <TableHead className="text-[11px] uppercase text-muted-foreground">Credits</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Monthly</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Annual</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Credits/Mo</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Status</TableHead>
               <TableHead className="w-20" />
             </TableRow>
@@ -164,8 +165,9 @@ function PlansTab() {
                     <p className="text-[11px] text-muted-foreground">{p.slug}</p>
                   </div>
                 </TableCell>
-                <TableCell className="text-[13px]">{p.price > 0 ? `$${p.price}/${p.billing_period}` : 'Free'}</TableCell>
-                <TableCell className="text-[13px]">{p.included_credits}</TableCell>
+                <TableCell className="text-[13px]">${p.price_monthly_usd || 0}</TableCell>
+                <TableCell className="text-[13px]">${p.price_annual_usd || 0}/yr</TableCell>
+                <TableCell className="text-[13px]">{(p.credits_monthly || 0).toLocaleString()}</TableCell>
                 <TableCell><Badge variant={p.active ? 'default' : 'secondary'} className="text-[10px]">{p.active ? 'Active' : 'Inactive'}</Badge></TableCell>
                 <TableCell onClick={e => e.stopPropagation()}>
                   <div className="flex gap-1">
