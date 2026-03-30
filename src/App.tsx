@@ -72,8 +72,11 @@ const App = () => (
                 <Route path="/templates" element={<Templates />} />
               </Route>
 
+              {/* Admin Login */}
+              <Route path="/admin/login" element={<AdminLogin />} />
+
               {/* Admin Panel */}
-              <Route path="/admin" element={<AdminLayout />}>
+              <Route path="/admin" element={<AdminProtectedRoute><AdminLayout /></AdminProtectedRoute>}>
                 <Route index element={<AdminDashboard />} />
                 <Route path="users" element={<AdminUsersMerged />} />
                 <Route path="studio" element={<AdminStudioConfig />} />
