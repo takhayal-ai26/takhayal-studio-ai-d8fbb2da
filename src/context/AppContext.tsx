@@ -220,20 +220,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
     fetchTierCredits();
   }, [selectedModelId]);
 
-  const login = useCallback((email: string, name?: string) => {
-    setIsAuthenticated(true);
-    setUserEmail(email);
-    setUserName(name || email.split('@')[0]);
-    setCredits(20);
+  const login = useCallback((_email: string, _name?: string) => {
+    // Legacy — real auth now handled by AuthContext
     setAuthModalOpen(false);
   }, []);
 
-  const logout = useCallback(() => {
-    setIsAuthenticated(false);
-    setUserName('');
-    setUserEmail('');
-    setPlan('free');
-  }, []);
+  const logout = useCallback(async () => {
+    await auth.signOut();
+  }, [auth]);
 
   const openAuthModal = useCallback((tab: 'login' | 'signup' = 'signup') => {
     setAuthModalTab(tab);
@@ -291,7 +285,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     setLastGenerationMeta(genMeta);
 
     setIsGenerating(true);
-    setCredits(prev => prev - cost);
+    // Credits will be deducted server-side; refresh profile after generation
 
     try {
       const fullPrompt = selectedTemplate
@@ -333,7 +327,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setGallery(prev => [...newImages, ...prev]);
     } catch (err) {
       console.error('Generation failed:', err);
-      setCredits(prev => prev + cost);
+      // Credits refund would happen server-side
     } finally {
       setIsGenerating(false);
     }
