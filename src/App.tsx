@@ -26,8 +26,9 @@ import Checkout from "./pages/Checkout";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 
 // Admin
+import { AdminProtectedRoute } from "./components/AdminProtectedRoute";
+import AdminLogin from "./pages/admin/AdminLogin";
 import AdminLayout from "./components/admin/AdminLayout";
-import AdminDashboard from "./pages/admin/AdminDashboard";
 import AdminUsersMerged from "./pages/admin/AdminUsersMerged";
 import AdminStudioConfig from "./pages/admin/AdminStudioConfig";
 import AdminCommerce from "./pages/admin/AdminCommerce";
