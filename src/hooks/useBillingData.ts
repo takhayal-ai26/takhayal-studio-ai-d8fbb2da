@@ -102,14 +102,9 @@ const fetchPlans = async (): Promise<PricingPlan[]> => {
     .order('sort_order');
   if (error) throw error;
   
-  const { data: features } = await supabase
-    .from('pricing_plan_features' as any)
-    .select('*')
-    .order('sort_order');
-
   return ((plans as any[]) || []).map((p: any) => ({
     ...p,
-    features: ((features as any[]) || []).filter((f: any) => f.plan_id === p.id),
+    features: p.features || [],
   }));
 };
 
