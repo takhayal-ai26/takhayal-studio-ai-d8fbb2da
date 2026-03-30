@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { Sparkles, Wand2, ArrowRight, Zap, Globe, Layers, ImageIcon, Maximize, Eraser, PenTool, Star } from 'lucide-react';
@@ -32,12 +32,22 @@ function Section({ children, className = '' }: { children: React.ReactNode; clas
 
 export default function Home() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { isAuthenticated, openAuthModal } = useApp();
   const { t, isRTL } = useLanguage();
   const [sliderPos, setSliderPos] = useState(50);
   const sliderRef = useRef<HTMLDivElement>(null);
   const dragging = useRef(false);
   const { getUrlByName } = useMedia();
+
+  // Handle ?auth=login or ?auth=signup query param
+  useEffect(() => {
+    const authParam = searchParams.get('auth');
+    if (authParam === 'login' || authParam === 'signup') {
+      openAuthModal(authParam);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, openAuthModal, setSearchParams]);
 
   const categories = [
     { title: t.landing.catProductAds, image: getUrlByName('category-product.jpg') },
