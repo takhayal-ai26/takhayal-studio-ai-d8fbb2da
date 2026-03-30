@@ -264,9 +264,10 @@ export default function AdminBilling({ embedded }: { embedded?: boolean } = {}) 
               <TableHeader>
                 <TableRow className="border-border/40">
                   <TableHead className="text-[11px] uppercase text-muted-foreground">Plan</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Price</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Credits</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Features</TableHead>
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Monthly</TableHead>
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Annual</TableHead>
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Discount</TableHead>
+                  <TableHead className="text-[11px] uppercase text-muted-foreground">Credits/Mo</TableHead>
                   <TableHead className="text-[11px] uppercase text-muted-foreground">Status</TableHead>
                   <TableHead className="w-20" />
                 </TableRow>
@@ -278,13 +279,13 @@ export default function AdminBilling({ embedded }: { embedded?: boolean } = {}) 
                       <div className="flex items-center gap-2">
                         <span className="text-[13px] font-medium">{p.name_en}</span>
                         {p.featured && <Badge className="text-[9px]">Featured</Badge>}
-                        {p.is_default && <Badge variant="outline" className="text-[9px]">Default</Badge>}
                       </div>
-                      <span className="text-[11px] text-muted-foreground">{p.name_ar}</span>
+                      <span className="text-[11px] text-muted-foreground">{p.slug}</span>
                     </TableCell>
-                    <TableCell className="text-[13px] font-medium text-primary">${p.price}/{p.billing_period}</TableCell>
-                    <TableCell className="text-[13px]">{p.included_credits}</TableCell>
-                    <TableCell className="text-[13px]">{p.features?.length || 0}</TableCell>
+                    <TableCell className="text-[13px] font-medium">${p.price_monthly_usd}</TableCell>
+                    <TableCell className="text-[13px]">${p.price_annual_usd}/yr</TableCell>
+                    <TableCell className="text-[13px]">{p.annual_discount_percent}%</TableCell>
+                    <TableCell className="text-[13px]">{p.credits_monthly.toLocaleString()}</TableCell>
                     <TableCell><Badge variant="outline" className={`text-[10px] ${p.active ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-destructive/10 text-destructive border-destructive/20'}`}>{p.active ? 'Active' : 'Inactive'}</Badge></TableCell>
                     <TableCell>
                       <div className="flex gap-1">
