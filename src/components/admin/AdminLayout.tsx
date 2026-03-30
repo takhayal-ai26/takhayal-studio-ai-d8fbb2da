@@ -38,7 +38,7 @@ export default function AdminLayout() {
           collapsed ? 'w-[68px]' : 'w-[240px]'
         )}
       >
-        <div className="flex items-center justify-between h-14 px-4 border-b border-border/40">
+        <div className="flex items-center justify-between h-14 px-4 border-b border-border">
           {!collapsed && (
             <span className="text-sm font-bold tracking-tight text-foreground">
               Takhayal <span className="text-primary">Admin</span>
