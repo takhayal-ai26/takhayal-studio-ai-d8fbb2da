@@ -73,7 +73,7 @@ export function ModelDropdown({ models, selectedModelId, language, anchorRect, o
                 <button
                   key={m.id}
                   data-selected={isActive}
-                  onClick={() => onSelect(m.id)}
+                  onClick={(e) => { e.stopPropagation(); console.log('MODEL SELECT:', m.id, m.model_name); onSelect(m.id); }}
                   className="w-full flex items-center gap-3 text-left transition-colors duration-[120ms]"
                   style={{
                     padding: '10px 14px',
