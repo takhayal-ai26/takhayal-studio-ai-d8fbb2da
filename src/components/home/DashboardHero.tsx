@@ -10,6 +10,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 
 const RATIOS = ['1:1', '2:3', '3:2', '16:9', '4:3', '4:5', '9:16'];
+const FEATURED_MODEL_NAMES = ['Nano Banana Pro', 'SeeDream 4.5', 'FLUX 1.1 Pro', 'GPT Image 1.5'];
 
 function RatioIcon({ ratio, size = 12 }: { ratio: string; size?: number }) {
   const [w, h] = ratio.split(':').map(Number);
@@ -146,10 +147,9 @@ export function DashboardHero() {
 
   const dropdownMenuStyle: React.CSSProperties = {
     position: 'absolute',
-    bottom: '100%',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    marginBottom: 8,
+    top: '100%',
+    left: 0,
+    marginTop: 8,
     background: 'rgba(20,20,20,0.95)',
     border: '1px solid rgba(255,255,255,0.12)',
     borderRadius: 12,
@@ -249,8 +249,8 @@ export function DashboardHero() {
                   value={prompt}
                   onChange={e => setPrompt(e.target.value)}
                   placeholder={placeholder}
-                  className="flex-1 bg-transparent outline-none"
-                  style={{ fontSize: 15, color: '#FFFFFF', border: 'none', direction: isRTL ? 'rtl' : 'ltr' }}
+                  className="flex-1 outline-none"
+                  style={{ fontSize: 15, color: '#FFFFFF', border: 'none', background: 'transparent', direction: isRTL ? 'rtl' : 'ltr' }}
                   onKeyDown={e => { if (e.key === 'Enter' && canGenerate) { e.preventDefault(); handleGenerate(); } }}
                 />
               </div>
@@ -314,19 +314,21 @@ export function DashboardHero() {
                     <ChevronDown size={11} style={{ opacity: 0.5 }} />
                   </button>
                   {openDrop === 'model' && (
-                    <div style={{ ...dropdownMenuStyle, minWidth: 180, maxHeight: 260, overflowY: 'auto' }} className="animate-fade-in">
-                      {activeModels.map(m => {
-                        const active = m.id === localModelId;
-                        return (
-                          <button key={m.id} onClick={() => { setLocalModelId(m.id); setOpenDrop(null); }} style={dropdownItemStyle(active)}>
-                            <span>{m.model_name}</span>
-                            {active && <Check size={14} style={{ color: '#FFFFFF' }} />}
-                          </button>
-                        );
-                      })}
+                    <div style={{ ...dropdownMenuStyle, minWidth: 180 }} className="animate-fade-in">
+                      {activeModels
+                        .filter(m => FEATURED_MODEL_NAMES.some(n => m.model_name.toLowerCase().includes(n.toLowerCase())))
+                        .map(m => {
+                          const active = m.id === localModelId;
+                          return (
+                            <button key={m.id} onClick={() => { setLocalModelId(m.id); setOpenDrop(null); }} style={dropdownItemStyle(active)}>
+                              <span>{m.model_name}</span>
+                              {active && <Check size={14} style={{ color: '#FFFFFF' }} />}
+                            </button>
+                          );
+                        })}
                       <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
                       <button onClick={() => { setOpenDrop(null); navigate('/studio'); }} style={{ ...dropdownItemStyle(false), color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
-                        All models →
+                        See all models →
                       </button>
                     </div>
                   )}
