@@ -24,6 +24,20 @@ export default function AdminDashboardHero() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `dashboard-hero-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('tool-covers').upload(path, file, { cacheControl: '3600', upsert: true });
+    if (error) { toast.error('Upload failed: ' + error.message); setUploading(false); return; }
+    const { data: urlData } = supabase.storage.from('tool-covers').getPublicUrl(path);
+    update('dashboard_home_hero_image', urlData.publicUrl);
+    toast.success('Image uploaded');
+    setUploading(false);
+  };
 
   useEffect(() => {
     (async () => {
