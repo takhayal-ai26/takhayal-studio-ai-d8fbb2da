@@ -45,6 +45,8 @@ export default function AdminDashboardHero() {
       const { data } = await supabase.from('platform_config').select('config_key, config_value').in('config_key', [...KEYS]);
       const map: Record<string, string> = {};
       (data || []).forEach((r: any) => { map[r.config_key] = r.config_value; });
+      // Ensure focal point key exists if not in DB yet
+      if (!map.dashboard_home_hero_focal_point) map.dashboard_home_hero_focal_point = '50 50';
       setValues(map);
       setLoading(false);
     })();
