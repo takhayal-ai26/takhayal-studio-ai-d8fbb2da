@@ -10,6 +10,7 @@ import { Save, Loader2, Upload } from 'lucide-react';
 
 const KEYS = [
   'dashboard_home_hero_image',
+  'dashboard_home_hero_focal_point',
   'dashboard_home_title_en',
   'dashboard_home_title_ar',
   'dashboard_home_subtitle_en',
