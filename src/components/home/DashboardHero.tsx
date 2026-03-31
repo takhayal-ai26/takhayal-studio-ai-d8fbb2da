@@ -179,10 +179,11 @@ export function DashboardHero() {
   const modelDisplayName = currentModel?.model_name || 'Auto';
 
   return (
-    <section className="relative w-full" style={{ minHeight: 520, overflow: 'clip' }}>
-      {/* Clip overflow for image but allow dropdowns via visible on inner container */}
-      <img src={heroImage} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ objectPosition: heroFocalPoint.split(' ').map((v: string) => v + '%').join(' ') }} loading="eager" />
-      <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${overlayStrength})` }} />
+    <section className="relative w-full" style={{ minHeight: 520 }}>
+      <div className="absolute inset-0 overflow-hidden">
+        <img src={heroImage} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ objectPosition: heroFocalPoint.split(' ').map((v: string) => v + '%').join(' ') }} loading="eager" />
+        <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${overlayStrength})` }} />
+      </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center px-6" style={{ minHeight: 520, paddingBottom: 64 }}>
         <h1
