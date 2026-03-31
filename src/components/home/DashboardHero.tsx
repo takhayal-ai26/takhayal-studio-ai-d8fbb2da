@@ -249,8 +249,8 @@ export function DashboardHero() {
                   value={prompt}
                   onChange={e => setPrompt(e.target.value)}
                   placeholder={placeholder}
-                  className="flex-1 bg-transparent outline-none"
-                  style={{ fontSize: 15, color: '#FFFFFF', border: 'none', direction: isRTL ? 'rtl' : 'ltr' }}
+                  className="flex-1 outline-none"
+                  style={{ fontSize: 15, color: '#FFFFFF', border: 'none', background: 'transparent', direction: isRTL ? 'rtl' : 'ltr' }}
                   onKeyDown={e => { if (e.key === 'Enter' && canGenerate) { e.preventDefault(); handleGenerate(); } }}
                 />
               </div>
