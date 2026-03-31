@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Sparkles } from 'lucide-react';
+import { Sparkles, Image, ChevronDown } from 'lucide-react';
 import { useApp, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useModels } from '@/hooks/useModels';
@@ -15,17 +15,18 @@ const RATIO_SHAPE: Record<string, { w: number; h: number }> = {
   '4:3': { w: 4, h: 3 }, '3:4': { w: 3, h: 4 },
 };
 
-function RatioIcon({ w, h, active }: { w: number; h: number; active: boolean }) {
-  const max = 14;
+function RatioIcon({ w, h, size = 12 }: { w: number; h: number; size?: number }) {
   const aspect = w / h;
   let rw: number, rh: number;
-  if (aspect >= 1) { rw = max; rh = max / aspect; } else { rh = max; rw = max * aspect; }
+  if (aspect >= 1) { rw = size; rh = size / aspect; } else { rh = size; rw = size * aspect; }
   return (
-    <div className="w-4 h-4 flex items-center justify-center">
-      <div className="rounded-[1.5px]" style={{ width: rw, height: rh, border: `1.5px solid ${active ? '#fff' : 'rgba(255,255,255,0.35)'}` }} />
+    <div className="flex items-center justify-center" style={{ width: size + 2, height: size + 2 }}>
+      <div style={{ width: rw, height: rh, border: '1.5px solid rgba(255,255,255,0.5)', borderRadius: 1.5 }} />
     </div>
   );
 }
+
+const FEATURED_MODELS = ['Flux Schnell', 'FLUX 1.1 Pro', 'Imagen 4', 'GPT Image 1.5'];
 
 export function DashboardHero() {
   const navigate = useNavigate();
@@ -38,10 +39,11 @@ export function DashboardHero() {
   const [expanded, setExpanded] = useState(false);
   const [localModelId, setLocalModelId] = useState<string>('');
   const [localResolution, setLocalResolution] = useState('1K');
+  const [ratioOpen, setRatioOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
-  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const ratioRef = useRef<HTMLButtonElement>(null);
 
-  // Admin-controlled hero config
   const { data: heroConfig } = useQuery({
     queryKey: ['dashboard-hero-config'],
     queryFn: async () => {
@@ -81,8 +83,8 @@ export function DashboardHero() {
     else if (activeModels.length > 0 && !localModelId) setLocalModelId(activeModels[0].id);
   }, [defaultModel, activeModels, localModelId]);
 
+  const featuredModels = activeModels.filter(m => FEATURED_MODELS.includes(m.model_name)).slice(0, 4);
   const availableRatios = currentModel?.supported_ratios || ['1:1', '16:9', '9:16', '4:5'];
-  const qualityTiers = currentModel?.supported_quality_tiers || ['1K'];
 
   useEffect(() => {
     if (currentModel && !currentModel.supported_quality_tiers.includes(localResolution)) {
@@ -100,19 +102,26 @@ export function DashboardHero() {
   const hasText = prompt.trim().length > 0;
 
   const handleExpand = useCallback(() => {
-    if (!expanded) setExpanded(true);
+    if (!expanded) {
+      setExpanded(true);
+      setTimeout(() => inputRef.current?.focus(), 50);
+    }
   }, [expanded]);
 
-  // Close on outside click — only if no text
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (expanded && !hasText && containerRef.current && !containerRef.current.contains(e.target as Node)) {
         setExpanded(false);
+        setRatioOpen(false);
+      }
+      if (ratioOpen && ratioRef.current && !ratioRef.current.contains(e.target as Node)) {
+        const target = e.target as HTMLElement;
+        if (!target.closest('[data-ratio-dropdown]')) setRatioOpen(false);
       }
     };
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
-  }, [expanded, hasText]);
+  }, [expanded, hasText, ratioOpen]);
 
   const handleGenerate = () => {
     if (!prompt.trim() || !currentModel) return;
@@ -125,257 +134,213 @@ export function DashboardHero() {
 
   const canGenerate = hasText && !isGenerating && credits >= cost && !!currentModel;
 
-  // Auto-resize textarea
-  useEffect(() => {
-    if (textareaRef.current && expanded) {
-      textareaRef.current.style.height = 'auto';
-      textareaRef.current.style.height = Math.max(72, textareaRef.current.scrollHeight) + 'px';
-    }
-  }, [prompt, expanded]);
-
   return (
-    <section className="relative w-full overflow-hidden" style={{ minHeight: '520px' }}>
+    <section className="relative w-full overflow-hidden" style={{ minHeight: 520 }}>
       {/* Background */}
       <img src={heroImage} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ objectPosition: heroFocalPoint.split(' ').map((v: string) => v + '%').join(' ') }} loading="eager" />
       <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${overlayStrength})` }} />
 
       {/* Content */}
-      <div className="relative z-10 flex flex-col items-center justify-center px-6" style={{ minHeight: '520px', paddingBottom: '64px' }}>
-        {/* Title */}
+      <div className="relative z-10 flex flex-col items-center justify-center px-6" style={{ minHeight: 520, paddingBottom: 64 }}>
+        {/* Title — fixed position, never moves */}
         <h1
           className="text-white text-center font-bold"
           style={{
-            fontSize: '52px',
-            letterSpacing: '-1.5px',
-            lineHeight: 1.15,
-            marginBottom: subtitleText ? '16px' : '40px',
+            fontSize: 52, letterSpacing: -1.5, lineHeight: 1.15,
+            marginBottom: subtitleText ? 16 : 40,
             fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
           }}
         >
           {title}
         </h1>
 
-        {/* Subtitle */}
         {subtitleText && (
-          <p
-            className="text-center"
-            style={{ fontSize: '16px', color: 'rgba(255,255,255,0.55)', marginBottom: '40px', maxWidth: '500px' }}
-          >
+          <p className="text-center" style={{ fontSize: 16, color: 'rgba(255,255,255,0.55)', marginBottom: 40, maxWidth: 500 }}>
             {subtitleText}
           </p>
         )}
 
-        {/* Prompt composer */}
-        <div
-          ref={containerRef}
-          className="transition-all"
-          style={{
-            width: '100%',
-            maxWidth: expanded ? '780px' : '680px',
-            transitionDuration: '280ms',
-            transitionTimingFunction: 'cubic-bezier(0.4,0,0.2,1)',
-          }}
-        >
+        {/* Prompt bar */}
+        <div ref={containerRef} style={{ width: '100%', maxWidth: 680 }}>
           {!expanded ? (
-            /* ── COLLAPSED BAR ── */
+            /* ── COLLAPSED PILL ── */
             <div
               onClick={handleExpand}
-              className="cursor-text flex items-center gap-4 transition-all"
+              className="cursor-text flex items-center gap-3"
               style={{
-                height: '64px',
-                background: 'rgba(255,255,255,0.10)',
+                height: 56,
+                background: 'rgba(0,0,0,0.30)',
                 border: '1px solid rgba(255,255,255,0.15)',
-                borderRadius: '16px',
+                borderRadius: 999,
                 backdropFilter: 'blur(12px)',
                 WebkitBackdropFilter: 'blur(12px)',
-                padding: '0 10px 0 20px',
+                padding: '0 8px 0 20px',
               }}
             >
-              <Sparkles size={16} style={{ color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
-              <span className="flex-1" style={{ fontSize: '15px', color: 'rgba(255,255,255,0.45)' }}>
+              <Image size={18} style={{ color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
+              <span className="flex-1" style={{ fontSize: 15, color: 'rgba(255,255,255,0.45)' }}>
                 {placeholder}
               </span>
-              <button
-                className="flex-shrink-0 flex items-center gap-1.5 font-medium text-white"
-                style={{
-                  background: '#F03E1B',
-                  borderRadius: '12px',
-                  padding: '0 20px',
-                  height: '44px',
-                  fontSize: '14px',
-                  fontWeight: 500,
-                  opacity: 0.85,
-                }}
+              <div
+                className="flex-shrink-0 flex items-center justify-center"
+                style={{ width: 40, height: 40, borderRadius: '50%', background: 'rgba(255,255,255,0.10)' }}
               >
-                <Sparkles size={14} />
-                {t.studio.generateVisuals || 'Generate visuals'}
-              </button>
+                <Sparkles size={16} style={{ color: 'rgba(255,255,255,0.6)' }} />
+              </div>
+              <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.5)', paddingRight: 8, cursor: 'pointer' }}>
+                Generate
+              </span>
             </div>
           ) : (
-            /* ── EXPANDED COMPOSER ── */
+            /* ── EXPANDED BAR ── */
             <div
-              className="animate-scale-in"
               style={{
-                background: 'rgba(15,15,15,0.85)',
-                border: hasText ? '1px solid rgba(240,62,27,0.4)' : '1px solid rgba(255,255,255,0.12)',
-                borderRadius: '20px',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                padding: '20px',
-                boxShadow: hasText ? '0 0 0 4px rgba(240,62,27,0.08)' : 'none',
-                transition: 'border 200ms ease, box-shadow 200ms ease',
+                background: 'rgba(0,0,0,0.30)',
+                border: '1px solid rgba(255,255,255,0.20)',
+                borderRadius: 24,
+                backdropFilter: 'blur(12px)',
+                WebkitBackdropFilter: 'blur(12px)',
+                overflow: 'visible',
+                position: 'relative',
               }}
             >
-              {/* Textarea */}
-              <textarea
-                ref={textareaRef}
-                value={prompt}
-                onChange={e => setPrompt(e.target.value)}
-                autoFocus
-                placeholder={placeholder}
-                className="w-full bg-transparent text-white resize-none outline-none"
-                style={{
-                  minHeight: '72px',
-                  fontSize: '15px',
-                  lineHeight: 1.6,
-                  color: '#FFFFFF',
-                  direction: isRTL ? 'rtl' : 'ltr',
-                }}
-                onKeyDown={e => { if (e.key === 'Enter' && !e.shiftKey && canGenerate) { e.preventDefault(); handleGenerate(); } }}
-              />
+              {/* Input row */}
+              <div className="flex items-center" style={{ height: 52, padding: '0 20px' }}>
+                <Image size={18} style={{ color: 'rgba(255,255,255,0.4)', flexShrink: 0, marginRight: 12 }} />
+                <input
+                  ref={inputRef}
+                  type="text"
+                  value={prompt}
+                  onChange={e => setPrompt(e.target.value)}
+                  placeholder={placeholder}
+                  className="flex-1 bg-transparent outline-none"
+                  style={{
+                    fontSize: 15, color: '#FFFFFF', border: 'none',
+                    direction: isRTL ? 'rtl' : 'ltr',
+                  }}
+                  onKeyDown={e => { if (e.key === 'Enter' && canGenerate) { e.preventDefault(); handleGenerate(); } }}
+                />
+              </div>
 
               {/* Divider */}
-              <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '14px 0' }} />
+              <div style={{ height: 1, background: 'rgba(255,255,255,0.08)', margin: '0 16px' }} />
 
-              {/* Options rows */}
-              <div className="space-y-2.5">
-                {/* Model row */}
-                <div className="flex items-center gap-3">
-                  <span className="flex-shrink-0 uppercase" style={{ fontSize: '10px', color: '#666', letterSpacing: '0.08em', width: '80px' }}>
-                    {t.studio.model}
-                  </span>
-                  <div className="flex gap-1.5 overflow-x-auto scrollbar-hide">
-                    {activeModels.map(m => {
-                      const active = m.id === localModelId;
-                      return (
-                        <button
-                          key={m.id}
-                          onClick={() => setLocalModelId(m.id)}
-                          className="flex-shrink-0 transition-all"
-                          style={{
-                            background: active ? '#F03E1B' : 'rgba(255,255,255,0.06)',
-                            border: active ? '1px solid #F03E1B' : '1px solid rgba(255,255,255,0.10)',
-                            borderRadius: '999px',
-                            padding: '4px 12px',
-                            fontSize: '12px',
-                            color: active ? '#FFFFFF' : '#CCC',
-                            cursor: 'pointer',
-                            whiteSpace: 'nowrap',
-                          }}
-                        >
-                          {m.model_name}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+              {/* Options row */}
+              <div
+                className="flex items-center animate-fade-in"
+                style={{ height: 44, padding: '0 16px', gap: 8 }}
+              >
+                {/* Model pills */}
+                {featuredModels.map(m => {
+                  const active = m.id === localModelId;
+                  return (
+                    <button
+                      key={m.id}
+                      onClick={() => setLocalModelId(m.id)}
+                      className="flex-shrink-0"
+                      style={{
+                        background: active ? '#F03E1B' : 'rgba(255,255,255,0.08)',
+                        border: active ? '1px solid #F03E1B' : '1px solid rgba(255,255,255,0.12)',
+                        borderRadius: 999, padding: '4px 12px', fontSize: 12, height: 28,
+                        color: active ? '#FFFFFF' : 'rgba(255,255,255,0.70)',
+                        cursor: 'pointer', whiteSpace: 'nowrap',
+                      }}
+                    >
+                      {m.model_name}
+                    </button>
+                  );
+                })}
 
-                {/* Size row */}
-                <div className="flex items-center gap-3 min-w-0">
-                  <span className="flex-shrink-0 uppercase" style={{ fontSize: '10px', color: '#666', letterSpacing: '0.08em', width: '80px' }}>
-                    {t.studio.size}
-                  </span>
-                  <div className="flex gap-1.5 overflow-x-auto scrollbar-hide" style={{ maxWidth: 'calc(100% - 90px)' }}>
-                    {availableRatios.map((r: string) => {
-                      const shape = RATIO_SHAPE[r] || { w: 1, h: 1 };
-                      const active = r === aspectRatio;
-                      return (
-                        <button
-                          key={r}
-                          onClick={() => setAspectRatio(r as AspectRatio)}
-                          className="flex items-center gap-1 transition-all"
-                          style={{
-                            background: active ? '#F03E1B' : 'rgba(255,255,255,0.06)',
-                            border: active ? '1px solid #F03E1B' : '1px solid rgba(255,255,255,0.10)',
-                            borderRadius: '999px',
-                            padding: '4px 12px',
-                            fontSize: '12px',
-                            color: active ? '#FFFFFF' : '#CCC',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <RatioIcon w={shape.w} h={shape.h} active={active} />
-                          {r}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+                {/* More link */}
+                <button
+                  onClick={() => navigate('/studio')}
+                  style={{ fontSize: 12, color: 'rgba(255,255,255,0.40)', background: 'none', border: 'none', cursor: 'pointer', whiteSpace: 'nowrap' }}
+                >
+                  More →
+                </button>
 
-                {/* Resolution row */}
-                {qualityTiers.length > 1 && (
-                  <div className="flex items-center gap-3">
-                    <span className="flex-shrink-0 uppercase" style={{ fontSize: '10px', color: '#666', letterSpacing: '0.08em', width: '80px' }}>
-                      {t.studio.resolution}
-                    </span>
-                    <div className="flex gap-1.5">
-                      {qualityTiers.map((tier: string) => {
-                        const active = tier === localResolution;
+                {/* Vertical divider */}
+                <div style={{ width: 1, height: 16, background: 'rgba(255,255,255,0.10)', flexShrink: 0 }} />
+
+                {/* Ratio selector */}
+                <div style={{ position: 'relative' }}>
+                  <button
+                    ref={ratioRef}
+                    onClick={() => setRatioOpen(!ratioOpen)}
+                    className="flex items-center gap-1.5"
+                    style={{
+                      background: 'rgba(255,255,255,0.08)',
+                      border: '1px solid rgba(255,255,255,0.12)',
+                      borderRadius: 999, padding: '4px 10px', fontSize: 12, height: 28,
+                      color: 'rgba(255,255,255,0.70)', cursor: 'pointer',
+                    }}
+                  >
+                    <RatioIcon w={RATIO_SHAPE[aspectRatio]?.w || 1} h={RATIO_SHAPE[aspectRatio]?.h || 1} />
+                    {aspectRatio}
+                    <ChevronDown size={12} style={{ opacity: 0.5 }} />
+                  </button>
+
+                  {/* Ratio dropdown */}
+                  {ratioOpen && (
+                    <div
+                      data-ratio-dropdown
+                      className="absolute animate-fade-in"
+                      style={{
+                        bottom: '100%', left: '50%', transform: 'translateX(-50%)',
+                        marginBottom: 8,
+                        background: 'rgba(15,15,15,0.90)',
+                        border: '1px solid rgba(255,255,255,0.15)',
+                        borderRadius: 12,
+                        backdropFilter: 'blur(16px)',
+                        WebkitBackdropFilter: 'blur(16px)',
+                        padding: 6,
+                        display: 'flex', gap: 4,
+                        boxShadow: '0 8px 24px rgba(0,0,0,0.4)',
+                      }}
+                    >
+                      {availableRatios.map((r: string) => {
+                        const active = r === aspectRatio;
+                        const shape = RATIO_SHAPE[r] || { w: 1, h: 1 };
                         return (
                           <button
-                            key={tier}
-                            onClick={() => setLocalResolution(tier)}
-                            className="transition-all"
+                            key={r}
+                            onClick={() => { setAspectRatio(r as AspectRatio); setRatioOpen(false); }}
+                            className="flex items-center gap-1"
                             style={{
                               background: active ? '#F03E1B' : 'rgba(255,255,255,0.06)',
                               border: active ? '1px solid #F03E1B' : '1px solid rgba(255,255,255,0.10)',
-                              borderRadius: '999px',
-                              padding: '4px 12px',
-                              fontSize: '12px',
-                              color: active ? '#FFFFFF' : '#CCC',
-                              cursor: 'pointer',
+                              borderRadius: 999, padding: '4px 10px', fontSize: 11, height: 26,
+                              color: active ? '#FFFFFF' : 'rgba(255,255,255,0.6)',
+                              cursor: 'pointer', whiteSpace: 'nowrap',
                             }}
                           >
-                            {tier}
+                            <RatioIcon w={shape.w} h={shape.h} size={10} />
+                            {r}
                           </button>
                         );
                       })}
                     </div>
-                  </div>
-                )}
-              </div>
-
-              {/* Divider */}
-              <div style={{ height: '1px', background: 'rgba(255,255,255,0.06)', margin: '14px 0' }} />
-
-              {/* Bottom row: credits + generate */}
-              <div className="flex items-center justify-between">
-                <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)' }}>
-                  {credits} {t.studio.creditsRemaining}
-                </span>
-                <div className="flex items-center gap-3">
-                  <span style={{ fontSize: '11px', color: 'rgba(255,255,255,0.35)' }}>
-                    {cost} {t.studio.cost || 'credits'}
-                  </span>
-                  <button
-                    onClick={handleGenerate}
-                    disabled={!canGenerate}
-                    className="flex items-center gap-1.5 font-medium text-white transition-all"
-                    style={{
-                      background: '#F03E1B',
-                      borderRadius: '12px',
-                      padding: '0 20px',
-                      height: '44px',
-                      fontSize: '14px',
-                      fontWeight: 500,
-                      opacity: canGenerate ? 1 : 0.4,
-                      cursor: canGenerate ? 'pointer' : 'not-allowed',
-                    }}
-                  >
-                    <Sparkles size={14} />
-                    {t.studio.generateVisuals || 'Generate'} · {cost} cr
-                  </button>
+                  )}
                 </div>
+
+                {/* Generate button — pushed right */}
+                <button
+                  onClick={handleGenerate}
+                  disabled={!canGenerate}
+                  className="flex items-center gap-1.5 font-medium"
+                  style={{
+                    marginLeft: 'auto',
+                    background: '#F03E1B',
+                    borderRadius: 999, padding: '0 18px', height: 36,
+                    fontSize: 13, fontWeight: 500, color: '#FFFFFF',
+                    opacity: canGenerate ? 1 : 0.4,
+                    cursor: canGenerate ? 'pointer' : 'not-allowed',
+                    border: 'none', whiteSpace: 'nowrap',
+                  }}
+                >
+                  <Sparkles size={13} />
+                  {t.studio.generateVisuals || 'Generate'} · {cost} cr
+                </button>
               </div>
             </div>
           )}
