@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -6,7 +6,7 @@ import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Slider } from '@/components/ui/slider';
 import { toast } from 'sonner';
-import { Save, Loader2 } from 'lucide-react';
+import { Save, Loader2, Upload } from 'lucide-react';
 
 const KEYS = [
   'dashboard_home_hero_image',
@@ -24,6 +24,20 @@ export default function AdminDashboardHero() {
   const [values, setValues] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [uploading, setUploading] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const handleUpload = async (file: File) => {
+    setUploading(true);
+    const ext = file.name.split('.').pop() || 'jpg';
+    const path = `dashboard-hero-${Date.now()}.${ext}`;
+    const { error } = await supabase.storage.from('tool-covers').upload(path, file, { cacheControl: '3600', upsert: true });
+    if (error) { toast.error('Upload failed: ' + error.message); setUploading(false); return; }
+    const { data: urlData } = supabase.storage.from('tool-covers').getPublicUrl(path);
+    update('dashboard_home_hero_image', urlData.publicUrl);
+    toast.success('Image uploaded');
+    setUploading(false);
+  };
 
   useEffect(() => {
     (async () => {
@@ -73,7 +87,16 @@ export default function AdminDashboardHero() {
       <div className="space-y-4">
         <div>
           <Label className="text-xs">Hero Background Image URL</Label>
-          <Input value={values.dashboard_home_hero_image || ''} onChange={e => update('dashboard_home_hero_image', e.target.value)} placeholder="https://..." />
+          <div className="flex gap-2">
+            <Input value={values.dashboard_home_hero_image || ''} onChange={e => update('dashboard_home_hero_image', e.target.value)} placeholder="https://..." className="flex-1" />
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0]); e.target.value = ''; }} />
+            <Button type="button" variant="outline" size="icon" disabled={uploading} onClick={() => fileRef.current?.click()}>
+              {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+            </Button>
+          </div>
+          {values.dashboard_home_hero_image && (
+            <img src={values.dashboard_home_hero_image} alt="Preview" className="mt-2 rounded-lg max-h-32 object-cover w-full" />
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
