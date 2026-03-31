@@ -314,19 +314,21 @@ export function DashboardHero() {
                     <ChevronDown size={11} style={{ opacity: 0.5 }} />
                   </button>
                   {openDrop === 'model' && (
-                    <div style={{ ...dropdownMenuStyle, minWidth: 180, maxHeight: 260, overflowY: 'auto' }} className="animate-fade-in">
-                      {activeModels.map(m => {
-                        const active = m.id === localModelId;
-                        return (
-                          <button key={m.id} onClick={() => { setLocalModelId(m.id); setOpenDrop(null); }} style={dropdownItemStyle(active)}>
-                            <span>{m.model_name}</span>
-                            {active && <Check size={14} style={{ color: '#FFFFFF' }} />}
-                          </button>
-                        );
-                      })}
+                    <div style={{ ...dropdownMenuStyle, minWidth: 180 }} className="animate-fade-in">
+                      {activeModels
+                        .filter(m => FEATURED_MODEL_NAMES.some(n => m.model_name.toLowerCase().includes(n.toLowerCase())))
+                        .map(m => {
+                          const active = m.id === localModelId;
+                          return (
+                            <button key={m.id} onClick={() => { setLocalModelId(m.id); setOpenDrop(null); }} style={dropdownItemStyle(active)}>
+                              <span>{m.model_name}</span>
+                              {active && <Check size={14} style={{ color: '#FFFFFF' }} />}
+                            </button>
+                          );
+                        })}
                       <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
                       <button onClick={() => { setOpenDrop(null); navigate('/studio'); }} style={{ ...dropdownItemStyle(false), color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
-                        All models →
+                        See all models →
                       </button>
                     </div>
                   )}
