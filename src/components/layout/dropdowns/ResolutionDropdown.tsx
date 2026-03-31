@@ -29,7 +29,7 @@ export function ResolutionDropdown({ tiers, selectedResolution, anchorRect, onSe
   }
 
   return createPortal(
-    <>
+    <div data-dropdown-portal>
       <div className="fixed inset-0 z-[9998]" onClick={onClose} />
       <div className="fixed z-[9999] animate-in fade-in slide-in-from-left-2 duration-150" style={{ top, left, width: panelW }}>
         <div className="rounded-xl border border-border overflow-hidden" style={{ background: 'var(--dropdown-bg)', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
@@ -57,7 +57,7 @@ export function ResolutionDropdown({ tiers, selectedResolution, anchorRect, onSe
           })}
         </div>
       </div>
-    </>,
+    </div>,
     document.body
   );
 }

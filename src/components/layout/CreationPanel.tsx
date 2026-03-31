@@ -72,7 +72,7 @@ export function CreationPanel() {
   const canGenerate = prompt.trim().length > 0 && !isGenerating && credits >= cost && !!currentModel;
   const toggleDropdown = (key: OpenDropdown) => setOpenDropdown(prev => prev === key ? null : key);
 
-  useEffect(() => { const handler = (e: MouseEvent) => { if (openDropdown && panelRef.current && !panelRef.current.contains(e.target as Node)) setOpenDropdown(null); }; document.addEventListener('mousedown', handler); return () => document.removeEventListener('mousedown', handler); }, [openDropdown]);
+  useEffect(() => { const handler = (e: MouseEvent) => { if (openDropdown && panelRef.current && !panelRef.current.contains(e.target as Node)) { const target = e.target as HTMLElement; if (target.closest('[data-dropdown-portal]')) return; setOpenDropdown(null); } }; document.addEventListener('mousedown', handler); return () => document.removeEventListener('mousedown', handler); }, [openDropdown]);
   useEffect(() => { const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenDropdown(null); if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); generate(); } }; window.addEventListener('keydown', handler); return () => window.removeEventListener('keydown', handler); }, [generate]);
 
   const handleResolution = (r: string) => { setSelectedResolution(r); setQuality(r === '1K' ? 'standard' : 'hd'); setOpenDropdown(null); };

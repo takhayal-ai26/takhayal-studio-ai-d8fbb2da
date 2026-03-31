@@ -38,7 +38,7 @@ export function ModelDropdown({ models, selectedModelId, language, anchorRect, o
   }, []);
 
   return createPortal(
-    <>
+    <div data-dropdown-portal>
       {/* Transparent backdrop */}
       <div className="fixed inset-0 z-[9998]" onClick={onClose} />
       {/* Panel */}
@@ -73,7 +73,7 @@ export function ModelDropdown({ models, selectedModelId, language, anchorRect, o
                 <button
                   key={m.id}
                   data-selected={isActive}
-                  onClick={() => onSelect(m.id)}
+                  onClick={(e) => { e.stopPropagation(); onSelect(m.id); }}
                   className="w-full flex items-center gap-3 text-left transition-colors duration-[120ms]"
                   style={{
                     padding: '10px 14px',
@@ -106,7 +106,7 @@ export function ModelDropdown({ models, selectedModelId, language, anchorRect, o
           </div>
         </div>
       </div>
-    </>,
+    </div>,
     document.body
   );
 }
