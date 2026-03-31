@@ -147,10 +147,9 @@ export function DashboardHero() {
 
   const dropdownMenuStyle: React.CSSProperties = {
     position: 'absolute',
-    bottom: '100%',
-    left: '50%',
-    transform: 'translateX(-50%)',
-    marginBottom: 8,
+    top: '100%',
+    left: 0,
+    marginTop: 8,
     background: 'rgba(20,20,20,0.95)',
     border: '1px solid rgba(255,255,255,0.12)',
     borderRadius: 12,
