@@ -87,7 +87,16 @@ export default function AdminDashboardHero() {
       <div className="space-y-4">
         <div>
           <Label className="text-xs">Hero Background Image URL</Label>
-          <Input value={values.dashboard_home_hero_image || ''} onChange={e => update('dashboard_home_hero_image', e.target.value)} placeholder="https://..." />
+          <div className="flex gap-2">
+            <Input value={values.dashboard_home_hero_image || ''} onChange={e => update('dashboard_home_hero_image', e.target.value)} placeholder="https://..." className="flex-1" />
+            <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0]); e.target.value = ''; }} />
+            <Button type="button" variant="outline" size="icon" disabled={uploading} onClick={() => fileRef.current?.click()}>
+              {uploading ? <Loader2 size={14} className="animate-spin" /> : <Upload size={14} />}
+            </Button>
+          </div>
+          {values.dashboard_home_hero_image && (
+            <img src={values.dashboard_home_hero_image} alt="Preview" className="mt-2 rounded-lg max-h-32 object-cover w-full" />
+          )}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
