@@ -1,0 +1,1 @@
+INSERT INTO public.platform_config (config_key, config_value) VALUES ('dashboard_home_hero_focal_point', '50 50') ON CONFLICT DO NOTHING;
