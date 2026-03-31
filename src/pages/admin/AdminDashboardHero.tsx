@@ -10,6 +10,7 @@ import { Save, Loader2, Upload } from 'lucide-react';
 
 const KEYS = [
   'dashboard_home_hero_image',
+  'dashboard_home_hero_focal_point',
   'dashboard_home_title_en',
   'dashboard_home_title_ar',
   'dashboard_home_subtitle_en',
@@ -44,6 +45,8 @@ export default function AdminDashboardHero() {
       const { data } = await supabase.from('platform_config').select('config_key, config_value').in('config_key', [...KEYS]);
       const map: Record<string, string> = {};
       (data || []).forEach((r: any) => { map[r.config_key] = r.config_value; });
+      // Ensure focal point key exists if not in DB yet
+      if (!map.dashboard_home_hero_focal_point) map.dashboard_home_hero_focal_point = '50 50';
       setValues(map);
       setLoading(false);
     })();
@@ -55,7 +58,11 @@ export default function AdminDashboardHero() {
     setSaving(true);
     try {
       for (const [key, val] of Object.entries(values)) {
-        await supabase.from('platform_config').update({ config_value: val }).eq('config_key', key);
+        // upsert: try update, if no rows affected, insert
+        const { data: updated } = await supabase.from('platform_config').update({ config_value: val }).eq('config_key', key).select('id');
+        if (!updated || updated.length === 0) {
+          await supabase.from('platform_config').insert({ config_key: key, config_value: val });
+        }
       }
       toast.success('Dashboard hero settings saved');
     } catch {
@@ -95,7 +102,41 @@ export default function AdminDashboardHero() {
             </Button>
           </div>
           {values.dashboard_home_hero_image && (
-            <img src={values.dashboard_home_hero_image} alt="Preview" className="mt-2 rounded-lg max-h-32 object-cover w-full" />
+            <div className="mt-3 space-y-2">
+              <Label className="text-xs">Crop & Focal Point <span className="text-muted-foreground">(click to set focus)</span></Label>
+              <div className="relative rounded-lg overflow-hidden border border-border" style={{ aspectRatio: '16/5' }}>
+                <img
+                  src={values.dashboard_home_hero_image}
+                  alt="Preview"
+                  className="absolute inset-0 w-full h-full object-cover cursor-crosshair"
+                  style={{ objectPosition: (values.dashboard_home_hero_focal_point || '50 50').split(' ').map(v => v + '%').join(' ') }}
+                  onClick={e => {
+                    const rect = e.currentTarget.getBoundingClientRect();
+                    const x = Math.round(((e.clientX - rect.left) / rect.width) * 100);
+                    const y = Math.round(((e.clientY - rect.top) / rect.height) * 100);
+                    update('dashboard_home_hero_focal_point', `${x} ${y}`);
+                  }}
+                />
+                {/* Focal point indicator */}
+                {(() => {
+                  const [fx, fy] = (values.dashboard_home_hero_focal_point || '50 50').split(' ').map(Number);
+                  return (
+                    <div
+                      className="absolute pointer-events-none"
+                      style={{ left: `${fx}%`, top: `${fy}%`, transform: 'translate(-50%,-50%)' }}
+                    >
+                      <div className="w-5 h-5 rounded-full border-2 border-white shadow-lg" style={{ background: 'rgba(240,62,27,0.6)' }} />
+                      <div className="absolute inset-0 w-5 h-5 rounded-full animate-ping" style={{ background: 'rgba(240,62,27,0.3)' }} />
+                    </div>
+                  );
+                })()}
+                {/* Overlay preview */}
+                <div className="absolute inset-0 pointer-events-none" style={{ background: `rgba(0,0,0,${values.dashboard_home_overlay_strength || '0.55'})` }} />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <span className="text-white/70 text-xs font-medium">Live preview at {(values.dashboard_home_hero_focal_point || '50 50').split(' ').map(v => v + '%').join(', ')}</span>
+                </div>
+              </div>
+            </div>
           )}
         </div>
 

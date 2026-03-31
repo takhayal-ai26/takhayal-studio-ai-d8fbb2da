@@ -46,7 +46,7 @@ export function DashboardHero() {
     queryKey: ['dashboard-hero-config'],
     queryFn: async () => {
       const keys = [
-        'dashboard_home_hero_image',
+        'dashboard_home_hero_image', 'dashboard_home_hero_focal_point',
         'dashboard_home_title_en', 'dashboard_home_title_ar',
         'dashboard_home_subtitle_en', 'dashboard_home_subtitle_ar',
         'dashboard_home_prompt_placeholder_en', 'dashboard_home_prompt_placeholder_ar',
@@ -61,6 +61,7 @@ export function DashboardHero() {
   });
 
   const heroImage = heroConfig?.dashboard_home_hero_image || 'https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=1600&q=80';
+  const heroFocalPoint = heroConfig?.dashboard_home_hero_focal_point || '50 50';
   const overlayStrength = heroConfig?.dashboard_home_overlay_strength || '0.55';
   const isAr = lang === 'ar';
   const title = isAr
@@ -135,7 +136,7 @@ export function DashboardHero() {
   return (
     <section className="relative w-full overflow-hidden" style={{ minHeight: '520px' }}>
       {/* Background */}
-      <img src={heroImage} alt="" className="absolute inset-0 w-full h-full object-cover" loading="eager" />
+      <img src={heroImage} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ objectPosition: heroFocalPoint.split(' ').map((v: string) => v + '%').join(' ') }} loading="eager" />
       <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${overlayStrength})` }} />
 
       {/* Content */}
