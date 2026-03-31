@@ -146,31 +146,31 @@
 }
 
 /* ── Global input styling ── */
-[data-theme="light"] input,
-[data-theme="light"] textarea,
+[data-theme="light"] input:not([data-hero-input]),
+[data-theme="light"] textarea:not([data-hero-input]),
 [data-theme="light"] select {
   background: #FFFFFF !important;
   border: 1px solid rgba(0,0,0,0.10) !important;
   border-radius: 10px;
   color: #0D0D0D;
 }
-[data-theme="light"] input:focus,
-[data-theme="light"] textarea:focus,
+[data-theme="light"] input:not([data-hero-input]):focus,
+[data-theme="light"] textarea:not([data-hero-input]):focus,
 [data-theme="light"] select:focus {
   border-color: rgba(240,62,27,0.5) !important;
   outline: none;
   box-shadow: 0 0 0 3px rgba(240,62,27,0.08);
 }
-[data-theme="dark"] input,
-[data-theme="dark"] textarea,
+[data-theme="dark"] input:not([data-hero-input]),
+[data-theme="dark"] textarea:not([data-hero-input]),
 [data-theme="dark"] select {
   background: #1A1A1A !important;
   border: 1px solid rgba(255,255,255,0.08) !important;
   border-radius: 10px;
   color: #FFFFFF;
 }
-[data-theme="dark"] input:focus,
-[data-theme="dark"] textarea:focus,
+[data-theme="dark"] input:not([data-hero-input]):focus,
+[data-theme="dark"] textarea:not([data-hero-input]):focus,
 [data-theme="dark"] select:focus {
   border-color: rgba(240,62,27,0.5) !important;
   outline: none;

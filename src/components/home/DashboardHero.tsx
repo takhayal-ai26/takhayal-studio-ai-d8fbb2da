@@ -246,11 +246,12 @@ export function DashboardHero() {
                 <input
                   ref={inputRef}
                   type="text"
+                  data-hero-input
                   value={prompt}
                   onChange={e => setPrompt(e.target.value)}
                   placeholder={placeholder}
                   className="flex-1 outline-none"
-                  style={{ fontSize: 15, color: '#FFFFFF', border: 'none', background: 'transparent', direction: isRTL ? 'rtl' : 'ltr' }}
+                  style={{ fontSize: 15, color: '#FFFFFF', border: 'none', background: 'transparent', direction: isRTL ? 'rtl' : 'ltr', boxShadow: 'none' }}
                   onKeyDown={e => { if (e.key === 'Enter' && canGenerate) { e.preventDefault(); handleGenerate(); } }}
                 />
               </div>
