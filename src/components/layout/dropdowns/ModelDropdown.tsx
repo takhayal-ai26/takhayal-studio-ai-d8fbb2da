@@ -38,7 +38,7 @@ export function ModelDropdown({ models, selectedModelId, language, anchorRect, o
   }, []);
 
   return createPortal(
-    <>
+    <div data-dropdown-portal>
       {/* Transparent backdrop */}
       <div className="fixed inset-0 z-[9998]" onClick={onClose} />
       {/* Panel */}
