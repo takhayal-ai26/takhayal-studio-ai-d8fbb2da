@@ -136,7 +136,7 @@ export function DashboardHero() {
   return (
     <section className="relative w-full overflow-hidden" style={{ minHeight: '520px' }}>
       {/* Background */}
-      <img src={heroImage} alt="" className="absolute inset-0 w-full h-full object-cover" loading="eager" />
+      <img src={heroImage} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ objectPosition: heroFocalPoint.split(' ').map((v: string) => v + '%').join(' ') }} loading="eager" />
       <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${overlayStrength})` }} />
 
       {/* Content */}
