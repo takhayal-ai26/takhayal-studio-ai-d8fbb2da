@@ -106,7 +106,7 @@ export function ModelDropdown({ models, selectedModelId, language, anchorRect, o
           </div>
         </div>
       </div>
-    </>,
+    </div>,
     document.body
   );
 }
