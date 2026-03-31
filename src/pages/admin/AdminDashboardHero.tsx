@@ -58,7 +58,11 @@ export default function AdminDashboardHero() {
     setSaving(true);
     try {
       for (const [key, val] of Object.entries(values)) {
-        await supabase.from('platform_config').update({ config_value: val }).eq('config_key', key);
+        // upsert: try update, if no rows affected, insert
+        const { count } = await supabase.from('platform_config').update({ config_value: val }).eq('config_key', key).select('id', { count: 'exact', head: true });
+        if (count === 0) {
+          await supabase.from('platform_config').insert({ config_key: key, config_value: val });
+        }
       }
       toast.success('Dashboard hero settings saved');
     } catch {
