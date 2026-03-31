@@ -57,7 +57,7 @@ export function ResolutionDropdown({ tiers, selectedResolution, anchorRect, onSe
           })}
         </div>
       </div>
-    </>,
+    </div>,
     document.body
   );
 }

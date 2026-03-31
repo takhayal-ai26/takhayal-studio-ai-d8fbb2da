@@ -76,7 +76,7 @@ export function SizeDropdown({ availableRatios, selectedRatio, anchorRect, onSel
           })}
         </div>
       </div>
-    </>,
+    </div>,
     document.body
   );
 }
