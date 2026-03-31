@@ -60,7 +60,7 @@ export default function AdminDashboardHero() {
       for (const [key, val] of Object.entries(values)) {
         // upsert: try update, if no rows affected, insert
         const { data: updated } = await supabase.from('platform_config').update({ config_value: val }).eq('config_key', key).select('id');
-        if (count === 0) {
+        if (!updated || updated.length === 0) {
           await supabase.from('platform_config').insert({ config_key: key, config_value: val });
         }
       }
