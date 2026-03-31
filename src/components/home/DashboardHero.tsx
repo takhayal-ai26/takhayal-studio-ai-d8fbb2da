@@ -46,7 +46,7 @@ export function DashboardHero() {
     queryKey: ['dashboard-hero-config'],
     queryFn: async () => {
       const keys = [
-        'dashboard_home_hero_image',
+        'dashboard_home_hero_image', 'dashboard_home_hero_focal_point',
         'dashboard_home_title_en', 'dashboard_home_title_ar',
         'dashboard_home_subtitle_en', 'dashboard_home_subtitle_ar',
         'dashboard_home_prompt_placeholder_en', 'dashboard_home_prompt_placeholder_ar',
