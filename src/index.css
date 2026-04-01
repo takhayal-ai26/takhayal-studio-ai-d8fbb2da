@@ -28,7 +28,7 @@
     --muted-foreground: 0 0% 45%;
     --accent: 0 0% 11%;
     --accent-foreground: 0 0% 93%;
-    --border: 0 0% 100% / 0.06;
+    --border: 0 0% 100% / 0;
     --input: 0 0% 100% / 0.08;
     --input-focus: 10 88% 52% / 0.4;
     --surface: 0 0% 11%;
