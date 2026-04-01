@@ -180,25 +180,6 @@ export function DashboardHero() {
       </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6" style={{ height: 540, paddingBottom: 72, paddingTop: 80 }}>
-        <h1
-          className="text-white text-center font-extrabold drop-shadow-lg"
-          style={{
-            fontSize: 'clamp(36px, 6vw, 64px)',
-            letterSpacing: -2,
-            lineHeight: 1.05,
-            marginBottom: subtitleText ? 16 : 40,
-            fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
-            textShadow: '0 2px 20px rgba(0,0,0,0.4)',
-          }}
-        >
-          {title}
-        </h1>
-
-        {subtitleText && (
-          <p className="text-center" style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', marginBottom: 44, maxWidth: 480, lineHeight: 1.6 }}>
-            {subtitleText}
-          </p>
-        )}
 
         {/* Prompt bar */}
         <div ref={containerRef} style={{ width: '100%', maxWidth: 680 }}>
