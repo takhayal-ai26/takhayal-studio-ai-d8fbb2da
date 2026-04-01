@@ -172,8 +172,8 @@ export function DashboardHero() {
   });
 
   return (
-    <section className="relative w-full" style={{ height: 540 }}>
-      <div className="absolute inset-0 overflow-hidden">
+    <section className="relative w-full overflow-hidden" style={{ height: 540 }}>
+      <div className="absolute inset-0">
         <div
           className="absolute inset-0"
           style={{
