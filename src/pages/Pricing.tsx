@@ -250,7 +250,7 @@ const Pricing = () => {
               className={`px-4 py-2 rounded-full text-[12px] font-medium transition-all ${
                 selectedPlanPill === p.slug
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-card border border-border text-muted-foreground hover:text-foreground'
+                  : 'bg-muted/40 text-muted-foreground hover:text-foreground'
               }`}
             >
               {isAr ? p.name_ar : p.name_en} — {p.credits_monthly > 0 ? `${p.credits_monthly.toLocaleString()}cr` : '15cr'}
