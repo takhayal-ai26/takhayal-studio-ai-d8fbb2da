@@ -78,7 +78,7 @@ export default function PortalHome() {
 
           {/* ── Section 2: Seasonal Banner ── */}
           <section className="my-8">
-            <button onClick={() => goToCanvas(TEMPLATE_PROMPTS['Ramadan'], 'Ramadan')} className="group w-full relative h-36 md:h-44 rounded-xl overflow-hidden border border-border hover:border-primary transition-colors">
+            <button onClick={() => goToCanvas(TEMPLATE_PROMPTS['Ramadan'], 'Ramadan')} className="group w-full relative h-36 md:h-44 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all duration-300">
               <img src="https://picsum.photos/seed/banner-ramadan/1200/400" alt={t.portal.ramadanCampaign} className="w-full h-full object-cover" loading="lazy" />
               <div className={`absolute inset-0 bg-gradient-to-${isRTL ? 'l' : 'r'} from-black/90 via-black/50 to-transparent`} />
               <div className={`absolute inset-0 flex flex-col justify-center px-6 md:px-10`}>
