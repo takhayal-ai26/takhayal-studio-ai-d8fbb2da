@@ -40,22 +40,13 @@
       <a href="/terms">Terms and Conditions</a>
     </div>
     <div id="root"></div>
-    <footer style="padding:24px 32px;text-align:center;font-size:13px;color:#888;font-family:sans-serif" id="static-footer">
-      <a href="/privacy" style="color:#888;margin:0 12px">Privacy Policy</a>
-      <a href="/terms" style="color:#888;margin:0 12px">Terms &amp; Conditions</a>
-      <a href="/about" style="color:#888;margin:0 12px">About Us</a>
-    </footer>
+    <noscript>
+      <footer style="padding:24px 32px;text-align:center;font-size:13px;color:#888;font-family:sans-serif">
+        <a href="/privacy" style="color:#888;margin:0 12px">Privacy Policy</a>
+        <a href="/terms" style="color:#888;margin:0 12px">Terms &amp; Conditions</a>
+        <a href="/about" style="color:#888;margin:0 12px">About Us</a>
+      </footer>
+    </noscript>
     <script type="module" src="/src/main.tsx"></script>
-    <script>
-      // Hide static footer once React mounts (it has its own footer)
-      var observer = new MutationObserver(function(){
-        if(document.getElementById('root').children.length > 0){
-          var f = document.getElementById('static-footer');
-          if(f) f.style.display='none';
-          observer.disconnect();
-        }
-      });
-      observer.observe(document.getElementById('root'),{childList:true});
-    </script>
   </body>
 </html>
