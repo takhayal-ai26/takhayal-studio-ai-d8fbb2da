@@ -58,6 +58,23 @@ const bgStyles: Record<string, string> = {
   custom: '',
 };
 
+// Shared state for banner visibility
+let _bannerVisible = false;
+const _listeners = new Set<(v: boolean) => void>();
+function setBannerVisible(v: boolean) {
+  _bannerVisible = v;
+  _listeners.forEach(fn => fn(v));
+}
+
+export function usePromoBannerVisible() {
+  const [visible, setVisible] = useState(_bannerVisible);
+  useEffect(() => {
+    _listeners.add(setVisible);
+    return () => { _listeners.delete(setVisible); };
+  }, []);
+  return visible;
+}
+
 export function PromoBannerStrip() {
   const { user, loading } = useAuth();
   const isAuthenticated = !!user;
@@ -70,13 +87,12 @@ export function PromoBannerStrip() {
       .select('*')
       .eq('active', true)
       .order('sort_order', { ascending: true })
-      .then(({ data, error }: any) => {
+      .then(({ data }: any) => {
         if (data && Array.isArray(data)) setBanners(data);
       });
   }, []);
 
   const visibleBanners = useMemo(() => {
-    // Don't show while auth is loading to prevent flash
     if (loading) return [];
     const now = new Date();
     return banners.filter(b => {
@@ -88,6 +104,10 @@ export function PromoBannerStrip() {
       return true;
     });
   }, [banners, isAuthenticated, loading, dismissed]);
+
+  useEffect(() => {
+    setBannerVisible(visibleBanners.length > 0);
+  }, [visibleBanners]);
 
   const handleDismiss = (banner: PromoBanner) => {
     dismissBanner(banner);
