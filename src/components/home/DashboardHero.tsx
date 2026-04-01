@@ -169,13 +169,21 @@ export function DashboardHero() {
   });
 
   return (
-    <section className="relative w-full" style={{ minHeight: 540 }}>
+    <section className="relative w-full" style={{ height: 540 }}>
       <div className="absolute inset-0 overflow-hidden">
-        <img src={heroImage} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ objectPosition: heroFocalPoint.split(' ').map((v: string) => v + '%').join(' ') }} loading="eager" />
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `url(${heroImage})`,
+            backgroundSize: 'cover',
+            backgroundPosition: heroFocalPoint.split(' ').map((v: string) => v + '%').join(' '),
+            backgroundRepeat: 'no-repeat',
+          }}
+        />
         <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, rgba(0,0,0,${Number(overlayStrength) * 0.7}) 0%, rgba(0,0,0,${overlayStrength}) 60%, rgba(0,0,0,${Number(overlayStrength) * 1.1}) 100%)` }} />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6 animate-page-enter" style={{ minHeight: 540, paddingBottom: 72, paddingTop: 80 }}>
+      <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6" style={{ height: 540, paddingBottom: 72, paddingTop: 80 }}>
         <h1
           className="text-white text-center font-bold"
           style={{
