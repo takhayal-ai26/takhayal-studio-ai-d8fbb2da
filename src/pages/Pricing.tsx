@@ -341,7 +341,7 @@ const Pricing = () => {
         </div>
         <Accordion type="single" collapsible className="space-y-2">
           {faqs.map((faq: any, i: number) => (
-            <AccordionItem key={faq.id || i} value={`faq-${i}`} className="bg-card rounded-xl border border-border px-5 py-1 data-[state=open]:border-primary/30">
+            <AccordionItem key={faq.id || i} value={`faq-${i}`} className="bg-card rounded-xl px-5 py-1 shadow-[0_1px_6px_rgba(0,0,0,0.04)] data-[state=open]:shadow-[0_0_0_1px_rgba(240,62,27,0.15),0_4px_16px_rgba(0,0,0,0.06)]">
               <AccordionTrigger className="text-[14px] font-medium text-foreground hover:no-underline py-4">
                 {isAr ? (faq.question_ar || faq.q_ar) : (faq.question_en || faq.q_en)}
               </AccordionTrigger>
