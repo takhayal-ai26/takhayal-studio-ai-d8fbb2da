@@ -145,7 +145,7 @@ function BannerRow({ banner, onDismiss }: { banner: PromoBanner; onDismiss: () =
 
   return (
     <div
-      className={`relative w-full z-[60] ${bgClass} text-white`}
+      className={`fixed top-0 left-0 right-0 z-[60] w-full ${bgClass} text-white`}
       style={banner.background_style === 'custom' ? { background: banner.text_color } : undefined}
       dir={isRTL ? 'rtl' : 'ltr'}
     >
