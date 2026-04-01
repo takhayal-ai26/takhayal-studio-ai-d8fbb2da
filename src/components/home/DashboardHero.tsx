@@ -63,12 +63,6 @@ export function DashboardHero() {
   const heroFocalPoint = heroConfig?.dashboard_home_hero_focal_point || '50 50';
   const overlayStrength = heroConfig?.dashboard_home_overlay_strength || '0.5';
   const isAr = lang === 'ar';
-  const title = isAr
-    ? (heroConfig?.dashboard_home_title_ar || 'ماذا تريد أن تبدع؟')
-    : (heroConfig?.dashboard_home_title_en || 'What will you create?');
-  const subtitleText = isAr
-    ? (heroConfig?.dashboard_home_subtitle_ar || 'أنشئ صوراً مذهلة في ثوانٍ — مدعوم بأكثر من 14 نموذج ذكاء اصطناعي')
-    : (heroConfig?.dashboard_home_subtitle_en || 'Generate stunning visuals in seconds — powered by 14+ AI models');
   const placeholder = isAr
     ? (heroConfig?.dashboard_home_prompt_placeholder_ar || 'صِف ما تريد إنشاءه...')
     : (heroConfig?.dashboard_home_prompt_placeholder_en || 'Describe what you want to create...');
