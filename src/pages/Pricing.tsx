@@ -155,16 +155,16 @@ const Pricing = () => {
             let btnDisabled = false;
             let btnStyle = p.featured
               ? 'bg-primary text-primary-foreground hover:brightness-90'
-              : 'border border-border text-foreground hover:bg-muted';
+              : 'bg-muted/50 text-foreground hover:bg-muted';
 
             if (!authLoading && isAuthenticated) {
               if (isCurrent) {
                 btnText = isAr ? 'الخطة الحالية' : 'Current Plan';
                 btnDisabled = true;
-                btnStyle = 'bg-card border border-border text-muted-foreground cursor-default';
+                btnStyle = 'bg-muted/30 text-muted-foreground cursor-default';
               } else if (thisIdx < currentIdx) {
                 btnText = isAr ? 'تخفيض' : 'Downgrade';
-                btnStyle = 'border border-border text-muted-foreground hover:bg-muted';
+                btnStyle = 'bg-muted/50 text-muted-foreground hover:bg-muted';
               } else {
                 btnText = isAr ? `ترقية إلى ${name}` : `Upgrade to ${name}`;
               }
@@ -172,7 +172,7 @@ const Pricing = () => {
 
             return (
               <div key={p.id} className={`rounded-2xl p-6 flex flex-col transition-all duration-200 hover:scale-[1.01] relative ${
-                p.featured ? 'bg-card border-2 border-primary shadow-[0_0_0_1px_rgba(240,62,27,0.2)]' : 'bg-card border border-border'
+                p.featured ? 'bg-card shadow-[0_0_0_1.5px_hsl(var(--primary)),0_8px_30px_rgba(240,62,27,0.12)]' : 'bg-card shadow-[0_2px_12px_rgba(0,0,0,0.06)]'
               }`}>
                 {badge && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-medium bg-primary text-primary-foreground whitespace-nowrap">{badge}</span>
@@ -218,7 +218,7 @@ const Pricing = () => {
                 </ul>
 
                 {authLoading ? (
-                  <div className="mt-6 w-full h-11 rounded-xl bg-card border border-border animate-pulse" />
+                  <div className="mt-6 w-full h-11 rounded-xl bg-muted/30 animate-pulse" />
                 ) : (
                   <button
                     onClick={() => !btnDisabled && handleCta(p)}
@@ -250,7 +250,7 @@ const Pricing = () => {
               className={`px-4 py-2 rounded-full text-[12px] font-medium transition-all ${
                 selectedPlanPill === p.slug
                   ? 'bg-primary text-primary-foreground'
-                  : 'bg-card border border-border text-muted-foreground hover:text-foreground'
+                  : 'bg-muted/40 text-muted-foreground hover:text-foreground'
               }`}
             >
               {isAr ? p.name_ar : p.name_en} — {p.credits_monthly > 0 ? `${p.credits_monthly.toLocaleString()}cr` : '15cr'}
@@ -259,8 +259,8 @@ const Pricing = () => {
         </div>
 
         {/* Credit cost table */}
-        <div className="bg-card border border-border rounded-2xl overflow-hidden">
-          <div className="grid grid-cols-4 text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-6 py-3 border-b border-border bg-muted/30">
+        <div className="bg-card/60 backdrop-blur-sm rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
+          <div className="grid grid-cols-4 text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-6 py-4 bg-muted/20">
             <span>{isAr ? 'النموذج' : 'Model'}</span>
             <span>{isAr ? 'الخيار' : 'Option'}</span>
             <span>{isAr ? 'التكلفة' : 'Cost'}</span>
@@ -269,16 +269,16 @@ const Pricing = () => {
           {CREDIT_COST_DATA.map((model, mi) => (
             <div key={model.model}>
               {model.options.map((opt, oi) => (
-                <div key={opt.label} className="grid grid-cols-4 px-6 py-3 border-b border-border/50 hover:bg-muted/20 transition-colors text-sm">
-                  <span className={oi === 0 ? 'font-medium text-foreground' : 'text-transparent'}>
-                    {oi === 0 ? model.model : model.model}
+                <div key={opt.label} className={`grid grid-cols-4 px-6 py-3.5 hover:bg-muted/10 transition-colors text-sm ${oi > 0 ? 'bg-muted/[0.03]' : ''}`}>
+                  <span className={oi === 0 ? 'font-medium text-foreground' : 'text-transparent select-none'}>
+                    {model.model}
                   </span>
                   <span className="text-muted-foreground">{opt.label} resolution</span>
                   <span className="text-foreground">{opt.credits} {isAr ? 'أرصدة' : 'credits'}</span>
                   <span className="text-right text-primary font-medium">~{Math.floor(selectedPlanCredits / opt.credits).toLocaleString()} {isAr ? 'صورة' : 'images'}</span>
                 </div>
               ))}
-              {mi < CREDIT_COST_DATA.length - 1 && <div className="border-b border-border" />}
+              {mi < CREDIT_COST_DATA.length - 1 && <div className="h-px bg-gradient-to-r from-transparent via-muted-foreground/[0.06] to-transparent mx-4" />}
             </div>
           ))}
         </div>
@@ -297,7 +297,7 @@ const Pricing = () => {
             const badge = isAr ? pkg.badge_ar : pkg.badge_en;
             return (
               <div key={pkg.id} className={`bg-card rounded-xl p-5 flex flex-col items-center text-center relative ${
-                pkg.is_popular ? 'border-[1.5px] border-primary' : 'border border-border'
+                pkg.is_popular ? 'shadow-[0_0_0_1.5px_hsl(var(--primary)),0_8px_30px_rgba(240,62,27,0.12)]' : 'shadow-[0_2px_12px_rgba(0,0,0,0.06)]'
               }`}>
                 {badge && (
                   <span className="absolute -top-2.5 px-3 py-0.5 rounded-full text-[10px] font-medium bg-primary text-primary-foreground">{badge}</span>
@@ -323,7 +323,7 @@ const Pricing = () => {
                   className={`mt-4 w-full h-10 rounded-xl text-[13px] font-medium transition-all ${
                     pkg.is_popular
                       ? 'bg-primary text-primary-foreground hover:brightness-90'
-                      : 'border border-border text-foreground hover:bg-muted'
+                      : 'bg-muted/50 text-foreground hover:bg-muted'
                   }`}
                 >
                   {isAr ? 'شراء أرصدة' : 'Buy Credits'}
@@ -341,7 +341,7 @@ const Pricing = () => {
         </div>
         <Accordion type="single" collapsible className="space-y-2">
           {faqs.map((faq: any, i: number) => (
-            <AccordionItem key={faq.id || i} value={`faq-${i}`} className="bg-card rounded-xl border border-border px-5 py-1 data-[state=open]:border-primary/30">
+            <AccordionItem key={faq.id || i} value={`faq-${i}`} className="bg-card rounded-xl px-5 py-1 shadow-[0_1px_6px_rgba(0,0,0,0.04)] data-[state=open]:shadow-[0_0_0_1px_rgba(240,62,27,0.15),0_4px_16px_rgba(0,0,0,0.06)]">
               <AccordionTrigger className="text-[14px] font-medium text-foreground hover:no-underline py-4">
                 {isAr ? (faq.question_ar || faq.q_ar) : (faq.question_en || faq.q_en)}
               </AccordionTrigger>
