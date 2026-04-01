@@ -47,7 +47,7 @@ export function TemplatesView() {
       </div>
 
       {/* Category Pills */}
-      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b border-border/20 px-6 md:px-10 py-3">
+      <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl px-6 md:px-10 py-3">
         <div className="flex gap-2 overflow-x-auto scrollbar-hide">
           {categoryNames.map(cat => (
             <button

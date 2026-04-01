@@ -150,7 +150,7 @@
 /* ── Filter pills ── */
 .filter-pill {
   background: transparent;
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: none;
   border-radius: 999px;
   color: hsl(0 0% 50%);
   font-size: 13px;
@@ -160,26 +160,21 @@
   transition: all 0.2s ease;
 }
 .filter-pill:hover {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
   color: hsl(0 0% 70%);
 }
 .filter-pill.active {
   background: hsl(var(--primary));
-  border-color: hsl(var(--primary));
   color: #FFFFFF;
 }
 [data-theme="light"] .filter-pill {
-  border-color: rgba(0, 0, 0, 0.08);
   color: hsl(0 0% 40%);
 }
 [data-theme="light"] .filter-pill:hover {
-  background: rgba(0, 0, 0, 0.03);
-  border-color: rgba(0, 0, 0, 0.12);
+  background: rgba(0, 0, 0, 0.04);
 }
 [data-theme="light"] .filter-pill.active {
   background: hsl(var(--primary));
-  border-color: hsl(var(--primary));
   color: #FFFFFF;
 }
 
