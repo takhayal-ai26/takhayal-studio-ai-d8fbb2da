@@ -221,12 +221,12 @@ export default function PortalHome() {
             </div>
             <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
               {[
-                { img: 'https://picsum.photos/seed/cw-fashion/400/550', promptEn: 'High-end fashion editorial, modern modest style', promptAr: 'تصوير أزياء راقي، أسلوب محتشم عصري' },
-                { img: 'https://picsum.photos/seed/cw-product/400/360', promptEn: 'Luxury perfume bottle, dramatic studio lighting', promptAr: 'زجاجة عطر فاخرة، إضاءة استوديو درامية' },
-                { img: 'https://picsum.photos/seed/cw-food/400/480', promptEn: 'Artisan coffee flat lay, warm morning light', promptAr: 'عرض قهوة حرفية، ضوء صباحي دافئ' },
-                { img: 'https://picsum.photos/seed/cw-cinema/400/420', promptEn: 'Cinematic portrait, volumetric fog, moody tones', promptAr: 'بورتريه سينمائي، ضباب حجمي، ألوان درامية' },
-                { img: 'https://picsum.photos/seed/cw-logo/400/400', promptEn: 'Premium 3D logo mockup, golden metallic finish', promptAr: 'نموذج شعار ثلاثي الأبعاد، لمسة معدنية ذهبية' },
-                { img: 'https://picsum.photos/seed/cw-arch/400/520', promptEn: 'Modern villa exterior, blue sky, lush garden', promptAr: 'واجهة فيلا عصرية، سماء زرقاء، حديقة خضراء' },
+                { img: imgFashion, promptEn: 'High-end fashion editorial, modern modest style', promptAr: 'تصوير أزياء راقي، أسلوب محتشم عصري' },
+                { img: imgCinema, promptEn: 'Luxury perfume bottle, dramatic studio lighting', promptAr: 'زجاجة عطر فاخرة، إضاءة استوديو درامية' },
+                { img: imgCoffee, promptEn: 'Artisan coffee flat lay, warm morning light', promptAr: 'عرض قهوة حرفية، ضوء صباحي دافئ' },
+                { img: imgPortrait, promptEn: 'Cinematic portrait, volumetric fog, moody tones', promptAr: 'بورتريه سينمائي، ضباب حجمي، ألوان درامية' },
+                { img: imgLogo, promptEn: 'Premium 3D logo mockup, golden metallic finish', promptAr: 'نموذج شعار ثلاثي الأبعاد، لمسة معدنية ذهبية' },
+                { img: imgArchitecture, promptEn: 'Modern villa exterior, blue sky, lush garden', promptAr: 'واجهة فيلا عصرية، سماء زرقاء، حديقة خضراء' },
               ].map((item, i) => (
                 <button key={i} onClick={() => navigate('/community')} className="group relative w-full rounded-2xl overflow-hidden break-inside-avoid block hover:shadow-lg hover:shadow-black/10 transition-all duration-300">
                   <img src={item.img} alt={isAr ? item.promptAr : item.promptEn} className="w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]" loading="lazy" />
