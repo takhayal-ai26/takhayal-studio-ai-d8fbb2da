@@ -4,7 +4,6 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTools } from '@/hooks/useTools';
-import { useMedia } from '@/hooks/useMedia';
 import { DashboardHero } from '@/components/home/DashboardHero';
 
 import imgCinema from '@/assets/portal/feat-cinema.jpg';
@@ -49,10 +48,7 @@ export default function PortalHome() {
   const { t, isRTL, lang } = useLanguage();
   const isAr = lang === 'ar';
   const { tools: toolsData } = useTools();
-  const { getUrlByName } = useMedia();
   const [activeCategory, setActiveCategory] = useState('All');
-
-  // Handle ?auth=login or ?auth=signup query param (moved from old landing page)
   useEffect(() => {
     const authParam = searchParams.get('auth');
     if (authParam === 'login' || authParam === 'signup') {
@@ -60,15 +56,6 @@ export default function PortalHome() {
       setSearchParams({}, { replace: true });
     }
   }, [searchParams, openAuthModal, setSearchParams]);
-
-  const toolImages: Record<string, string> = {
-    'generate': getUrlByName('tool-generate.jpg'),
-    'upscale': getUrlByName('tool-upscale.jpg'),
-    'logo': getUrlByName('tool-logo.jpg'),
-    'remove-bg': getUrlByName('tool-removebg.jpg'),
-    'enhance': getUrlByName('tool-enhance.jpg'),
-  };
-
   const categoryKeys = [
     { key: 'All', label: t.portal.all },
     { key: 'Ads', label: t.portal.ads },
@@ -138,10 +125,9 @@ export default function PortalHome() {
                 <div className="flex-1 overflow-x-auto scrollbar-hide">
                   <div className="flex gap-3 p-4 lg:p-5 min-w-max">
                     {toolsData.map(tool => {
-                      const img = toolImages[tool.id] || tool.image;
                       return (
                         <button key={tool.id} onClick={() => navigate(tool.route)} className="group relative flex-shrink-0 w-[220px] md:w-[260px] aspect-[3/4] rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-black/20 transition-shadow duration-400">
-                          <img src={img} alt={tool.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" width={260} height={347} />
+                          <img src={tool.image} alt={tool.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" width={260} height={347} />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                           <div className="absolute inset-0 bg-primary/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                           <div className="absolute bottom-0 left-0 right-0 p-4">
