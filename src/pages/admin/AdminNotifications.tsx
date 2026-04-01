@@ -79,6 +79,7 @@ export default function AdminNotifications({ embedded }: { embedded?: boolean } 
           </TableBody>
         </Table>
       </Card>
+      </div>
     </div>
   );
 }
