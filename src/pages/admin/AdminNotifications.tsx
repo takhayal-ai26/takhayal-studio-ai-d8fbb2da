@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { Plus, Edit, Bell, Megaphone, AlertTriangle, Rocket } from 'lucide-react';
+import PromoBannerEditor from '@/components/admin/PromoBannerEditor';
 
 const notifications = [
   { id: '1', title: 'Ramadan Special Offer', message: 'Get 50% more credits this Ramadan!', type: 'Campaign', audience: 'All users', status: 'active', startDate: '2026-03-01', endDate: '2026-04-01', dismissible: true, priority: 'normal' },
