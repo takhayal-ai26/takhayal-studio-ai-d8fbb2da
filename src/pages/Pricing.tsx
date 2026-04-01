@@ -323,7 +323,7 @@ const Pricing = () => {
                   className={`mt-4 w-full h-10 rounded-xl text-[13px] font-medium transition-all ${
                     pkg.is_popular
                       ? 'bg-primary text-primary-foreground hover:brightness-90'
-                      : 'border border-border text-foreground hover:bg-muted'
+                      : 'bg-muted/50 text-foreground hover:bg-muted'
                   }`}
                 >
                   {isAr ? 'شراء أرصدة' : 'Buy Credits'}
