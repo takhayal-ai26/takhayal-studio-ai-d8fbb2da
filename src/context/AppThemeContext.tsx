@@ -41,15 +41,15 @@ function applyTheme(mode: Mode) {
 
 export function AppThemeProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
-  const isLanding = location.pathname === '/';
+  const isLanding = false; // Landing page removed — no longer force light mode
   const isAdmin = location.pathname.startsWith('/admin');
 
   const [userMode, setUserMode] = useState<Mode>(() => {
     return (localStorage.getItem(STORAGE_KEY) as Mode) || 'dark';
   });
 
-  // Determine effective mode
-  const effectiveMode: Mode = isLanding ? 'light' : isAdmin ? 'dark' : userMode;
+  // Determine effective mode — only admin is locked to dark
+  const effectiveMode: Mode = isAdmin ? 'dark' : userMode;
 
   // Apply on route change or mode change
   useEffect(() => {
