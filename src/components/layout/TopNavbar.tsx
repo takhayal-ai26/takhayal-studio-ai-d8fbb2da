@@ -64,7 +64,7 @@ export function TopNavbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 h-14 bg-background/80 backdrop-blur-xl border-b border-border/40 flex items-center px-5 md:px-6">
+      <nav className="fixed top-0 left-0 right-0 z-50 h-14 bg-background/80 backdrop-blur-xl flex items-center px-5 md:px-6">
         <div className="flex-shrink-0">
           <Logo />
         </div>
