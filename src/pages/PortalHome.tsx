@@ -176,7 +176,7 @@ export default function PortalHome() {
 
             <div className="text-center mt-8">
               <p className="text-[13px] text-muted-foreground mb-3">{t.portal.needMoreInspiration}</p>
-              <button onClick={() => navigate('/templates')} className="h-10 px-6 rounded-lg border border-border text-foreground text-[13px] font-medium hover:border-primary hover:text-primary transition-all group inline-flex items-center gap-2">
+              <button onClick={() => navigate('/templates')} className="h-10 px-6 rounded-full border border-border/30 text-foreground text-[13px] font-medium hover:border-primary/40 hover:text-primary transition-all group inline-flex items-center gap-2">
                 {t.portal.exploreTemplates}
                 <ArrowRight size={14} className={`group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
               </button>
