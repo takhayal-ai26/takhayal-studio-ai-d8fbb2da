@@ -59,7 +59,7 @@ export function DashboardHero() {
     staleTime: 60000,
   });
 
-  const heroImage = heroConfig?.dashboard_home_hero_image || '/images/dashboard-hero.png';
+  const heroImage = heroConfig?.dashboard_home_hero_image || 'https://njenobbxlbhbzwpkylha.supabase.co/storage/v1/object/public/tool-covers/dashboard-hero-1775064030516.png';
   const heroFocalPoint = heroConfig?.dashboard_home_hero_focal_point || '50 50';
   const overlayStrength = heroConfig?.dashboard_home_overlay_strength || '0.5';
   const isAr = lang === 'ar';
