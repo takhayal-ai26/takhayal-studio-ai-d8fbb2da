@@ -9,7 +9,6 @@ import { ThemeProvider } from "@/context/ThemeProvider";
 import { AppThemeProvider } from "@/context/AppThemeContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import Home from "./pages/Home";
 import PortalHome from "./pages/PortalHome";
 import Canvas from "./pages/Canvas";
 import Pricing from "./pages/Pricing";
