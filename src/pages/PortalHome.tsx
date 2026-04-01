@@ -157,7 +157,7 @@ export default function PortalHome() {
 
             <div className="columns-2 md:columns-3 lg:columns-4 gap-1.5 [column-fill:_balance]">
               {filteredMasonry.map((item, i) => (
-                <button key={i} onClick={() => goToCanvas(isAr ? item.promptAr : item.promptEn, item.template)} className="group w-full rounded-lg overflow-hidden break-inside-avoid mb-1.5 block text-left">
+                <button key={i} onClick={() => goToCanvas(isAr ? item.promptAr : item.promptEn, item.template)} className="group w-full rounded-2xl overflow-hidden break-inside-avoid mb-2 block text-left hover:shadow-lg hover:shadow-black/10 transition-all duration-300">
                   <div className="relative overflow-hidden">
                     <img src={item.image} alt={item.template} className="w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
