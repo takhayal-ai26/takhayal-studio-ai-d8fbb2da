@@ -19,7 +19,10 @@ export function AppLayout() {
   }, [assets]);
 
   return (
-    <div className="flex flex-col h-screen w-full bg-background">
+    <div
+      className="flex flex-col h-screen w-full bg-background"
+      style={{ '--banner-h': bannerVisible ? '36px' : '0px' } as React.CSSProperties}
+    >
       <PromoBannerStrip />
       <TopNavbar bannerOffset={bannerVisible} />
       <AuthModal />
