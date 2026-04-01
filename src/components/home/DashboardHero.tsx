@@ -170,19 +170,16 @@ export function DashboardHero() {
     transition: 'background 0.15s',
   });
 
-  const configReady = !!heroConfig;
-
   return (
     <section className="relative w-full" style={{ height: 540 }}>
       <div className="absolute inset-0 overflow-hidden">
         <div
-          className="absolute inset-0 transition-opacity duration-500"
+          className="absolute inset-0"
           style={{
-            backgroundImage: configReady ? `url(${heroImage})` : undefined,
+            backgroundImage: `url(${heroImage})`,
             backgroundSize: 'cover',
             backgroundPosition: heroFocalPoint.split(' ').map((v: string) => v + '%').join(' '),
             backgroundRepeat: 'no-repeat',
-            opacity: configReady ? 1 : 0,
           }}
         />
         <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, rgba(0,0,0,${Number(overlayStrength) * 0.7}) 0%, rgba(0,0,0,${overlayStrength}) 60%, rgba(0,0,0,${Number(overlayStrength) * 1.1}) 100%)` }} />
