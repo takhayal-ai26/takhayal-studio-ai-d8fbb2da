@@ -121,11 +121,13 @@ export function DashboardHero() {
 
   const handleGenerate = () => {
     if (!prompt.trim() || !currentModel) return;
-    setGlobalModelId(currentModel.id);
-    setSelectedQualityTier(localResolution);
-    setActivePage('canvas');
-    generate({ modelId: currentModel.id, qualityTier: localResolution, creditCost: cost });
-    navigate('/studio');
+    requireAuth(() => {
+      setGlobalModelId(currentModel.id);
+      setSelectedQualityTier(localResolution);
+      setActivePage('canvas');
+      generate({ modelId: currentModel.id, qualityTier: localResolution, creditCost: cost });
+      navigate('/studio');
+    });
   };
 
   const canGenerate = hasText && !isGenerating && credits >= cost && !!currentModel;
