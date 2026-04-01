@@ -1,20 +1,22 @@
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useMedia } from '@/hooks/useMedia';
+import logoArDark from '@/assets/logo-ar-dark.svg';
+import logoArLight from '@/assets/logo-ar-light.svg';
 
 export function Logo({ size = 'default' }: { size?: 'small' | 'default' | 'large' }) {
   const { lang } = useLanguage();
   const { getUrlByName } = useMedia();
   const logoMark = getUrlByName('logo-mark.svg');
-  const logoFullAr = getUrlByName('logo-mark-ar.svg');
 
   const imgSize = size === 'small' ? 24 : size === 'large' ? 40 : 28;
   const textSize = size === 'small' ? 'text-sm' : size === 'large' ? 'text-xl' : 'text-lg';
-  const arHeight = size === 'small' ? 53 : size === 'large' ? 91 : 64;
+  const arHeight = size === 'small' ? 28 : size === 'large' ? 44 : 32;
 
   if (lang === 'ar') {
     return (
       <div className="flex items-center">
-        <img src={logoFullAr} alt="تخيّل" style={{ height: arHeight }} className="w-auto" />
+        <img src={logoArDark} alt="تخيّل" style={{ height: arHeight }} className="w-auto hidden dark:block" />
+        <img src={logoArLight} alt="تخيّل" style={{ height: arHeight }} className="w-auto block dark:hidden" />
       </div>
     );
   }
@@ -33,10 +35,15 @@ export function LogoMark({ size = 28 }: { size?: number }) {
   const { lang } = useLanguage();
   const { getUrlByName } = useMedia();
   const logoMark = getUrlByName('logo-mark.svg');
-  const logoFullAr = getUrlByName('logo-mark-ar.svg');
 
   if (lang === 'ar') {
-    return <img src={logoFullAr} alt="تخيّل" style={{ height: size * 2.276 }} className="w-auto" />;
+    const h = size * 1.15;
+    return (
+      <>
+        <img src={logoArDark} alt="تخيّل" style={{ height: h }} className="w-auto hidden dark:block" />
+        <img src={logoArLight} alt="تخيّل" style={{ height: h }} className="w-auto block dark:hidden" />
+      </>
+    );
   }
   return <img src={logoMark} alt="Takhayal" width={size} height={size} />;
 }
