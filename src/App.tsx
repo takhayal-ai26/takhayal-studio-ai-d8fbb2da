@@ -57,7 +57,7 @@ const App = () => (
               <Route element={<AppLayout />}>
                 <Route path="/" element={<PortalHome />} />
                 <Route path="/home" element={<Navigate to="/" replace />} />
-                <Route path="/studio" element={<ProtectedRoute><Canvas /></ProtectedRoute>} />
+                <Route path="/studio" element={<Canvas />} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/tools" element={<ToolsDirectory />} />
                 <Route path="/tools/:toolId" element={<ToolPage />} />
