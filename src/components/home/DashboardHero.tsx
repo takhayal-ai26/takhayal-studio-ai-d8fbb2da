@@ -63,12 +63,6 @@ export function DashboardHero() {
   const heroFocalPoint = heroConfig?.dashboard_home_hero_focal_point || '50 50';
   const overlayStrength = heroConfig?.dashboard_home_overlay_strength || '0.5';
   const isAr = lang === 'ar';
-  const title = isAr
-    ? (heroConfig?.dashboard_home_title_ar || 'ماذا تريد أن تبدع؟')
-    : (heroConfig?.dashboard_home_title_en || 'What will you create?');
-  const subtitleText = isAr
-    ? (heroConfig?.dashboard_home_subtitle_ar || 'أنشئ صوراً مذهلة في ثوانٍ — مدعوم بأكثر من 14 نموذج ذكاء اصطناعي')
-    : (heroConfig?.dashboard_home_subtitle_en || 'Generate stunning visuals in seconds — powered by 14+ AI models');
   const placeholder = isAr
     ? (heroConfig?.dashboard_home_prompt_placeholder_ar || 'صِف ما تريد إنشاءه...')
     : (heroConfig?.dashboard_home_prompt_placeholder_en || 'Describe what you want to create...');
@@ -186,25 +180,6 @@ export function DashboardHero() {
       </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6" style={{ height: 540, paddingBottom: 72, paddingTop: 80 }}>
-        <h1
-          className="text-white text-center font-extrabold drop-shadow-lg"
-          style={{
-            fontSize: 'clamp(36px, 6vw, 64px)',
-            letterSpacing: -2,
-            lineHeight: 1.05,
-            marginBottom: subtitleText ? 16 : 40,
-            fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
-            textShadow: '0 2px 20px rgba(0,0,0,0.4)',
-          }}
-        >
-          {title}
-        </h1>
-
-        {subtitleText && (
-          <p className="text-center" style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', marginBottom: 44, maxWidth: 480, lineHeight: 1.6 }}>
-            {subtitleText}
-          </p>
-        )}
 
         {/* Prompt bar */}
         <div ref={containerRef} style={{ width: '100%', maxWidth: 680 }}>
