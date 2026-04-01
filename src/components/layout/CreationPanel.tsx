@@ -82,10 +82,10 @@ export function CreationPanel() {
   };
 
   return (
-    <aside ref={panelRef} className="w-[380px] xl:w-[420px] flex flex-col bg-background flex-shrink-0 overflow-visible relative z-30 border-r border-border/5">
-      <div className="flex-1 overflow-y-auto overflow-x-visible p-4 space-y-1.5 scrollbar-thin">
+    <aside ref={panelRef} className="w-[380px] xl:w-[420px] flex flex-col bg-background flex-shrink-0 overflow-visible relative z-30 border-r border-border/30">
+      <div className="flex-1 overflow-y-auto overflow-x-visible p-4 space-y-2 scrollbar-thin">
         {/* Prompt */}
-        <div className="rounded-2xl bg-card/60 p-4 border border-border/8 hover:border-border/15 transition-colors">
+        <div className="rounded-2xl bg-card/50 p-4 border border-border/30 hover:border-border/50 transition-colors">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -95,7 +95,7 @@ export function CreationPanel() {
             </div>
             <div className="flex items-center gap-1.5">
               {prompt.length > 0 && (
-                <button onClick={() => { setPrompt(''); setSelectedTemplate(null); }} className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/40 hover:text-foreground hover:bg-muted/20 transition-all">
+                <button onClick={() => { setPrompt(''); setSelectedTemplate(null); }} className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/40 hover:text-foreground hover:bg-foreground/[0.06] transition-all">
                   <X size={13} />
                 </button>
               )}
@@ -103,8 +103,8 @@ export function CreationPanel() {
                 onClick={() => setEnhancePrompt(!enhancePrompt)}
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-200 ${
                   enhancePrompt
-                    ? 'bg-primary/12 text-primary border border-primary/20 shadow-[0_0_12px_-4px] shadow-primary/20'
-                    : 'text-muted-foreground/60 hover:text-foreground hover:bg-muted/15'
+                    ? 'bg-primary/10 text-primary border border-primary/20'
+                    : 'text-muted-foreground/50 hover:text-foreground hover:bg-foreground/[0.06]'
                 }`}
               >
                 <Sparkles size={11} />{t.studio.enhance}
@@ -115,10 +115,10 @@ export function CreationPanel() {
             value={prompt}
             onChange={e => setPrompt(e.target.value.slice(0, 500))}
             placeholder={t.studio.describeCreate}
-            className="w-full min-h-[120px] bg-background/50 border border-border/10 rounded-xl p-3.5 text-[13px] text-foreground placeholder:text-muted-foreground/25 focus:border-primary/40 focus:bg-background/80 focus:outline-none focus:shadow-[0_0_0_3px] focus:shadow-primary/5 resize-none leading-relaxed transition-all"
+            className="w-full min-h-[120px] bg-foreground/[0.03] border border-border/20 rounded-xl p-3.5 text-[13px] text-foreground placeholder:text-muted-foreground/25 focus:border-primary/30 focus:bg-foreground/[0.04] focus:outline-none focus:ring-2 focus:ring-primary/10 resize-none leading-relaxed transition-all"
           />
           <div className="flex items-center justify-between mt-1.5 px-0.5">
-            <span className="text-[10px] text-muted-foreground/20 tabular-nums">{prompt.length}/500</span>
+            <span className="text-[10px] text-muted-foreground/25 tabular-nums">{prompt.length}/500</span>
             {prompt.length > 0 && (
               <span className="text-[10px] text-primary/40 flex items-center gap-1">
                 <Zap size={8} />{t.studio.ready}
@@ -128,78 +128,49 @@ export function CreationPanel() {
         </div>
 
         {/* Upload */}
-        <button className="w-full rounded-2xl bg-card/30 border border-dashed border-border/10 p-4 flex flex-col items-center justify-center gap-1.5 text-muted-foreground/50 hover:text-foreground/70 hover:border-primary/20 hover:bg-primary/[0.02] transition-all duration-300 group">
-          <div className="w-9 h-9 rounded-xl bg-muted/10 flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-            <Upload size={16} className="text-muted-foreground/40 group-hover:text-primary/70 transition-colors" />
+        <button className="w-full rounded-2xl bg-foreground/[0.02] border border-dashed border-border/20 p-4 flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 hover:text-foreground/60 hover:border-primary/20 hover:bg-primary/[0.02] transition-all duration-300 group">
+          <div className="w-9 h-9 rounded-xl bg-foreground/[0.04] flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+            <Upload size={16} className="group-hover:text-primary/70 transition-colors" />
           </div>
           <span className="text-[12px] font-medium">{t.studio.uploadImages}</span>
-          <span className="text-[10px] text-muted-foreground/25">JPG / PNG up to 10MB</span>
+          <span className="text-[10px] text-muted-foreground/20">JPG / PNG up to 10MB</span>
         </button>
 
-        {/* Model selector row */}
-        <button
-          ref={modelRowRef}
-          onClick={() => toggleDropdown('model')}
-          className={`w-full flex items-center justify-between h-[48px] px-3.5 rounded-xl bg-card/60 border transition-all duration-200 ${
-            openDropdown === 'model' ? 'border-primary/40 bg-card/80' : 'border-border/8 hover:border-border/15'
-          }`}
-        >
-          <div className="flex items-center gap-2.5">
-            <Cpu size={14} className="text-muted-foreground/40" />
-            <span className="text-[10px] text-muted-foreground/40 uppercase tracking-[1px] font-medium">{t.studio.model}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] font-medium text-foreground">{currentModel?.model_name || 'Select'}</span>
-            <ChevronRight size={14} className={`text-muted-foreground/30 transition-transform duration-200 ${openDropdown === 'model' ? 'rotate-90' : ''}`} />
-          </div>
-        </button>
-
-        {/* Size selector row */}
-        <button
-          ref={sizeRowRef}
-          onClick={() => toggleDropdown('size')}
-          className={`w-full flex items-center justify-between h-[48px] px-3.5 rounded-xl bg-card/60 border transition-all duration-200 ${
-            openDropdown === 'size' ? 'border-primary/40 bg-card/80' : 'border-border/8 hover:border-border/15'
-          }`}
-        >
-          <div className="flex items-center gap-2.5">
-            <Maximize size={14} className="text-muted-foreground/40" />
-            <span className="text-[10px] text-muted-foreground/40 uppercase tracking-[1px] font-medium">{t.studio.size}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] font-medium text-foreground">{aspectRatio}</span>
-            <ChevronRight size={14} className={`text-muted-foreground/30 transition-transform duration-200 ${openDropdown === 'size' ? 'rotate-90' : ''}`} />
-          </div>
-        </button>
-
-        {/* Resolution selector row */}
-        <button
-          ref={resRowRef}
-          onClick={() => toggleDropdown('resolution')}
-          className={`w-full flex items-center justify-between h-[48px] px-3.5 rounded-xl bg-card/60 border transition-all duration-200 ${
-            openDropdown === 'resolution' ? 'border-primary/40 bg-card/80' : 'border-border/8 hover:border-border/15'
-          }`}
-        >
-          <div className="flex items-center gap-2.5">
-            <ImageIcon size={14} className="text-muted-foreground/40" />
-            <span className="text-[10px] text-muted-foreground/40 uppercase tracking-[1px] font-medium">{t.studio.resolution}</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <span className="text-[13px] font-medium text-foreground">{selectedResolution}</span>
-            <ChevronRight size={14} className={`text-muted-foreground/30 transition-transform duration-200 ${openDropdown === 'resolution' ? 'rotate-90' : ''}`} />
-          </div>
-        </button>
+        {/* Model / Size / Resolution selectors */}
+        {[
+          { ref: modelRowRef, key: 'model' as OpenDropdown, icon: <Cpu size={14} />, label: t.studio.model, value: currentModel?.model_name || 'Select' },
+          { ref: sizeRowRef, key: 'size' as OpenDropdown, icon: <Maximize size={14} />, label: t.studio.size, value: aspectRatio },
+          { ref: resRowRef, key: 'resolution' as OpenDropdown, icon: <ImageIcon size={14} />, label: t.studio.resolution, value: selectedResolution },
+        ].map(item => (
+          <button
+            key={item.key}
+            ref={item.ref}
+            onClick={() => toggleDropdown(item.key)}
+            className={`w-full flex items-center justify-between h-[46px] px-3.5 rounded-xl bg-card/40 border transition-all duration-200 ${
+              openDropdown === item.key ? 'border-primary/30 bg-card/60' : 'border-border/20 hover:border-border/30'
+            }`}
+          >
+            <div className="flex items-center gap-2.5">
+              <span className="text-muted-foreground/30">{item.icon}</span>
+              <span className="text-[10px] text-muted-foreground/35 uppercase tracking-[1px] font-medium">{item.label}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[13px] font-medium text-foreground">{item.value}</span>
+              <ChevronRight size={13} className={`text-muted-foreground/25 transition-transform duration-200 ${openDropdown === item.key ? 'rotate-90' : ''}`} />
+            </div>
+          </button>
+        ))}
       </div>
 
       {/* Generate button */}
-      <div className="flex-shrink-0 p-4 border-t border-border/5">
+      <div className="flex-shrink-0 p-4 border-t border-border/20">
         <button
           onClick={() => generate({ modelId: currentModel?.id, qualityTier: selectedResolution, creditCost: cost })}
           disabled={!canGenerate}
           className={`w-full h-[44px] rounded-xl text-[14px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
             canGenerate
-              ? 'bg-primary text-primary-foreground hover:brightness-110 active:scale-[0.98] shadow-[0_4px_24px_-4px] shadow-primary/30'
-              : 'bg-card/60 border border-border/10 text-muted-foreground/40 cursor-not-allowed'
+              ? 'bg-primary text-primary-foreground hover:brightness-110 active:scale-[0.98] shadow-[0_4px_20px_-4px] shadow-primary/25'
+              : 'bg-foreground/[0.04] border border-border/10 text-muted-foreground/30 cursor-not-allowed'
           }`}
         >
           {isGenerating ? (
@@ -210,8 +181,8 @@ export function CreationPanel() {
           ) : (
             <>
               {t.toolPage.generate}
-              <span className="flex items-center gap-1 text-[12px] bg-primary-foreground/10 px-2 py-0.5 rounded-full">
-                <Coins size={12} />{cost}
+              <span className="flex items-center gap-1 text-[12px] opacity-70">
+                <Coins size={11} />{cost}
               </span>
             </>
           )}
