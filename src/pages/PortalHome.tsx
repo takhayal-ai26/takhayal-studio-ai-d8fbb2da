@@ -69,7 +69,7 @@ export default function PortalHome() {
     : masonryImages.filter(m => m.cat === activeCategory);
 
   return (
-    <div className="flex-1 pt-16 overflow-y-auto">
+    <div className="flex-1 pt-14 overflow-y-auto animate-page-enter">
 
         {/* ── Dashboard Hero with Prompt Bar ── */}
         <DashboardHero />
