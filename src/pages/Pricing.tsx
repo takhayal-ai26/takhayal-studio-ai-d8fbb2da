@@ -155,16 +155,16 @@ const Pricing = () => {
             let btnDisabled = false;
             let btnStyle = p.featured
               ? 'bg-primary text-primary-foreground hover:brightness-90'
-              : 'border border-border text-foreground hover:bg-muted';
+              : 'bg-muted/50 text-foreground hover:bg-muted';
 
             if (!authLoading && isAuthenticated) {
               if (isCurrent) {
                 btnText = isAr ? 'الخطة الحالية' : 'Current Plan';
                 btnDisabled = true;
-                btnStyle = 'bg-card border border-border text-muted-foreground cursor-default';
+                btnStyle = 'bg-muted/30 text-muted-foreground cursor-default';
               } else if (thisIdx < currentIdx) {
                 btnText = isAr ? 'تخفيض' : 'Downgrade';
-                btnStyle = 'border border-border text-muted-foreground hover:bg-muted';
+                btnStyle = 'bg-muted/50 text-muted-foreground hover:bg-muted';
               } else {
                 btnText = isAr ? `ترقية إلى ${name}` : `Upgrade to ${name}`;
               }
