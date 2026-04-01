@@ -1,1 +1,0 @@
-UPDATE platform_config SET config_value = 'https://njenobbxlbhbzwpkylha.supabase.co/storage/v1/object/public/tool-covers/dashboard-hero-latest.png' WHERE config_key = 'dashboard_home_hero_image';
