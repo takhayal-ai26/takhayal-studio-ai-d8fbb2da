@@ -190,13 +190,14 @@ export function DashboardHero() {
 
       <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6" style={{ height: 540, paddingBottom: 72, paddingTop: 80 }}>
         <h1
-          className="text-white text-center font-bold"
+          className="text-white text-center font-extrabold drop-shadow-lg"
           style={{
-            fontSize: 'clamp(32px, 5vw, 56px)',
-            letterSpacing: -1.5,
-            lineHeight: 1.1,
+            fontSize: 'clamp(36px, 6vw, 64px)',
+            letterSpacing: -2,
+            lineHeight: 1.05,
             marginBottom: subtitleText ? 16 : 40,
             fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
+            textShadow: '0 2px 20px rgba(0,0,0,0.4)',
           }}
         >
           {title}
