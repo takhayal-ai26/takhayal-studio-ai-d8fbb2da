@@ -216,11 +216,11 @@ export function DashboardHero() {
               className="cursor-text flex items-center gap-3 group"
               style={{
                 height: 52,
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.10)',
+                background: 'rgba(0,0,0,0.45)',
+                border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: 999,
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
                 padding: '0 6px 0 20px',
                 transition: 'all 0.2s ease',
               }}
