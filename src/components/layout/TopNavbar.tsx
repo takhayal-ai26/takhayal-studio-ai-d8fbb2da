@@ -64,7 +64,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
 
   return (
     <>
-      <nav className={`fixed left-0 right-0 z-50 h-14 bg-background/80 backdrop-blur-xl flex items-center px-5 md:px-6 transition-[top] duration-200 ${bannerOffset ? 'top-[40px]' : 'top-0'}`}>
+      <nav className={`fixed left-0 right-0 z-50 h-14 bg-background/80 backdrop-blur-xl flex items-center px-5 md:px-6 transition-[top] duration-200 ${bannerOffset ? 'top-[36px]' : 'top-0'}`}>
         <div className="flex-shrink-0">
           <Logo />
         </div>

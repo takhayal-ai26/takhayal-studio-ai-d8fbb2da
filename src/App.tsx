@@ -1,5 +1,4 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { Suspense, lazy } from "react";
 import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -10,34 +9,32 @@ import { ThemeProvider } from "@/context/ThemeProvider";
 import { AppThemeProvider } from "@/context/AppThemeContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
+import PortalHome from "./pages/PortalHome";
+import Canvas from "./pages/Canvas";
+import Pricing from "./pages/Pricing";
+import ToolPage from "./pages/ToolPage";
+import ToolsDirectory from "./pages/ToolsDirectory";
+import Community from "./pages/Community";
+import Templates from "./pages/Templates";
+import NotFound from "./pages/NotFound";
+import LegalPage from "./pages/LegalPage";
+import About from "./pages/About";
+import AuthCallback from "./pages/AuthCallback";
+import ResetPassword from "./pages/ResetPassword";
+import Checkout from "./pages/Checkout";
+import CheckoutSuccess from "./pages/CheckoutSuccess";
 
 // Admin
 import { AdminProtectedRoute } from "./components/AdminProtectedRoute";
-
-const PortalHome = lazy(() => import("./pages/PortalHome"));
-const Canvas = lazy(() => import("./pages/Canvas"));
-const Pricing = lazy(() => import("./pages/Pricing"));
-const ToolPage = lazy(() => import("./pages/ToolPage"));
-const ToolsDirectory = lazy(() => import("./pages/ToolsDirectory"));
-const Community = lazy(() => import("./pages/Community"));
-const Templates = lazy(() => import("./pages/Templates"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const LegalPage = lazy(() => import("./pages/LegalPage"));
-const About = lazy(() => import("./pages/About"));
-const AuthCallback = lazy(() => import("./pages/AuthCallback"));
-const ResetPassword = lazy(() => import("./pages/ResetPassword"));
-const Checkout = lazy(() => import("./pages/Checkout"));
-const CheckoutSuccess = lazy(() => import("./pages/CheckoutSuccess"));
-
-const AdminLogin = lazy(() => import("./pages/admin/AdminLogin"));
-const AdminDashboard = lazy(() => import("./pages/admin/AdminDashboard"));
-const AdminLayout = lazy(() => import("./components/admin/AdminLayout"));
-const AdminUsersMerged = lazy(() => import("./pages/admin/AdminUsersMerged"));
-const AdminStudioConfig = lazy(() => import("./pages/admin/AdminStudioConfig"));
-const AdminCommerce = lazy(() => import("./pages/admin/AdminCommerce"));
-const AdminContentMerged = lazy(() => import("./pages/admin/AdminContentMerged"));
-const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
-const AdminSettingsMerged = lazy(() => import("./pages/admin/AdminSettingsMerged"));
+import AdminLogin from "./pages/admin/AdminLogin";
+import AdminDashboard from "./pages/admin/AdminDashboard";
+import AdminLayout from "./components/admin/AdminLayout";
+import AdminUsersMerged from "./pages/admin/AdminUsersMerged";
+import AdminStudioConfig from "./pages/admin/AdminStudioConfig";
+import AdminCommerce from "./pages/admin/AdminCommerce";
+import AdminContentMerged from "./pages/admin/AdminContentMerged";
+import AdminAnalytics from "./pages/admin/AdminAnalytics";
+import AdminSettingsMerged from "./pages/admin/AdminSettingsMerged";
 
 const queryClient = new QueryClient();
 
@@ -51,7 +48,6 @@ const App = () => (
         <AppProvider>
           <Toaster />
             <AppThemeProvider>
-            <Suspense fallback={<div className="min-h-screen bg-background" />}>
             <Routes>
               {/* Portal pages share persistent navbar */}
               <Route element={<AppLayout />}>
@@ -122,7 +118,6 @@ const App = () => (
 
               <Route path="*" element={<NotFound />} />
             </Routes>
-            </Suspense>
             </AppThemeProvider>
         </AppProvider>
         </AuthProvider>

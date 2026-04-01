@@ -149,7 +149,7 @@ function BannerRow({ banner, onDismiss }: { banner: PromoBanner; onDismiss: () =
       style={banner.background_style === 'custom' ? { background: banner.text_color } : undefined}
       dir={isRTL ? 'rtl' : 'ltr'}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 sm:gap-3 px-10 sm:px-12 h-[40px]">
+      <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 sm:gap-3 px-10 sm:px-12 py-2 sm:py-2.5 min-h-[36px]">
         {badge && (
           <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-white/20 backdrop-blur-sm whitespace-nowrap">
             {badge}

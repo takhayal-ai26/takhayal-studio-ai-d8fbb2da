@@ -45,13 +45,7 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
   const isAdmin = location.pathname.startsWith('/admin');
 
   const [userMode, setUserMode] = useState<Mode>(() => {
-    try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored === 'light' || stored === 'dark') return stored;
-    } catch {
-      // ignore blocked storage access
-    }
-    return 'dark';
+    return (localStorage.getItem(STORAGE_KEY) as Mode) || 'dark';
   });
 
   // Determine effective mode — only admin is locked to dark
@@ -65,11 +59,7 @@ export function AppThemeProvider({ children }: { children: ReactNode }) {
   const toggleMode = useCallback(() => {
     setUserMode(prev => {
       const next = prev === 'dark' ? 'light' : 'dark';
-      try {
-        localStorage.setItem(STORAGE_KEY, next);
-      } catch {
-        // ignore blocked storage access
-      }
+      localStorage.setItem(STORAGE_KEY, next);
       return next;
     });
   }, []);
