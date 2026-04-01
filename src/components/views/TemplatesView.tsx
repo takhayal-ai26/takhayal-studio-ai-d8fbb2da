@@ -1,7 +1,7 @@
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useState } from 'react';
-import { Search, ArrowRight } from 'lucide-react';
+import { ArrowRight } from 'lucide-react';
 import { useTemplates, FrontendTemplate } from '@/hooks/useTemplates';
 
 function ratioToNumber(ratio: string): number {
@@ -14,7 +14,6 @@ export function TemplatesView() {
   const { setPrompt, setSelectedTemplate, setActivePage } = useApp();
   const { t, isRTL } = useLanguage();
   const { templates, categoryNames, loading } = useTemplates();
-  const [search, setSearch] = useState('');
   const [activeCategory, setActiveCategory] = useState('All');
 
   const handleUse = (tpl: FrontendTemplate) => {
@@ -25,8 +24,7 @@ export function TemplatesView() {
 
   const filtered = templates.filter(tpl => {
     const matchCategory = activeCategory === 'All' || tpl.category === activeCategory;
-    const matchSearch = !search || tpl.name.toLowerCase().includes(search.toLowerCase());
-    return matchCategory && matchSearch;
+    return matchCategory;
   });
 
   return (
@@ -34,16 +32,6 @@ export function TemplatesView() {
       {/* Header */}
       <div className="px-6 md:px-10 pt-8 pb-6">
         <h1 className="text-3xl font-bold text-foreground tracking-tight">{t.templatesView.title}</h1>
-        <div className="relative mt-5 max-w-lg">
-          <Search size={18} className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground/40" />
-          <input
-            type="text"
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder={t.templatesView.searchPlaceholder}
-            className="w-full h-12 bg-card/50 border border-border/30 rounded-2xl pl-11 pr-5 text-sm text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/10 transition-all"
-          />
-        </div>
       </div>
 
       {/* Category Pills */}
