@@ -221,7 +221,7 @@ export default function ToolPage() {
   const creditCost = selectedProvider?.credit_cost ?? tool.creditCost;
 
   return (
-    <div className="flex-1 pt-16">
+    <div className="flex-1 pt-14 animate-page-enter">
       {/* Hero Section */}
       <section className="relative w-full overflow-hidden" style={{ minHeight: '520px' }}>
         {tool.image ? (

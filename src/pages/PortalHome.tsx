@@ -69,7 +69,7 @@ export default function PortalHome() {
     : masonryImages.filter(m => m.cat === activeCategory);
 
   return (
-    <div className="flex-1 pt-16 overflow-y-auto">
+    <div className="flex-1 pt-14 overflow-y-auto animate-page-enter">
 
         {/* ── Dashboard Hero with Prompt Bar ── */}
         <DashboardHero />
@@ -78,7 +78,7 @@ export default function PortalHome() {
 
           {/* ── Section 2: Seasonal Banner ── */}
           <section className="my-8">
-            <button onClick={() => goToCanvas(TEMPLATE_PROMPTS['Ramadan'], 'Ramadan')} className="group w-full relative h-36 md:h-44 rounded-xl overflow-hidden border border-border hover:border-primary transition-colors">
+            <button onClick={() => goToCanvas(TEMPLATE_PROMPTS['Ramadan'], 'Ramadan')} className="group w-full relative h-36 md:h-44 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all duration-300">
               <img src="https://picsum.photos/seed/banner-ramadan/1200/400" alt={t.portal.ramadanCampaign} className="w-full h-full object-cover" loading="lazy" />
               <div className={`absolute inset-0 bg-gradient-to-${isRTL ? 'l' : 'r'} from-black/90 via-black/50 to-transparent`} />
               <div className={`absolute inset-0 flex flex-col justify-center px-6 md:px-10`}>
@@ -93,7 +93,7 @@ export default function PortalHome() {
 
           {/* ── Section 3: Image Tools Strip ── */}
           <section className="my-8">
-            <div className="rounded-2xl bg-card/40 border border-border overflow-hidden">
+            <div className="rounded-2xl bg-card/40 border border-border/20 overflow-hidden">
               <div className="flex flex-col lg:flex-row">
                 <div className="relative flex-shrink-0 lg:w-[300px] p-8 lg:p-10 flex flex-col justify-center">
                   <div className="absolute inset-0 opacity-[0.06]" style={{ background: 'radial-gradient(ellipse at 30% 50%, hsl(var(--primary)), transparent 70%)' }} />
@@ -115,7 +115,7 @@ export default function PortalHome() {
                     {toolsData.map(tool => {
                       const img = toolImages[tool.id] || tool.image;
                       return (
-                        <button key={tool.id} onClick={() => navigate(tool.route)} className="group relative flex-shrink-0 w-[220px] md:w-[260px] aspect-[3/4] rounded-2xl overflow-hidden hover:scale-[1.03] transition-all duration-500">
+                        <button key={tool.id} onClick={() => navigate(tool.route)} className="group relative flex-shrink-0 w-[220px] md:w-[260px] aspect-[3/4] rounded-2xl overflow-hidden hover:scale-[1.02] hover:shadow-xl hover:shadow-black/20 transition-all duration-400">
                           <img src={img} alt={tool.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.08]" loading="lazy" width={260} height={347} />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                           <div className="absolute inset-0 bg-primary/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -157,7 +157,7 @@ export default function PortalHome() {
 
             <div className="columns-2 md:columns-3 lg:columns-4 gap-1.5 [column-fill:_balance]">
               {filteredMasonry.map((item, i) => (
-                <button key={i} onClick={() => goToCanvas(isAr ? item.promptAr : item.promptEn, item.template)} className="group w-full rounded-lg overflow-hidden break-inside-avoid mb-1.5 block text-left">
+                <button key={i} onClick={() => goToCanvas(isAr ? item.promptAr : item.promptEn, item.template)} className="group w-full rounded-2xl overflow-hidden break-inside-avoid mb-2 block text-left hover:shadow-lg hover:shadow-black/10 transition-all duration-300">
                   <div className="relative overflow-hidden">
                     <img src={item.image} alt={item.template} className="w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
@@ -176,7 +176,7 @@ export default function PortalHome() {
 
             <div className="text-center mt-8">
               <p className="text-[13px] text-muted-foreground mb-3">{t.portal.needMoreInspiration}</p>
-              <button onClick={() => navigate('/templates')} className="h-10 px-6 rounded-lg border border-border text-foreground text-[13px] font-medium hover:border-primary hover:text-primary transition-all group inline-flex items-center gap-2">
+              <button onClick={() => navigate('/templates')} className="h-10 px-6 rounded-full border border-border/30 text-foreground text-[13px] font-medium hover:border-primary/40 hover:text-primary transition-all group inline-flex items-center gap-2">
                 {t.portal.exploreTemplates}
                 <ArrowRight size={14} className={`group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
               </button>
@@ -203,7 +203,7 @@ export default function PortalHome() {
                 { img: 'https://picsum.photos/seed/cw-logo/400/400', promptEn: 'Premium 3D logo mockup, golden metallic finish', promptAr: 'نموذج شعار ثلاثي الأبعاد، لمسة معدنية ذهبية' },
                 { img: 'https://picsum.photos/seed/cw-arch/400/520', promptEn: 'Modern villa exterior, blue sky, lush garden', promptAr: 'واجهة فيلا عصرية، سماء زرقاء، حديقة خضراء' },
               ].map((item, i) => (
-                <button key={i} onClick={() => navigate('/community')} className="group relative w-full rounded-2xl overflow-hidden break-inside-avoid block">
+                <button key={i} onClick={() => navigate('/community')} className="group relative w-full rounded-2xl overflow-hidden break-inside-avoid block hover:shadow-lg hover:shadow-black/10 transition-all duration-300">
                   <img src={item.img} alt={isAr ? item.promptAr : item.promptEn} className="w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]" loading="lazy" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">

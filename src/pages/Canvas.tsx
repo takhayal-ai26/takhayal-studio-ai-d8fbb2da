@@ -29,7 +29,7 @@ const Canvas = () => {
 
   return (
     <>
-      <div className="flex flex-1 min-h-0 pt-16 overflow-visible">
+      <div className="flex flex-1 min-h-0 pt-14 overflow-visible">
         {renderContent()}
       </div>
       <UpgradeModal />

@@ -19,7 +19,7 @@ function RatioIcon({ ratio, size = 12 }: { ratio: string; size?: number }) {
   if (aspect >= 1) { rw = size; rh = size / aspect; } else { rh = size; rw = size * aspect; }
   return (
     <div className="flex items-center justify-center" style={{ width: size + 2, height: size + 2 }}>
-      <div style={{ width: rw, height: rh, border: '1.5px solid currentColor', borderRadius: 1.5, opacity: 0.6 }} />
+      <div style={{ width: rw, height: rh, border: '1.5px solid currentColor', borderRadius: 2, opacity: 0.5 }} />
     </div>
   );
 }
@@ -61,7 +61,7 @@ export function DashboardHero() {
 
   const heroImage = heroConfig?.dashboard_home_hero_image || '/images/dashboard-hero.png';
   const heroFocalPoint = heroConfig?.dashboard_home_hero_focal_point || '50 50';
-  const overlayStrength = heroConfig?.dashboard_home_overlay_strength || '0.55';
+  const overlayStrength = heroConfig?.dashboard_home_overlay_strength || '0.5';
   const isAr = lang === 'ar';
   const title = isAr
     ? (heroConfig?.dashboard_home_title_ar || 'ماذا تريد أن تبدع؟')
@@ -71,7 +71,7 @@ export function DashboardHero() {
     : (heroConfig?.dashboard_home_subtitle_en || 'Generate stunning visuals in seconds — powered by 14+ AI models');
   const placeholder = isAr
     ? (heroConfig?.dashboard_home_prompt_placeholder_ar || 'صِف ما تريد إنشاءه...')
-    : (heroConfig?.dashboard_home_prompt_placeholder_en || 'Type a prompt...');
+    : (heroConfig?.dashboard_home_prompt_placeholder_en || 'Describe what you want to create...');
 
   const currentModel = activeModels.find(m => m.id === localModelId) || defaultModel || activeModels[0];
 
@@ -129,67 +129,59 @@ export function DashboardHero() {
   };
 
   const canGenerate = hasText && !isGenerating && credits >= cost && !!currentModel;
+  const modelDisplayName = currentModel?.model_name || 'Auto';
 
-  const pillStyle = (active: boolean) => ({
-    background: active ? 'rgba(255,255,255,0.15)' : 'rgba(255,255,255,0.06)',
-    border: active ? '1px solid rgba(255,255,255,0.25)' : '1px solid rgba(255,255,255,0.10)',
-    borderRadius: 999 as const,
-    padding: '5px 12px',
-    fontSize: 13,
-    height: 32,
-    color: active ? '#FFFFFF' : 'rgba(255,255,255,0.65)',
-    cursor: 'pointer' as const,
-    whiteSpace: 'nowrap' as const,
-    display: 'flex',
-    alignItems: 'center' as const,
-    gap: 6,
-  });
+  const pillBase = "flex items-center gap-1.5 px-3 h-8 rounded-full text-[12px] font-medium transition-all duration-150 whitespace-nowrap cursor-pointer";
+  const pillInactive = `${pillBase} bg-white/[0.06] border border-white/[0.08] text-white/60 hover:bg-white/[0.10] hover:text-white/80`;
+  const pillActive = `${pillBase} bg-white/[0.14] border border-white/[0.20] text-white`;
 
-  const dropdownMenuStyle: React.CSSProperties = {
+  const dropMenuStyle: React.CSSProperties = {
     position: 'absolute',
     top: '100%',
     left: 0,
-    marginTop: 8,
-    background: 'rgba(20,20,20,0.95)',
-    border: '1px solid rgba(255,255,255,0.12)',
-    borderRadius: 12,
-    backdropFilter: 'blur(20px)',
-    WebkitBackdropFilter: 'blur(20px)',
-    padding: '6px 0',
-    minWidth: 120,
-    boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
+    marginTop: 6,
+    background: 'rgba(16,16,16,0.96)',
+    border: '1px solid rgba(255,255,255,0.08)',
+    borderRadius: 14,
+    backdropFilter: 'blur(24px)',
+    WebkitBackdropFilter: 'blur(24px)',
+    padding: '4px',
+    minWidth: 130,
+    boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
     zIndex: 100,
   };
 
-  const dropdownItemStyle = (active: boolean): React.CSSProperties => ({
+  const dropItemStyle = (active: boolean): React.CSSProperties => ({
     display: 'flex',
     alignItems: 'center',
     justifyContent: 'space-between',
     width: '100%',
-    padding: '8px 14px',
+    padding: '7px 12px',
     fontSize: 13,
-    color: active ? '#FFFFFF' : 'rgba(255,255,255,0.7)',
+    color: active ? '#FFFFFF' : 'rgba(255,255,255,0.6)',
     background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
     border: 'none',
     cursor: 'pointer',
     whiteSpace: 'nowrap',
-    gap: 12,
+    gap: 10,
+    borderRadius: 10,
+    transition: 'background 0.15s',
   });
 
-  const modelDisplayName = currentModel?.model_name || 'Auto';
-
   return (
-    <section className="relative w-full" style={{ minHeight: 520 }}>
+    <section className="relative w-full" style={{ minHeight: 540 }}>
       <div className="absolute inset-0 overflow-hidden">
         <img src={heroImage} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ objectPosition: heroFocalPoint.split(' ').map((v: string) => v + '%').join(' ') }} loading="eager" />
-        <div className="absolute inset-0" style={{ background: `rgba(0,0,0,${overlayStrength})` }} />
+        <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, rgba(0,0,0,${Number(overlayStrength) * 0.7}) 0%, rgba(0,0,0,${overlayStrength}) 60%, rgba(0,0,0,${Number(overlayStrength) * 1.1}) 100%)` }} />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center px-6" style={{ minHeight: 520, paddingBottom: 64 }}>
+      <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6 animate-page-enter" style={{ minHeight: 540, paddingBottom: 72, paddingTop: 80 }}>
         <h1
           className="text-white text-center font-bold"
           style={{
-            fontSize: 52, letterSpacing: -1.5, lineHeight: 1.15,
+            fontSize: 'clamp(32px, 5vw, 56px)',
+            letterSpacing: -1.5,
+            lineHeight: 1.1,
             marginBottom: subtitleText ? 16 : 40,
             fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
           }}
@@ -198,53 +190,52 @@ export function DashboardHero() {
         </h1>
 
         {subtitleText && (
-          <p className="text-center" style={{ fontSize: 16, color: 'rgba(255,255,255,0.55)', marginBottom: 40, maxWidth: 500 }}>
+          <p className="text-center" style={{ fontSize: 15, color: 'rgba(255,255,255,0.5)', marginBottom: 44, maxWidth: 480, lineHeight: 1.6 }}>
             {subtitleText}
           </p>
         )}
 
         {/* Prompt bar */}
-        <div ref={containerRef} style={{ width: '100%', maxWidth: 720 }}>
+        <div ref={containerRef} style={{ width: '100%', maxWidth: 680 }}>
           {!expanded ? (
-            /* ── COLLAPSED ── */
             <div
               onClick={handleExpand}
-              className="cursor-text flex items-center gap-3"
+              className="cursor-text flex items-center gap-3 group"
               style={{
-                height: 56,
-                background: 'rgba(0,0,0,0.35)',
-                border: '1px solid rgba(255,255,255,0.12)',
+                height: 52,
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.10)',
                 borderRadius: 999,
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                padding: '0 8px 0 20px',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                padding: '0 6px 0 20px',
+                transition: 'all 0.2s ease',
               }}
             >
-              <ImageIcon size={18} style={{ color: 'rgba(255,255,255,0.4)', flexShrink: 0 }} />
-              <span className="flex-1" style={{ fontSize: 15, color: 'rgba(255,255,255,0.4)' }}>
+              <ImageIcon size={17} style={{ color: 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
+              <span className="flex-1" style={{ fontSize: 14, color: 'rgba(255,255,255,0.35)' }}>
                 {placeholder}
               </span>
-              <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 38, height: 38, borderRadius: '50%', background: 'rgba(255,255,255,0.08)' }}>
-                <Sparkles size={16} style={{ color: 'rgba(255,255,255,0.5)' }} />
+              <div className="flex-shrink-0 flex items-center gap-2 px-4 h-9 rounded-full bg-white/[0.08] group-hover:bg-white/[0.12] transition-colors">
+                <Sparkles size={14} style={{ color: 'rgba(255,255,255,0.5)' }} />
+                <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>Generate</span>
               </div>
-              <span style={{ fontSize: 14, color: 'rgba(255,255,255,0.45)', paddingRight: 8 }}>Generate</span>
             </div>
           ) : (
-            /* ── EXPANDED ── */
             <div
               style={{
-                background: 'rgba(0,0,0,0.35)',
-                border: '1px solid rgba(255,255,255,0.15)',
-                borderRadius: 20,
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
+                background: 'rgba(255,255,255,0.06)',
+                border: '1px solid rgba(255,255,255,0.10)',
+                borderRadius: 18,
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
                 overflow: 'visible',
                 position: 'relative',
               }}
             >
               {/* Input row */}
-              <div className="flex items-center" style={{ height: 54, padding: '0 20px' }}>
-                <ImageIcon size={18} style={{ color: 'rgba(255,255,255,0.4)', flexShrink: 0, marginRight: isRTL ? 0 : 12, marginLeft: isRTL ? 12 : 0 }} />
+              <div className="flex items-center" style={{ height: 52, padding: '0 16px' }}>
+                <ImageIcon size={17} style={{ color: 'rgba(255,255,255,0.35)', flexShrink: 0, marginRight: isRTL ? 0 : 12, marginLeft: isRTL ? 12 : 0 }} />
                 <input
                   ref={inputRef}
                   type="text"
@@ -252,112 +243,102 @@ export function DashboardHero() {
                   value={prompt}
                   onChange={e => setPrompt(e.target.value)}
                   placeholder={placeholder}
-                  className="flex-1 outline-none"
-                  style={{ fontSize: 15, color: '#FFFFFF', border: 'none', background: 'transparent', direction: isRTL ? 'rtl' : 'ltr', boxShadow: 'none' }}
+                  className="flex-1 outline-none placeholder:text-white/30"
+                  style={{ fontSize: 14, color: '#FFFFFF', border: 'none', background: 'transparent', direction: isRTL ? 'rtl' : 'ltr', boxShadow: 'none' }}
                   onKeyDown={e => { if (e.key === 'Enter' && canGenerate) { e.preventDefault(); handleGenerate(); } }}
                 />
               </div>
 
               {/* Divider */}
-              <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0 16px' }} />
+              <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0 14px' }} />
 
               {/* Bottom options row */}
-              <div className="flex items-center animate-fade-in" style={{ height: 48, padding: '0 12px', gap: 6 }}>
+              <div className="flex items-center animate-fade-in" style={{ height: 46, padding: '0 10px', gap: 5 }}>
 
-                {/* ── Ratio dropdown ── */}
+                {/* Ratio */}
                 <div style={{ position: 'relative' }}>
-                  <button onClick={() => setOpenDrop(openDrop === 'ratio' ? null : 'ratio')} style={pillStyle(openDrop === 'ratio')}>
-                    <RatioIcon ratio={aspectRatio} size={11} />
+                  <button onClick={() => setOpenDrop(openDrop === 'ratio' ? null : 'ratio')} className={openDrop === 'ratio' ? pillActive : pillInactive}>
+                    <RatioIcon ratio={aspectRatio} size={10} />
                     {aspectRatio}
-                    <ChevronDown size={11} style={{ opacity: 0.5 }} />
+                    <ChevronDown size={10} style={{ opacity: 0.4 }} />
                   </button>
                   {openDrop === 'ratio' && (
-                    <div style={dropdownMenuStyle} className="animate-fade-in">
-                      {(availableRatios as string[]).filter(r => RATIOS.includes(r)).map(r => {
-                        const active = r === aspectRatio;
-                        return (
-                          <button key={r} onClick={() => { setAspectRatio(r as AspectRatio); setOpenDrop(null); }} style={dropdownItemStyle(active)}>
-                            <span className="flex items-center gap-2">
-                              <RatioIcon ratio={r} size={11} /> {r}
-                            </span>
-                            {active && <Check size={14} style={{ color: '#FFFFFF' }} />}
-                          </button>
-                        );
-                      })}
+                    <div style={dropMenuStyle} className="animate-fade-in">
+                      {(availableRatios as string[]).filter(r => RATIOS.includes(r)).map(r => (
+                        <button key={r} onClick={() => { setAspectRatio(r as AspectRatio); setOpenDrop(null); }} style={dropItemStyle(r === aspectRatio)}>
+                          <span className="flex items-center gap-2"><RatioIcon ratio={r} size={10} /> {r}</span>
+                          {r === aspectRatio && <Check size={13} />}
+                        </button>
+                      ))}
                     </div>
                   )}
                 </div>
 
-                {/* ── Quality dropdown ── */}
+                {/* Quality */}
                 <div style={{ position: 'relative' }}>
-                  <button onClick={() => setOpenDrop(openDrop === 'quality' ? null : 'quality')} style={pillStyle(openDrop === 'quality')}>
-                    <Sparkles size={12} style={{ opacity: 0.6 }} />
+                  <button onClick={() => setOpenDrop(openDrop === 'quality' ? null : 'quality')} className={openDrop === 'quality' ? pillActive : pillInactive}>
+                    <Sparkles size={11} style={{ opacity: 0.5 }} />
                     {localResolution}
-                    <ChevronDown size={11} style={{ opacity: 0.5 }} />
+                    <ChevronDown size={10} style={{ opacity: 0.4 }} />
                   </button>
                   {openDrop === 'quality' && (
-                    <div style={dropdownMenuStyle} className="animate-fade-in">
-                      {(qualityTiers as string[]).map(q => {
-                        const active = q === localResolution;
-                        return (
-                          <button key={q} onClick={() => { setLocalResolution(q); setOpenDrop(null); }} style={dropdownItemStyle(active)}>
-                            <span>{q}</span>
-                            {active && <Check size={14} style={{ color: '#FFFFFF' }} />}
-                          </button>
-                        );
-                      })}
+                    <div style={dropMenuStyle} className="animate-fade-in">
+                      {(qualityTiers as string[]).map(q => (
+                        <button key={q} onClick={() => { setLocalResolution(q); setOpenDrop(null); }} style={dropItemStyle(q === localResolution)}>
+                          <span>{q}</span>
+                          {q === localResolution && <Check size={13} />}
+                        </button>
+                      ))}
                     </div>
                   )}
                 </div>
 
-                {/* ── Model dropdown ── */}
+                {/* Model */}
                 <div style={{ position: 'relative' }}>
-                  <button onClick={() => setOpenDrop(openDrop === 'model' ? null : 'model')} style={pillStyle(openDrop === 'model')}>
+                  <button onClick={() => setOpenDrop(openDrop === 'model' ? null : 'model')} className={openDrop === 'model' ? pillActive : pillInactive}>
                     {modelDisplayName}
-                    <ChevronDown size={11} style={{ opacity: 0.5 }} />
+                    <ChevronDown size={10} style={{ opacity: 0.4 }} />
                   </button>
                   {openDrop === 'model' && (
-                    <div style={{ ...dropdownMenuStyle, minWidth: 180 }} className="animate-fade-in">
+                    <div style={{ ...dropMenuStyle, minWidth: 190 }} className="animate-fade-in">
                       {activeModels
                         .filter(m => FEATURED_MODEL_NAMES.some(n => m.model_name.toLowerCase().includes(n.toLowerCase())))
-                        .map(m => {
-                          const active = m.id === localModelId;
-                          return (
-                            <button key={m.id} onClick={() => { setLocalModelId(m.id); setOpenDrop(null); }} style={dropdownItemStyle(active)}>
-                              <span>{m.model_name}</span>
-                              {active && <Check size={14} style={{ color: '#FFFFFF' }} />}
-                            </button>
-                          );
-                        })}
-                      <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '4px 0' }} />
-                      <button onClick={() => { setOpenDrop(null); navigate('/studio'); }} style={{ ...dropdownItemStyle(false), color: 'rgba(255,255,255,0.4)', fontSize: 12 }}>
+                        .map(m => (
+                          <button key={m.id} onClick={() => { setLocalModelId(m.id); setOpenDrop(null); }} style={dropItemStyle(m.id === localModelId)}>
+                            <span>{m.model_name}</span>
+                            {m.id === localModelId && <Check size={13} />}
+                          </button>
+                        ))}
+                      <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '2px 0' }} />
+                      <button onClick={() => { setOpenDrop(null); navigate('/studio'); }} style={{ ...dropItemStyle(false), color: 'rgba(255,255,255,0.35)', fontSize: 12 }}>
                         See all models →
                       </button>
                     </div>
                   )}
                 </div>
 
-                {/* Sparkle icon */}
-                <div className="flex-shrink-0 flex items-center justify-center" style={{ width: 32, height: 32, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', cursor: 'pointer' }}>
-                  <Sparkles size={14} style={{ color: 'rgba(255,255,255,0.5)' }} />
-                </div>
+                {/* Spacer */}
+                <div className="flex-1" />
 
                 {/* Generate button */}
                 <button
                   onClick={handleGenerate}
                   disabled={!canGenerate}
+                  className="transition-all duration-200"
                   style={{
-                    marginLeft: 'auto',
-                    background: canGenerate ? '#F03E1B' : 'rgba(255,255,255,0.08)',
-                    borderRadius: 999, padding: '0 20px', height: 36,
-                    fontSize: 13, fontWeight: 500,
-                    color: canGenerate ? '#FFFFFF' : 'rgba(255,255,255,0.35)',
+                    background: canGenerate ? 'hsl(var(--primary))' : 'rgba(255,255,255,0.06)',
+                    borderRadius: 999,
+                    padding: '0 18px',
+                    height: 34,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    color: canGenerate ? '#FFFFFF' : 'rgba(255,255,255,0.3)',
                     cursor: canGenerate ? 'pointer' : 'default',
-                    border: 'none', whiteSpace: 'nowrap',
-                    transition: 'all 200ms',
+                    border: 'none',
+                    whiteSpace: 'nowrap',
                   }}
                 >
-                  Generate
+                  Generate · {cost} cr
                 </button>
               </div>
             </div>
