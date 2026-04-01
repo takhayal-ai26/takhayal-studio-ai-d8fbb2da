@@ -28,7 +28,7 @@ type DropdownType = 'ratio' | 'quality' | 'model' | null;
 
 export function DashboardHero() {
   const navigate = useNavigate();
-  const { prompt, setPrompt, setAspectRatio, aspectRatio, setSelectedQualityTier, generate, isGenerating, credits, setActivePage, setSelectedModelId: setGlobalModelId } = useApp();
+  const { prompt, setPrompt, setAspectRatio, aspectRatio, setSelectedQualityTier, generate, isGenerating, credits, setActivePage, setSelectedModelId: setGlobalModelId, requireAuth } = useApp();
   const { t, isRTL, lang } = useLanguage();
   const { activeModels, defaultModel } = useModels();
   const { getCreditsForModel } = usePricing();
