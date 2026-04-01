@@ -18,7 +18,7 @@ const navItemDefs: { id: string; labelKey: string; route: string; studioPage?: N
   { id: 'pricing', labelKey: 'pricing', route: '/pricing' },
 ];
 
-export function TopNavbar() {
+export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) {
   const { activePage, setActivePage, credits, userName, userAvatarUrl, isAuthenticated, plan, openAuthModal, logout } = useApp();
   const { t, isRTL } = useLanguage();
   const { isAdmin } = useAppTheme();
