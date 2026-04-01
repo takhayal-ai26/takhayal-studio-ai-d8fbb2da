@@ -218,7 +218,7 @@ const Pricing = () => {
                 </ul>
 
                 {authLoading ? (
-                  <div className="mt-6 w-full h-11 rounded-xl bg-card border border-border animate-pulse" />
+                  <div className="mt-6 w-full h-11 rounded-xl bg-muted/30 animate-pulse" />
                 ) : (
                   <button
                     onClick={() => !btnDisabled && handleCta(p)}
