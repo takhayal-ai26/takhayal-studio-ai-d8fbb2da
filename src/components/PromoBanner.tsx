@@ -2,6 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { X } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/context/AppContext';
+import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useNavigate } from 'react-router-dom';
 
@@ -26,7 +27,6 @@ interface PromoBanner {
   background_style: string;
   text_color: string;
   sort_order: number;
-  updated_at: string;
 }
 
 const DISMISS_KEY = 'promo_banner_dismissed_';
@@ -45,7 +45,7 @@ function isDismissed(banner: PromoBanner): boolean {
   } catch { return false; }
 }
 
-function dismiss(banner: PromoBanner) {
+function dismissBanner(banner: PromoBanner) {
   const expiry = new Date();
   expiry.setDate(expiry.getDate() + banner.dismissal_days);
   localStorage.setItem(DISMISS_KEY + banner.id, JSON.stringify({ expiry: expiry.toISOString() }));
@@ -59,52 +59,43 @@ const bgStyles: Record<string, string> = {
 };
 
 export function PromoBannerStrip() {
-  const { isAuthenticated } = useApp();
+  const { user, loading } = useAuth();
+  const isAuthenticated = !!user;
   const [banners, setBanners] = useState<PromoBanner[]>([]);
   const [dismissed, setDismissed] = useState<Set<string>>(new Set());
-  const [authLoaded, setAuthLoaded] = useState(false);
-
-  // Wait for auth state to settle
-  useEffect(() => {
-    const timeout = setTimeout(() => setAuthLoaded(true), 200);
-    return () => clearTimeout(timeout);
-  }, []);
 
   useEffect(() => {
-    supabase
+    (supabase as any)
       .from('promo_banners')
       .select('*')
       .eq('active', true)
       .order('sort_order', { ascending: true })
-      .then(({ data }) => {
-        if (data) setBanners(data as unknown as PromoBanner[]);
+      .then(({ data, error }: any) => {
+        if (data && Array.isArray(data)) setBanners(data);
       });
   }, []);
 
   const visibleBanners = useMemo(() => {
-    if (!authLoaded) return [];
+    // Don't show while auth is loading to prevent flash
+    if (loading) return [];
     const now = new Date();
     return banners.filter(b => {
-      // Audience check
       if (b.audience === 'logged_out_only' && isAuthenticated) return false;
       if (b.audience === 'logged_in_only' && !isAuthenticated) return false;
-      // Date range check
       if (b.start_date && new Date(b.start_date) > now) return false;
       if (b.end_date && new Date(b.end_date) < now) return false;
-      // Dismissal check
       if (b.dismissible && (isDismissed(b) || dismissed.has(b.id))) return false;
       return true;
     });
-  }, [banners, isAuthenticated, authLoaded, dismissed]);
+  }, [banners, isAuthenticated, loading, dismissed]);
 
   const handleDismiss = (banner: PromoBanner) => {
-    dismiss(banner);
+    dismissBanner(banner);
     setDismissed(prev => new Set(prev).add(banner.id));
   };
 
   if (visibleBanners.length === 0) return null;
 
-  // Show only top priority banner
   const banner = visibleBanners[0];
 
   return <BannerRow banner={banner} onDismiss={() => handleDismiss(banner)} />;
@@ -134,11 +125,11 @@ function BannerRow({ banner, onDismiss }: { banner: PromoBanner; onDismiss: () =
 
   return (
     <div
-      className={`relative w-full ${bgClass} text-white`}
+      className={`relative w-full z-[60] ${bgClass} text-white`}
       style={banner.background_style === 'custom' ? { background: banner.text_color } : undefined}
       dir={isRTL ? 'rtl' : 'ltr'}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-2.5 min-h-[36px]">
+      <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 sm:gap-3 px-10 sm:px-12 py-2 sm:py-2.5 min-h-[36px]">
         {badge && (
           <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-white/20 backdrop-blur-sm whitespace-nowrap">
             {badge}
