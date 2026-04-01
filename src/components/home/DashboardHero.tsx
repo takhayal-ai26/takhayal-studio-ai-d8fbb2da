@@ -62,6 +62,7 @@ export function DashboardHero() {
   const heroImage = heroConfig?.dashboard_home_hero_image || '/images/dashboard-hero.png';
   const heroFocalPoint = heroConfig?.dashboard_home_hero_focal_point || '50 50';
   const overlayStrength = heroConfig?.dashboard_home_overlay_strength || '0.5';
+  const isAr = lang === 'ar';
   const placeholder = isAr
     ? (heroConfig?.dashboard_home_prompt_placeholder_ar || 'صِف ما تريد إنشاءه...')
     : (heroConfig?.dashboard_home_prompt_placeholder_en || 'Describe what you want to create...');
