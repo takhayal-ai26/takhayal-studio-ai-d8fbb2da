@@ -93,7 +93,7 @@ export default function PortalHome() {
 
           {/* ── Section 3: Image Tools Strip ── */}
           <section className="my-8">
-            <div className="rounded-2xl bg-card/40 border border-border overflow-hidden">
+            <div className="rounded-2xl bg-card/40 border border-border/20 overflow-hidden">
               <div className="flex flex-col lg:flex-row">
                 <div className="relative flex-shrink-0 lg:w-[300px] p-8 lg:p-10 flex flex-col justify-center">
                   <div className="absolute inset-0 opacity-[0.06]" style={{ background: 'radial-gradient(ellipse at 30% 50%, hsl(var(--primary)), transparent 70%)' }} />
