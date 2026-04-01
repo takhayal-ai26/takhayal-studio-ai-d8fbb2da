@@ -18,8 +18,10 @@ export function useToolRunner() {
   const [error, setError] = useState<string | null>(null);
 
   const uploadImage = useCallback(async (file: File): Promise<string> => {
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error('You must be logged in to upload files');
     const ext = file.name.split('.').pop() || 'jpg';
-    const path = `uploads/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+    const path = `${user.id}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
     const { error: uploadErr } = await supabase.storage.from('tool-files').upload(path, file);
     if (uploadErr) throw new Error(`Upload failed: ${uploadErr.message}`);
     const { data: urlData } = supabase.storage.from('tool-files').getPublicUrl(path);
