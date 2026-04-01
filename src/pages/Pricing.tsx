@@ -259,8 +259,8 @@ const Pricing = () => {
         </div>
 
         {/* Credit cost table */}
-        <div className="bg-card border border-border rounded-2xl overflow-hidden">
-          <div className="grid grid-cols-4 text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-6 py-3 border-b border-border bg-muted/30">
+        <div className="bg-card/60 backdrop-blur-sm rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
+          <div className="grid grid-cols-4 text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-6 py-4 bg-muted/20">
             <span>{isAr ? 'النموذج' : 'Model'}</span>
             <span>{isAr ? 'الخيار' : 'Option'}</span>
             <span>{isAr ? 'التكلفة' : 'Cost'}</span>
@@ -269,16 +269,16 @@ const Pricing = () => {
           {CREDIT_COST_DATA.map((model, mi) => (
             <div key={model.model}>
               {model.options.map((opt, oi) => (
-                <div key={opt.label} className="grid grid-cols-4 px-6 py-3 border-b border-border/50 hover:bg-muted/20 transition-colors text-sm">
-                  <span className={oi === 0 ? 'font-medium text-foreground' : 'text-transparent'}>
-                    {oi === 0 ? model.model : model.model}
+                <div key={opt.label} className={`grid grid-cols-4 px-6 py-3.5 hover:bg-muted/10 transition-colors text-sm ${oi > 0 ? 'bg-muted/[0.03]' : ''}`}>
+                  <span className={oi === 0 ? 'font-medium text-foreground' : 'text-transparent select-none'}>
+                    {model.model}
                   </span>
                   <span className="text-muted-foreground">{opt.label} resolution</span>
                   <span className="text-foreground">{opt.credits} {isAr ? 'أرصدة' : 'credits'}</span>
                   <span className="text-right text-primary font-medium">~{Math.floor(selectedPlanCredits / opt.credits).toLocaleString()} {isAr ? 'صورة' : 'images'}</span>
                 </div>
               ))}
-              {mi < CREDIT_COST_DATA.length - 1 && <div className="border-b border-border" />}
+              {mi < CREDIT_COST_DATA.length - 1 && <div className="h-px bg-gradient-to-r from-transparent via-muted-foreground/[0.06] to-transparent mx-4" />}
             </div>
           ))}
         </div>
