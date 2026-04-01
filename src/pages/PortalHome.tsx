@@ -140,8 +140,8 @@ export default function PortalHome() {
                     {toolsData.map(tool => {
                       const img = toolImages[tool.id] || tool.image;
                       return (
-                        <button key={tool.id} onClick={() => navigate(tool.route)} className="group relative flex-shrink-0 w-[220px] md:w-[260px] aspect-[3/4] rounded-2xl overflow-hidden hover:scale-[1.02] hover:shadow-xl hover:shadow-black/20 transition-all duration-400">
-                          <img src={img} alt={tool.name} className="absolute inset-0 w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.08]" loading="lazy" width={260} height={347} />
+                        <button key={tool.id} onClick={() => navigate(tool.route)} className="group relative flex-shrink-0 w-[220px] md:w-[260px] aspect-[3/4] rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-black/20 transition-shadow duration-400">
+                          <img src={img} alt={tool.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" width={260} height={347} />
                           <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                           <div className="absolute inset-0 bg-primary/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                           <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -182,9 +182,9 @@ export default function PortalHome() {
 
             <div className="columns-2 md:columns-3 lg:columns-4 gap-1.5 [column-fill:_balance]">
               {filteredMasonry.map((item, i) => (
-                <button key={i} onClick={() => goToCanvas(isAr ? item.promptAr : item.promptEn, item.template)} className="group w-full rounded-2xl overflow-hidden break-inside-avoid mb-2 block text-left hover:shadow-lg hover:shadow-black/10 transition-all duration-300">
+                <button key={`${activeCategory}-${i}`} onClick={() => goToCanvas(isAr ? item.promptAr : item.promptEn, item.template)} className="group w-full rounded-2xl overflow-hidden break-inside-avoid mb-2 block text-left hover:shadow-lg hover:shadow-black/10 transition-shadow duration-300">
                   <div className="relative overflow-hidden">
-                    <img src={item.image} alt={item.template} className="w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                    <img src={item.image} alt={item.template} className="w-full object-cover" loading="lazy" decoding="async" width={400} height={500} />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                     <h3 className="absolute bottom-2.5 left-3 right-3 text-sm font-semibold text-white leading-tight drop-shadow-md">
                       {item.template}
@@ -228,8 +228,8 @@ export default function PortalHome() {
                 { img: imgLogo, promptEn: 'Premium 3D logo mockup, golden metallic finish', promptAr: 'نموذج شعار ثلاثي الأبعاد، لمسة معدنية ذهبية' },
                 { img: imgArchitecture, promptEn: 'Modern villa exterior, blue sky, lush garden', promptAr: 'واجهة فيلا عصرية، سماء زرقاء، حديقة خضراء' },
               ].map((item, i) => (
-                <button key={i} onClick={() => navigate('/community')} className="group relative w-full rounded-2xl overflow-hidden break-inside-avoid block hover:shadow-lg hover:shadow-black/10 transition-all duration-300">
-                  <img src={item.img} alt={isAr ? item.promptAr : item.promptEn} className="w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]" loading="lazy" />
+                <button key={i} onClick={() => navigate('/community')} className="group relative w-full rounded-2xl overflow-hidden break-inside-avoid block hover:shadow-lg hover:shadow-black/10 transition-shadow duration-300">
+                  <img src={item.img} alt={isAr ? item.promptAr : item.promptEn} className="w-full object-cover" loading="lazy" decoding="async" width={400} height={500} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <p className="text-[11px] text-white/80 line-clamp-1">{isAr ? item.promptAr : item.promptEn}</p>
