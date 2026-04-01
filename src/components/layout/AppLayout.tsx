@@ -1,6 +1,7 @@
 import { Outlet } from 'react-router-dom';
 import { TopNavbar } from './TopNavbar';
 import { AuthModal } from '@/components/AuthModal';
+import { PromoBannerStrip } from '@/components/PromoBanner';
 import { useAdminMediaStore } from '@/stores/adminMediaStore';
 import { useEffect } from 'react';
 
@@ -18,6 +19,7 @@ export function AppLayout() {
 
   return (
     <div className="flex flex-col h-screen w-full bg-background">
+      <PromoBannerStrip />
       <TopNavbar />
       <AuthModal />
       <Outlet />

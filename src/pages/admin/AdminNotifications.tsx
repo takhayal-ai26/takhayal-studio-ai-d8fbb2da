@@ -4,6 +4,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Switch } from '@/components/ui/switch';
 import { Plus, Edit, Bell, Megaphone, AlertTriangle, Rocket } from 'lucide-react';
+import PromoBannerEditor from '@/components/admin/PromoBannerEditor';
 
 const notifications = [
   { id: '1', title: 'Ramadan Special Offer', message: 'Get 50% more credits this Ramadan!', type: 'Campaign', audience: 'All users', status: 'active', startDate: '2026-03-01', endDate: '2026-04-01', dismissible: true, priority: 'normal' },
@@ -25,7 +26,12 @@ const statusStyle: Record<string, string> = {
 
 export default function AdminNotifications({ embedded }: { embedded?: boolean } = {}) {
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
+      {/* Promo Banners Section */}
+      <PromoBannerEditor />
+
+      {/* Other Notifications */}
+      <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Notifications</h1>
@@ -73,6 +79,7 @@ export default function AdminNotifications({ embedded }: { embedded?: boolean } 
           </TableBody>
         </Table>
       </Card>
+      </div>
     </div>
   );
 }

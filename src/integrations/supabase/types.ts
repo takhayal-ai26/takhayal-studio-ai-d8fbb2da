@@ -787,6 +787,81 @@ export type Database = {
         }
         Relationships: []
       }
+      promo_banners: {
+        Row: {
+          active: boolean
+          audience: string
+          background_style: string
+          badge_ar: string
+          badge_en: string
+          created_at: string
+          cta_action_type: string
+          cta_label_ar: string
+          cta_label_en: string
+          cta_url: string
+          dismissal_days: number
+          dismissible: boolean
+          end_date: string | null
+          id: string
+          sort_order: number
+          start_date: string | null
+          subtitle_ar: string
+          subtitle_en: string
+          text_color: string
+          title_ar: string
+          title_en: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          audience?: string
+          background_style?: string
+          badge_ar?: string
+          badge_en?: string
+          created_at?: string
+          cta_action_type?: string
+          cta_label_ar?: string
+          cta_label_en?: string
+          cta_url?: string
+          dismissal_days?: number
+          dismissible?: boolean
+          end_date?: string | null
+          id?: string
+          sort_order?: number
+          start_date?: string | null
+          subtitle_ar?: string
+          subtitle_en?: string
+          text_color?: string
+          title_ar?: string
+          title_en?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          audience?: string
+          background_style?: string
+          badge_ar?: string
+          badge_en?: string
+          created_at?: string
+          cta_action_type?: string
+          cta_label_ar?: string
+          cta_label_en?: string
+          cta_url?: string
+          dismissal_days?: number
+          dismissible?: boolean
+          end_date?: string | null
+          id?: string
+          sort_order?: number
+          start_date?: string | null
+          subtitle_ar?: string
+          subtitle_en?: string
+          text_color?: string
+          title_ar?: string
+          title_en?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       provider_configs: {
         Row: {
           api_key_set: boolean
