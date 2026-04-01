@@ -7,6 +7,8 @@ function clearCorruptLocalStorage() {
 
   const jsonKeys = [
     "takhayal-admin-media",
+    "takhayal-admin-tools",
+    "takhayal-admin-templates",
     "takhayal-translation-overrides",
     "dashboard_home_hero_config_cache",
   ];
