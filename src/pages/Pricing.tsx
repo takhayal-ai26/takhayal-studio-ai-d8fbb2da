@@ -172,7 +172,7 @@ const Pricing = () => {
 
             return (
               <div key={p.id} className={`rounded-2xl p-6 flex flex-col transition-all duration-200 hover:scale-[1.01] relative ${
-                p.featured ? 'bg-card border-2 border-primary shadow-[0_0_0_1px_rgba(240,62,27,0.2)]' : 'bg-card border border-border'
+                p.featured ? 'bg-card shadow-[0_0_0_1.5px_hsl(var(--primary)),0_8px_30px_rgba(240,62,27,0.12)]' : 'bg-card shadow-[0_2px_12px_rgba(0,0,0,0.06)]'
               }`}>
                 {badge && (
                   <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-medium bg-primary text-primary-foreground whitespace-nowrap">{badge}</span>
