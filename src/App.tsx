@@ -9,7 +9,6 @@ import { ThemeProvider } from "@/context/ThemeProvider";
 import { AppThemeProvider } from "@/context/AppThemeContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import Home from "./pages/Home";
 import PortalHome from "./pages/PortalHome";
 import Canvas from "./pages/Canvas";
 import Pricing from "./pages/Pricing";
@@ -50,25 +49,25 @@ const App = () => (
           <Toaster />
             <AppThemeProvider>
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/terms" element={<LegalPage />} />
-              <Route path="/privacy" element={<LegalPage />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/auth/reset" element={<ResetPassword />} />
-              <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-              <Route path="/checkout/success" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
-
               {/* Portal pages share persistent navbar */}
               <Route element={<AppLayout />}>
-                <Route path="/home" element={<PortalHome />} />
+                <Route path="/" element={<PortalHome />} />
+                <Route path="/home" element={<Navigate to="/" replace />} />
                 <Route path="/studio" element={<ProtectedRoute><Canvas /></ProtectedRoute>} />
                 <Route path="/pricing" element={<Pricing />} />
-                <Route path="/tools" element={<ProtectedRoute><ToolsDirectory /></ProtectedRoute>} />
-                <Route path="/tools/:toolId" element={<ProtectedRoute><ToolPage /></ProtectedRoute>} />
+                <Route path="/tools" element={<ToolsDirectory />} />
+                <Route path="/tools/:toolId" element={<ToolPage />} />
                 <Route path="/community" element={<Community />} />
                 <Route path="/templates" element={<Templates />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/terms" element={<LegalPage />} />
+                <Route path="/privacy" element={<LegalPage />} />
+                <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+                <Route path="/checkout/success" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
               </Route>
+
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/auth/reset" element={<ResetPassword />} />
 
               {/* Admin Login */}
               <Route path="/admin/login" element={<AdminLogin />} />

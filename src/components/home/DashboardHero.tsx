@@ -28,7 +28,7 @@ type DropdownType = 'ratio' | 'quality' | 'model' | null;
 
 export function DashboardHero() {
   const navigate = useNavigate();
-  const { prompt, setPrompt, setAspectRatio, aspectRatio, setSelectedQualityTier, generate, isGenerating, credits, setActivePage, setSelectedModelId: setGlobalModelId } = useApp();
+  const { prompt, setPrompt, setAspectRatio, aspectRatio, setSelectedQualityTier, generate, isGenerating, credits, setActivePage, setSelectedModelId: setGlobalModelId, requireAuth } = useApp();
   const { t, isRTL, lang } = useLanguage();
   const { activeModels, defaultModel } = useModels();
   const { getCreditsForModel } = usePricing();
@@ -121,11 +121,13 @@ export function DashboardHero() {
 
   const handleGenerate = () => {
     if (!prompt.trim() || !currentModel) return;
-    setGlobalModelId(currentModel.id);
-    setSelectedQualityTier(localResolution);
-    setActivePage('canvas');
-    generate({ modelId: currentModel.id, qualityTier: localResolution, creditCost: cost });
-    navigate('/studio');
+    requireAuth(() => {
+      setGlobalModelId(currentModel.id);
+      setSelectedQualityTier(localResolution);
+      setActivePage('canvas');
+      generate({ modelId: currentModel.id, qualityTier: localResolution, creditCost: cost });
+      navigate('/studio');
+    });
   };
 
   const canGenerate = hasText && !isGenerating && credits >= cost && !!currentModel;

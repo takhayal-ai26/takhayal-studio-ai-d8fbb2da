@@ -1,4 +1,4 @@
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { TEMPLATE_PROMPTS, useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { ArrowRight, Sparkles } from 'lucide-react';
@@ -31,12 +31,22 @@ const masonryImages = [
 
 export default function PortalHome() {
   const navigate = useNavigate();
-  const { setPrompt, setSelectedTemplate, setActivePage } = useApp();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { setPrompt, setSelectedTemplate, setActivePage, openAuthModal, requireAuth } = useApp();
   const { t, isRTL, lang } = useLanguage();
   const isAr = lang === 'ar';
   const { tools: toolsData } = useTools();
   const { getUrlByName } = useMedia();
   const [activeCategory, setActiveCategory] = useState('All');
+
+  // Handle ?auth=login or ?auth=signup query param (moved from old landing page)
+  useEffect(() => {
+    const authParam = searchParams.get('auth');
+    if (authParam === 'login' || authParam === 'signup') {
+      openAuthModal(authParam);
+      setSearchParams({}, { replace: true });
+    }
+  }, [searchParams, openAuthModal, setSearchParams]);
 
   const toolImages: Record<string, string> = {
     'generate': getUrlByName('tool-generate.jpg'),
@@ -58,10 +68,12 @@ export default function PortalHome() {
 
 
   const goToCanvas = (prompt: string, template: string) => {
-    setPrompt(prompt);
-    setSelectedTemplate(template);
-    setActivePage('canvas');
-    navigate('/studio');
+    requireAuth(() => {
+      setPrompt(prompt);
+      setSelectedTemplate(template);
+      setActivePage('canvas');
+      navigate('/studio');
+    });
   };
 
   const filteredMasonry = activeCategory === 'All'
