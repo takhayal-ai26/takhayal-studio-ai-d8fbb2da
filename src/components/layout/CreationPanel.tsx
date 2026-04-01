@@ -163,7 +163,7 @@ export function CreationPanel() {
       </div>
 
       {/* Generate button */}
-      <div className="flex-shrink-0 p-4 border-t border-border/20">
+      <div className="flex-shrink-0 p-4">
         <button
           onClick={() => generate({ modelId: currentModel?.id, qualityTier: selectedResolution, creditCost: cost })}
           disabled={!canGenerate}
