@@ -4,7 +4,6 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTools } from '@/hooks/useTools';
-import { useMedia } from '@/hooks/useMedia';
 import { DashboardHero } from '@/components/home/DashboardHero';
 
 import imgCinema from '@/assets/portal/feat-cinema.jpg';
