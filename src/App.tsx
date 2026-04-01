@@ -59,7 +59,15 @@ const App = () => (
                 <Route path="/tools/:toolId" element={<ToolPage />} />
                 <Route path="/community" element={<Community />} />
                 <Route path="/templates" element={<Templates />} />
+                <Route path="/about" element={<About />} />
+                <Route path="/terms" element={<LegalPage />} />
+                <Route path="/privacy" element={<LegalPage />} />
+                <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+                <Route path="/checkout/success" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
               </Route>
+
+              <Route path="/auth/callback" element={<AuthCallback />} />
+              <Route path="/auth/reset" element={<ResetPassword />} />
 
               {/* Admin Login */}
               <Route path="/admin/login" element={<AdminLogin />} />
