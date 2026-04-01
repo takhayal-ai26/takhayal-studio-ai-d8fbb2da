@@ -1,10 +1,12 @@
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useMedia } from '@/hooks/useMedia';
+import { useAppTheme } from '@/context/AppThemeContext';
 import logoArDark from '@/assets/logo-ar-dark.svg';
 import logoArLight from '@/assets/logo-ar-light.svg';
 
 export function Logo({ size = 'default' }: { size?: 'small' | 'default' | 'large' }) {
   const { lang } = useLanguage();
+  const { mode } = useAppTheme();
   const { getUrlByName } = useMedia();
   const logoMark = getUrlByName('logo-mark.svg');
 
@@ -13,10 +15,10 @@ export function Logo({ size = 'default' }: { size?: 'small' | 'default' | 'large
   const arHeight = size === 'small' ? 28 : size === 'large' ? 44 : 32;
 
   if (lang === 'ar') {
+    const logoSrc = mode === 'dark' ? logoArDark : logoArLight;
     return (
       <div className="flex items-center">
-        <img src={logoArDark} alt="تخيّل" style={{ height: arHeight }} className="w-auto hidden dark:block" />
-        <img src={logoArLight} alt="تخيّل" style={{ height: arHeight }} className="w-auto block dark:hidden" />
+        <img src={logoSrc} alt="تخيّل" style={{ height: arHeight }} className="w-auto" />
       </div>
     );
   }
@@ -33,17 +35,15 @@ export function Logo({ size = 'default' }: { size?: 'small' | 'default' | 'large
 
 export function LogoMark({ size = 28 }: { size?: number }) {
   const { lang } = useLanguage();
+  const { mode } = useAppTheme();
   const { getUrlByName } = useMedia();
   const logoMark = getUrlByName('logo-mark.svg');
 
   if (lang === 'ar') {
     const h = size * 1.15;
-    return (
-      <>
-        <img src={logoArDark} alt="تخيّل" style={{ height: h }} className="w-auto hidden dark:block" />
-        <img src={logoArLight} alt="تخيّل" style={{ height: h }} className="w-auto block dark:hidden" />
-      </>
-    );
+    const logoSrc = mode === 'dark' ? logoArDark : logoArLight;
+    return <img src={logoSrc} alt="تخيّل" style={{ height: h }} className="w-auto" />;
   }
+
   return <img src={logoMark} alt="Takhayal" width={size} height={size} />;
 }
