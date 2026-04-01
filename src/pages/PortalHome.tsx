@@ -68,10 +68,12 @@ export default function PortalHome() {
 
 
   const goToCanvas = (prompt: string, template: string) => {
-    setPrompt(prompt);
-    setSelectedTemplate(template);
-    setActivePage('canvas');
-    navigate('/studio');
+    requireAuth(() => {
+      setPrompt(prompt);
+      setSelectedTemplate(template);
+      setActivePage('canvas');
+      navigate('/studio');
+    });
   };
 
   const filteredMasonry = activeCategory === 'All'
