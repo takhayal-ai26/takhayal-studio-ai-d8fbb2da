@@ -190,13 +190,14 @@ export function DashboardHero() {
 
       <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6" style={{ height: 540, paddingBottom: 72, paddingTop: 80 }}>
         <h1
-          className="text-white text-center font-bold"
+          className="text-white text-center font-extrabold drop-shadow-lg"
           style={{
-            fontSize: 'clamp(32px, 5vw, 56px)',
-            letterSpacing: -1.5,
-            lineHeight: 1.1,
+            fontSize: 'clamp(36px, 6vw, 64px)',
+            letterSpacing: -2,
+            lineHeight: 1.05,
             marginBottom: subtitleText ? 16 : 40,
             fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
+            textShadow: '0 2px 20px rgba(0,0,0,0.4)',
           }}
         >
           {title}
@@ -216,11 +217,11 @@ export function DashboardHero() {
               className="cursor-text flex items-center gap-3 group"
               style={{
                 height: 52,
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.10)',
+                background: 'rgba(0,0,0,0.45)',
+                border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: 999,
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
                 padding: '0 6px 0 20px',
                 transition: 'all 0.2s ease',
               }}
@@ -237,11 +238,11 @@ export function DashboardHero() {
           ) : (
             <div
               style={{
-                background: 'rgba(255,255,255,0.06)',
-                border: '1px solid rgba(255,255,255,0.10)',
+                background: 'rgba(0,0,0,0.45)',
+                border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: 18,
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
+                backdropFilter: 'blur(24px)',
+                WebkitBackdropFilter: 'blur(24px)',
                 overflow: 'visible',
                 position: 'relative',
               }}
@@ -256,8 +257,8 @@ export function DashboardHero() {
                   value={prompt}
                   onChange={e => setPrompt(e.target.value)}
                   placeholder={placeholder}
-                  className="flex-1 outline-none placeholder:text-white/30"
-                  style={{ fontSize: 14, color: '#FFFFFF', border: 'none', background: 'transparent', direction: isRTL ? 'rtl' : 'ltr', boxShadow: 'none' }}
+                  className="flex-1 outline-none placeholder:text-white/30 focus:outline-none focus:ring-0 focus:border-none"
+                  style={{ fontSize: 14, color: '#FFFFFF', border: 'none', background: 'transparent', direction: isRTL ? 'rtl' : 'ltr', boxShadow: 'none', outline: 'none' }}
                   onKeyDown={e => { if (e.key === 'Enter' && canGenerate) { e.preventDefault(); handleGenerate(); } }}
                 />
               </div>

@@ -148,6 +148,17 @@
   background: rgba(255, 255, 255, 0.04);
 }
 
+/* ── Hero input: kill all focus rings ── */
+[data-hero-input],
+[data-hero-input]:focus,
+[data-hero-input]:focus-visible,
+[data-hero-input]:active {
+  outline: none !important;
+  box-shadow: none !important;
+  border: none !important;
+  background: transparent !important;
+}
+
 /* ── Filter pills ── */
 .filter-pill {
   background: transparent;

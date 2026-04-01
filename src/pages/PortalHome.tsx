@@ -7,26 +7,39 @@ import { useTools } from '@/hooks/useTools';
 import { useMedia } from '@/hooks/useMedia';
 import { DashboardHero } from '@/components/home/DashboardHero';
 
+import imgCinema from '@/assets/portal/feat-cinema.jpg';
+import imgFashion from '@/assets/portal/feat-fashion.jpg';
+import imgFood from '@/assets/portal/feat-food.jpg';
+import imgArchitecture from '@/assets/portal/feat-architecture.jpg';
+import imgProduct from '@/assets/portal/feat-product.jpg';
+import imgSocial from '@/assets/portal/feat-social.jpg';
+import imgEid from '@/assets/portal/feat-eid.jpg';
+import imgCoffee from '@/assets/portal/feat-coffee.jpg';
+import imgLogo from '@/assets/portal/feat-logo.jpg';
+import imgSkincare from '@/assets/portal/feat-skincare.jpg';
+import imgPortrait from '@/assets/portal/feat-portrait.jpg';
+import imgRamadan from '@/assets/portal/seasonal-ramadan.jpg';
+
 const featuredItems = [
-  { image: 'https://picsum.photos/seed/feat-cinema/800/450', labelKey: 'cinematicAd', promptEn: 'Cinematic product advertisement, dramatic studio lighting, dark moody tones, volumetric fog, 4K commercial quality', promptAr: 'إعلان منتج سينمائي، إضاءة استوديو درامية، ألوان داكنة، ضباب حجمي، جودة تجارية 4K', template: 'Product Shot' },
-  { image: 'https://picsum.photos/seed/feat-fashion/800/450', labelKey: 'fashionEditorial', promptEn: 'High-end fashion editorial, modern modest style, soft diffused lighting, clean background, editorial quality', promptAr: 'تصوير أزياء راقي، أسلوب محتشم عصري، إضاءة ناعمة، خلفية نظيفة، جودة تحريرية', template: 'Fashion' },
-  { image: 'https://picsum.photos/seed/feat-ramadan/800/450', labelKey: 'ramadanCampaignLabel', promptEn: 'Warm cinematic Ramadan ad, golden lantern, crescent moon, deep purple and gold palette, soft volumetric lighting', promptAr: 'إعلان رمضاني سينمائي دافئ، فانوس ذهبي، هلال، لوحة ألوان بنفسجية وذهبية، إضاءة حجمية ناعمة', template: 'Ramadan' },
-  { image: 'https://picsum.photos/seed/feat-realestate/800/450', labelKey: 'architectureLabel', promptEn: 'Luxury real estate ad, modern building, blue sky, professional architectural photography, premium feel', promptAr: 'إعلان عقاري فاخر، مبنى عصري، سماء زرقاء، تصوير معماري احترافي، طابع فاخر', template: 'Real Estate' },
+  { image: imgCinema, labelKey: 'cinematicAd', promptEn: 'Cinematic product advertisement, dramatic studio lighting, dark moody tones, volumetric fog, 4K commercial quality', promptAr: 'إعلان منتج سينمائي، إضاءة استوديو درامية، ألوان داكنة، ضباب حجمي، جودة تجارية 4K', template: 'Product Shot' },
+  { image: imgFashion, labelKey: 'fashionEditorial', promptEn: 'High-end fashion editorial, modern modest style, soft diffused lighting, clean background, editorial quality', promptAr: 'تصوير أزياء راقي، أسلوب محتشم عصري، إضاءة ناعمة، خلفية نظيفة، جودة تحريرية', template: 'Fashion' },
+  { image: imgRamadan, labelKey: 'ramadanCampaignLabel', promptEn: 'Warm cinematic Ramadan ad, golden lantern, crescent moon, deep purple and gold palette, soft volumetric lighting', promptAr: 'إعلان رمضاني سينمائي دافئ، فانوس ذهبي، هلال، لوحة ألوان بنفسجية وذهبية، إضاءة حجمية ناعمة', template: 'Ramadan' },
+  { image: imgArchitecture, labelKey: 'architectureLabel', promptEn: 'Luxury real estate ad, modern building, blue sky, professional architectural photography, premium feel', promptAr: 'إعلان عقاري فاخر، مبنى عصري، سماء زرقاء، تصوير معماري احترافي، طابع فاخر', template: 'Real Estate' },
 ];
 
 const masonryImages = [
-  { image: 'https://picsum.photos/seed/m1/400/600', promptEn: 'Luxury perfume ad, dramatic side lighting, dark background, elegant glass bottle', promptAr: 'إعلان عطر فاخر، إضاءة جانبية درامية، خلفية داكنة، زجاجة أنيقة', template: 'Product Shot', cat: 'Products' },
-  { image: 'https://picsum.photos/seed/m2/400/400', promptEn: 'Trendy streetwear fashion shoot, urban backdrop, bold colors', promptAr: 'تصوير أزياء شارع عصرية، خلفية حضرية، ألوان جريئة', template: 'Fashion', cat: 'Fashion' },
-  { image: 'https://picsum.photos/seed/m3/400/500', promptEn: 'Golden hour restaurant scene, appetizing table spread, warm ambiance', promptAr: 'مشهد مطعم في الساعة الذهبية، مائدة شهية، أجواء دافئة', template: 'Restaurant', cat: 'Food' },
-  { image: 'https://picsum.photos/seed/m4/400/350', promptEn: 'Minimalist tech product floating, clean gradient background, 3D render', promptAr: 'منتج تقني عائم بسيط، خلفية متدرجة نظيفة، عرض ثلاثي الأبعاد', template: 'Product Shot', cat: 'Products' },
-  { image: 'https://picsum.photos/seed/m5/400/550', promptEn: 'Cinematic Ramadan greeting, lanterns and stars, cinematic depth of field', promptAr: 'تهنئة رمضانية سينمائية، فوانيس ونجوم، عمق مجال سينمائي', template: 'Ramadan', cat: 'Ads' },
-  { image: 'https://picsum.photos/seed/m6/400/450', promptEn: 'Instagram story design, bold typography, vibrant gradient, social media', promptAr: 'تصميم ستوري إنستغرام، خطوط عريضة، تدرج نابض، وسائل تواصل', template: 'Reels Cover', cat: 'Social' },
-  { image: 'https://picsum.photos/seed/m7/400/380', promptEn: 'Modern villa exterior, blue sky, lush garden, architectural photography', promptAr: 'واجهة فيلا عصرية، سماء زرقاء، حديقة خضراء، تصوير معماري', template: 'Real Estate', cat: 'Architecture' },
-  { image: 'https://picsum.photos/seed/m8/400/520', promptEn: 'Haute couture fashion editorial, flowing fabric, studio lighting', promptAr: 'تصوير أزياء راقية، قماش متدفق، إضاءة استوديو', template: 'Fashion', cat: 'Fashion' },
-  { image: 'https://picsum.photos/seed/m9/400/440', promptEn: 'Eid celebration ad, festive colors, joyful atmosphere, commercial quality', promptAr: 'إعلان احتفال عيد، ألوان احتفالية، أجواء بهيجة، جودة تجارية', template: 'Eid', cat: 'Ads' },
-  { image: 'https://picsum.photos/seed/m10/400/480', promptEn: 'Artisan coffee flat lay, latte art, warm morning light, overhead shot', promptAr: 'عرض قهوة حرفية، فن اللاتيه، ضوء صباحي دافئ، تصوير علوي', template: 'Restaurant', cat: 'Food' },
-  { image: 'https://picsum.photos/seed/m11/400/360', promptEn: 'Clean skincare product on marble, soft shadows, premium aesthetic', promptAr: 'منتج عناية بالبشرة على رخام، ظلال ناعمة، جمالية فاخرة', template: 'Product Shot', cat: 'Products' },
-  { image: 'https://picsum.photos/seed/m12/400/550', promptEn: 'National Day parade scene, flags and fireworks, patriotic celebration', promptAr: 'مشهد عرض اليوم الوطني، أعلام وألعاب نارية، احتفال وطني', template: 'National Day', cat: 'Ads' },
+  { image: imgCinema, promptEn: 'Luxury perfume ad, dramatic side lighting, dark background, elegant glass bottle', promptAr: 'إعلان عطر فاخر، إضاءة جانبية درامية، خلفية داكنة، زجاجة أنيقة', template: 'Product Shot', cat: 'Products' },
+  { image: imgFashion, promptEn: 'Trendy streetwear fashion shoot, urban backdrop, bold colors', promptAr: 'تصوير أزياء شارع عصرية، خلفية حضرية، ألوان جريئة', template: 'Fashion', cat: 'Fashion' },
+  { image: imgFood, promptEn: 'Golden hour restaurant scene, appetizing table spread, warm ambiance', promptAr: 'مشهد مطعم في الساعة الذهبية، مائدة شهية، أجواء دافئة', template: 'Restaurant', cat: 'Food' },
+  { image: imgProduct, promptEn: 'Minimalist tech product floating, clean gradient background, 3D render', promptAr: 'منتج تقني عائم بسيط، خلفية متدرجة نظيفة، عرض ثلاثي الأبعاد', template: 'Product Shot', cat: 'Products' },
+  { image: imgRamadan, promptEn: 'Cinematic Ramadan greeting, lanterns and stars, cinematic depth of field', promptAr: 'تهنئة رمضانية سينمائية، فوانيس ونجوم، عمق مجال سينمائي', template: 'Ramadan', cat: 'Ads' },
+  { image: imgSocial, promptEn: 'Instagram story design, bold typography, vibrant gradient, social media', promptAr: 'تصميم ستوري إنستغرام، خطوط عريضة، تدرج نابض، وسائل تواصل', template: 'Reels Cover', cat: 'Social' },
+  { image: imgArchitecture, promptEn: 'Modern villa exterior, blue sky, lush garden, architectural photography', promptAr: 'واجهة فيلا عصرية، سماء زرقاء، حديقة خضراء، تصوير معماري', template: 'Real Estate', cat: 'Architecture' },
+  { image: imgPortrait, promptEn: 'Haute couture fashion editorial, flowing fabric, studio lighting', promptAr: 'تصوير أزياء راقية، قماش متدفق، إضاءة استوديو', template: 'Fashion', cat: 'Fashion' },
+  { image: imgEid, promptEn: 'Eid celebration ad, festive colors, joyful atmosphere, commercial quality', promptAr: 'إعلان احتفال عيد، ألوان احتفالية، أجواء بهيجة، جودة تجارية', template: 'Eid', cat: 'Ads' },
+  { image: imgCoffee, promptEn: 'Artisan coffee flat lay, latte art, warm morning light, overhead shot', promptAr: 'عرض قهوة حرفية، فن اللاتيه، ضوء صباحي دافئ، تصوير علوي', template: 'Restaurant', cat: 'Food' },
+  { image: imgSkincare, promptEn: 'Clean skincare product on marble, soft shadows, premium aesthetic', promptAr: 'منتج عناية بالبشرة على رخام، ظلال ناعمة، جمالية فاخرة', template: 'Product Shot', cat: 'Products' },
+  { image: imgLogo, promptEn: 'Premium 3D logo mockup, golden metallic finish, dark surface', promptAr: 'نموذج شعار ثلاثي الأبعاد فاخر، لمسة معدنية ذهبية، سطح داكن', template: 'National Day', cat: 'Ads' },
 ];
 
 export default function PortalHome() {
@@ -91,7 +104,7 @@ export default function PortalHome() {
           {/* ── Section 2: Seasonal Banner ── */}
           <section className="my-8">
             <button onClick={() => goToCanvas(TEMPLATE_PROMPTS['Ramadan'], 'Ramadan')} className="group w-full relative h-36 md:h-44 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all duration-300">
-              <img src="https://picsum.photos/seed/banner-ramadan/1200/400" alt={t.portal.ramadanCampaign} className="w-full h-full object-cover" loading="lazy" />
+              <img src={imgRamadan} alt={t.portal.ramadanCampaign} className="w-full h-full object-cover" loading="lazy" />
               <div className={`absolute inset-0 bg-gradient-to-${isRTL ? 'l' : 'r'} from-black/90 via-black/50 to-transparent`} />
               <div className={`absolute inset-0 flex flex-col justify-center px-6 md:px-10`}>
                 <span className="text-[11px] uppercase tracking-widest text-primary font-medium">{t.portal.seasonal}</span>
@@ -208,12 +221,12 @@ export default function PortalHome() {
             </div>
             <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
               {[
-                { img: 'https://picsum.photos/seed/cw-fashion/400/550', promptEn: 'High-end fashion editorial, modern modest style', promptAr: 'تصوير أزياء راقي، أسلوب محتشم عصري' },
-                { img: 'https://picsum.photos/seed/cw-product/400/360', promptEn: 'Luxury perfume bottle, dramatic studio lighting', promptAr: 'زجاجة عطر فاخرة، إضاءة استوديو درامية' },
-                { img: 'https://picsum.photos/seed/cw-food/400/480', promptEn: 'Artisan coffee flat lay, warm morning light', promptAr: 'عرض قهوة حرفية، ضوء صباحي دافئ' },
-                { img: 'https://picsum.photos/seed/cw-cinema/400/420', promptEn: 'Cinematic portrait, volumetric fog, moody tones', promptAr: 'بورتريه سينمائي، ضباب حجمي، ألوان درامية' },
-                { img: 'https://picsum.photos/seed/cw-logo/400/400', promptEn: 'Premium 3D logo mockup, golden metallic finish', promptAr: 'نموذج شعار ثلاثي الأبعاد، لمسة معدنية ذهبية' },
-                { img: 'https://picsum.photos/seed/cw-arch/400/520', promptEn: 'Modern villa exterior, blue sky, lush garden', promptAr: 'واجهة فيلا عصرية، سماء زرقاء، حديقة خضراء' },
+                { img: imgFashion, promptEn: 'High-end fashion editorial, modern modest style', promptAr: 'تصوير أزياء راقي، أسلوب محتشم عصري' },
+                { img: imgCinema, promptEn: 'Luxury perfume bottle, dramatic studio lighting', promptAr: 'زجاجة عطر فاخرة، إضاءة استوديو درامية' },
+                { img: imgCoffee, promptEn: 'Artisan coffee flat lay, warm morning light', promptAr: 'عرض قهوة حرفية، ضوء صباحي دافئ' },
+                { img: imgPortrait, promptEn: 'Cinematic portrait, volumetric fog, moody tones', promptAr: 'بورتريه سينمائي، ضباب حجمي، ألوان درامية' },
+                { img: imgLogo, promptEn: 'Premium 3D logo mockup, golden metallic finish', promptAr: 'نموذج شعار ثلاثي الأبعاد، لمسة معدنية ذهبية' },
+                { img: imgArchitecture, promptEn: 'Modern villa exterior, blue sky, lush garden', promptAr: 'واجهة فيلا عصرية، سماء زرقاء، حديقة خضراء' },
               ].map((item, i) => (
                 <button key={i} onClick={() => navigate('/community')} className="group relative w-full rounded-2xl overflow-hidden break-inside-avoid block hover:shadow-lg hover:shadow-black/10 transition-all duration-300">
                   <img src={item.img} alt={isAr ? item.promptAr : item.promptEn} className="w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]" loading="lazy" />
