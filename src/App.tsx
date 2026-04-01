@@ -49,18 +49,10 @@ const App = () => (
           <Toaster />
             <AppThemeProvider>
             <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/about" element={<About />} />
-              <Route path="/terms" element={<LegalPage />} />
-              <Route path="/privacy" element={<LegalPage />} />
-              <Route path="/auth/callback" element={<AuthCallback />} />
-              <Route path="/auth/reset" element={<ResetPassword />} />
-              <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-              <Route path="/checkout/success" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
-
               {/* Portal pages share persistent navbar */}
               <Route element={<AppLayout />}>
-                <Route path="/home" element={<PortalHome />} />
+                <Route path="/" element={<PortalHome />} />
+                <Route path="/home" element={<Navigate to="/" replace />} />
                 <Route path="/studio" element={<ProtectedRoute><Canvas /></ProtectedRoute>} />
                 <Route path="/pricing" element={<Pricing />} />
                 <Route path="/tools" element={<ProtectedRoute><ToolsDirectory /></ProtectedRoute>} />
