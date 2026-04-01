@@ -297,7 +297,7 @@ const Pricing = () => {
             const badge = isAr ? pkg.badge_ar : pkg.badge_en;
             return (
               <div key={pkg.id} className={`bg-card rounded-xl p-5 flex flex-col items-center text-center relative ${
-                pkg.is_popular ? 'border-[1.5px] border-primary' : 'border border-border'
+                pkg.is_popular ? 'shadow-[0_0_0_1.5px_hsl(var(--primary)),0_8px_30px_rgba(240,62,27,0.12)]' : 'shadow-[0_2px_12px_rgba(0,0,0,0.06)]'
               }`}>
                 {badge && (
                   <span className="absolute -top-2.5 px-3 py-0.5 rounded-full text-[10px] font-medium bg-primary text-primary-foreground">{badge}</span>
