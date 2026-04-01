@@ -11,12 +11,45 @@ import { useQuery } from '@tanstack/react-query';
 
 const RATIOS = ['1:1', '2:3', '3:2', '16:9', '4:3', '4:5', '9:16'];
 const FEATURED_MODEL_NAMES = ['Nano Banana Pro', 'SeeDream 4.5', 'FLUX 1.1 Pro', 'GPT Image 1.5'];
+const HERO_CONFIG_CACHE_KEY = 'dashboard_home_hero_config_cache';
+const DEFAULT_HERO_CONFIG: Record<string, string> = {
+  dashboard_home_hero_image: 'https://njenobbxlbhbzwpkylha.supabase.co/storage/v1/object/public/tool-covers/dashboard-hero-1775064030516.png',
+  dashboard_home_hero_focal_point: '63 16',
+  dashboard_home_overlay_strength: '0.30',
+  dashboard_home_title_en: 'Imagine',
+  dashboard_home_title_ar: 'تخيّل',
+  dashboard_home_subtitle_en: '',
+  dashboard_home_subtitle_ar: '',
+  dashboard_home_prompt_placeholder_en: 'Describe what you want to create...',
+  dashboard_home_prompt_placeholder_ar: 'صِف ما تريد إنشاءه...',
+};
+
+const readCachedHeroConfig = (): Record<string, string> => {
+  if (typeof window === 'undefined') return DEFAULT_HERO_CONFIG;
+  try {
+    const raw = window.localStorage.getItem(HERO_CONFIG_CACHE_KEY);
+    if (!raw) return DEFAULT_HERO_CONFIG;
+    const parsed = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return DEFAULT_HERO_CONFIG;
+    return { ...DEFAULT_HERO_CONFIG, ...(parsed as Record<string, string>) };
+  } catch {
+    return DEFAULT_HERO_CONFIG;
+  }
+};
 
 function RatioIcon({ ratio, size = 12 }: { ratio: string; size?: number }) {
   const [w, h] = ratio.split(':').map(Number);
   const aspect = w / h;
-  let rw: number, rh: number;
-  if (aspect >= 1) { rw = size; rh = size / aspect; } else { rh = size; rw = size * aspect; }
+  let rw: number;
+  let rh: number;
+  if (aspect >= 1) {
+    rw = size;
+    rh = size / aspect;
+  } else {
+    rh = size;
+    rw = size * aspect;
+  }
+
   return (
     <div className="flex items-center justify-center" style={{ width: size + 2, height: size + 2 }}>
       <div style={{ width: rw, height: rh, border: '1.5px solid currentColor', borderRadius: 2, opacity: 0.5 }} />
@@ -29,7 +62,7 @@ type DropdownType = 'ratio' | 'quality' | 'model' | null;
 export function DashboardHero() {
   const navigate = useNavigate();
   const { prompt, setPrompt, setAspectRatio, aspectRatio, setSelectedQualityTier, generate, isGenerating, credits, setActivePage, setSelectedModelId: setGlobalModelId, requireAuth } = useApp();
-  const { t, isRTL, lang } = useLanguage();
+  const { isRTL, lang } = useLanguage();
   const { activeModels, defaultModel } = useModels();
   const { getCreditsForModel } = usePricing();
   const { getCreditsForModelQuality } = usePricingTiers();
@@ -38,6 +71,7 @@ export function DashboardHero() {
   const [localModelId, setLocalModelId] = useState('');
   const [localResolution, setLocalResolution] = useState('1K');
   const [openDrop, setOpenDrop] = useState<DropdownType>(null);
+  const [initialHeroConfig] = useState<Record<string, string>>(() => readCachedHeroConfig());
   const containerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -45,29 +79,50 @@ export function DashboardHero() {
     queryKey: ['dashboard-hero-config'],
     queryFn: async () => {
       const keys = [
-        'dashboard_home_hero_image', 'dashboard_home_hero_focal_point',
-        'dashboard_home_title_en', 'dashboard_home_title_ar',
-        'dashboard_home_subtitle_en', 'dashboard_home_subtitle_ar',
-        'dashboard_home_prompt_placeholder_en', 'dashboard_home_prompt_placeholder_ar',
-        'dashboard_home_enabled', 'dashboard_home_overlay_strength',
+        'dashboard_home_hero_image',
+        'dashboard_home_hero_focal_point',
+        'dashboard_home_title_en',
+        'dashboard_home_title_ar',
+        'dashboard_home_subtitle_en',
+        'dashboard_home_subtitle_ar',
+        'dashboard_home_prompt_placeholder_en',
+        'dashboard_home_prompt_placeholder_ar',
+        'dashboard_home_enabled',
+        'dashboard_home_overlay_strength',
       ];
       const { data } = await supabase.from('platform_config').select('config_key, config_value').in('config_key', keys);
       const map: Record<string, string> = {};
-      (data || []).forEach((r: any) => { map[r.config_key] = r.config_value; });
+      (data || []).forEach((r: any) => {
+        map[r.config_key] = r.config_value;
+      });
       return map;
     },
+    initialData: initialHeroConfig,
     staleTime: 60000,
   });
 
-  const heroImage = heroConfig?.dashboard_home_hero_image || 'https://njenobbxlbhbzwpkylha.supabase.co/storage/v1/object/public/tool-covers/dashboard-hero-1775064030516.png';
-  const heroFocalPoint = heroConfig?.dashboard_home_hero_focal_point || '50 50';
-  const overlayStrength = heroConfig?.dashboard_home_overlay_strength || '0.5';
-  const isAr = lang === 'ar';
-  const placeholder = isAr
-    ? (heroConfig?.dashboard_home_prompt_placeholder_ar || 'صِف ما تريد إنشاءه...')
-    : (heroConfig?.dashboard_home_prompt_placeholder_en || 'Describe what you want to create...');
+  useEffect(() => {
+    if (!heroConfig || typeof window === 'undefined') return;
+    try {
+      window.localStorage.setItem(HERO_CONFIG_CACHE_KEY, JSON.stringify(heroConfig));
+    } catch {
+      // ignore storage failures
+    }
+  }, [heroConfig]);
 
-  const currentModel = activeModels.find(m => m.id === localModelId) || defaultModel || activeModels[0];
+  const mergedHeroConfig = { ...DEFAULT_HERO_CONFIG, ...(heroConfig || {}) };
+  const heroImage = mergedHeroConfig.dashboard_home_hero_image;
+  const heroFocalPoint = mergedHeroConfig.dashboard_home_hero_focal_point;
+  const overlayStrength = mergedHeroConfig.dashboard_home_overlay_strength;
+
+  const isAr = lang === 'ar';
+  const title = isAr ? (mergedHeroConfig.dashboard_home_title_ar || '') : (mergedHeroConfig.dashboard_home_title_en || '');
+  const subtitleText = isAr ? (mergedHeroConfig.dashboard_home_subtitle_ar || '') : (mergedHeroConfig.dashboard_home_subtitle_en || '');
+  const placeholder = isAr
+    ? (mergedHeroConfig.dashboard_home_prompt_placeholder_ar || DEFAULT_HERO_CONFIG.dashboard_home_prompt_placeholder_ar)
+    : (mergedHeroConfig.dashboard_home_prompt_placeholder_en || DEFAULT_HERO_CONFIG.dashboard_home_prompt_placeholder_en);
+
+  const currentModel = activeModels.find((m) => m.id === localModelId) || defaultModel || activeModels[0];
 
   useEffect(() => {
     if (defaultModel && !localModelId) setLocalModelId(defaultModel.id);
@@ -127,7 +182,7 @@ export function DashboardHero() {
   const canGenerate = hasText && !isGenerating && credits >= cost && !!currentModel;
   const modelDisplayName = currentModel?.model_name || 'Auto';
 
-  const pillBase = "flex items-center gap-1.5 px-3 h-8 rounded-full text-[12px] font-medium transition-all duration-150 whitespace-nowrap cursor-pointer";
+  const pillBase = 'flex items-center gap-1.5 px-3 h-8 rounded-full text-[12px] font-medium transition-all duration-150 whitespace-nowrap cursor-pointer';
   const pillInactive = `${pillBase} bg-white/[0.06] border border-white/[0.08] text-white/60 hover:bg-white/[0.10] hover:text-white/80`;
   const pillActive = `${pillBase} bg-white/[0.14] border border-white/[0.20] text-white`;
 
@@ -172,7 +227,7 @@ export function DashboardHero() {
           style={{
             backgroundImage: `url(${heroImage})`,
             backgroundSize: 'cover',
-            backgroundPosition: heroFocalPoint.split(' ').map((v: string) => v + '%').join(' '),
+            backgroundPosition: heroFocalPoint.split(' ').map((v: string) => `${v}%`).join(' '),
             backgroundRepeat: 'no-repeat',
           }}
         />
@@ -180,6 +235,27 @@ export function DashboardHero() {
       </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6" style={{ height: 540, paddingBottom: 72, paddingTop: 80 }}>
+        {title && (
+          <h1
+            className="text-white text-center font-extrabold drop-shadow-lg"
+            style={{
+              fontSize: 'clamp(36px, 6vw, 64px)',
+              letterSpacing: -2,
+              lineHeight: 1.05,
+              marginBottom: subtitleText ? 14 : 40,
+              fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
+              textShadow: '0 2px 20px rgba(0,0,0,0.4)',
+            }}
+          >
+            {title}
+          </h1>
+        )}
+
+        {subtitleText && (
+          <p className="text-center" style={{ fontSize: 15, color: 'rgba(255,255,255,0.56)', marginBottom: 40, maxWidth: 680, lineHeight: 1.6 }}>
+            {subtitleText}
+          </p>
+        )}
 
         {/* Prompt bar */}
         <div ref={containerRef} style={{ width: '100%', maxWidth: 680 }}>
@@ -227,11 +303,16 @@ export function DashboardHero() {
                   type="text"
                   data-hero-input
                   value={prompt}
-                  onChange={e => setPrompt(e.target.value)}
+                  onChange={(e) => setPrompt(e.target.value)}
                   placeholder={placeholder}
                   className="flex-1 outline-none placeholder:text-white/30 focus:outline-none focus:ring-0 focus:border-none"
                   style={{ fontSize: 14, color: '#FFFFFF', border: 'none', background: 'transparent', direction: isRTL ? 'rtl' : 'ltr', boxShadow: 'none', outline: 'none' }}
-                  onKeyDown={e => { if (e.key === 'Enter' && canGenerate) { e.preventDefault(); handleGenerate(); } }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && canGenerate) {
+                      e.preventDefault();
+                      handleGenerate();
+                    }
+                  }}
                 />
               </div>
 
@@ -240,7 +321,6 @@ export function DashboardHero() {
 
               {/* Bottom options row */}
               <div className="flex items-center animate-fade-in" style={{ height: 46, padding: '0 10px', gap: 5 }}>
-
                 {/* Ratio */}
                 <div style={{ position: 'relative' }}>
                   <button onClick={() => setOpenDrop(openDrop === 'ratio' ? null : 'ratio')} className={openDrop === 'ratio' ? pillActive : pillInactive}>
@@ -250,12 +330,14 @@ export function DashboardHero() {
                   </button>
                   {openDrop === 'ratio' && (
                     <div style={dropMenuStyle} className="animate-fade-in">
-                      {(availableRatios as string[]).filter(r => RATIOS.includes(r)).map(r => (
-                        <button key={r} onClick={() => { setAspectRatio(r as AspectRatio); setOpenDrop(null); }} style={dropItemStyle(r === aspectRatio)}>
-                          <span className="flex items-center gap-2"><RatioIcon ratio={r} size={10} /> {r}</span>
-                          {r === aspectRatio && <Check size={13} />}
-                        </button>
-                      ))}
+                      {(availableRatios as string[])
+                        .filter((r) => RATIOS.includes(r))
+                        .map((r) => (
+                          <button key={r} onClick={() => { setAspectRatio(r as AspectRatio); setOpenDrop(null); }} style={dropItemStyle(r === aspectRatio)}>
+                            <span className="flex items-center gap-2"><RatioIcon ratio={r} size={10} /> {r}</span>
+                            {r === aspectRatio && <Check size={13} />}
+                          </button>
+                        ))}
                     </div>
                   )}
                 </div>
@@ -269,7 +351,7 @@ export function DashboardHero() {
                   </button>
                   {openDrop === 'quality' && (
                     <div style={dropMenuStyle} className="animate-fade-in">
-                      {(qualityTiers as string[]).map(q => (
+                      {(qualityTiers as string[]).map((q) => (
                         <button key={q} onClick={() => { setLocalResolution(q); setOpenDrop(null); }} style={dropItemStyle(q === localResolution)}>
                           <span>{q}</span>
                           {q === localResolution && <Check size={13} />}
@@ -288,8 +370,8 @@ export function DashboardHero() {
                   {openDrop === 'model' && (
                     <div style={{ ...dropMenuStyle, minWidth: 190 }} className="animate-fade-in">
                       {activeModels
-                        .filter(m => FEATURED_MODEL_NAMES.some(n => m.model_name.toLowerCase().includes(n.toLowerCase())))
-                        .map(m => (
+                        .filter((m) => FEATURED_MODEL_NAMES.some((n) => m.model_name.toLowerCase().includes(n.toLowerCase())))
+                        .map((m) => (
                           <button key={m.id} onClick={() => { setLocalModelId(m.id); setOpenDrop(null); }} style={dropItemStyle(m.id === localModelId)}>
                             <span>{m.model_name}</span>
                             {m.id === localModelId && <Check size={13} />}
