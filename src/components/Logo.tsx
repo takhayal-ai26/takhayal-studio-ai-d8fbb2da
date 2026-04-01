@@ -12,7 +12,7 @@ export function Logo({ size = 'default' }: { size?: 'small' | 'default' | 'large
 
   const imgSize = size === 'small' ? 24 : size === 'large' ? 40 : 28;
   const textSize = size === 'small' ? 'text-sm' : size === 'large' ? 'text-xl' : 'text-lg';
-  const arHeight = size === 'small' ? 28 : size === 'large' ? 44 : 32;
+  const arHeight = size === 'small' ? 45 : size === 'large' ? 70 : 51;
 
   if (lang === 'ar') {
     const logoSrc = mode === 'dark' ? logoArDark : logoArLight;
