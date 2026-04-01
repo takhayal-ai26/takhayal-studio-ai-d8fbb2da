@@ -114,11 +114,15 @@ export const useAdminMediaStore = create<AdminMediaState>()(
       name: 'takhayal-admin-media',
       // Merge persisted state with defaults to ensure new assets always appear
       merge: (persisted, current) => {
-        const persistedState = persisted as Partial<AdminMediaState>;
-        if (!persistedState?.assets) return current;
+        const persistedState = persisted as Partial<AdminMediaState> | undefined;
+        const persistedAssets = Array.isArray(persistedState?.assets) ? persistedState.assets : [];
+
         // Keep any user-added assets + always use latest defaults
         const defaultIds = new Set(defaultAssets.map(a => a.id));
-        const userAssets = persistedState.assets.filter(a => !defaultIds.has(a.id));
+        const userAssets = persistedAssets.filter(
+          (a): a is MediaAsset => !!a && typeof a.id === 'string' && !defaultIds.has(a.id)
+        );
+
         return {
           ...current,
           assets: [...userAssets, ...defaultAssets],
