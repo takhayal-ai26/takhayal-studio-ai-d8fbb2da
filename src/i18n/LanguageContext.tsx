@@ -37,8 +37,12 @@ function mergeOverrides(base: any, overrides: Record<string, string>): any {
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Language>(() => {
-    const stored = localStorage.getItem('takhayal-lang');
-    if (stored === 'en') return 'en' as Language;
+    try {
+      const stored = localStorage.getItem('takhayal-lang');
+      if (stored === 'en') return 'en' as Language;
+    } catch {
+      // ignore blocked storage access
+    }
     return 'ar' as Language;
   });
 
@@ -46,7 +50,11 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 
   const setLang = useCallback((newLang: Language) => {
     setLangState(newLang);
-    localStorage.setItem('takhayal-lang', newLang);
+    try {
+      localStorage.setItem('takhayal-lang', newLang);
+    } catch {
+      // ignore blocked storage access
+    }
   }, []);
 
   const isRTL = lang === 'ar';

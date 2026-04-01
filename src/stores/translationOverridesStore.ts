@@ -55,6 +55,21 @@ export const useTranslationOverridesStore = create<TranslationOverridesState>()(
           },
         })),
     }),
-    { name: 'takhayal-translation-overrides' }
+    {
+      name: 'takhayal-translation-overrides',
+      merge: (persisted, current) => {
+        const persistedState = persisted as Partial<TranslationOverridesState> | undefined;
+        const en = persistedState?.overrides?.en;
+        const ar = persistedState?.overrides?.ar;
+
+        return {
+          ...current,
+          overrides: {
+            en: en && typeof en === 'object' ? en : {},
+            ar: ar && typeof ar === 'object' ? ar : {},
+          },
+        };
+      },
+    }
   )
 );
