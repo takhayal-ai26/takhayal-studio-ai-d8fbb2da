@@ -94,7 +94,7 @@ export default function PortalHome() {
     : masonryImages.filter(m => m.cat === activeCategory);
 
   return (
-    <div className="flex-1 pt-14 overflow-y-auto animate-page-enter">
+    <div className="flex-1 overflow-y-auto animate-page-enter" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
 
         {/* ── Dashboard Hero with Prompt Bar ── */}
         <DashboardHero />

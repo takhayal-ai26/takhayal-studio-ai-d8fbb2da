@@ -1,13 +1,14 @@
 import { Outlet } from 'react-router-dom';
 import { TopNavbar } from './TopNavbar';
 import { AuthModal } from '@/components/AuthModal';
-import { PromoBannerStrip } from '@/components/PromoBanner';
+import { PromoBannerStrip, usePromoBannerVisible } from '@/components/PromoBanner';
 import { useAdminMediaStore } from '@/stores/adminMediaStore';
 import { useEffect } from 'react';
 
 // Preload brand assets from media store to prevent flicker
 export function AppLayout() {
   const assets = useAdminMediaStore(s => s.assets);
+  const bannerVisible = usePromoBannerVisible();
 
   useEffect(() => {
     const brandAssets = assets.filter(a => a.type === 'Brand');
@@ -18,9 +19,12 @@ export function AppLayout() {
   }, [assets]);
 
   return (
-    <div className="flex flex-col h-screen w-full bg-background">
+    <div
+      className="flex flex-col h-screen w-full bg-background"
+      style={{ '--banner-h': bannerVisible ? '36px' : '0px' } as React.CSSProperties}
+    >
       <PromoBannerStrip />
-      <TopNavbar />
+      <TopNavbar bannerOffset={bannerVisible} />
       <AuthModal />
       <Outlet />
     </div>

@@ -18,7 +18,7 @@ const navItemDefs: { id: string; labelKey: string; route: string; studioPage?: N
   { id: 'pricing', labelKey: 'pricing', route: '/pricing' },
 ];
 
-export function TopNavbar() {
+export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) {
   const { activePage, setActivePage, credits, userName, userAvatarUrl, isAuthenticated, plan, openAuthModal, logout } = useApp();
   const { t, isRTL } = useLanguage();
   const { isAdmin } = useAppTheme();
@@ -64,7 +64,7 @@ export function TopNavbar() {
 
   return (
     <>
-      <nav className="fixed top-0 left-0 right-0 z-50 h-14 bg-background/80 backdrop-blur-xl flex items-center px-5 md:px-6">
+      <nav className={`fixed left-0 right-0 z-50 h-14 bg-background/80 backdrop-blur-xl flex items-center px-5 md:px-6 transition-[top] duration-200 ${bannerOffset ? 'top-[36px]' : 'top-0'}`}>
         <div className="flex-shrink-0">
           <Logo />
         </div>

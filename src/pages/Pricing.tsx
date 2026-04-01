@@ -84,7 +84,7 @@ const Pricing = () => {
   };
 
   return (
-    <div className="flex-1 pt-16 overflow-y-auto">
+    <div className="flex-1 overflow-y-auto" style={{ paddingTop: 'calc(4rem + var(--banner-h, 0px))' }}>
       {/* Sign up banner — logged out only */}
       {!isAuthenticated && !authLoading && (
         <div className="bg-primary text-primary-foreground text-center py-3 px-4">

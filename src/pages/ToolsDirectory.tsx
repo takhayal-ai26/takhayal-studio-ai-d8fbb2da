@@ -15,7 +15,7 @@ export default function ToolsDirectory() {
   );
 
   return (
-    <div className="flex-1 pt-14 overflow-y-auto animate-page-enter">
+    <div className="flex-1 overflow-y-auto animate-page-enter" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
       <section className="max-w-6xl mx-auto px-5 md:px-8 pt-10 pb-8">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
