@@ -15,6 +15,7 @@ const CREDIT_VALUE = CREDIT_VALUE_USD;
 type OpenDropdown = 'model' | 'size' | 'resolution' | null;
 
 export function CreationPanel() {
+  const navigate = useNavigate();
   const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, enhancePrompt, setEnhancePrompt, generate, isGenerating, credits, getCreditCost } = useApp();
   const { t, lang: language } = useLanguage();
   const { activeModels, defaultModel } = useModels();
