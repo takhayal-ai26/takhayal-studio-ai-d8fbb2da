@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { TopNavbar } from './TopNavbar';
+import { BottomNav } from './BottomNav';
 import { AuthModal } from '@/components/AuthModal';
 import { PromoBannerStrip, usePromoBannerVisible } from '@/components/PromoBanner';
 import { useAdminMediaStore } from '@/stores/adminMediaStore';
@@ -26,7 +27,10 @@ export function AppLayout() {
       <PromoBannerStrip />
       <TopNavbar bannerOffset={bannerVisible} />
       <AuthModal />
-      <Outlet />
+      <div className="flex-1 min-h-0 pb-[72px] md:pb-0">
+        <Outlet />
+      </div>
+      <BottomNav />
     </div>
   );
 }
