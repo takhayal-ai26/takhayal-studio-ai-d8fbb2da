@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Upload, ChevronRight, Sparkles, X, Coins, Cpu, Maximize, Image as ImageIcon, Check, Wand2, Zap, Lock } from 'lucide-react';
 import { useApp, TEMPLATE_PROMPTS, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
