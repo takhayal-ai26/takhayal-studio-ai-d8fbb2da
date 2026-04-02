@@ -13,6 +13,14 @@ function ratioToCSS(ratio: string): string {
 }
 
 export function GenerationGrid() {
+  try {
+    return <GenerationGridInner />;
+  } catch {
+    return null;
+  }
+}
+
+function GenerationGridInner() {
   const { generatedImages, isGenerating, prompt, generate, aspectRatio, quality, generationCards: cards, setGenerationCards: setCards, lastGenerationMeta, selectedQualityTier } = useApp();
   const { t } = useLanguage();
   const [selectedCard, setSelectedCard] = useState<GenerationCard | null>(null);
