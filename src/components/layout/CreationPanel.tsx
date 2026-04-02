@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Upload, ChevronRight, Sparkles, X, Coins, Cpu, Maximize, Image as ImageIcon, Check, Wand2, Zap, Lock } from 'lucide-react';
 import { useApp, TEMPLATE_PROMPTS, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -14,6 +15,7 @@ const CREDIT_VALUE = CREDIT_VALUE_USD;
 type OpenDropdown = 'model' | 'size' | 'resolution' | null;
 
 export function CreationPanel() {
+  const navigate = useNavigate();
   const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, enhancePrompt, setEnhancePrompt, generate, isGenerating, credits, getCreditCost } = useApp();
   const { t, lang: language } = useLanguage();
   const { activeModels, defaultModel } = useModels();
@@ -165,7 +167,7 @@ export function CreationPanel() {
       {/* Generate button */}
       <div className="flex-shrink-0 p-4">
         <button
-          onClick={() => generate({ modelId: currentModel?.id, qualityTier: selectedResolution, creditCost: cost })}
+          onClick={() => { generate({ modelId: currentModel?.id, qualityTier: selectedResolution, creditCost: cost }); navigate('/generate/result'); }}
           disabled={!canGenerate}
           className={`w-full h-[44px] rounded-xl text-[14px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
             canGenerate

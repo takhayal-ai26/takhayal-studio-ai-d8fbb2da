@@ -11,6 +11,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import PortalHome from "./pages/PortalHome";
 import Canvas from "./pages/Canvas";
+import GenerateResult from "./pages/GenerateResult";
 import Pricing from "./pages/Pricing";
 import ToolPage from "./pages/ToolPage";
 import ToolsDirectory from "./pages/ToolsDirectory";
@@ -54,6 +55,7 @@ const App = () => (
                   <Route path="/" element={<PortalHome />} />
                   <Route path="/home" element={<Navigate to="/" replace />} />
                   <Route path="/studio" element={<Canvas />} />
+                  <Route path="/generate/result" element={<GenerateResult />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/tools" element={<ToolsDirectory />} />
                   <Route path="/tools/:toolId" element={<ToolPage />} />
