@@ -55,6 +55,7 @@ const App = () => (
                   <Route path="/" element={<PortalHome />} />
                   <Route path="/home" element={<Navigate to="/" replace />} />
                   <Route path="/studio" element={<Canvas />} />
+                  <Route path="/generate/result" element={<GenerateResult />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/tools" element={<ToolsDirectory />} />
                   <Route path="/tools/:toolId" element={<ToolPage />} />
