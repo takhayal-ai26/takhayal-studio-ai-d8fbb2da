@@ -11,6 +11,7 @@ import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import PortalHome from "./pages/PortalHome";
 import Canvas from "./pages/Canvas";
+import GenerateResult from "./pages/GenerateResult";
 import Pricing from "./pages/Pricing";
 import ToolPage from "./pages/ToolPage";
 import ToolsDirectory from "./pages/ToolsDirectory";
