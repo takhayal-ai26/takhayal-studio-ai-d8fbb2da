@@ -175,7 +175,7 @@ export function DashboardHero() {
       setSelectedQualityTier(localResolution);
       setActivePage('canvas');
       generate({ modelId: currentModel.id, qualityTier: localResolution, creditCost: cost });
-      navigate('/studio');
+      navigate('/generate/result');
     });
   };
 
