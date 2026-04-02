@@ -183,89 +183,76 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
           )}
         </div>
 
-        {/* Mobile menu button */}
-        <button
-          onClick={() => setMobileOpen(!mobileOpen)}
-          className={`md:hidden ${isRTL ? 'mr-auto' : 'ml-auto'} text-foreground p-2`}
-        >
-          {mobileOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
-      </nav>
-
-      {/* Mobile overlay */}
-      {mobileOpen && (
-        <div className="fixed inset-0 z-40 bg-background/95 backdrop-blur-xl pt-14 flex flex-col md:hidden overflow-y-auto animate-fade-in">
-          <div className="flex flex-col p-5 gap-0.5">
-            <div className="mb-4 flex items-center gap-3">
-              {!isAdmin && <ThemeToggle />}
-              <LanguageToggle />
-            </div>
-            {navItemDefs.filter(item => !(isAuthenticated && item.id === 'pricing')).map(item => (
-              <button
-                key={item.id}
-                onClick={() => handleNav(item)}
-                className={`text-${isRTL ? 'right' : 'left'} px-4 py-3 rounded-xl text-[15px] font-medium transition-colors ${
-                  isActive(item)
-                    ? 'text-foreground bg-foreground/[0.06]'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.04]'
-                }`}
-              >
-                {navLabels[item.labelKey]}
-              </button>
-            ))}
-          </div>
-          <div className="mt-auto p-5 border-t border-border/30">
-            {isAuthenticated ? (
-              <div className="space-y-2">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-9 h-9 rounded-full bg-foreground/[0.06] flex items-center justify-center text-xs font-semibold text-muted-foreground">
-                    {initials}
-                  </div>
-                  <div className="flex-1">
-                    <span className="text-[13px] text-foreground block font-medium">{userName}</span>
-                    <span className="text-[11px] text-muted-foreground">{plan === 'pro' ? 'Pro' : t.pricing.free}</span>
-                  </div>
-                  <div className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full ${
-                    lowCredits ? 'bg-primary/10 text-primary' : 'bg-foreground/[0.05] text-muted-foreground'
-                  }`}>
-                    <Flame size={13} className={lowCredits ? 'text-primary' : ''} />
-                    <span className="text-[13px] font-medium">{credits}</span>
-                  </div>
+        {/* Mobile: profile/credits only (no burger) */}
+        <div className="flex md:hidden items-center gap-2 ml-auto">
+          {isAuthenticated && (
+            <button
+              onClick={() => { setActivePage('credits'); navigate('/studio'); }}
+              className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-medium ${
+                lowCredits ? 'bg-primary/10 text-primary' : 'bg-foreground/[0.05] text-muted-foreground'
+              }`}
+            >
+              <Flame size={12} className={lowCredits ? 'text-primary animate-pulse' : ''} />
+              <span className="tabular-nums">{credits}</span>
+            </button>
+          )}
+          <div ref={avatarRef} className="relative">
+            <button
+              onClick={() => {
+                if (!isAuthenticated) { openAuthModal('login'); return; }
+                setAvatarOpen(!avatarOpen);
+              }}
+              className="w-8 h-8 rounded-full bg-foreground/[0.06] flex items-center justify-center text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors overflow-hidden"
+            >
+              {isAuthenticated && userAvatarUrl ? (
+                <img src={userAvatarUrl} alt={userName} className="w-full h-full object-cover" />
+              ) : isAuthenticated ? initials : (
+                <span className="text-muted-foreground"><Settings size={16} /></span>
+              )}
+            </button>
+            {avatarOpen && isAuthenticated && (
+              <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-full mt-2 w-52 bg-popover border border-border/40 rounded-2xl p-1.5 elevation-3 z-50 animate-fade-in`}>
+                <div className="px-3 py-2.5 border-b border-border/30 mb-1">
+                  <p className="text-[13px] font-medium text-foreground">{userName}</p>
+                  <p className="text-[11px] text-muted-foreground">{plan === 'pro' ? t.avatar.proPlan : t.avatar.freePlan}</p>
                 </div>
+                {plan === 'free' && (
+                  <button
+                    onClick={() => { setAvatarOpen(false); navigate('/pricing'); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-primary font-medium hover:bg-primary/5 transition-colors"
+                  >
+                    <Crown size={14} />
+                    {t.nav.upgrade}
+                  </button>
+                )}
                 <button
-                  onClick={() => { setMobileOpen(false); setActivePage('credits'); navigate('/studio'); }}
-                  className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-[14px] text-foreground hover:bg-foreground/[0.04] transition-colors"
+                  onClick={() => { setAvatarOpen(false); setActivePage('credits'); navigate('/studio'); }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-foreground hover:bg-foreground/[0.04] transition-colors"
                 >
-                  <CreditCard size={16} className="text-muted-foreground" />
+                  <CreditCard size={14} className="text-muted-foreground" />
                   {t.avatar.billingCredits}
                 </button>
                 <button
-                  onClick={() => { setMobileOpen(false); logout(); }}
-                  className="w-full flex items-center gap-2.5 px-4 py-3 rounded-xl text-[14px] text-red-400 hover:bg-red-500/10 transition-colors"
+                  onClick={() => { setAvatarOpen(false); setActivePage('settings'); navigate('/studio'); }}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-foreground hover:bg-foreground/[0.04] transition-colors"
                 >
-                  <LogOut size={16} />
-                  {t.avatar.logout}
+                  <Settings size={14} className="text-muted-foreground" />
+                  {t.avatar.settings}
                 </button>
-              </div>
-            ) : (
-              <div className="flex gap-3">
-                <button
-                  onClick={() => { setMobileOpen(false); openAuthModal('login'); }}
-                  className="flex-1 h-11 rounded-xl bg-foreground/[0.05] text-foreground text-[14px] font-medium"
-                >
-                  {t.nav.login}
-                </button>
-                <button
-                  onClick={() => { setMobileOpen(false); openAuthModal('signup'); }}
-                  className="flex-1 h-11 rounded-full bg-primary text-primary-foreground text-[14px] font-semibold"
-                >
-                  {t.nav.signup}
-                </button>
+                <div className="border-t border-border/30 mt-1 pt-1">
+                  <button
+                    onClick={() => { setAvatarOpen(false); logout(); }}
+                    className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-red-400 hover:bg-red-500/10 transition-colors"
+                  >
+                    <LogOut size={14} />
+                    {t.avatar.logout}
+                  </button>
+                </div>
               </div>
             )}
           </div>
         </div>
-      )}
+      </nav>
     </>
   );
 }
