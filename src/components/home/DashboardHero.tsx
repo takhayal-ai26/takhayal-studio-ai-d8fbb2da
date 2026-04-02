@@ -385,14 +385,11 @@ export function DashboardHero() {
                   )}
                 </div>
 
-                {/* Spacer */}
-                <div className="flex-1" />
-
-                {/* Generate button */}
+                {/* Generate button - full width on mobile */}
                 <button
                   onClick={handleGenerate}
                   disabled={!canGenerate}
-                  className="transition-all duration-200"
+                  className="transition-all duration-200 w-full sm:w-auto sm:ml-auto"
                   style={{
                     background: canGenerate ? 'hsl(var(--primary))' : 'rgba(255,255,255,0.06)',
                     borderRadius: 999,
@@ -404,6 +401,7 @@ export function DashboardHero() {
                     cursor: canGenerate ? 'pointer' : 'default',
                     border: 'none',
                     whiteSpace: 'nowrap',
+                    marginTop: 2,
                   }}
                 >
                   Generate · {cost} cr
