@@ -14,9 +14,9 @@ const navItems = [
 export function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
-  const { language } = useLanguage();
+  const { lang } = useLanguage();
   const { activePage, setActivePage } = useApp();
-  const isAr = language === 'ar';
+  const isAr = lang === 'ar';
 
   const isActive = (item: typeof navItems[0]) => {
     if (item.id === 'create') return location.pathname === '/studio' && activePage === 'canvas';
