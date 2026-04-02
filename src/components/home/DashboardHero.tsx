@@ -220,7 +220,7 @@ export function DashboardHero() {
   });
 
   return (
-    <section className="relative w-full" style={{ height: 580, clipPath: 'ellipse(120% 100% at 50% 0%)' }}>
+    <section className="relative w-full" style={{ height: 540 }}>
       <div className="absolute inset-0 overflow-hidden">
         <div
           className="absolute inset-0"
