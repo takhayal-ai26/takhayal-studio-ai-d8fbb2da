@@ -329,7 +329,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setGallery(prev => [...newImages, ...prev]);
     } catch (err) {
       console.error('Generation failed:', err);
-      // Credits refund would happen server-side
+      toast.error('Something went wrong. Please try again.');
     } finally {
       setIsGenerating(false);
     }
