@@ -404,7 +404,14 @@ export function DashboardHero() {
                     marginTop: 2,
                   }}
                 >
-                  Generate · {cost} cr
+                  {isGenerating ? (
+                    <span className="flex items-center gap-2">
+                      <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      {isAr ? 'جاري التوليد...' : 'Generating...'}
+                    </span>
+                  ) : (
+                    <>Generate · {cost} cr</>
+                  )}
                 </button>
               </div>
             </div>
