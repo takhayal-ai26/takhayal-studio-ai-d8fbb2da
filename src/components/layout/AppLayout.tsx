@@ -1,5 +1,6 @@
 import { Outlet } from 'react-router-dom';
 import { TopNavbar } from './TopNavbar';
+import { BottomNav } from './BottomNav';
 import { AuthModal } from '@/components/AuthModal';
 import { PromoBannerStrip, usePromoBannerVisible } from '@/components/PromoBanner';
 import { useAdminMediaStore } from '@/stores/adminMediaStore';
