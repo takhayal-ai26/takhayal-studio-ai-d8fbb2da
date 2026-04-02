@@ -356,6 +356,12 @@ export function AppProvider({ children }: { children: ReactNode }) {
 
 export function useApp(): AppState {
   const ctx = useContext(AppContext);
-  if (!ctx) throw new Error('useApp must be used within AppProvider');
+  if (!ctx) {
+    // During HMR the provider may momentarily unmount; reload to recover
+    if (typeof window !== 'undefined') {
+      window.location.reload();
+    }
+    throw new Error('useApp must be used within AppProvider');
+  }
   return ctx;
 }
