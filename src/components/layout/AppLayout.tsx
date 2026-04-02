@@ -28,6 +28,7 @@ export function AppLayout() {
       <TopNavbar bannerOffset={bannerVisible} />
       <AuthModal />
       <Outlet />
+      <BottomNav />
     </div>
   );
 }
