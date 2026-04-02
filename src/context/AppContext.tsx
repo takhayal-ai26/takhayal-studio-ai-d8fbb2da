@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
+import { toast } from 'sonner';
 
 export type NavPage = 'home' | 'canvas' | 'gallery' | 'templates' | 'credits' | 'settings';
 export type AspectRatio = '1:1' | '9:16' | '16:9' | '4:5';
