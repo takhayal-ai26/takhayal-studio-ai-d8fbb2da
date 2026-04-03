@@ -2,7 +2,7 @@ import { useApp, NavPage } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Logo } from '@/components/Logo';
-import { Flame, Menu, X, Crown, CreditCard, Settings, LogOut, Sun, Moon, User, Sparkles, Image as ImageIcon, LayoutGrid, Users } from 'lucide-react';
+import { Flame, Menu, X, Crown, CreditCard, Settings, LogOut, Sun, Moon, User, Sparkles, Image as ImageIcon, LayoutGrid, Users, Mail } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ThemeToggle } from '@/components/ThemeToggle';

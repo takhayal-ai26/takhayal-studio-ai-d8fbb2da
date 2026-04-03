@@ -68,6 +68,7 @@ const App = () => (
                   <Route path="/community" element={<Community />} />
                   <Route path="/templates" element={<Templates />} />
                   <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
                   <Route path="/terms" element={<LegalPage />} />
                   <Route path="/privacy" element={<LegalPage />} />
                   <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />

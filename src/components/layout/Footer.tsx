@@ -20,6 +20,7 @@ const navLinks = [
 const legalLinks = [
   { en: 'Terms & Conditions', ar: 'الشروط والأحكام', to: '/legal/terms' },
   { en: 'Privacy Policy', ar: 'سياسة الخصوصية', to: '/legal/privacy' },
+  { en: 'Contact Us', ar: 'تواصل معنا', to: '/contact' },
   { en: 'Support', ar: 'الدعم', to: 'mailto:support@takhayal.ai' },
 ];
 
