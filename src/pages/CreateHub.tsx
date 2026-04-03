@@ -9,7 +9,6 @@ export default function CreateHub() {
   const { tools } = useToolsDB();
   const isAr = lang === 'ar';
 
-  // "generate" is the hero tool; rest are quick actions
   const heroTool = tools.find(t => t.slug === 'generate');
   const quickTools = tools.filter(t => t.slug !== 'generate');
 
@@ -38,7 +37,7 @@ export default function CreateHub() {
         {heroTool && (
           <button
             onClick={() => handleToolClick(heroTool)}
-            className="w-full rounded-2xl overflow-hidden relative group mb-4 text-left focus:outline-none active:scale-[0.98] transition-transform"
+            className="w-full rounded-3xl overflow-hidden relative group mb-4 text-left focus:outline-none active:scale-[0.98] transition-transform shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
           >
             <div className="aspect-[2/1] relative">
               {heroTool.image ? (
@@ -52,11 +51,13 @@ export default function CreateHub() {
                   <Sparkles size={48} className="text-primary/30" />
                 </div>
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/5" />
+              {/* Orange glow */}
+              <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-12 bg-primary/20 blur-2xl rounded-full pointer-events-none" />
             </div>
             <div className="absolute bottom-0 left-0 right-0 p-5">
               <div className="flex items-center gap-2 mb-1.5">
-                <div className="w-8 h-8 rounded-xl bg-primary/90 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-xl bg-primary/90 flex items-center justify-center shadow-lg shadow-primary/30">
                   <Sparkles size={16} className="text-primary-foreground" />
                 </div>
                 <span className="text-xs font-medium text-white/60">
@@ -66,29 +67,52 @@ export default function CreateHub() {
               <h2 className="text-xl font-bold text-white">{heroTool.name}</h2>
               <p className="text-sm text-white/60 mt-0.5">{heroTool.shortDesc}</p>
             </div>
-            <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/[0.06] group-hover:ring-primary/20 transition-all pointer-events-none" />
+            <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-white/[0.08] group-hover:ring-primary/25 transition-all pointer-events-none" />
           </button>
         )}
 
-        {/* Quick Action Tools */}
+        {/* Quick Action Tools — Image cards */}
         <div className="grid grid-cols-2 gap-3">
           {quickTools.map(tool => {
             const Icon = tool.icon;
+            const hasImage = !!tool.image;
             return (
               <button
                 key={tool.id}
                 onClick={() => handleToolClick(tool)}
-                className="rounded-2xl bg-card/60 backdrop-blur-sm p-4 text-left group focus:outline-none active:scale-[0.97] transition-all hover:bg-card/80"
+                className="rounded-3xl overflow-hidden relative group text-left focus:outline-none active:scale-[0.97] transition-all shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
               >
-                <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/15 transition-colors">
-                  <Icon size={20} className="text-primary" />
+                <div className="aspect-[4/3] relative">
+                  {hasImage ? (
+                    <img
+                      src={tool.image}
+                      alt={tool.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-primary/15 via-muted/20 to-background flex items-center justify-center">
+                      <Icon size={36} className="text-primary/20" />
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/35 to-transparent" />
                 </div>
-                <h3 className="text-sm font-semibold text-foreground leading-tight">
-                  {tool.name}
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1 leading-relaxed line-clamp-2">
-                  {tool.shortDesc}
-                </p>
+                {/* Icon badge */}
+                <div className="absolute top-3 left-3">
+                  <div className="w-8 h-8 rounded-xl bg-black/30 backdrop-blur-md flex items-center justify-center ring-1 ring-white/[0.08]">
+                    <Icon size={15} className="text-white/80" />
+                  </div>
+                </div>
+                {/* Text */}
+                <div className="absolute bottom-0 left-0 right-0 p-3.5">
+                  <h3 className="text-[13px] font-semibold text-white leading-tight">
+                    {tool.name}
+                  </h3>
+                  <p className="text-[11px] text-white/50 mt-0.5 line-clamp-1">
+                    {tool.shortDesc}
+                  </p>
+                </div>
+                <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-white/[0.06] group-hover:ring-white/15 transition-all pointer-events-none" />
               </button>
             );
           })}
