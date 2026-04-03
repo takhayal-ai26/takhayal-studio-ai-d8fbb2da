@@ -225,7 +225,7 @@ function MobilePlanCarousel({ plans, isAr, ...cardProps }: { plans: any[] } & Om
       <div
         ref={scrollRef}
         className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-8 pt-5 pb-4 scrollbar-none"
-        style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', overflow: 'visible clip' }}
+        style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
         dir={isAr ? 'rtl' : 'ltr'}
       >
         {plans.map((p: any, i: number) => (
