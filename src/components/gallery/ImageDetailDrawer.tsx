@@ -68,6 +68,17 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
     setTimeout(() => setCopied(false), 2000);
   };
 
+  const handleShareClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!onShare) return;
+
+    onClose();
+
+    window.setTimeout(() => {
+      onShare(job);
+    }, 0);
+  };
+
   const dateStr = new Date(job.created_at).toLocaleDateString(
     isAr ? 'ar-SA' : 'en-US',
     { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }
@@ -130,7 +141,7 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
             )}
             {isCompleted && (
               <button
-                onClick={(e) => { e.stopPropagation(); onShare?.(job); }}
+                onClick={handleShareClick}
                 className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:brightness-110 transition-all cursor-pointer"
               >
                 <Share2 size={15} />
