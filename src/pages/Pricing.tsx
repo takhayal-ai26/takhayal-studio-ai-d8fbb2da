@@ -282,10 +282,7 @@ function MobilePlanCarousel({ plans, isAr, ...cardProps }: { plans: any[] } & Om
 }
 
 function TestimonialCarousel({ isAr }: { isAr: boolean }) {
-  const scrollRef = useRef<HTMLDivElement>(null);
-  const [activeIdx, setActiveIdx] = useState(0);
-  const activeRef = useRef(activeIdx);
-  activeRef.current = activeIdx;
+  const [paused, setPaused] = useState(false);
 
   const { data: testimonials = [] } = useQuery({
     queryKey: ['testimonials-public'],
@@ -296,127 +293,95 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
     staleTime: 60000,
   });
 
-  const scrollToIdx = useCallback((idx: number) => {
-    const el = scrollRef.current;
-    if (!el || !el.children[idx]) return;
-    const card = el.children[idx] as HTMLElement;
-    el.scrollTo({ left: card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2, behavior: 'smooth' });
-  }, []);
-
-  const updateActive = useCallback(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    const center = el.scrollLeft + el.clientWidth / 2;
-    let closest = 0;
-    let minDist = Infinity;
-    for (let i = 0; i < el.children.length; i++) {
-      const card = el.children[i] as HTMLElement;
-      const dist = Math.abs(card.offsetLeft + card.offsetWidth / 2 - center);
-      if (dist < minDist) { minDist = dist; closest = i; }
-    }
-    setActiveIdx(closest);
-  }, []);
-
-  useEffect(() => {
-    const el = scrollRef.current;
-    if (!el) return;
-    el.addEventListener('scroll', updateActive, { passive: true });
-    return () => el.removeEventListener('scroll', updateActive);
-  }, [updateActive]);
-
-  useEffect(() => {
-    if (testimonials.length === 0) return;
-    const interval = setInterval(() => {
-      const next = (activeRef.current + 1) % testimonials.length;
-      scrollToIdx(next);
-    }, 4000);
-    return () => clearInterval(interval);
-  }, [testimonials.length, scrollToIdx]);
-
   if (testimonials.length === 0) return null;
 
+  // Duplicate items for seamless infinite loop
+  const items = [...testimonials, ...testimonials];
+  const cardWidth = 320; // px
+  const gap = 20; // px
+  const totalWidth = testimonials.length * (cardWidth + gap);
+
+  const renderCard = (t: any, idx: number) => {
+    const name = isAr ? t.name_ar : t.name_en;
+    const role = isAr ? t.role_ar : t.role_en;
+    const quote = isAr ? t.testimonial_ar : t.testimonial_en;
+    const location = isAr ? t.location_ar : t.location_en;
+    const initials = (t.name_en || '').split(' ').map((w: string) => w[0]).join('').slice(0, 2);
+
+    return (
+      <div
+        key={`${t.id}-${idx}`}
+        className="flex-shrink-0 rounded-2xl p-5 flex flex-col gap-3"
+        style={{
+          width: cardWidth,
+          background: 'linear-gradient(145deg, hsl(var(--primary) / 0.08), hsl(var(--card) / 0.7))',
+          backdropFilter: 'blur(20px)',
+          WebkitBackdropFilter: 'blur(20px)',
+          border: '1px solid hsl(var(--primary) / 0.15)',
+          boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+        }}
+      >
+        <div className="text-primary/30 text-xl font-serif leading-none select-none">"</div>
+        <p className="text-[13px] text-foreground/85 leading-relaxed flex-1" dir={isAr ? 'rtl' : 'ltr'}>
+          {quote}
+        </p>
+        <div className="flex items-center gap-3 mt-auto pt-2">
+          {t.avatar_url ? (
+            <img src={t.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover flex-shrink-0 ring-2 ring-primary/20" />
+          ) : (
+            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/25 to-primary/10 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
+              {initials}
+            </div>
+          )}
+          <div>
+            <p className="text-[12px] font-semibold text-foreground">{name}</p>
+            <p className="text-[10px] text-muted-foreground">{role}{location ? ` · ${location}` : ''}</p>
+          </div>
+        </div>
+      </div>
+    );
+  };
+
   return (
-    <section className="max-w-5xl mx-auto pb-20 px-0">
-      <div className="text-center mb-10 px-6">
+    <section className="max-w-full mx-auto pb-16 overflow-hidden">
+      <div className="text-center mb-8 px-6">
         <h2 className="text-2xl font-semibold text-foreground">{isAr ? 'ماذا يقول مستخدمونا' : 'What our users say'}</h2>
         <p className="text-sm text-muted-foreground mt-2">{isAr ? 'مبدعون حقيقيون، نتائج حقيقية' : 'Real creators, real results'}</p>
       </div>
+      {/* Infinite marquee */}
       <div
-        ref={scrollRef}
-        className="flex overflow-x-auto snap-x snap-mandatory pt-4 pb-6 scrollbar-none"
-        style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', paddingLeft: '8vw', paddingRight: '8vw', gap: '16px' }}
-        dir={isAr ? 'rtl' : 'ltr'}
+        className="relative w-full"
+        onMouseEnter={() => setPaused(true)}
+        onMouseLeave={() => setPaused(false)}
+        onTouchStart={() => setPaused(true)}
+        onTouchEnd={() => setPaused(false)}
       >
-        {testimonials.map((t: any, i: number) => {
-          const name = isAr ? t.name_ar : t.name_en;
-          const role = isAr ? t.role_ar : t.role_en;
-          const quote = isAr ? t.testimonial_ar : t.testimonial_en;
-          const location = isAr ? t.location_ar : t.location_en;
-          const initials = (t.name_en || '').split(' ').map((w: string) => w[0]).join('').slice(0, 2);
-          const isActive = i === activeIdx;
+        {/* Fade edges */}
+        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 z-10" style={{ background: 'linear-gradient(to right, hsl(var(--background)), transparent)' }} />
+        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 z-10" style={{ background: 'linear-gradient(to left, hsl(var(--background)), transparent)' }} />
 
-          return (
-            <div
-              key={t.id}
-              className="snap-center flex-shrink-0 rounded-2xl p-6 flex flex-col gap-3 transition-all duration-500"
-              style={{
-                width: '80vw',
-                maxWidth: 380,
-                minHeight: 220,
-                background: isActive
-                  ? 'linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--card) / 0.8))'
-                  : 'hsl(var(--card) / 0.5)',
-                backdropFilter: 'blur(20px)',
-                WebkitBackdropFilter: 'blur(20px)',
-                border: isActive
-                  ? '1px solid hsl(var(--primary) / 0.3)'
-                  : '1px solid hsl(var(--border) / 0.1)',
-                boxShadow: isActive
-                  ? '0 8px 32px rgba(240,62,27,0.15), 0 2px 12px rgba(0,0,0,0.1)'
-                  : '0 2px 12px rgba(0,0,0,0.06)',
-                opacity: isActive ? 1 : 0.5,
-                transform: isActive ? 'scale(1)' : 'scale(0.92)',
-              }}
-            >
-              {/* Quote icon */}
-              <div className="text-primary/30 text-2xl font-serif leading-none select-none">"</div>
-              <p className="text-[14px] text-foreground/85 leading-relaxed flex-1" dir={isAr ? 'rtl' : 'ltr'}>
-                {quote}
-              </p>
-              <div className="flex items-center gap-3 mt-auto pt-3">
-                {t.avatar_url ? (
-                  <img src={t.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0 ring-2 ring-primary/20" />
-                ) : (
-                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/25 to-primary/10 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
-                    {initials}
-                  </div>
-                )}
-                <div>
-                  <p className="text-[13px] font-semibold text-foreground">{name}</p>
-                  <p className="text-[11px] text-muted-foreground">{role}{location ? ` · ${location}` : ''}</p>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+        <div
+          className="flex py-4"
+          style={{
+            gap: `${gap}px`,
+            animation: `testimonialScroll ${testimonials.length * 6}s linear infinite`,
+            animationPlayState: paused ? 'paused' : 'running',
+            direction: isAr ? 'rtl' : 'ltr',
+            width: 'max-content',
+          }}
+        >
+          {items.map((t, i) => renderCard(t, i))}
+        </div>
       </div>
-      <div className="flex justify-center gap-2.5 mt-5">
-        {testimonials.map((_: any, i: number) => (
-          <button
-            key={i}
-            onClick={() => {
-              const el = scrollRef.current;
-              if (!el) return;
-              const card = el.children[i] as HTMLElement;
-              if (card) el.scrollTo({ left: card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2, behavior: 'smooth' });
-            }}
-            className={`rounded-full transition-all duration-300 ${i === activeIdx ? 'w-6 h-2 bg-primary shadow-[0_0_8px_rgba(240,62,27,0.4)]' : 'w-2 h-2 bg-muted-foreground/25 hover:bg-muted-foreground/40'}`}
-          />
-        ))}
-      </div>
+
+      <style>{`
+        @keyframes testimonialScroll {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-${totalWidth}px); }
+        }
+      `}</style>
     </section>
   );
-}
 
 const Pricing = () => {
   const navigate = useNavigate();
