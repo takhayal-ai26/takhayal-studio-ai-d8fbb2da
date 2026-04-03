@@ -257,7 +257,8 @@ serve(async (req) => {
     }
 
     // Determine if this is an image-to-image request
-    const isImageToImage = !!image_url && supportsImageInput && !!editEndpoint;
+    const hasImageInput = (!!image_url || (Array.isArray(image_urls) && image_urls.length > 0));
+    const isImageToImage = hasImageInput && supportsImageInput && !!editEndpoint;
     const activeEndpoint = isImageToImage ? editEndpoint! : endpoint;
 
     console.log(`[generate-image] mode=${isImageToImage ? 'image-to-image' : 'text-to-image'} endpoint=${activeEndpoint} ratio=${aspect_ratio || '1:1'} quality=${quality_tier || '1K'} job_id=${job_id || 'none'}`);
