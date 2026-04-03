@@ -209,7 +209,7 @@ export function CreationPanel() {
               : 'bg-foreground/[0.04] border border-border/10 text-muted-foreground/30 cursor-not-allowed'
           }`}
         >
-          {isGenerating ? (
+          {(isGenerating || localGenerating) ? (
             <span className="flex items-center gap-2">
               <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
               {t.studio.generating}
