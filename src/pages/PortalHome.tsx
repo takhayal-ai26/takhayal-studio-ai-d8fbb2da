@@ -98,9 +98,6 @@ export default function PortalHome() {
           <>
             {/* Continue where you left off */}
             <ContinueWhereLeftOff />
-
-            {/* Quick Actions */}
-            <QuickActions />
           </>
         )}
 
