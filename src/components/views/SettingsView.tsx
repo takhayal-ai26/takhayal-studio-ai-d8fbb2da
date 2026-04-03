@@ -88,11 +88,18 @@ export function SettingsView() {
   const [uploading, setUploading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Load profile data
+  // Load profile data — fallback: split full_name if first/last empty
   useEffect(() => {
     if (profile) {
-      setFirstName((profile as any).first_name || '');
-      setLastName((profile as any).last_name || '');
+      let fn = (profile as any).first_name || '';
+      let ln = (profile as any).last_name || '';
+      if (!fn && !ln && profile.full_name) {
+        const parts = profile.full_name.trim().split(' ');
+        fn = parts[0] || '';
+        ln = parts.slice(1).join(' ') || '';
+      }
+      setFirstName(fn);
+      setLastName(ln);
       setAvatarUrl(profile.avatar_url || null);
     }
   }, [profile]);
