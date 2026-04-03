@@ -1022,6 +1022,7 @@ export type Database = {
           height: number | null
           id: string
           prompt: string
+          prompt_ar: string
           ratio: string
           show_on_studio: boolean
           sort_order: number
@@ -1040,6 +1041,7 @@ export type Database = {
           height?: number | null
           id?: string
           prompt?: string
+          prompt_ar?: string
           ratio?: string
           show_on_studio?: boolean
           sort_order?: number
@@ -1058,6 +1060,7 @@ export type Database = {
           height?: number | null
           id?: string
           prompt?: string
+          prompt_ar?: string
           ratio?: string
           show_on_studio?: boolean
           sort_order?: number
