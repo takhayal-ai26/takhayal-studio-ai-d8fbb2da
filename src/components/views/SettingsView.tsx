@@ -112,9 +112,7 @@ export function SettingsView() {
       const { error } = await supabase
         .from('profiles')
         .update({
-          first_name: firstName,
-          last_name: lastName,
-          full_name: `${firstName} ${lastName}`.trim(),
+          full_name: displayName.trim(),
         } as any)
         .eq('user_id', user.id);
       if (error) throw error;
