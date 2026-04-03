@@ -113,15 +113,15 @@ export function ShareModal({ job, open, onClose }: ShareModalProps) {
     <button
       onClick={onClick}
       disabled={disabled || sharing}
-      className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-[13px] font-medium transition-all active:scale-[0.98] ${
+      className={`w-full flex items-center gap-3 px-4 py-3.5 rounded-xl text-[13px] font-medium transition-all active:scale-[0.98] cursor-pointer ${
         accent
-          ? 'bg-primary/10 text-primary hover:bg-primary/15'
+          ? 'bg-gradient-to-r from-primary to-primary/80 text-primary-foreground shadow-lg shadow-primary/25 hover:shadow-primary/40 hover:brightness-110'
           : 'bg-muted/30 text-foreground hover:bg-muted/50'
       } disabled:opacity-40`}
     >
       {icon}
       <span className="flex-1 text-start">{label}</span>
-      {disabled && <Check size={14} className="text-green-500" />}
+      {disabled && <Check size={14} className="text-primary-foreground" />}
     </button>
   );
 
@@ -151,6 +151,13 @@ export function ShareModal({ job, open, onClose }: ShareModalProps) {
         {/* Share options */}
         <div className="space-y-2">
           <ShareButton
+            icon={<Users size={18} />}
+            label={communityShared ? s.alreadyShared : s.shareCommunity}
+            onClick={handleCommunity}
+            accent
+            disabled={communityShared}
+          />
+          <ShareButton
             icon={copied ? <Check size={18} /> : (sharing ? <Loader2 size={18} className="animate-spin" /> : <Link2 size={18} />)}
             label={copied ? s.linkCopied : s.copyLink}
             onClick={handleCopyLink}
@@ -169,13 +176,6 @@ export function ShareModal({ job, open, onClose }: ShareModalProps) {
             icon={<Instagram size={18} />}
             label={s.shareInstagram}
             onClick={handleInstagram}
-          />
-          <ShareButton
-            icon={<Users size={18} />}
-            label={communityShared ? s.alreadyShared : s.shareCommunity}
-            onClick={handleCommunity}
-            accent
-            disabled={communityShared}
           />
         </div>
       </div>
