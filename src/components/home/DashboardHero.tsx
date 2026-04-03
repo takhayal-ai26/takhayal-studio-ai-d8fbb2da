@@ -220,8 +220,8 @@ export function DashboardHero() {
   });
 
   return (
-    <section className="relative w-full h-[55vh] md:h-[540px]">
-      <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: '0 0 48px 48px' }}>
+    <section className="relative w-full h-[42vh] md:h-[540px]">
+      <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: '0 0 36px 36px' }}>
         <div
           className="absolute inset-0"
           style={{
@@ -234,15 +234,15 @@ export function DashboardHero() {
         <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, rgba(0,0,0,${Number(overlayStrength) * 0.7}) 0%, rgba(0,0,0,${overlayStrength}) 60%, rgba(0,0,0,${Number(overlayStrength) * 1.1}) 100%)` }} />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6 h-full pb-10 md:pb-[72px] pt-16 md:pt-20">
+      <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6 h-full pb-6 md:pb-[72px] pt-14 md:pt-20">
         {title && (
           <h1
             className="text-white text-center font-extrabold drop-shadow-lg"
             style={{
-              fontSize: 'clamp(30px, 5.5vw, 64px)',
+              fontSize: 'clamp(26px, 5vw, 64px)',
               letterSpacing: -2,
               lineHeight: 1.05,
-              marginBottom: subtitleText ? 10 : 24,
+              marginBottom: subtitleText ? 8 : 16,
               fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
               textShadow: '0 2px 20px rgba(0,0,0,0.4)',
             }}
