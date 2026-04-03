@@ -81,34 +81,26 @@ export function SettingsView() {
   const isAr = lang === 'ar';
   const l = t_labels[isAr ? 'ar' : 'en'];
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Load profile data — fallback: split full_name if first/last empty
+  // Load profile data
   useEffect(() => {
     if (profile) {
-      let fn = (profile as any).first_name || '';
-      let ln = (profile as any).last_name || '';
-      if (!fn && !ln && profile.full_name) {
-        const parts = profile.full_name.trim().split(' ');
-        fn = parts[0] || '';
-        ln = parts.slice(1).join(' ') || '';
-      }
-      setFirstName(fn);
-      setLastName(ln);
+      setDisplayName(profile.full_name || '');
       setAvatarUrl(profile.avatar_url || null);
     }
   }, [profile]);
 
   const initials = (() => {
-    const f = firstName?.charAt(0) || '';
-    const la = lastName?.charAt(0) || '';
-    if (f || la) return (f + la).toUpperCase();
-    return profile?.full_name?.slice(0, 2).toUpperCase() || 'U';
+    const parts = displayName.trim().split(' ');
+    const first = parts[0]?.charAt(0) || '';
+    const last = parts.length > 1 ? parts[parts.length - 1]?.charAt(0) || '' : '';
+    if (first) return (first + last).toUpperCase();
+    return 'U';
   })();
 
   const planLabel = plan === 'free' ? 'Free' : plan === 'pro' ? 'Creator' : 'Studio';
