@@ -316,7 +316,7 @@ export function DashboardHero() {
               }}
             >
               {/* Input row */}
-              <div className="flex items-center" style={{ height: 52, padding: '0 16px' }}>
+              <div className="flex items-center" style={{ height: 48, padding: '0 16px' }}>
                 <ImageIcon size={17} style={{ color: 'rgba(255,255,255,0.35)', flexShrink: 0, marginRight: isRTL ? 0 : 12, marginLeft: isRTL ? 12 : 0 }} />
                 <input
                   ref={inputRef}
