@@ -27,6 +27,7 @@ interface DBTemplate {
   featured: boolean;
   show_on_studio: boolean;
   sort_order: number;
+  default_model_id: string | null;
 }
 
 interface Props {
