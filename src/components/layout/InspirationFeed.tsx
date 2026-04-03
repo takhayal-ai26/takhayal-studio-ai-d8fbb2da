@@ -9,6 +9,7 @@ interface StudioTemplate {
   title_en: string;
   title_ar: string;
   prompt: string;
+  prompt_ar: string;
   cover_image_url: string;
   ratio: string;
 }
