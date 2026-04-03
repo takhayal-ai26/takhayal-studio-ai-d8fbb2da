@@ -6,6 +6,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { useApp } from '@/context/AppContext';
 import { ImageDetailDrawer } from '@/components/gallery/ImageDetailDrawer';
+import { ImageLightbox } from '@/components/gallery/ImageLightbox';
 import { ShareModal } from '@/components/gallery/ShareModal';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -203,6 +204,14 @@ export default function Gallery() {
     setSelectedJob(job);
   }, []);
 
+  const selectedIndex = selectedJob ? filteredJobs.findIndex(j => j.id === selectedJob.id) : -1;
+  const handlePrev = useCallback(() => {
+    if (selectedIndex > 0) setSelectedJob(filteredJobs[selectedIndex - 1]);
+  }, [selectedIndex, filteredJobs]);
+  const handleNext = useCallback(() => {
+    if (selectedIndex < filteredJobs.length - 1) setSelectedJob(filteredJobs[selectedIndex + 1]);
+  }, [selectedIndex, filteredJobs]);
+
   const handleDelete = useCallback(async (jobId: string) => {
     const confirmed = window.confirm(isAr ? 'هل أنت متأكد من الحذف؟' : 'Delete this image?');
     if (!confirmed) return;
@@ -354,15 +363,33 @@ export default function Gallery() {
         </div>
       </div>
 
-      <ImageDetailDrawer
-        job={selectedJob}
-        open={!!selectedJob}
-        onClose={() => setSelectedJob(null)}
-        onRetry={retryJob}
-        onReuse={handleReuse}
-        onShare={setShareJob}
-        onDelete={handleDelete}
-      />
+      {/* Mobile: drawer, Desktop: lightbox */}
+      <div className="md:hidden">
+        <ImageDetailDrawer
+          job={selectedJob}
+          open={!!selectedJob}
+          onClose={() => setSelectedJob(null)}
+          onRetry={retryJob}
+          onReuse={handleReuse}
+          onShare={setShareJob}
+          onDelete={handleDelete}
+        />
+      </div>
+      <div className="hidden md:block">
+        <ImageLightbox
+          job={selectedJob}
+          open={!!selectedJob}
+          onClose={() => setSelectedJob(null)}
+          onRetry={retryJob}
+          onReuse={handleReuse}
+          onShare={setShareJob}
+          onDelete={handleDelete}
+          onPrev={handlePrev}
+          onNext={handleNext}
+          hasPrev={selectedIndex > 0}
+          hasNext={selectedIndex < filteredJobs.length - 1}
+        />
+      </div>
 
       <ShareModal
         job={shareJob}
