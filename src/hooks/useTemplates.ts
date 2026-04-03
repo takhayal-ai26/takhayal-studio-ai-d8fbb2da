@@ -6,10 +6,12 @@ export interface FrontendTemplate {
   id: string;
   name: string;
   prompt: string;
+  prompt_en: string;
   image: string;
   category: string;
   ratio: string;
   featured: boolean;
+  default_model_id: string | null;
 }
 
 export interface TemplateCategory {
