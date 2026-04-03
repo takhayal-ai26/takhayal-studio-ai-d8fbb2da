@@ -120,100 +120,17 @@ const Pricing = () => {
         </div>
       </div>
 
-
-      {/* Plan cards */}
-      <section className="max-w-5xl mx-auto px-6 pb-20">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
-          {activePlans.map((p: any) => {
-            const name = isAr ? p.name_ar : p.name_en;
-            const desc = isAr ? p.description_ar : p.description_en;
-            const badge = isAr ? p.badge_ar : p.badge_en;
-            const features: Array<{en: string; ar: string}> = p.features || [];
-            const isCurrent = isAuthenticated && userPlan === p.slug;
-            const price = getPrice(p);
-            const currentIdx = slugOrder.indexOf(userPlan);
-            const thisIdx = slugOrder.indexOf(p.slug);
-
-            let btnText = isAr ? p.cta_label_ar : p.cta_label_en;
-            let btnDisabled = false;
-            let btnStyle = p.featured
-              ? 'bg-primary text-primary-foreground hover:brightness-90'
-              : 'bg-muted/50 text-foreground hover:bg-muted';
-
-            if (!authLoading && isAuthenticated) {
-              if (isCurrent) {
-                btnText = isAr ? 'الخطة الحالية' : 'Current Plan';
-                btnDisabled = true;
-                btnStyle = 'bg-muted/30 text-muted-foreground cursor-default';
-              } else if (thisIdx < currentIdx) {
-                btnText = isAr ? 'تخفيض' : 'Downgrade';
-                btnStyle = 'bg-muted/50 text-muted-foreground hover:bg-muted';
-              } else {
-                btnText = isAr ? `ترقية إلى ${name}` : `Upgrade to ${name}`;
-              }
-            }
-
-            return (
-              <div key={p.id} className={`rounded-2xl p-6 flex flex-col transition-all duration-200 hover:scale-[1.01] relative ${
-                p.featured ? 'bg-card shadow-[0_0_0_1.5px_hsl(var(--primary)),0_8px_30px_rgba(240,62,27,0.12)]' : 'bg-card shadow-[0_2px_12px_rgba(0,0,0,0.06)]'
-              }`}>
-                {badge && (
-                  <span className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full text-[11px] font-medium bg-primary text-primary-foreground whitespace-nowrap">{badge}</span>
-                )}
-                <h3 className="text-lg font-medium text-foreground">{name}</h3>
-                <p className="text-[12px] text-muted-foreground mt-1">{desc}</p>
-
-                <div className="mt-4 flex items-baseline gap-1">
-                  {billing === 'annual' && p.price_monthly_usd > 0 && (
-                    <span className="text-sm text-muted-foreground line-through mr-1">{fmt(p.price_monthly_usd)}</span>
-                  )}
-                  <span className="text-[36px] font-extralight text-foreground">{fmt(price)}</span>
-                  {p.price_monthly_usd > 0 && <span className="text-sm text-muted-foreground">/{isAr ? 'شهر' : 'mo'}</span>}
-                </div>
-
-                {billing === 'annual' && p.price_annual_usd > 0 && (
-                  <p className="text-[11px] text-muted-foreground mt-1">
-                    {isAr ? `يُفوتر سنوياً بمبلغ ${fmt(p.price_annual_usd)}` : `Billed as ${fmt(p.price_annual_usd)}/year`}
-                  </p>
-                )}
-
-                {/* Credits pill */}
-                <div className="mt-4 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-[12px] font-medium w-fit">
-                  {p.credits_monthly > 0 ? (
-                    <>
-                      {p.credits_monthly.toLocaleString()} {isAr ? 'رصيد / شهر' : 'credits / month'}
-                    </>
-                  ) : (
-                    <>{isAr ? '15 رصيداً للبدء' : '15 credits to start'}</>
-                  )}
-                </div>
-                {p.credits_monthly > 0 && (
-                  <p className="text-[11px] text-muted-foreground mt-1">≈ {Math.floor(p.credits_monthly / 6).toLocaleString()} {isAr ? 'صورة' : 'images'}</p>
-                )}
-
-                <ul className="mt-5 space-y-2.5 flex-1">
-                  {features.map((f: any, i: number) => (
-                    <li key={i} className="flex items-center gap-2.5 text-[12px] text-foreground">
-                      <Check size={13} className="text-primary flex-shrink-0" />
-                      {isAr ? f.ar : f.en}
-                    </li>
-                  ))}
-                </ul>
-
-                {authLoading ? (
-                  <div className="mt-6 w-full h-11 rounded-xl bg-muted/30 animate-pulse" />
-                ) : (
-                  <button
-                    onClick={() => !btnDisabled && handleCta(p)}
-                    disabled={btnDisabled}
-                    className={`mt-6 w-full h-11 rounded-xl text-[13px] font-medium transition-all ${btnStyle} ${btnDisabled ? 'opacity-70' : ''}`}
-                  >
-                    {btnText}
-                  </button>
-                )}
-              </div>
-            );
-          })}
+      {/* Plan cards — carousel on mobile, grid on desktop */}
+      <section className="max-w-5xl mx-auto pb-20">
+        {/* Desktop grid */}
+        <div className="hidden md:grid md:grid-cols-2 lg:grid-cols-4 gap-5 px-6">
+          {activePlans.map((p: any) => (
+            <PlanCard key={p.id} p={p} isAr={isAr} billing={billing} isAuthenticated={isAuthenticated} authLoading={authLoading} userPlan={userPlan} slugOrder={slugOrder} fmt={fmt} getPrice={getPrice} handleCta={handleCta} />
+          ))}
+        </div>
+        {/* Mobile carousel */}
+        <div className="md:hidden">
+          <MobilePlanCarousel plans={activePlans} isAr={isAr} billing={billing} isAuthenticated={isAuthenticated} authLoading={authLoading} userPlan={userPlan} slugOrder={slugOrder} fmt={fmt} getPrice={getPrice} handleCta={handleCta} />
         </div>
       </section>
 
