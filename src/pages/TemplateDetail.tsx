@@ -6,14 +6,16 @@ import { useAuth } from '@/context/AuthContext';
 import { useApp } from '@/context/AppContext';
 import { useGenerationJobs } from '@/hooks/useGenerationJobs';
 import { Button } from '@/components/ui/button';
-import { Loader2, Upload, X, Sparkles, ArrowLeft } from 'lucide-react';
+import { Loader2, Upload, X, Sparkles, ArrowLeft, ImagePlus } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+
+const SEEDREAM_45_ID = '80225ee4-1930-4431-b484-43b448969b3b';
 
 interface TemplateData {
   id: string;
   title_en: string;
   title_ar: string;
-  prompt: string;       // prompt_en
+  prompt: string;
   prompt_ar: string;
   cover_image_url: string;
   ratio: string;
@@ -30,7 +32,7 @@ export default function TemplateDetail() {
   const navigate = useNavigate();
   const { lang, isRTL } = useLanguage();
   const { user } = useAuth();
-  const { requireAuth, openAuthModal } = useApp();
+  const { openAuthModal } = useApp();
   const { createJob, startGeneration } = useGenerationJobs();
   const isAr = lang === 'ar';
 
@@ -39,10 +41,8 @@ export default function TemplateDetail() {
   const [generating, setGenerating] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [uploading, setUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-
-  // Check if model supports image input
-  const [modelSupportsImage, setModelSupportsImage] = useState(false);
 
   useEffect(() => {
     if (!id) return;
@@ -54,43 +54,35 @@ export default function TemplateDetail() {
         .eq('id', id)
         .eq('active', true)
         .single();
-      if (data) {
-        setTemplate(data as any);
-        // Check if model supports image input
-        if ((data as any).default_model_id) {
-          const { data: model } = await supabase
-            .from('models')
-            .select('supports_image_input')
-            .eq('id', (data as any).default_model_id)
-            .single();
-          setModelSupportsImage(!!model?.supports_image_input);
-        }
-      }
+      if (data) setTemplate(data as any);
       setLoading(false);
     })();
   }, [id]);
 
   const processFile = useCallback(async (file: File) => {
     if (!ACCEPTED_TYPES.includes(file.type)) {
-      toast({ title: 'Invalid file', description: 'JPG, PNG, or WebP only', variant: 'destructive' });
+      toast({ title: isAr ? 'ملف غير صالح' : 'Invalid file', description: isAr ? 'JPG أو PNG أو WebP فقط' : 'JPG, PNG, or WebP only', variant: 'destructive' });
       return;
     }
     if (file.size > MAX_FILE_SIZE) {
-      toast({ title: 'Too large', description: 'Max 10MB', variant: 'destructive' });
+      toast({ title: isAr ? 'الملف كبير جداً' : 'Too large', description: isAr ? 'الحد الأقصى 10MB' : 'Max 10MB', variant: 'destructive' });
       return;
     }
+    setUploading(true);
     const ext = file.name.split('.').pop() || 'jpg';
     const fileName = `${crypto.randomUUID()}.${ext}`;
     const { data, error } = await supabase.storage
       .from('tool-files')
       .upload(fileName, file, { cacheControl: '3600', upsert: true });
     if (error) {
-      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+      toast({ title: isAr ? 'فشل الرفع' : 'Upload failed', description: error.message, variant: 'destructive' });
+      setUploading(false);
       return;
     }
     const { data: urlData } = supabase.storage.from('tool-files').getPublicUrl(data.path);
     setUploadedImage(urlData.publicUrl);
-  }, []);
+    setUploading(false);
+  }, [isAr]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -99,25 +91,21 @@ export default function TemplateDetail() {
     if (file) processFile(file);
   }, [processFile]);
 
+  const resolvedModelId = template?.default_model_id || SEEDREAM_45_ID;
+
   const handleGenerate = async () => {
     if (!template) return;
-    if (!user) {
-      openAuthModal('signup');
-      return;
-    }
+    if (!user) { openAuthModal('signup'); return; }
 
     setGenerating(true);
-
-    // CRITICAL: Always use prompt_en (English prompt) for generation
-    const generationPrompt = template.prompt;
+    const generationPrompt = template.prompt; // Always English prompt
     const ratio = template.ratio || '1:1';
-    const modelId = template.default_model_id;
 
     const jobId = await createJob({
       prompt: generationPrompt,
       ratio,
       qualityTier: '1K',
-      modelId,
+      modelId: resolvedModelId,
       creditCost: 2,
     });
 
@@ -131,7 +119,7 @@ export default function TemplateDetail() {
       prompt: generationPrompt,
       aspectRatio: ratio,
       qualityTier: '1K',
-      modelId,
+      modelId: resolvedModelId,
       imageUrl: uploadedImage || undefined,
     });
 
@@ -172,7 +160,7 @@ export default function TemplateDetail() {
         </button>
 
         <div className="flex flex-col md:flex-row gap-8 md:gap-12">
-          {/* LEFT: Info + Generate */}
+          {/* LEFT: Info + Upload + Generate */}
           <div className="flex-1 order-2 md:order-1 space-y-6">
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">{title}</h1>
@@ -181,41 +169,73 @@ export default function TemplateDetail() {
               </p>
             </div>
 
-            {/* Upload area (only if model supports it) */}
-            {modelSupportsImage && (
-              <div className="space-y-2">
-                <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                  {isAr ? 'صورة مرجعية (اختياري)' : 'Reference Image (optional)'}
-                </p>
-                {uploadedImage ? (
-                  <div className="relative rounded-xl overflow-hidden border border-border/40 bg-muted/20 max-w-[240px]">
-                    <img src={uploadedImage} alt="Upload" className="w-full h-auto max-h-[200px] object-contain" />
-                    <button
-                      onClick={() => setUploadedImage(null)}
-                      className="absolute top-2 right-2 h-7 w-7 rounded-full bg-background/80 backdrop-blur flex items-center justify-center border border-border/40 hover:bg-destructive hover:text-destructive-foreground transition-colors"
-                    >
-                      <X size={12} />
-                    </button>
+            {/* Upload area — always visible since Seedream 4.5 supports image input */}
+            <div className="space-y-2">
+              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                {isAr ? 'صورة مرجعية (اختياري)' : 'Reference Image (optional)'}
+              </p>
+              {uploadedImage ? (
+                <div className="relative rounded-2xl overflow-hidden border border-border/20 bg-muted/10 max-w-[280px] group">
+                  <img src={uploadedImage} alt="Upload" className="w-full h-auto max-h-[220px] object-contain" />
+                  <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
+                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                      <button
+                        onClick={() => fileInputRef.current?.click()}
+                        className="h-8 px-3 rounded-full bg-background/90 backdrop-blur text-xs font-medium flex items-center gap-1.5 border border-border/30 hover:bg-background transition-colors"
+                      >
+                        <Upload size={12} />
+                        {isAr ? 'استبدال' : 'Replace'}
+                      </button>
+                      <button
+                        onClick={() => setUploadedImage(null)}
+                        className="h-8 w-8 rounded-full bg-background/90 backdrop-blur flex items-center justify-center border border-border/30 hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
                   </div>
-                ) : (
-                  <div
-                    onDragOver={e => { e.preventDefault(); setDragOver(true); }}
-                    onDragLeave={() => setDragOver(false)}
-                    onDrop={handleDrop}
-                    onClick={() => fileInputRef.current?.click()}
-                    className={`flex flex-col items-center justify-center gap-2 py-8 rounded-xl border-2 border-dashed cursor-pointer transition-all max-w-[300px] ${
-                      dragOver ? 'border-primary bg-primary/5' : 'border-border/40 bg-muted/10 hover:border-primary/50'
-                    }`}
-                  >
-                    <Upload size={20} className="text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">
-                      {isAr ? 'اسحب صورة أو اضغط للرفع' : 'Drag image or click to upload'}
+                </div>
+              ) : (
+                <div
+                  onDragOver={e => { e.preventDefault(); setDragOver(true); }}
+                  onDragLeave={() => setDragOver(false)}
+                  onDrop={handleDrop}
+                  onClick={() => !uploading && fileInputRef.current?.click()}
+                  className={`flex flex-col items-center justify-center gap-3 py-10 rounded-2xl border-2 border-dashed cursor-pointer transition-all max-w-[320px] ${
+                    dragOver
+                      ? 'border-primary bg-primary/5 shadow-[0_0_20px_rgba(240,62,27,0.15)]'
+                      : 'border-border/30 bg-muted/5 hover:border-primary/40 hover:bg-muted/10'
+                  }`}
+                >
+                  {uploading ? (
+                    <Loader2 size={24} className="animate-spin text-primary" />
+                  ) : (
+                    <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <ImagePlus size={22} className="text-primary" />
+                    </div>
+                  )}
+                  <div className="text-center">
+                    <p className="text-sm font-medium text-foreground">
+                      {isAr ? 'ارفع صورتك' : 'Upload your image'}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      {isAr ? 'يدعم JPG / PNG / WebP' : 'JPG / PNG / WebP supported'}
                     </p>
                   </div>
-                )}
-                <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) processFile(f); e.target.value = ''; }} />
-              </div>
-            )}
+                </div>
+              )}
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                className="hidden"
+                onChange={e => {
+                  const f = e.target.files?.[0];
+                  if (f) processFile(f);
+                  e.target.value = '';
+                }}
+              />
+            </div>
 
             {/* Generate Button */}
             <Button
