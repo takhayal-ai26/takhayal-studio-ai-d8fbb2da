@@ -192,6 +192,8 @@ export type Database = {
           generation_cost: number
           id: string
           image_url: string | null
+          is_public: boolean
+          is_shared_to_community: boolean
           margin: number
           margin_pct: number
           model_id: string | null
@@ -199,6 +201,7 @@ export type Database = {
           prompt: string | null
           provider_cost: number
           provider_id: string | null
+          public_id: string | null
           quality_tier: string | null
           ratio: string | null
           requested_quality_tier: string | null
@@ -206,6 +209,7 @@ export type Database = {
           resolution: string | null
           revenue: number
           revenue_usd: number
+          share_count: number
           status: string
           tool_id: string | null
           upscale_cost: number
@@ -223,6 +227,8 @@ export type Database = {
           generation_cost?: number
           id?: string
           image_url?: string | null
+          is_public?: boolean
+          is_shared_to_community?: boolean
           margin?: number
           margin_pct?: number
           model_id?: string | null
@@ -230,6 +236,7 @@ export type Database = {
           prompt?: string | null
           provider_cost?: number
           provider_id?: string | null
+          public_id?: string | null
           quality_tier?: string | null
           ratio?: string | null
           requested_quality_tier?: string | null
@@ -237,6 +244,7 @@ export type Database = {
           resolution?: string | null
           revenue?: number
           revenue_usd?: number
+          share_count?: number
           status?: string
           tool_id?: string | null
           upscale_cost?: number
@@ -254,6 +262,8 @@ export type Database = {
           generation_cost?: number
           id?: string
           image_url?: string | null
+          is_public?: boolean
+          is_shared_to_community?: boolean
           margin?: number
           margin_pct?: number
           model_id?: string | null
@@ -261,6 +271,7 @@ export type Database = {
           prompt?: string | null
           provider_cost?: number
           provider_id?: string | null
+          public_id?: string | null
           quality_tier?: string | null
           ratio?: string | null
           requested_quality_tier?: string | null
@@ -268,6 +279,7 @@ export type Database = {
           resolution?: string | null
           revenue?: number
           revenue_usd?: number
+          share_count?: number
           status?: string
           tool_id?: string | null
           upscale_cost?: number
