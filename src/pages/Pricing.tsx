@@ -366,7 +366,6 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
             gap: `${gap}px`,
             animation: `testimonialScroll ${testimonials.length * 6}s linear infinite`,
             animationPlayState: paused ? 'paused' : 'running',
-            direction: isAr ? 'rtl' : 'ltr',
             width: 'max-content',
           }}
         >
@@ -376,8 +375,8 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
 
       <style>{`
         @keyframes testimonialScroll {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-${totalWidth}px); }
+          0% { transform: translateX(${isAr ? `-${totalWidth}px` : '0'}); }
+          100% { transform: translateX(${isAr ? '0' : `-${totalWidth}px`}); }
         }
       `}</style>
     </section>
