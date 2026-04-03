@@ -88,9 +88,10 @@ export default function CreateHub() {
               <button
                 key={tool.id}
                 onClick={() => handleToolClick(tool)}
-                className="rounded-3xl overflow-hidden relative group text-left focus:outline-none active:scale-[0.97] transition-all shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
+                className="rounded-3xl overflow-hidden relative group focus:outline-none active:scale-[0.97] transition-all shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
+                style={{ textAlign: isAr ? 'right' : 'left' }}
               >
-                <div className="aspect-[4/3] relative">
+                <div className="aspect-square relative">
                   {hasImage ? (
                     <img
                       src={tool.image}
@@ -103,20 +104,14 @@ export default function CreateHub() {
                       <Icon size={36} className="text-primary/20" />
                     </div>
                   )}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/35 to-transparent" />
-                </div>
-                {/* Icon badge */}
-                <div className="absolute top-3 left-3">
-                  <div className="w-8 h-8 rounded-xl bg-black/30 backdrop-blur-md flex items-center justify-center ring-1 ring-white/[0.08]">
-                    <Icon size={15} className="text-white/80" />
-                  </div>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-transparent" />
                 </div>
                 {/* Text */}
-                <div className="absolute bottom-0 left-0 right-0 p-3.5">
-                  <h3 className="text-[13px] font-semibold text-white leading-tight">
+                <div className="absolute bottom-0 left-0 right-0 p-4">
+                  <h3 className="text-[15px] font-bold text-white leading-tight">
                     {tool.name}
                   </h3>
-                  <p className="text-[11px] text-white/50 mt-0.5 line-clamp-1">
+                  <p className="text-[12px] text-white/55 mt-1 line-clamp-1">
                     {tool.shortDesc}
                   </p>
                 </div>
