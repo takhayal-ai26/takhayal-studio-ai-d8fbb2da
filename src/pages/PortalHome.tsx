@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { ArrowRight, Sparkles } from 'lucide-react';
 import { useState, useEffect, lazy, Suspense } from 'react';
 import { useTools } from '@/hooks/useTools';
+import { useTemplates } from '@/hooks/useTemplates';
 import { DashboardHero } from '@/components/home/DashboardHero';
 import { WhyTakhayal } from '@/components/home/WhyTakhayal';
 import { FinalCTA } from '@/components/home/FinalCTA';
@@ -15,33 +16,18 @@ import { Footer } from '@/components/layout/Footer';
 const TestimonialsCarousel = lazy(() => import('@/components/home/TestimonialsCarousel').then(m => ({ default: m.TestimonialsCarousel })));
 const PricingPreview = lazy(() => import('@/components/home/PricingPreview').then(m => ({ default: m.PricingPreview })));
 
-import imgCinema from '@/assets/portal/feat-cinema.jpg';
 import imgFashion from '@/assets/portal/feat-fashion.jpg';
-import imgFood from '@/assets/portal/feat-food.jpg';
-import imgArchitecture from '@/assets/portal/feat-architecture.jpg';
-import imgProduct from '@/assets/portal/feat-product.jpg';
-import imgSocial from '@/assets/portal/feat-social.jpg';
-import imgEid from '@/assets/portal/feat-eid.jpg';
+import imgCinema from '@/assets/portal/feat-cinema.jpg';
 import imgCoffee from '@/assets/portal/feat-coffee.jpg';
-import imgLogo from '@/assets/portal/feat-logo.jpg';
-import imgSkincare from '@/assets/portal/feat-skincare.jpg';
 import imgPortrait from '@/assets/portal/feat-portrait.jpg';
-import imgRamadan from '@/assets/portal/seasonal-ramadan.jpg';
+import imgLogo from '@/assets/portal/feat-logo.jpg';
+import imgArchitecture from '@/assets/portal/feat-architecture.jpg';
 
-const masonryImages = [
-  { image: imgCinema, promptEn: 'Luxury perfume ad, dramatic side lighting, dark background, elegant glass bottle', promptAr: 'إعلان عطر فاخر، إضاءة جانبية درامية، خلفية داكنة، زجاجة أنيقة', template: 'Product Shot', cat: 'Products' },
-  { image: imgFashion, promptEn: 'Trendy streetwear fashion shoot, urban backdrop, bold colors', promptAr: 'تصوير أزياء شارع عصرية، خلفية حضرية، ألوان جريئة', template: 'Fashion', cat: 'Fashion' },
-  { image: imgFood, promptEn: 'Golden hour restaurant scene, appetizing table spread, warm ambiance', promptAr: 'مشهد مطعم في الساعة الذهبية، مائدة شهية، أجواء دافئة', template: 'Restaurant', cat: 'Food' },
-  { image: imgProduct, promptEn: 'Minimalist tech product floating, clean gradient background, 3D render', promptAr: 'منتج تقني عائم بسيط، خلفية متدرجة نظيفة، عرض ثلاثي الأبعاد', template: 'Product Shot', cat: 'Products' },
-  { image: imgRamadan, promptEn: 'Cinematic Ramadan greeting, lanterns and stars, cinematic depth of field', promptAr: 'تهنئة رمضانية سينمائية، فوانيس ونجوم، عمق مجال سينمائي', template: 'Ramadan', cat: 'Ads' },
-  { image: imgSocial, promptEn: 'Instagram story design, bold typography, vibrant gradient, social media', promptAr: 'تصميم ستوري إنستغرام، خطوط عريضة، تدرج نابض، وسائل تواصل', template: 'Reels Cover', cat: 'Social' },
-  { image: imgArchitecture, promptEn: 'Modern villa exterior, blue sky, lush garden, architectural photography', promptAr: 'واجهة فيلا عصرية، سماء زرقاء، حديقة خضراء، تصوير معماري', template: 'Real Estate', cat: 'Architecture' },
-  { image: imgPortrait, promptEn: 'Haute couture fashion editorial, flowing fabric, studio lighting', promptAr: 'تصوير أزياء راقية، قماش متدفق، إضاءة استوديو', template: 'Fashion', cat: 'Fashion' },
-  { image: imgEid, promptEn: 'Eid celebration ad, festive colors, joyful atmosphere, commercial quality', promptAr: 'إعلان احتفال عيد، ألوان احتفالية، أجواء بهيجة، جودة تجارية', template: 'Eid', cat: 'Ads' },
-  { image: imgCoffee, promptEn: 'Artisan coffee flat lay, latte art, warm morning light, overhead shot', promptAr: 'عرض قهوة حرفية، فن اللاتيه، ضوء صباحي دافئ، تصوير علوي', template: 'Restaurant', cat: 'Food' },
-  { image: imgSkincare, promptEn: 'Clean skincare product on marble, soft shadows, premium aesthetic', promptAr: 'منتج عناية بالبشرة على رخام، ظلال ناعمة، جمالية فاخرة', template: 'Product Shot', cat: 'Products' },
-  { image: imgLogo, promptEn: 'Premium 3D logo mockup, golden metallic finish, dark surface', promptAr: 'نموذج شعار ثلاثي الأبعاد فاخر، لمسة معدنية ذهبية، سطح داكن', template: 'National Day', cat: 'Ads' },
-];
+function ratioToNumber(ratio: string): number {
+  const [w, h] = ratio.split(':').map(Number);
+  if (!w || !h) return 1;
+  return w / h;
+}
 
 export default function PortalHome() {
   const navigate = useNavigate();
@@ -51,6 +37,7 @@ export default function PortalHome() {
   const { user } = useAuth();
   const isAr = lang === 'ar';
   const { tools: toolsData } = useTools();
+  const { templates: dbTemplates, categories: dbCategories, loading: templatesLoading } = useTemplates();
   const [activeCategory, setActiveCategory] = useState('All');
   const isLoggedIn = !!user;
 
@@ -64,12 +51,7 @@ export default function PortalHome() {
 
   const categoryKeys = [
     { key: 'All', label: t.portal.all },
-    { key: 'Ads', label: t.portal.ads },
-    { key: 'Social', label: t.portal.social },
-    { key: 'Fashion', label: t.portal.fashion },
-    { key: 'Products', label: t.portal.products },
-    { key: 'Food', label: t.portal.food },
-    { key: 'Architecture', label: t.portal.architecture },
+    ...dbCategories.map(c => ({ key: c.name_en, label: c.name })),
   ];
 
   const goToCanvas = (prompt: string, template: string) => {
@@ -81,9 +63,9 @@ export default function PortalHome() {
     });
   };
 
-  const filteredMasonry = activeCategory === 'All'
-    ? masonryImages
-    : masonryImages.filter(m => m.cat === activeCategory);
+  const filteredTemplates = activeCategory === 'All'
+    ? dbTemplates
+    : dbTemplates.filter(tpl => tpl.category === activeCategory);
 
   return (
     <div className="flex-1 overflow-y-auto animate-page-enter" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
