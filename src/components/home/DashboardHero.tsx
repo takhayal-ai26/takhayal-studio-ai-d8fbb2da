@@ -239,10 +239,10 @@ export function DashboardHero() {
           <h1
             className="text-white text-center font-extrabold drop-shadow-lg"
             style={{
-              fontSize: 'clamp(30px, 5.5vw, 64px)',
+              fontSize: 'clamp(26px, 5vw, 64px)',
               letterSpacing: -2,
               lineHeight: 1.05,
-              marginBottom: subtitleText ? 10 : 24,
+              marginBottom: subtitleText ? 8 : 16,
               fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
               textShadow: '0 2px 20px rgba(0,0,0,0.4)',
             }}
