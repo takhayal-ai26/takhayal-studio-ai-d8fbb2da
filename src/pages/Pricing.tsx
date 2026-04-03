@@ -360,6 +360,9 @@ const Pricing = () => {
         </div>
       </section>
 
+      {/* Testimonials */}
+      <TestimonialCarousel isAr={isAr} />
+
       {/* Credit Cost Per Tool */}
       <section className="max-w-5xl mx-auto px-6 pb-20">
         <div className="text-center mb-8">
