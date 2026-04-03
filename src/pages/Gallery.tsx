@@ -382,7 +382,7 @@ export default function Gallery() {
           onClose={() => setSelectedJob(null)}
           onRetry={retryJob}
           onReuse={handleReuse}
-          onShare={setShareJob}
+          onShare={(j) => { setSelectedJob(null); setTimeout(() => setShareJob(j), 50); }}
           onDelete={handleDelete}
           onPrev={handlePrev}
           onNext={handleNext}
