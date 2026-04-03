@@ -46,6 +46,8 @@ function parseModel(row: any): ModelRecord {
     credits_per_generation: row.credits_per_generation ?? null,
     upscale_strategy: row.upscale_strategy || 'esrgan',
     supports_native_high_res: row.supports_native_high_res ?? false,
+    supports_image_input: row.supports_image_input ?? false,
+    edit_endpoint_id: row.edit_endpoint_id ?? null,
   };
 }
 
