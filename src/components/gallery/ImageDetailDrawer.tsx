@@ -146,9 +146,9 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse }: Prop
                 value={job.ratio || '1:1'}
               />
               <MetaItem
-                icon={<span className={`text-xs font-bold ${statusColor}`}>●</span>}
-                label={isAr ? 'الحالة' : 'Status'}
-                value={statusLabel}
+                icon={<Sparkles size={13} />}
+                label={isAr ? 'الجودة' : 'Quality'}
+                value={job.quality_tier || '1K'}
               />
             </div>
           </div>
