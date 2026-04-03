@@ -1,10 +1,11 @@
-import { useMemo } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Download, RefreshCw, Image as ImageIcon, ArrowRight, Loader2, AlertCircle, RotateCcw } from 'lucide-react';
 import { useGenerationJobs, GenerationJob } from '@/hooks/useGenerationJobs';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { useApp } from '@/context/AppContext';
+import { ImageDetailDrawer } from '@/components/gallery/ImageDetailDrawer';
 
 function groupByDate(jobs: GenerationJob[]): { label: string; labelAr: string; items: GenerationJob[] }[] {
   const now = new Date();
@@ -27,16 +28,18 @@ function groupByDate(jobs: GenerationJob[]): { label: string; labelAr: string; i
   return groups.filter(g => g.items.length > 0);
 }
 
-function GalleryCard({ job, isAr, onRetry, onReuse }: {
+function GalleryCard({ job, isAr, onRetry, onReuse, onTap }: {
   job: GenerationJob;
   isAr: boolean;
   onRetry: (id: string) => void;
   onReuse: (prompt: string) => void;
+  onTap: (job: GenerationJob) => void;
 }) {
   const isProcessing = job.status === 'processing';
   const isFailed = job.status === 'failed';
 
-  const handleDownload = () => {
+  const handleDownload = (e: React.MouseEvent) => {
+    e.stopPropagation();
     if (!job.image_url) return;
     const a = document.createElement('a');
     a.href = job.image_url;
@@ -45,9 +48,22 @@ function GalleryCard({ job, isAr, onRetry, onReuse }: {
     a.click();
   };
 
+  const handleRetry = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onRetry(job.id);
+  };
+
+  const handleReuse = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onReuse(job.prompt || '');
+  };
+
   if (isProcessing) {
     return (
-      <div className="break-inside-avoid mb-3 rounded-2xl overflow-hidden bg-card/60 border border-border/20">
+      <button
+        onClick={() => onTap(job)}
+        className="break-inside-avoid mb-3 rounded-2xl overflow-hidden bg-card/60 border border-border/20 w-full text-start cursor-pointer active:scale-[0.98] transition-transform"
+      >
         <div className="aspect-square flex flex-col items-center justify-center gap-3 p-4 bg-gradient-to-br from-primary/5 to-muted/10">
           <Loader2 size={28} className="text-primary animate-spin" />
           <span className="text-xs font-medium text-primary">
@@ -57,38 +73,44 @@ function GalleryCard({ job, isAr, onRetry, onReuse }: {
         <div className="p-3">
           <p className="text-[11px] text-muted-foreground line-clamp-2">{job.prompt}</p>
         </div>
-      </div>
+      </button>
     );
   }
 
   if (isFailed) {
     return (
-      <div className="break-inside-avoid mb-3 rounded-2xl overflow-hidden bg-card/60 border border-destructive/20">
+      <button
+        onClick={() => onTap(job)}
+        className="break-inside-avoid mb-3 rounded-2xl overflow-hidden bg-card/60 border border-destructive/20 w-full text-start cursor-pointer active:scale-[0.98] transition-transform"
+      >
         <div className="aspect-square flex flex-col items-center justify-center gap-3 p-4">
           <AlertCircle size={28} className="text-destructive/60" />
           <span className="text-xs font-medium text-destructive">
             {isAr ? 'فشل التوليد' : 'Failed'}
           </span>
-          <button
-            onClick={() => onRetry(job.id)}
+          <span
+            onClick={handleRetry}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
           >
             <RotateCcw size={12} />
             {isAr ? 'إعادة المحاولة' : 'Retry'}
-          </button>
+          </span>
         </div>
         <div className="p-3">
           <p className="text-[11px] text-muted-foreground line-clamp-2">{job.prompt}</p>
         </div>
-      </div>
+      </button>
     );
   }
 
   // Completed
   return (
-    <div className="break-inside-avoid mb-3 group relative rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-black/10 animate-in fade-in zoom-in-95 duration-300">
+    <button
+      onClick={() => onTap(job)}
+      className="break-inside-avoid mb-3 group relative rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-black/10 animate-in fade-in zoom-in-95 duration-300 w-full text-start cursor-pointer active:scale-[0.98]"
+    >
       {job.image_url && (
-        <img src={job.image_url} alt={job.prompt} className="w-full object-cover" loading="lazy" />
+        <img src={job.image_url} alt={job.prompt || ''} className="w-full object-cover" loading="lazy" />
       )}
       <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex flex-col justify-between p-3">
         <div />
@@ -99,17 +121,17 @@ function GalleryCard({ job, isAr, onRetry, onReuse }: {
               {new Date(job.created_at).toLocaleDateString(isAr ? 'ar' : 'en-US', { month: 'short', day: 'numeric' })}
             </span>
             <div className="flex gap-2">
-              <button onClick={handleDownload} className="text-white/80 hover:text-primary transition-colors">
+              <span onClick={handleDownload} className="text-white/80 hover:text-primary transition-colors">
                 <Download size={16} />
-              </button>
-              <button onClick={() => onReuse(job.prompt)} className="text-white/80 hover:text-primary transition-colors">
+              </span>
+              <span onClick={handleReuse} className="text-white/80 hover:text-primary transition-colors">
                 <RefreshCw size={16} />
-              </button>
+              </span>
             </div>
           </div>
         </div>
       </div>
-    </div>
+    </button>
   );
 }
 
@@ -120,12 +142,17 @@ export default function Gallery() {
   const { openAuthModal } = useApp();
   const { jobs, loading, retryJob } = useGenerationJobs();
   const isAr = lang === 'ar';
+  const [selectedJob, setSelectedJob] = useState<GenerationJob | null>(null);
 
   const groups = useMemo(() => groupByDate(jobs), [jobs]);
 
-  const handleReuse = (prompt: string) => {
+  const handleReuse = useCallback((prompt: string) => {
     navigate('/studio');
-  };
+  }, [navigate]);
+
+  const handleTap = useCallback((job: GenerationJob) => {
+    setSelectedJob(job);
+  }, []);
 
   if (!user) {
     return (
@@ -183,40 +210,51 @@ export default function Gallery() {
   }
 
   return (
-    <div
-      className="flex-1 overflow-y-auto pb-24 md:pb-6 animate-page-enter"
-      dir={isAr ? 'rtl' : 'ltr'}
-      style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}
-    >
-      <div className="max-w-3xl mx-auto px-4 pt-6">
-        <div className="flex items-baseline gap-3 mb-6">
-          <h1 className="text-xl font-semibold text-foreground">
-            {isAr ? 'معرضي' : 'My Gallery'}
-          </h1>
-          <span className="text-sm text-muted-foreground/50">
-            {jobs.length} {isAr ? 'صورة' : 'images'}
-          </span>
-        </div>
-
-        {groups.map(group => (
-          <div key={group.label} className="mb-8">
-            <h2 className="text-sm font-medium text-muted-foreground mb-3">
-              {isAr ? group.labelAr : group.label}
-            </h2>
-            <div className="columns-2 sm:columns-3 gap-3">
-              {group.items.map(job => (
-                <GalleryCard
-                  key={job.id}
-                  job={job}
-                  isAr={isAr}
-                  onRetry={retryJob}
-                  onReuse={handleReuse}
-                />
-              ))}
-            </div>
+    <>
+      <div
+        className="flex-1 overflow-y-auto pb-24 md:pb-6 animate-page-enter"
+        dir={isAr ? 'rtl' : 'ltr'}
+        style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}
+      >
+        <div className="max-w-3xl mx-auto px-4 pt-6">
+          <div className="flex items-baseline gap-3 mb-6">
+            <h1 className="text-xl font-semibold text-foreground">
+              {isAr ? 'معرضي' : 'My Gallery'}
+            </h1>
+            <span className="text-sm text-muted-foreground/50">
+              {jobs.length} {isAr ? 'صورة' : 'images'}
+            </span>
           </div>
-        ))}
+
+          {groups.map(group => (
+            <div key={group.label} className="mb-8">
+              <h2 className="text-sm font-medium text-muted-foreground mb-3">
+                {isAr ? group.labelAr : group.label}
+              </h2>
+              <div className="columns-2 sm:columns-3 gap-3">
+                {group.items.map(job => (
+                  <GalleryCard
+                    key={job.id}
+                    job={job}
+                    isAr={isAr}
+                    onRetry={retryJob}
+                    onReuse={handleReuse}
+                    onTap={handleTap}
+                  />
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
       </div>
-    </div>
+
+      <ImageDetailDrawer
+        job={selectedJob}
+        open={!!selectedJob}
+        onClose={() => setSelectedJob(null)}
+        onRetry={retryJob}
+        onReuse={handleReuse}
+      />
+    </>
   );
 }
