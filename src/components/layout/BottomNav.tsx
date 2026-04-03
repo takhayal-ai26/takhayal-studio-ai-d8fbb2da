@@ -20,9 +20,8 @@ export function BottomNav() {
 
   const isActive = (item: typeof navItems[0]) => {
     if (item.id === 'create') return location.pathname === '/create';
-    if (item.studioPage) return location.pathname === '/studio' && activePage === item.studioPage;
     if (item.route === '/') return location.pathname === '/' || location.pathname === '/home';
-    return location.pathname.startsWith(item.route);
+    return location.pathname === item.route;
   };
 
   const handleTap = (item: typeof navItems[0]) => {
