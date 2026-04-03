@@ -88,11 +88,18 @@ export function SettingsView() {
   const [uploading, setUploading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Load profile data
+  // Load profile data — fallback: split full_name if first/last empty
   useEffect(() => {
     if (profile) {
-      setFirstName((profile as any).first_name || '');
-      setLastName((profile as any).last_name || '');
+      let fn = (profile as any).first_name || '';
+      let ln = (profile as any).last_name || '';
+      if (!fn && !ln && profile.full_name) {
+        const parts = profile.full_name.trim().split(' ');
+        fn = parts[0] || '';
+        ln = parts.slice(1).join(' ') || '';
+      }
+      setFirstName(fn);
+      setLastName(ln);
       setAvatarUrl(profile.avatar_url || null);
     }
   }, [profile]);
@@ -244,11 +251,9 @@ export function SettingsView() {
               </div>
               <div>
                 <label className="text-[12px] text-muted-foreground mb-1 block">{l.email}</label>
-                <input
-                  value={profile?.email || user?.email || ''}
-                  readOnly
-                  className="w-full h-11 px-3 rounded-xl bg-muted/20 text-sm text-muted-foreground cursor-not-allowed"
-                />
+                <div className="w-full h-11 px-3 rounded-xl bg-muted/10 flex items-center text-sm text-muted-foreground/60 select-none">
+                    {profile?.email || user?.email || ''}
+                  </div>
               </div>
               <button
                 onClick={handleSave}
