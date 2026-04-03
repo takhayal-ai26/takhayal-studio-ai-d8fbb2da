@@ -31,8 +31,7 @@ export function CreationPanel() {
   const [selectedModelId, setSelectedModelId] = useState<string>('');
   const [selectedResolution, setSelectedResolution] = useState<string>('1K');
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
-  const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<{ preview: string; url: string | null }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
