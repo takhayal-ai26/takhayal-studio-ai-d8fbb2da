@@ -1019,6 +1019,7 @@ export type Database = {
           cover_image_url: string
           created_at: string
           featured: boolean
+          height: number | null
           id: string
           prompt: string
           ratio: string
@@ -1028,6 +1029,7 @@ export type Database = {
           title_ar: string
           title_en: string
           updated_at: string
+          width: number | null
         }
         Insert: {
           active?: boolean
@@ -1035,6 +1037,7 @@ export type Database = {
           cover_image_url?: string
           created_at?: string
           featured?: boolean
+          height?: number | null
           id?: string
           prompt?: string
           ratio?: string
@@ -1044,6 +1047,7 @@ export type Database = {
           title_ar?: string
           title_en: string
           updated_at?: string
+          width?: number | null
         }
         Update: {
           active?: boolean
@@ -1051,6 +1055,7 @@ export type Database = {
           cover_image_url?: string
           created_at?: string
           featured?: boolean
+          height?: number | null
           id?: string
           prompt?: string
           ratio?: string
@@ -1060,6 +1065,7 @@ export type Database = {
           title_ar?: string
           title_en?: string
           updated_at?: string
+          width?: number | null
         }
         Relationships: []
       }
