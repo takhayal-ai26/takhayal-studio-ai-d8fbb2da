@@ -252,7 +252,7 @@ export function DashboardHero() {
         )}
 
         {subtitleText && (
-          <p className="text-center" style={{ fontSize: 15, color: 'rgba(255,255,255,0.56)', marginBottom: 40, maxWidth: 680, lineHeight: 1.6 }}>
+          <p className="text-center" style={{ fontSize: 14, color: 'rgba(255,255,255,0.56)', marginBottom: 24, maxWidth: 680, lineHeight: 1.6 }}>
             {subtitleText}
           </p>
         )}
