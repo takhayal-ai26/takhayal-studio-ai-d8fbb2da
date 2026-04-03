@@ -15,6 +15,7 @@ export interface FrontendTemplate {
 export interface TemplateCategory {
   id: string;
   name: string;
+  name_en: string;
   sort_order: number;
 }
 
@@ -49,6 +50,7 @@ export function useTemplates() {
         setCategories((catRes.data as any[]).map(c => ({
           id: c.id,
           name: isAr && c.name_ar ? c.name_ar : c.name_en,
+          name_en: c.name_en,
           sort_order: c.sort_order,
         })));
       }

@@ -13,7 +13,7 @@ function ratioToNumber(ratio: string): number {
 export function TemplatesView() {
   const { setPrompt, setSelectedTemplate, setActivePage } = useApp();
   const { t, isRTL } = useLanguage();
-  const { templates, categoryNames, loading } = useTemplates();
+  const { templates, categories, categoryNames, loading } = useTemplates();
   const [activeCategory, setActiveCategory] = useState('All');
 
   const handleUse = (tpl: FrontendTemplate) => {
@@ -22,9 +22,13 @@ export function TemplatesView() {
     setActivePage('canvas');
   };
 
+  // Map displayed category name back to English name_en for DB filtering
+  const activeCategoryEn = activeCategory === 'All'
+    ? 'All'
+    : categories.find(c => c.name === activeCategory)?.name_en || activeCategory;
+
   const filtered = templates.filter(tpl => {
-    const matchCategory = activeCategory === 'All' || tpl.category === activeCategory;
-    return matchCategory;
+    return activeCategoryEn === 'All' || tpl.category === activeCategoryEn;
   });
 
   return (
