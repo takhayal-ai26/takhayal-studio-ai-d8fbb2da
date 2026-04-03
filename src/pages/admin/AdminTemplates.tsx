@@ -25,6 +25,7 @@ interface DBTemplate {
   width?: number | null;
   height?: number | null;
   prompt: string;
+  prompt_ar: string;
   active: boolean;
   featured: boolean;
   show_on_studio: boolean;
