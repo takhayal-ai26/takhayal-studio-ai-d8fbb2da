@@ -183,6 +183,13 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
                       <Settings size={15} className="text-muted-foreground" />
                       {t.avatar.settings}
                     </button>
+                    <button
+                      onClick={() => { setAvatarOpen(false); navigate('/contact'); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-foreground hover:bg-foreground/[0.05] transition-colors"
+                    >
+                      <Mail size={15} className="text-muted-foreground" />
+                      {isRTL ? 'تواصل معنا' : 'Contact Us'}
+                    </button>
 
                     {/* Language & Theme */}
                     <div className="flex items-center justify-between px-3 py-2.5">
@@ -291,6 +298,13 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
                     >
                       <Settings size={15} className="text-muted-foreground" />
                       {t.avatar.settings}
+                    </button>
+                    <button
+                      onClick={() => { setAvatarOpen(false); navigate('/contact'); }}
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-foreground hover:bg-foreground/[0.05] transition-colors"
+                    >
+                      <Mail size={15} className="text-muted-foreground" />
+                      {isRTL ? 'تواصل معنا' : 'Contact Us'}
                     </button>
 
                     {/* Language & Theme */}
