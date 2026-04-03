@@ -57,17 +57,16 @@ export function SizeDropdown({ availableRatios, selectedRatio, anchorRect, onSel
   if (isMobile) {
     const title = lang === 'ar' ? 'اختر المقاس' : 'Select Size';
     return (
-      <MobileBottomSheet title={title} open onClose={onClose} maxHeight="55vh">
+      <MobileBottomSheet title={title} open onClose={onClose} maxHeight="60vh">
         <div className="grid grid-cols-3 gap-3 px-5 pb-4">
           {availableRatios.map(r => {
             const isActive = selectedRatio === r;
             const shape = RATIO_SHAPE[r] || { w: 1, h: 1 };
-            const label = RATIO_LABELS[r];
             return (
               <button
                 key={r}
                 onClick={() => onSelect(r)}
-                className={`flex flex-col items-center gap-2 py-4 rounded-2xl transition-all duration-200 ${
+                className={`flex flex-col items-center justify-center gap-2 aspect-square rounded-2xl transition-all duration-200 ${
                   isActive
                     ? 'bg-primary/10 ring-1 ring-primary/25 shadow-[0_2px_12px_-2px] shadow-primary/15 scale-[1.02]'
                     : 'bg-foreground/[0.03] active:scale-[0.97]'
@@ -75,11 +74,6 @@ export function SizeDropdown({ availableRatios, selectedRatio, anchorRect, onSel
               >
                 <RatioIcon w={shape.w} h={shape.h} active={isActive} size={30} />
                 <span className={`text-[14px] font-semibold ${isActive ? 'text-primary' : 'text-foreground'}`}>{r}</span>
-                {label && (
-                  <span className={`text-[10px] -mt-1 ${isActive ? 'text-primary/60' : 'text-muted-foreground/50'}`}>
-                    {lang === 'ar' ? label.ar : label.en}
-                  </span>
-                )}
               </button>
             );
           })}
