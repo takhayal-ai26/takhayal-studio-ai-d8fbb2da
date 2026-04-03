@@ -130,7 +130,16 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
                 </button>
 
                 {avatarOpen && (
-                  <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-full mt-2 w-56 bg-popover/95 backdrop-blur-xl rounded-2xl p-2 shadow-xl shadow-black/20 z-50 animate-fade-in`}>
+                  <div
+                    className={`fixed ${isRTL ? 'left-auto right-auto' : ''} w-56 bg-popover/95 backdrop-blur-xl rounded-2xl p-2 shadow-xl shadow-black/20 animate-fade-in`}
+                    style={{
+                      zIndex: 9999,
+                      top: (avatarRef.current?.getBoundingClientRect().bottom ?? 0) + 8,
+                      ...(isRTL
+                        ? { left: avatarRef.current?.getBoundingClientRect().left ?? 0 }
+                        : { right: window.innerWidth - (avatarRef.current?.getBoundingClientRect().right ?? 0) }),
+                    }}
+                  >
                     {/* User info */}
                     <div className="px-3 py-3 mb-1">
                       <p className="text-[13px] font-semibold text-foreground">{userName}</p>
@@ -236,7 +245,16 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
                   ) : initials}
                 </button>
                 {avatarOpen && (
-                  <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-full mt-2 w-56 bg-popover/95 backdrop-blur-xl rounded-2xl p-2 shadow-xl shadow-black/20 z-50 animate-fade-in`}>
+                  <div
+                    className={`fixed w-56 bg-popover/95 backdrop-blur-xl rounded-2xl p-2 shadow-xl shadow-black/20 animate-fade-in`}
+                    style={{
+                      zIndex: 9999,
+                      top: (avatarRef.current?.getBoundingClientRect().bottom ?? 0) + 8,
+                      ...(isRTL
+                        ? { left: avatarRef.current?.getBoundingClientRect().left ?? 0 }
+                        : { right: window.innerWidth - (avatarRef.current?.getBoundingClientRect().right ?? 0) }),
+                    }}
+                  >
                     {/* User info */}
                     <div className="px-3 py-3 mb-1">
                       <p className="text-[13px] font-semibold text-foreground">{userName}</p>
