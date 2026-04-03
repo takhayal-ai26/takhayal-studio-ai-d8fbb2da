@@ -96,9 +96,13 @@ export default function TemplateDetail() {
   const handleGenerate = async () => {
     if (!template) return;
     if (!user) { openAuthModal('signup'); return; }
+    if (!uploadedImage) {
+      toast({ title: isAr ? 'مطلوب صورة' : 'Image required', description: isAr ? 'يرجى رفع صورة أولاً' : 'Please upload an image first', variant: 'destructive' });
+      return;
+    }
 
     setGenerating(true);
-    const generationPrompt = template.prompt; // Always English prompt
+    const generationPrompt = template.prompt;
     const ratio = template.ratio || '1:1';
 
     const jobId = await createJob({
@@ -120,7 +124,7 @@ export default function TemplateDetail() {
       aspectRatio: ratio,
       qualityTier: '1K',
       modelId: resolvedModelId,
-      imageUrl: uploadedImage || undefined,
+      imageUrl: uploadedImage,
     });
 
     navigate('/gallery');
@@ -128,7 +132,7 @@ export default function TemplateDetail() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
+      <div className="flex-1 flex items-center justify-center min-h-screen">
         <Loader2 className="animate-spin text-muted-foreground" size={24} />
       </div>
     );
@@ -136,7 +140,7 @@ export default function TemplateDetail() {
 
   if (!template) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center gap-4" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
+      <div className="flex-1 flex flex-col items-center justify-center gap-4 min-h-screen">
         <p className="text-muted-foreground">{isAr ? 'القالب غير موجود' : 'Template not found'}</p>
         <Button variant="outline" onClick={() => navigate('/templates')}>
           {isAr ? 'العودة للقوالب' : 'Back to Templates'}
@@ -149,48 +153,50 @@ export default function TemplateDetail() {
 
   return (
     <div className="flex-1 overflow-y-auto" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
-      <div className="max-w-6xl mx-auto px-5 md:px-8 py-8">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 md:px-8 pt-6 pb-32 md:pb-12">
         {/* Back */}
         <button
           onClick={() => navigate(-1)}
-          className="mb-6 flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="mb-5 flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ArrowLeft size={16} className={isRTL ? 'rotate-180' : ''} />
+          <ArrowLeft size={15} className={isRTL ? 'rotate-180' : ''} />
           {isAr ? 'رجوع' : 'Back'}
         </button>
 
-        <div className="flex flex-col md:flex-row gap-8 md:gap-12">
-          {/* LEFT: Info + Upload + Generate */}
-          <div className="flex-1 order-2 md:order-1 space-y-6">
+        <div className="flex flex-col md:flex-row gap-8 md:gap-10">
+          {/* LEFT column — desktop: info + upload + generate */}
+          <div className="flex-1 order-2 md:order-1 space-y-5 md:max-w-md">
+            {/* Title */}
             <div>
               <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">{title}</h1>
-              <p className="text-sm text-muted-foreground mt-2">
-                {isAr ? 'مُهيأ لأفضل النتائج' : 'Optimized for best results'}
+              <p className="text-sm text-muted-foreground mt-1.5">
+                {isAr ? 'ارفع صورتك وسنتكفل بالباقي' : "Upload your image and we'll handle the rest"}
               </p>
             </div>
 
-            {/* Upload area — always visible since Seedream 4.5 supports image input */}
+            {/* Upload area */}
             <div className="space-y-2">
-              <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
-                {isAr ? 'صورة مرجعية (اختياري)' : 'Reference Image (optional)'}
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+                {isAr ? 'صورتك' : 'Your Image'}
               </p>
+
               {uploadedImage ? (
-                <div className="relative rounded-2xl overflow-hidden border border-border/20 bg-muted/10 max-w-[280px] group">
-                  <img src={uploadedImage} alt="Upload" className="w-full h-auto max-h-[220px] object-contain" />
+                <div className="relative rounded-2xl overflow-hidden bg-muted/10 group">
+                  <img src={uploadedImage} alt="Upload" className="w-full h-auto max-h-[240px] object-contain rounded-2xl" />
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/30 transition-colors flex items-center justify-center">
                     <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => fileInputRef.current?.click()}
-                        className="h-8 px-3 rounded-full bg-background/90 backdrop-blur text-xs font-medium flex items-center gap-1.5 border border-border/30 hover:bg-background transition-colors"
+                        className="h-9 px-4 rounded-full bg-background/90 backdrop-blur text-xs font-medium flex items-center gap-1.5 hover:bg-background transition-colors"
                       >
-                        <Upload size={12} />
+                        <Upload size={13} />
                         {isAr ? 'استبدال' : 'Replace'}
                       </button>
                       <button
                         onClick={() => setUploadedImage(null)}
-                        className="h-8 w-8 rounded-full bg-background/90 backdrop-blur flex items-center justify-center border border-border/30 hover:bg-destructive hover:text-destructive-foreground transition-colors"
+                        className="h-9 w-9 rounded-full bg-background/90 backdrop-blur flex items-center justify-center hover:bg-destructive hover:text-destructive-foreground transition-colors"
                       >
-                        <X size={12} />
+                        <X size={13} />
                       </button>
                     </div>
                   </div>
@@ -201,17 +207,17 @@ export default function TemplateDetail() {
                   onDragLeave={() => setDragOver(false)}
                   onDrop={handleDrop}
                   onClick={() => !uploading && fileInputRef.current?.click()}
-                  className={`flex flex-col items-center justify-center gap-3 py-10 rounded-2xl border-2 border-dashed cursor-pointer transition-all max-w-[320px] ${
+                  className={`flex flex-col items-center justify-center gap-2.5 py-8 rounded-2xl border-2 border-dashed cursor-pointer transition-all ${
                     dragOver
-                      ? 'border-primary bg-primary/5 shadow-[0_0_20px_rgba(240,62,27,0.15)]'
-                      : 'border-border/30 bg-muted/5 hover:border-primary/40 hover:bg-muted/10'
+                      ? 'border-primary bg-primary/5'
+                      : 'border-border/40 bg-muted/5 hover:border-primary/40 hover:bg-muted/10'
                   }`}
                 >
                   {uploading ? (
-                    <Loader2 size={24} className="animate-spin text-primary" />
+                    <Loader2 size={22} className="animate-spin text-primary" />
                   ) : (
-                    <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center">
-                      <ImagePlus size={22} className="text-primary" />
+                    <div className="h-11 w-11 rounded-xl bg-primary/10 flex items-center justify-center">
+                      <ImagePlus size={20} className="text-primary" />
                     </div>
                   )}
                   <div className="text-center">
@@ -219,11 +225,12 @@ export default function TemplateDetail() {
                       {isAr ? 'ارفع صورتك' : 'Upload your image'}
                     </p>
                     <p className="text-[11px] text-muted-foreground mt-0.5">
-                      {isAr ? 'يدعم JPG / PNG / WebP' : 'JPG / PNG / WebP supported'}
+                      JPG / PNG / WebP · {isAr ? 'الحد الأقصى 10MB' : 'Max 10MB'}
                     </p>
                   </div>
                 </div>
               )}
+
               <input
                 ref={fileInputRef}
                 type="file"
@@ -237,12 +244,12 @@ export default function TemplateDetail() {
               />
             </div>
 
-            {/* Generate Button */}
+            {/* Generate */}
             <Button
               size="lg"
-              className="w-full md:w-auto min-w-[200px] h-12 text-base font-semibold gap-2 rounded-xl shadow-lg shadow-primary/20"
+              className="w-full h-12 text-base font-semibold gap-2 rounded-xl shadow-lg shadow-primary/20"
               onClick={handleGenerate}
-              disabled={generating}
+              disabled={generating || !uploadedImage}
             >
               {generating ? (
                 <><Loader2 size={18} className="animate-spin" /> {isAr ? 'جارِ التوليد...' : 'Generating...'}</>
@@ -251,14 +258,20 @@ export default function TemplateDetail() {
               )}
             </Button>
 
-            <p className="text-[11px] text-muted-foreground/60">
+            {!uploadedImage && (
+              <p className="text-xs text-muted-foreground/70 text-center md:text-start">
+                {isAr ? 'ارفع صورة للمتابعة' : 'Upload an image to continue'}
+              </p>
+            )}
+
+            <p className="text-[11px] text-muted-foreground/50 text-center md:text-start">
               {isAr ? '٢ رصيد لكل توليد' : '2 credits per generation'}
             </p>
           </div>
 
-          {/* RIGHT: Preview Image */}
-          <div className="flex-1 order-1 md:order-2 max-w-lg">
-            <div className="rounded-2xl overflow-hidden border border-border/20 shadow-xl shadow-black/10">
+          {/* RIGHT column — Preview Image */}
+          <div className="flex-1 order-1 md:order-2">
+            <div className="rounded-2xl overflow-hidden shadow-xl shadow-black/10">
               <img
                 src={template.cover_image_url}
                 alt={title}
