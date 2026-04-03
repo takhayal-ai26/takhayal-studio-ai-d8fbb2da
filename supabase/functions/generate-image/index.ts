@@ -201,7 +201,7 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    const { prompt, model_endpoint, aspect_ratio, num_images, input_type, quality_tier, model_id, job_id, image_url } = await req.json();
+    const { prompt, model_endpoint, aspect_ratio, num_images, input_type, quality_tier, model_id, job_id, image_url, image_urls } = await req.json();
 
     if (!prompt || typeof prompt !== "string") {
       return new Response(JSON.stringify({ error: "prompt is required" }),
