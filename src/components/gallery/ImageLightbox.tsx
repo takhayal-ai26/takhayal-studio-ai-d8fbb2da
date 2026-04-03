@@ -142,12 +142,13 @@ export function ImageLightbox({
               src={job.image_url}
               alt={job.prompt || ''}
               className="max-h-[85vh] max-w-full rounded-2xl object-contain shadow-2xl"
+              onClick={e => e.stopPropagation()}
             />
           ) : null}
         </div>
 
         {/* Right: Detail sidebar */}
-        <div className="w-[340px] xl:w-[380px] flex-shrink-0 bg-card/60 backdrop-blur-xl border-s border-border/10 overflow-y-auto pointer-events-auto">
+        <div className="w-[340px] xl:w-[380px] flex-shrink-0 bg-card/60 backdrop-blur-xl border-s border-border/10 overflow-y-auto pointer-events-auto" onClick={e => e.stopPropagation()}>
           <div className="p-6 xl:p-7 space-y-6 pt-16">
             {/* Actions row */}
             <div className="space-y-2.5">
