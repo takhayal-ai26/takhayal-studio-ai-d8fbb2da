@@ -32,6 +32,7 @@ interface DBTemplate {
   sort_order: number;
   created_at: string;
   updated_at: string;
+  default_model_id: string | null;
 }
 
 interface DBCategory {

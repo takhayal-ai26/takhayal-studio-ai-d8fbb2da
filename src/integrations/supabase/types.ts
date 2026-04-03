@@ -1027,6 +1027,7 @@ export type Database = {
           category: string
           cover_image_url: string
           created_at: string
+          default_model_id: string | null
           featured: boolean
           height: number | null
           id: string
@@ -1046,6 +1047,7 @@ export type Database = {
           category?: string
           cover_image_url?: string
           created_at?: string
+          default_model_id?: string | null
           featured?: boolean
           height?: number | null
           id?: string
@@ -1065,6 +1067,7 @@ export type Database = {
           category?: string
           cover_image_url?: string
           created_at?: string
+          default_model_id?: string | null
           featured?: boolean
           height?: number | null
           id?: string
@@ -1079,7 +1082,15 @@ export type Database = {
           updated_at?: string
           width?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "templates_default_model_id_fkey"
+            columns: ["default_model_id"]
+            isOneToOne: false
+            referencedRelation: "models"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       testimonials: {
         Row: {

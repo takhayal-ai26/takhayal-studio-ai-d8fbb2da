@@ -19,6 +19,7 @@ import CreateHub from "./pages/CreateHub";
 import Gallery from "./pages/Gallery";
 import Community from "./pages/Community";
 import Templates from "./pages/Templates";
+import TemplateDetail from "./pages/TemplateDetail";
 import NotFound from "./pages/NotFound";
 import LegalPage from "./pages/LegalPage";
 import About from "./pages/About";
@@ -67,6 +68,7 @@ const App = () => (
                   <Route path="/tools/:toolId" element={<ToolPage />} />
                   <Route path="/community" element={<Community />} />
                   <Route path="/templates" element={<Templates />} />
+                  <Route path="/templates/:id" element={<TemplateDetail />} />
                   <Route path="/about" element={<About />} />
                   <Route path="/contact" element={<Contact />} />
                   <Route path="/terms" element={<LegalPage />} />
