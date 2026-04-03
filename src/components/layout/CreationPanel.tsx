@@ -41,6 +41,7 @@ export function CreationPanel() {
 
   const currentModel = activeModels.find(m => m.id === selectedModelId) || defaultModel || activeModels[0];
   const supportsImageInput = currentModel?.supports_image_input ?? false;
+  const maxImages = currentModel?.max_image_inputs ?? 1;
 
   const modelQualityTiers = (() => {
     if (!currentModel) return ['1K'];
