@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Link2, MessageCircle, Twitter, Instagram, Users, Check, Loader2 } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
@@ -25,8 +26,13 @@ export function ShareModal({ job, open, onClose }: ShareModalProps) {
   const [copied, setCopied] = useState(false);
   const [sharing, setSharing] = useState(false);
   const [communityShared, setCommunityShared] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
-  if (!open || !job) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!mounted || !open || !job) return null;
 
   const getShareUrl = async (): Promise<string> => {
     // Check if already has public_id
@@ -119,7 +125,7 @@ export function ShareModal({ job, open, onClose }: ShareModalProps) {
     </button>
   );
 
-  return (
+  const modal = (
     <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center animate-fade-in" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
       <div
@@ -175,4 +181,6 @@ export function ShareModal({ job, open, onClose }: ShareModalProps) {
       </div>
     </div>
   );
+
+  return createPortal(modal, document.body);
 }
