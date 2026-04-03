@@ -22,6 +22,7 @@ import Templates from "./pages/Templates";
 import NotFound from "./pages/NotFound";
 import LegalPage from "./pages/LegalPage";
 import About from "./pages/About";
+import Contact from "./pages/Contact";
 import AuthCallback from "./pages/AuthCallback";
 import ResetPassword from "./pages/ResetPassword";
 import Checkout from "./pages/Checkout";
