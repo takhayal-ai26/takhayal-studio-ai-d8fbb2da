@@ -15,6 +15,7 @@ export interface FrontendTemplate {
 export interface TemplateCategory {
   id: string;
   name: string;
+  name_en: string;
   sort_order: number;
 }
 
