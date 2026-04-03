@@ -54,13 +54,8 @@ export default function PortalHome() {
     ...dbCategories.map(c => ({ key: c.name_en, label: c.name })),
   ];
 
-  const goToCanvas = (prompt: string, template: string) => {
-    requireAuth(() => {
-      setPrompt(prompt);
-      setSelectedTemplate(template);
-      setActivePage('canvas');
-      navigate('/studio');
-    });
+  const goToTemplateDetail = (tplId: string) => {
+    navigate(`/templates/${tplId}`);
   };
 
   const filteredTemplates = activeCategory === 'All'
