@@ -65,7 +65,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
   return (
     <>
       <nav dir="ltr" className={`fixed left-0 right-0 z-50 h-14 bg-background/80 backdrop-blur-xl flex items-center px-5 md:px-6 transition-[top] duration-200 ${bannerOffset ? 'top-[40px]' : 'top-0'}`}>
-        <div className={`flex-shrink-0 ${isRTL ? 'order-2 md:order-none' : ''}`}>
+        <div className={`flex-shrink-0 whitespace-nowrap ${isRTL ? 'order-2 md:order-none' : ''}`}>
           <Logo />
         </div>
 ...
@@ -148,20 +148,20 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
             </>
           ) : (
             <>
+              {/* Menu icon → opens drawer (left of CTA) */}
+              <button
+                onClick={() => setDrawerOpen(true)}
+                className="w-8 h-8 rounded-lg bg-foreground/[0.05] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Menu size={18} />
+              </button>
+
               {/* Try Free CTA */}
               <button
                 onClick={() => openAuthModal('signup')}
                 className="h-8 px-4 rounded-full bg-primary text-primary-foreground text-[12px] font-semibold shadow-lg shadow-primary/20 transition-all duration-200 active:scale-95"
               >
                 {isRTL ? 'جرّب مجاناً' : 'Try Free'}
-              </button>
-
-              {/* Menu icon → opens drawer */}
-              <button
-                onClick={() => setDrawerOpen(true)}
-                className="w-8 h-8 rounded-lg bg-foreground/[0.05] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Menu size={18} />
               </button>
             </>
           )}
