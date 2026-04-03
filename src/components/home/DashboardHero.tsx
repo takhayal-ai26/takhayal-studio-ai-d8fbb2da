@@ -220,8 +220,8 @@ export function DashboardHero() {
   });
 
   return (
-    <section className="relative w-full h-[55vh] md:h-[540px]">
-      <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: '0 0 48px 48px' }}>
+    <section className="relative w-full h-[42vh] md:h-[540px]">
+      <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: '0 0 36px 36px' }}>
         <div
           className="absolute inset-0"
           style={{
