@@ -173,7 +173,7 @@ export function ImageLightbox({
                 )}
                 {isCompleted && onShare && (
                   <button
-                    onClick={(e) => { e.stopPropagation(); e.nativeEvent.stopImmediatePropagation(); onShare(job); }}
+                    onClick={() => onShare(job)}
                     className="flex-1 h-10 rounded-xl bg-muted/50 text-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-muted/70 active:scale-[0.98] transition-all"
                   >
                     <Share2 size={13} />
