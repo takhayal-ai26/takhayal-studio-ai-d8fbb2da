@@ -340,15 +340,15 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
           dir={isAr ? 'rtl' : 'ltr'}
           className={`animate-page-enter relative overflow-hidden rounded-[24px] border border-primary/15 bg-card/75 p-5 shadow-[0_24px_80px_-32px_hsl(var(--primary)/0.28)] backdrop-blur-xl sm:p-7 ${isAr ? 'text-right' : 'text-left'}`}
         >
-          <div className={`pointer-events-none absolute -top-8 h-32 w-32 rounded-full bg-primary/12 blur-3xl ${isAr ? '-left-8' : '-right-8'}`} />
-          <div className={`relative flex min-h-[270px] flex-col ${isAr ? 'items-end' : 'items-start'} sm:min-h-[240px]`}>
+          <div className={`pointer-events-none absolute -top-8 h-32 w-32 rounded-full bg-primary/12 blur-3xl ${isAr ? '-right-8' : '-left-8'}`} />
+          <div className={`relative flex min-h-[270px] flex-col sm:min-h-[240px]`}>
             <span className="mb-5 text-4xl leading-none text-primary/45">“</span>
 
             <p className="text-[15px] leading-8 text-foreground/90 sm:text-lg sm:leading-8">
               {quote}
             </p>
 
-            <div className={`mt-auto flex items-center gap-3 pt-6 ${isAr ? 'flex-row-reverse' : ''}`}>
+            <div className={`mt-auto flex items-center gap-3 pt-6 `}>
               {activeTestimonial.avatar_url ? (
                 <img
                   src={activeTestimonial.avatar_url}
