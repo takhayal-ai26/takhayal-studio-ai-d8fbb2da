@@ -12,8 +12,7 @@ const t_labels = {
   en: {
     title: 'Settings',
     profile: 'Profile',
-    firstName: 'First Name',
-    lastName: 'Last Name',
+    name: 'Name',
     email: 'Email',
     saveChanges: 'Save Changes',
     saving: 'Saving…',
@@ -42,8 +41,7 @@ const t_labels = {
   ar: {
     title: 'الإعدادات',
     profile: 'الملف الشخصي',
-    firstName: 'الاسم الأول',
-    lastName: 'اسم العائلة',
+    name: 'الاسم',
     email: 'البريد الإلكتروني',
     saveChanges: 'حفظ التغييرات',
     saving: 'جارٍ الحفظ…',
@@ -81,34 +79,26 @@ export function SettingsView() {
   const isAr = lang === 'ar';
   const l = t_labels[isAr ? 'ar' : 'en'];
 
-  const [firstName, setFirstName] = useState('');
-  const [lastName, setLastName] = useState('');
+  const [displayName, setDisplayName] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
-  // Load profile data — fallback: split full_name if first/last empty
+  // Load profile data
   useEffect(() => {
     if (profile) {
-      let fn = (profile as any).first_name || '';
-      let ln = (profile as any).last_name || '';
-      if (!fn && !ln && profile.full_name) {
-        const parts = profile.full_name.trim().split(' ');
-        fn = parts[0] || '';
-        ln = parts.slice(1).join(' ') || '';
-      }
-      setFirstName(fn);
-      setLastName(ln);
+      setDisplayName(profile.full_name || '');
       setAvatarUrl(profile.avatar_url || null);
     }
   }, [profile]);
 
   const initials = (() => {
-    const f = firstName?.charAt(0) || '';
-    const la = lastName?.charAt(0) || '';
-    if (f || la) return (f + la).toUpperCase();
-    return profile?.full_name?.slice(0, 2).toUpperCase() || 'U';
+    const parts = displayName.trim().split(' ');
+    const first = parts[0]?.charAt(0) || '';
+    const last = parts.length > 1 ? parts[parts.length - 1]?.charAt(0) || '' : '';
+    if (first) return (first + last).toUpperCase();
+    return 'U';
   })();
 
   const planLabel = plan === 'free' ? 'Free' : plan === 'pro' ? 'Creator' : 'Studio';
@@ -120,9 +110,7 @@ export function SettingsView() {
       const { error } = await supabase
         .from('profiles')
         .update({
-          first_name: firstName,
-          last_name: lastName,
-          full_name: `${firstName} ${lastName}`.trim(),
+          full_name: displayName.trim(),
         } as any)
         .eq('user_id', user.id);
       if (error) throw error;
@@ -229,25 +217,14 @@ export function SettingsView() {
 
             {/* Fields */}
             <div className="flex-1 w-full space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[12px] text-muted-foreground mb-1 block">{l.firstName}</label>
-                  <input
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full h-11 px-3 rounded-xl bg-muted/30 border-0 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-                    placeholder={l.firstName}
-                  />
-                </div>
-                <div>
-                  <label className="text-[12px] text-muted-foreground mb-1 block">{l.lastName}</label>
-                  <input
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    className="w-full h-11 px-3 rounded-xl bg-muted/30 border-0 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-                    placeholder={l.lastName}
-                  />
-                </div>
+              <div>
+                <label className="text-[12px] text-muted-foreground mb-1 block">{l.name}</label>
+                <input
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="w-full h-11 px-3 rounded-xl bg-muted/30 border-0 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                  placeholder={l.name}
+                />
               </div>
               <div>
                 <label className="text-[12px] text-muted-foreground mb-1 block">{l.email}</label>
