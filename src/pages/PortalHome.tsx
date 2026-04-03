@@ -88,20 +88,6 @@ export default function PortalHome() {
 
         <div className="max-w-7xl mx-auto px-5 md:px-8">
 
-          {/* ── Section 2: Seasonal Banner ── */}
-          <section className="my-8">
-            <button onClick={() => goToCanvas(TEMPLATE_PROMPTS['Ramadan'], 'Ramadan')} className="group w-full relative h-36 md:h-44 rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all duration-300">
-              <img src={imgRamadan} alt={t.portal.ramadanCampaign} className="w-full h-full object-cover" loading="lazy" />
-              <div className={`absolute inset-0 bg-gradient-to-${isRTL ? 'l' : 'r'} from-black/90 via-black/50 to-transparent`} />
-              <div className={`absolute inset-0 flex flex-col justify-center px-6 md:px-10`}>
-                <span className="text-[11px] uppercase tracking-widest text-primary font-medium">{t.portal.seasonal}</span>
-                <h3 className="text-xl md:text-2xl font-extralight text-white mt-1">{t.portal.ramadanCampaign}</h3>
-                <span className="mt-3 inline-flex items-center gap-1 text-[13px] text-primary font-medium group-hover:gap-2 transition-all">
-                  {t.portal.tryThisStyle} <ArrowRight size={14} className={isRTL ? 'rotate-180' : ''} />
-                </span>
-              </div>
-            </button>
-          </section>
 
           {/* ── Section 3: Image Tools Strip ── */}
           <section className="my-8">
