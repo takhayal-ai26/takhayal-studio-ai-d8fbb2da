@@ -59,6 +59,7 @@ const App = () => (
                   <Route path="/generate/result" element={<GenerateResult />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/tools" element={<ToolsDirectory />} />
+                  <Route path="/create" element={<CreateHub />} />
                   <Route path="/tools/:toolId" element={<ToolPage />} />
                   <Route path="/community" element={<Community />} />
                   <Route path="/templates" element={<Templates />} />

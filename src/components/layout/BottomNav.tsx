@@ -28,10 +28,10 @@ export function BottomNav() {
   const handleTap = (item: typeof navItems[0]) => {
     if (item.studioPage) {
       setActivePage(item.studioPage);
-    } else if (item.id === 'create') {
-      setActivePage('canvas');
+      navigate('/studio');
+    } else {
+      navigate(item.route);
     }
-    navigate(item.route);
   };
 
   return (
