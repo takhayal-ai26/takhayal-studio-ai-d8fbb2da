@@ -78,7 +78,38 @@ export function CreationPanel() {
   const toggleDropdown = (key: OpenDropdown) => setOpenDropdown(prev => prev === key ? null : key);
 
   useEffect(() => { const handler = (e: MouseEvent) => { if (openDropdown && panelRef.current && !panelRef.current.contains(e.target as Node)) { const target = e.target as HTMLElement; if (target.closest('[data-dropdown-portal]')) return; setOpenDropdown(null); } }; document.addEventListener('mousedown', handler); return () => document.removeEventListener('mousedown', handler); }, [openDropdown]);
-  useEffect(() => { const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenDropdown(null); if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); generate(); } }; window.addEventListener('keydown', handler); return () => window.removeEventListener('keydown', handler); }, [generate]);
+  const handleGenerate = useCallback(async () => {
+    if (!canGenerate) return;
+    if (!isAuthenticated) { openAuthModal('signup'); return; }
+    if (credits < cost) { openUpgradeModal(); return; }
+
+    setLocalGenerating(true);
+    const fullPrompt = selectedTemplate
+      ? `${TEMPLATE_PROMPTS[selectedTemplate] || ''}, ${prompt}`
+      : prompt;
+
+    const jobId = await createJob({
+      prompt: fullPrompt,
+      ratio: aspectRatio,
+      qualityTier: selectedResolution,
+      modelId: currentModel?.id || null,
+      creditCost: cost,
+    });
+
+    if (jobId) {
+      navigate('/gallery');
+      // Fire generation in background
+      startGeneration(jobId, {
+        prompt: fullPrompt,
+        aspectRatio,
+        qualityTier: selectedResolution,
+        modelId: currentModel?.id || null,
+      });
+    }
+    setLocalGenerating(false);
+  }, [canGenerate, isAuthenticated, credits, cost, prompt, selectedTemplate, aspectRatio, selectedResolution, currentModel, createJob, startGeneration, navigate, openAuthModal, openUpgradeModal]);
+
+  useEffect(() => { const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenDropdown(null); if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); handleGenerate(); } }; window.addEventListener('keydown', handler); return () => window.removeEventListener('keydown', handler); }, [handleGenerate]);
 
   const handleResolution = (r: string) => { setSelectedResolution(r); setQuality(r === '1K' ? 'standard' : 'hd'); setOpenDropdown(null); };
 
