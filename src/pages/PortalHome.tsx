@@ -220,6 +220,7 @@ export default function PortalHome() {
           </section>
 
       </div>
+      <Footer />
     </div>
   );
 }
