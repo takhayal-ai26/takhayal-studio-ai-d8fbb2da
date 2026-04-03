@@ -201,7 +201,7 @@ export function CreationPanel() {
       {/* Generate button */}
       <div className="flex-shrink-0 p-4">
         <button
-          onClick={() => { generate({ modelId: currentModel?.id, qualityTier: selectedResolution, creditCost: cost }); navigate('/generate/result'); }}
+          onClick={handleGenerate}
           disabled={!canGenerate}
           className={`w-full h-[44px] rounded-xl text-[14px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
             canGenerate
