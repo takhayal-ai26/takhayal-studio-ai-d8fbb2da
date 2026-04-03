@@ -181,7 +181,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
         </div>
 
         {/* ━━━ Mobile header ━━━ */}
-        <div className={`flex md:hidden items-center gap-2.5 ${isRTL ? 'order-1 mr-auto ml-0' : 'ml-auto'}`}>
+        <div className="flex md:hidden items-center gap-2.5 ms-auto">
           {isAuthenticated ? (
             <>
               {/* Credits pill */}
