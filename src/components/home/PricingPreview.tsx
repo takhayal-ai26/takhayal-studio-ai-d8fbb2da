@@ -90,7 +90,7 @@ export function PricingPreview() {
       {/* Cards carousel (mobile) / grid (desktop) */}
       <div
         ref={scrollRef}
-        className="flex md:grid md:grid-cols-3 gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-4 md:px-0"
+        className="flex gap-4 overflow-x-auto snap-x snap-mandatory scrollbar-hide px-4 md:px-0 md:grid md:grid-cols-4"
         style={{ scrollPaddingInline: '16px' }}
       >
         {plans.map((plan) => {
