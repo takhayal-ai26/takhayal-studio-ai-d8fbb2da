@@ -3,7 +3,7 @@ import { X, Mail, Loader2 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { LogoMark } from '@/components/Logo';
+import { Logo, LogoMark } from '@/components/Logo';
 import { useMedia } from '@/hooks/useMedia';
 import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
