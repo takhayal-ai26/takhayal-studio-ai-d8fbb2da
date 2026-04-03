@@ -97,8 +97,8 @@ export function DashboardHero() {
       });
       return map;
     },
-    initialData: initialHeroConfig,
-    staleTime: 60000,
+    placeholderData: initialHeroConfig,
+    staleTime: 30000,
   });
 
   useEffect(() => {
