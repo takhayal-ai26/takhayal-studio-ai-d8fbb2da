@@ -343,7 +343,7 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
       </div>
       <div
         ref={scrollRef}
-        className="flex overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-none"
+        className="flex overflow-x-auto snap-x snap-mandatory pt-4 pb-6 scrollbar-none"
         style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', paddingLeft: '8vw', paddingRight: '8vw', gap: '16px' }}
         dir={isAr ? 'rtl' : 'ltr'}
       >
@@ -358,10 +358,11 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
           return (
             <div
               key={t.id}
-              className="snap-center flex-shrink-0 rounded-2xl p-6 flex flex-col gap-4 transition-all duration-500"
+              className="snap-center flex-shrink-0 rounded-2xl p-6 flex flex-col gap-3 transition-all duration-500"
               style={{
-                width: '84vw',
-                maxWidth: 360,
+                width: '80vw',
+                maxWidth: 380,
+                minHeight: 220,
                 background: isActive
                   ? 'linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--card) / 0.8))'
                   : 'hsl(var(--card) / 0.5)',
@@ -378,21 +379,21 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
               }}
             >
               {/* Quote icon */}
-              <div className="text-primary/40 text-3xl font-serif leading-none select-none">"</div>
-              <p className="text-[15px] text-foreground/90 leading-relaxed" dir={isAr ? 'rtl' : 'ltr'}>
+              <div className="text-primary/30 text-2xl font-serif leading-none select-none">"</div>
+              <p className="text-[14px] text-foreground/85 leading-relaxed flex-1" dir={isAr ? 'rtl' : 'ltr'}>
                 {quote}
               </p>
-              <div className="flex items-center gap-3 mt-auto pt-2 border-t border-border/10">
+              <div className="flex items-center gap-3 mt-auto pt-3">
                 {t.avatar_url ? (
-                  <img src={t.avatar_url} alt="" className="w-11 h-11 rounded-full object-cover flex-shrink-0 ring-2 ring-primary/20" />
+                  <img src={t.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0 ring-2 ring-primary/20" />
                 ) : (
-                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary/25 to-primary/10 text-primary flex items-center justify-center text-sm font-bold flex-shrink-0 ring-2 ring-primary/15">
+                  <div className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/25 to-primary/10 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
                     {initials}
                   </div>
                 )}
                 <div>
-                  <p className="text-sm font-semibold text-foreground">{name}</p>
-                  <p className="text-xs text-muted-foreground">{role}{location ? ` · ${location}` : ''}</p>
+                  <p className="text-[13px] font-semibold text-foreground">{name}</p>
+                  <p className="text-[11px] text-muted-foreground">{role}{location ? ` · ${location}` : ''}</p>
                 </div>
               </div>
             </div>
