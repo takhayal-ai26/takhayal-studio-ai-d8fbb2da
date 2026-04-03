@@ -43,7 +43,8 @@ export function InspirationFeed() {
   }, []);
 
   const handleUse = (tpl: StudioTemplate) => {
-    setPrompt(tpl.prompt);
+    const promptText = isAr && tpl.prompt_ar ? tpl.prompt_ar : tpl.prompt;
+    setPrompt(promptText);
     setSelectedTemplate(null);
   };
 
