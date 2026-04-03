@@ -83,6 +83,7 @@ export default function ToolsDirectory() {
           </div>
         )}
       </section>
+      <Footer />
     </div>
   );
 }
