@@ -5,6 +5,7 @@ import { ArrowRight, Sparkles } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import { useTools } from '@/hooks/useTools';
 import { DashboardHero } from '@/components/home/DashboardHero';
+import { Footer } from '@/components/layout/Footer';
 
 import imgCinema from '@/assets/portal/feat-cinema.jpg';
 import imgFashion from '@/assets/portal/feat-fashion.jpg';
@@ -219,6 +220,7 @@ export default function PortalHome() {
           </section>
 
       </div>
+      <Footer />
     </div>
   );
 }
