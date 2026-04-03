@@ -243,13 +243,13 @@ export function DashboardHero() {
             backdropFilter: 'blur(14px)',
             WebkitBackdropFilter: 'blur(14px)',
             border: '1px solid rgba(255,255,255,0.12)',
-            boxShadow: '0 4px 20px rgba(255,102,51,0.25)',
+            boxShadow: '0 2px 12px rgba(255,102,51,0.15)',
             color: '#FFFFFF',
-            fontSize: 13,
-            fontWeight: 600,
-            padding: '8px 18px',
+            fontSize: 12,
+            fontWeight: 500,
+            padding: '6px 16px',
             borderRadius: 999,
-            marginBottom: 14,
+            marginBottom: 20,
           }}
         >
           {isAr ? 'منصة للمبدعين العرب' : 'Built for Arab creators'}
