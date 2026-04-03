@@ -78,22 +78,27 @@ export function ImageLightbox({
 
   const dateStr = new Date(job.created_at).toLocaleDateString(
     isAr ? 'ar-SA' : 'en-US',
-    { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }
+    { year: 'numeric', month: 'short', day: 'numeric' }
+  );
+
+  const timeStr = new Date(job.created_at).toLocaleTimeString(
+    isAr ? 'ar-SA' : 'en-US',
+    { hour: '2-digit', minute: '2-digit' }
   );
 
   return (
     <div className="fixed inset-0 z-[90]" role="dialog" aria-modal="true">
-      {/* Backdrop - click to close */}
+      {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-background/80 backdrop-blur-xl"
+        className="absolute inset-0 bg-background/90 backdrop-blur-2xl"
         onClick={onClose}
       />
 
-      {/* Nav arrows - above backdrop */}
+      {/* Nav arrows */}
       {hasPrev && (
         <button
           onClick={() => { isAr ? onNext?.() : onPrev?.(); }}
-          className={`absolute top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-muted/60 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all ${isAr ? 'right-3' : 'left-3'}`}
+          className={`absolute top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-all shadow-md ${isAr ? 'right-5' : 'left-5'}`}
         >
           <ChevronLeft size={18} />
         </button>
@@ -101,140 +106,142 @@ export function ImageLightbox({
       {hasNext && (
         <button
           onClick={() => { isAr ? onPrev?.() : onNext?.(); }}
-          className={`absolute top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-muted/60 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all ${isAr ? 'left-3' : 'right-3'}`}
+          className={`absolute top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-all shadow-md ${isAr ? 'left-5' : 'right-5'}`}
         >
           <ChevronRight size={18} />
         </button>
       )}
 
-      {/* Main container */}
+      {/* Close button - floating top right */}
+      <button
+        onClick={onClose}
+        className={`absolute top-5 z-20 w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-colors shadow-md ${isAr ? 'left-5' : 'right-5'}`}
+      >
+        <X size={15} />
+      </button>
+
+      {/* Main layout */}
       <div
         dir={isAr ? 'rtl' : 'ltr'}
-        className="absolute inset-0 z-10 flex items-center justify-center p-6 lg:p-10 pointer-events-none"
+        className="absolute inset-0 z-10 flex items-stretch pointer-events-none"
       >
-        <div
-          className="relative w-full max-w-[1200px] max-h-[90vh] bg-card rounded-2xl shadow-2xl overflow-hidden pointer-events-auto animate-in zoom-in-[0.97] fade-in duration-200"
-          onClick={e => e.stopPropagation()}
-        >
-          {/* Header */}
-          <div className="flex items-center justify-between px-6 h-14">
-            <span className="text-[13px] font-medium text-muted-foreground/60">
-              {isAr ? 'معاينة' : 'Preview'}
-            </span>
-            <button
-              onClick={onClose}
-              className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-            >
-              <X size={15} />
-            </button>
-          </div>
-
-          {/* Body: 2-column */}
-          <div className="flex flex-col lg:flex-row" style={{ maxHeight: 'calc(90vh - 3.5rem)' }}>
-            {/* Left: Image */}
-            <div className="flex-1 min-w-0 flex items-center justify-center bg-muted/20 p-4 lg:p-8 overflow-hidden">
-              {isProcessing ? (
-                <div className="flex flex-col items-center gap-4 py-20">
-                  <Loader2 size={40} className="text-primary animate-spin" />
-                  <span className="text-sm font-medium text-primary">{isAr ? 'جاري التوليد...' : 'Generating...'}</span>
-                </div>
-              ) : isFailed ? (
-                <div className="flex flex-col items-center gap-4 py-20">
-                  <AlertCircle size={40} className="text-destructive/60" />
-                  <span className="text-sm font-medium text-destructive">{isAr ? 'فشل التوليد' : 'Failed'}</span>
-                </div>
-              ) : job.image_url ? (
-                <img
-                  src={job.image_url}
-                  alt={job.prompt || ''}
-                  className="max-h-[72vh] max-w-full rounded-xl object-contain"
-                />
-              ) : null}
+        {/* Left: Image area - takes remaining space */}
+        <div className="flex-1 flex items-center justify-center p-10 lg:p-16 pointer-events-auto">
+          {isProcessing ? (
+            <div className="flex flex-col items-center gap-4">
+              <Loader2 size={44} className="text-primary animate-spin" />
+              <span className="text-sm font-medium text-primary">{isAr ? 'جاري التوليد...' : 'Generating...'}</span>
             </div>
+          ) : isFailed ? (
+            <div className="flex flex-col items-center gap-4">
+              <AlertCircle size={44} className="text-destructive/60" />
+              <span className="text-sm font-medium text-destructive">{isAr ? 'فشل التوليد' : 'Failed'}</span>
+            </div>
+          ) : job.image_url ? (
+            <img
+              src={job.image_url}
+              alt={job.prompt || ''}
+              className="max-h-[85vh] max-w-full rounded-2xl object-contain shadow-2xl"
+            />
+          ) : null}
+        </div>
 
-            {/* Right: Details panel */}
-            <div className="w-full lg:w-[340px] flex-shrink-0 border-t lg:border-t-0 lg:border-s border-border/10 overflow-y-auto p-5 lg:p-6 space-y-5">
-              {/* Actions */}
-              <div className="flex flex-wrap gap-2">
-                {isCompleted && job.image_url && (
-                  <button
-                    onClick={handleDownload}
-                    className="h-9 px-4 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium flex items-center gap-2 hover:brightness-110 active:scale-[0.97] transition-all"
-                  >
-                    <Download size={14} />
-                    {isAr ? 'تحميل' : 'Download'}
-                  </button>
-                )}
+        {/* Right: Detail sidebar */}
+        <div className="w-[340px] xl:w-[380px] flex-shrink-0 bg-card/60 backdrop-blur-xl border-s border-border/10 overflow-y-auto pointer-events-auto">
+          <div className="p-6 xl:p-7 space-y-6 pt-16">
+            {/* Actions row */}
+            <div className="space-y-2.5">
+              {isCompleted && job.image_url && (
+                <button
+                  onClick={handleDownload}
+                  className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-semibold flex items-center justify-center gap-2.5 hover:brightness-110 active:scale-[0.98] transition-all"
+                >
+                  <Download size={15} />
+                  {isAr ? 'تحميل الصورة' : 'Download Image'}
+                </button>
+              )}
+              <div className="flex gap-2">
                 {isCompleted && (
                   <button
                     onClick={() => { onReuse(job.prompt || ''); onClose(); }}
-                    className="h-9 px-4 rounded-xl bg-muted/50 text-foreground text-[13px] font-medium flex items-center gap-2 hover:bg-muted/70 active:scale-[0.97] transition-all"
+                    className="flex-1 h-10 rounded-xl bg-muted/50 text-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-muted/70 active:scale-[0.98] transition-all"
                   >
                     <RefreshCw size={13} />
-                    {isAr ? 'إعادة' : 'Reuse'}
+                    {isAr ? 'إعادة استخدام' : 'Reuse'}
                   </button>
                 )}
                 {isCompleted && onShare && (
                   <button
                     onClick={() => onShare(job)}
-                    className="h-9 px-4 rounded-xl bg-muted/50 text-foreground text-[13px] font-medium flex items-center gap-2 hover:bg-muted/70 active:scale-[0.97] transition-all"
+                    className="flex-1 h-10 rounded-xl bg-muted/50 text-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-muted/70 active:scale-[0.98] transition-all"
                   >
                     <Share2 size={13} />
                     {isAr ? 'مشاركة' : 'Share'}
                   </button>
                 )}
-                {isFailed && (
-                  <button
-                    onClick={() => { onRetry(job.id); onClose(); }}
-                    className="h-9 px-4 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium flex items-center gap-2 hover:brightness-110 active:scale-[0.97] transition-all"
-                  >
-                    <RotateCcw size={13} />
-                    {isAr ? 'إعادة المحاولة' : 'Retry'}
-                  </button>
-                )}
               </div>
-
-              {/* Prompt */}
-              {job.prompt && (
-                <div className="rounded-xl bg-muted/30 p-4">
-                  <div className="flex items-center justify-between mb-2.5">
-                    <div className="flex items-center gap-1.5">
-                      <Sparkles size={12} className="text-primary/70" />
-                      <span className="text-[10px] font-bold text-muted-foreground/50 uppercase tracking-widest">
-                        {isAr ? 'التعليمة' : 'Prompt'}
-                      </span>
-                    </div>
-                    <button
-                      onClick={handleCopyPrompt}
-                      className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/50 hover:text-foreground hover:bg-muted/40 active:scale-95 transition-all"
-                      title={isAr ? 'نسخ' : 'Copy'}
-                    >
-                      {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
-                    </button>
-                  </div>
-                  <p className="text-[13px] text-foreground/80 leading-relaxed">{job.prompt}</p>
-                </div>
+              {isFailed && (
+                <button
+                  onClick={() => { onRetry(job.id); onClose(); }}
+                  className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-semibold flex items-center justify-center gap-2.5 hover:brightness-110 active:scale-[0.98] transition-all"
+                >
+                  <RotateCcw size={14} />
+                  {isAr ? 'إعادة المحاولة' : 'Retry'}
+                </button>
               )}
+            </div>
 
-              {/* Metadata grid */}
-              <div className="grid grid-cols-2 gap-2">
-                <MetaCard icon={<Calendar size={13} />} label={isAr ? 'التاريخ' : 'Date'} value={dateStr} />
-                <MetaCard icon={<Cpu size={13} />} label={isAr ? 'النموذج' : 'Model'} value={modelName} />
-                <MetaCard icon={<Ratio size={13} />} label={isAr ? 'النسبة' : 'Ratio'} value={job.ratio || '1:1'} />
-                <MetaCard icon={<Sparkles size={13} />} label={isAr ? 'الجودة' : 'Quality'} value={job.quality_tier || '1K'} />
+            {/* Divider */}
+            <div className="h-px bg-border/10" />
+
+            {/* Prompt */}
+            {job.prompt && (
+              <div>
+                <div className="flex items-center justify-between mb-3">
+                  <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.15em]">
+                    {isAr ? 'التعليمة' : 'Prompt'}
+                  </span>
+                  <button
+                    onClick={handleCopyPrompt}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/30 hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all"
+                    title={isAr ? 'نسخ' : 'Copy'}
+                  >
+                    {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
+                  </button>
+                </div>
+                <p className="text-[13px] text-foreground/80 leading-[1.7]">{job.prompt}</p>
               </div>
+            )}
 
-              {/* Delete */}
-              {isCompleted && onDelete && (
+            {/* Divider */}
+            <div className="h-px bg-border/10" />
+
+            {/* Metadata */}
+            <div>
+              <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.15em] mb-3 block">
+                {isAr ? 'التفاصيل' : 'Details'}
+              </span>
+              <div className="space-y-3">
+                <MetaRow icon={<Calendar size={14} />} label={isAr ? 'التاريخ' : 'Date'} value={`${dateStr} · ${timeStr}`} />
+                <MetaRow icon={<Cpu size={14} />} label={isAr ? 'النموذج' : 'Model'} value={modelName} />
+                <MetaRow icon={<Ratio size={14} />} label={isAr ? 'النسبة' : 'Ratio'} value={job.ratio || '1:1'} />
+                <MetaRow icon={<Sparkles size={14} />} label={isAr ? 'الجودة' : 'Quality'} value={job.quality_tier || '1K'} />
+              </div>
+            </div>
+
+            {/* Delete - pushed to bottom visually */}
+            {isCompleted && onDelete && (
+              <>
+                <div className="h-px bg-border/10" />
                 <button
                   onClick={() => onDelete(job.id)}
-                  className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground/40 hover:text-destructive transition-colors pt-1"
+                  className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground/30 hover:text-destructive transition-colors"
                 >
                   <Trash2 size={12} />
                   {isAr ? 'حذف' : 'Delete'}
                 </button>
-              )}
-            </div>
+              </>
+            )}
           </div>
         </div>
       </div>
@@ -242,14 +249,14 @@ export function ImageLightbox({
   );
 }
 
-function MetaCard({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
+function MetaRow({ icon, label, value }: { icon: React.ReactNode; label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-muted/20 p-3">
-      <div className="flex items-center gap-1.5 mb-1">
-        <span className="text-muted-foreground/40">{icon}</span>
-        <span className="text-[9px] font-bold text-muted-foreground/40 uppercase tracking-widest">{label}</span>
+    <div className="flex items-center justify-between">
+      <div className="flex items-center gap-2.5">
+        <span className="text-muted-foreground/30">{icon}</span>
+        <span className="text-[12px] text-muted-foreground/50">{label}</span>
       </div>
-      <p className="text-[12px] text-foreground/70 truncate">{value}</p>
+      <span className="text-[12px] text-foreground/70 font-medium">{value}</span>
     </div>
   );
 }
