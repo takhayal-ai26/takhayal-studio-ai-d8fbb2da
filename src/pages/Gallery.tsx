@@ -363,15 +363,33 @@ export default function Gallery() {
         </div>
       </div>
 
-      <ImageDetailDrawer
-        job={selectedJob}
-        open={!!selectedJob}
-        onClose={() => setSelectedJob(null)}
-        onRetry={retryJob}
-        onReuse={handleReuse}
-        onShare={setShareJob}
-        onDelete={handleDelete}
-      />
+      {/* Mobile: drawer, Desktop: lightbox */}
+      <div className="md:hidden">
+        <ImageDetailDrawer
+          job={selectedJob}
+          open={!!selectedJob}
+          onClose={() => setSelectedJob(null)}
+          onRetry={retryJob}
+          onReuse={handleReuse}
+          onShare={setShareJob}
+          onDelete={handleDelete}
+        />
+      </div>
+      <div className="hidden md:block">
+        <ImageLightbox
+          job={selectedJob}
+          open={!!selectedJob}
+          onClose={() => setSelectedJob(null)}
+          onRetry={retryJob}
+          onReuse={handleReuse}
+          onShare={setShareJob}
+          onDelete={handleDelete}
+          onPrev={handlePrev}
+          onNext={handleNext}
+          hasPrev={selectedIndex > 0}
+          hasNext={selectedIndex < filteredJobs.length - 1}
+        />
+      </div>
 
       <ShareModal
         job={shareJob}
