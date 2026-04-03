@@ -1,5 +1,6 @@
 import { useLanguage } from '@/i18n/LanguageContext';
 import { GenerationJob } from '@/hooks/useGenerationJobs';
+import { useModels } from '@/hooks/useModels';
 import { Drawer, DrawerContent, DrawerClose } from '@/components/ui/drawer';
 import { Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw, Calendar, Cpu, Ratio, Sparkles } from 'lucide-react';
 
@@ -14,6 +15,9 @@ interface Props {
 export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse }: Props) {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
+  const { models } = useModels();
+
+  const modelName = job ? (models.find(m => m.id === job.model_id)?.model_name || (isAr ? 'افتراضي' : 'Default')) : '';
 
   if (!job) return null;
 
@@ -134,7 +138,7 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse }: Prop
               <MetaItem
                 icon={<Cpu size={13} />}
                 label={isAr ? 'النموذج' : 'Model'}
-                value={job.model_id || (isAr ? 'افتراضي' : 'Default')}
+                value={modelName}
               />
               <MetaItem
                 icon={<Ratio size={13} />}
