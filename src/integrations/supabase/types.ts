@@ -1006,6 +1006,66 @@ export type Database = {
         }
         Relationships: []
       }
+      testimonials: {
+        Row: {
+          avatar_url: string | null
+          company_ar: string
+          company_en: string
+          created_at: string
+          id: string
+          is_active: boolean
+          is_featured: boolean
+          location_ar: string
+          location_en: string
+          name_ar: string
+          name_en: string
+          role_ar: string
+          role_en: string
+          sort_order: number
+          testimonial_ar: string
+          testimonial_en: string
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          company_ar?: string
+          company_en?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          location_ar?: string
+          location_en?: string
+          name_ar?: string
+          name_en?: string
+          role_ar?: string
+          role_en?: string
+          sort_order?: number
+          testimonial_ar?: string
+          testimonial_en?: string
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          company_ar?: string
+          company_en?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          is_featured?: boolean
+          location_ar?: string
+          location_en?: string
+          name_ar?: string
+          name_en?: string
+          role_ar?: string
+          role_en?: string
+          sort_order?: number
+          testimonial_ar?: string
+          testimonial_en?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       tool_examples: {
         Row: {
           created_at: string

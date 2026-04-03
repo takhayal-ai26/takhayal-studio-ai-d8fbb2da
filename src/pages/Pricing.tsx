@@ -281,16 +281,18 @@ function MobilePlanCarousel({ plans, isAr, ...cardProps }: { plans: any[] } & Om
   );
 }
 
-const TESTIMONIALS = [
-  { name_en: 'Ahmed Al-Fahad', name_ar: 'أحمد الفهد', role_en: 'Content Creator', role_ar: 'صانع محتوى', quote_en: 'Saved me hours. The quality is insane.', quote_ar: 'وفّر علي وقت كبير، والنتائج خرافية.', avatar: 'AF' },
-  { name_en: 'Sara Al-Mutairi', name_ar: 'سارة المطيري', role_en: 'Small Business Owner', role_ar: 'صاحبة مشروع', quote_en: 'Finally an AI tool that understands our style.', quote_ar: 'أخيرًا أداة تفهم ذوقنا.', avatar: 'SM' },
-  { name_en: 'Khalid Al-Rashidi', name_ar: 'خالد الرشيدي', role_en: 'Graphic Designer', role_ar: 'مصمم جرافيك', quote_en: 'My go-to tool for every project now.', quote_ar: 'أداتي المفضلة لكل مشاريعي الآن.', avatar: 'KR' },
-  { name_en: 'Nora Al-Sabah', name_ar: 'نورة الصباح', role_en: 'Marketing Manager', role_ar: 'مديرة تسويق', quote_en: 'Incredible results in seconds. A game changer.', quote_ar: 'نتائج مذهلة في ثوانٍ. غيّرت قواعد اللعبة.', avatar: 'NS' },
-];
-
 function TestimonialCarousel({ isAr }: { isAr: boolean }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
+
+  const { data: testimonials = [] } = useQuery({
+    queryKey: ['testimonials-public'],
+    queryFn: async () => {
+      const { data } = await supabase.from('testimonials').select('*').eq('is_active', true).order('is_featured', { ascending: false }).order('sort_order');
+      return (data as any[]) || [];
+    },
+    staleTime: 60000,
+  });
 
   const updateActive = useCallback(() => {
     const el = scrollRef.current;
@@ -313,19 +315,21 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
     return () => el.removeEventListener('scroll', updateActive);
   }, [updateActive]);
 
-  // Auto-scroll
   useEffect(() => {
+    if (testimonials.length === 0) return;
     const interval = setInterval(() => {
       const el = scrollRef.current;
       if (!el) return;
-      const next = (activeIdx + 1) % TESTIMONIALS.length;
+      const next = (activeIdx + 1) % testimonials.length;
       const card = el.children[next] as HTMLElement;
       if (card) {
         el.scrollTo({ left: card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2, behavior: 'smooth' });
       }
     }, 5000);
     return () => clearInterval(interval);
-  }, [activeIdx]);
+  }, [activeIdx, testimonials.length]);
+
+  if (testimonials.length === 0) return null;
 
   return (
     <section className="max-w-5xl mx-auto pb-20 px-0">
@@ -339,40 +343,51 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
         style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
         dir={isAr ? 'rtl' : 'ltr'}
       >
-        {TESTIMONIALS.map((t, i) => (
-          <div
-            key={i}
-            className="snap-center flex-shrink-0 rounded-2xl p-5 flex flex-col gap-4 transition-all duration-300"
-            style={{
-              width: 'calc(82vw)',
-              maxWidth: 340,
-              background: 'hsl(var(--card) / 0.6)',
-              backdropFilter: 'blur(16px)',
-              WebkitBackdropFilter: 'blur(16px)',
-              border: '1px solid hsl(var(--border) / 0.15)',
-              boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-              opacity: i === activeIdx ? 1 : 0.6,
-              transform: i === activeIdx ? 'scale(1)' : 'scale(0.95)',
-            }}
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-full bg-primary/15 text-primary flex items-center justify-center text-[13px] font-semibold flex-shrink-0">
-                {t.avatar}
+        {testimonials.map((t: any, i: number) => {
+          const name = isAr ? t.name_ar : t.name_en;
+          const role = isAr ? t.role_ar : t.role_en;
+          const quote = isAr ? t.testimonial_ar : t.testimonial_en;
+          const location = isAr ? t.location_ar : t.location_en;
+          const initials = (t.name_en || '').split(' ').map((w: string) => w[0]).join('').slice(0, 2);
+
+          return (
+            <div
+              key={t.id}
+              className="snap-center flex-shrink-0 rounded-2xl p-5 flex flex-col gap-4 transition-all duration-300"
+              style={{
+                width: 'calc(82vw)',
+                maxWidth: 340,
+                background: 'hsl(var(--card) / 0.6)',
+                backdropFilter: 'blur(16px)',
+                WebkitBackdropFilter: 'blur(16px)',
+                border: '1px solid hsl(var(--border) / 0.15)',
+                boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+                opacity: i === activeIdx ? 1 : 0.6,
+                transform: i === activeIdx ? 'scale(1)' : 'scale(0.95)',
+              }}
+            >
+              <div className="flex items-center gap-3">
+                {t.avatar_url ? (
+                  <img src={t.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                ) : (
+                  <div className="w-10 h-10 rounded-full bg-primary/15 text-primary flex items-center justify-center text-[13px] font-semibold flex-shrink-0">
+                    {initials}
+                  </div>
+                )}
+                <div>
+                  <p className="text-[13px] font-medium text-foreground">{name}</p>
+                  <p className="text-[11px] text-muted-foreground">{role}{location ? ` · ${location}` : ''}</p>
+                </div>
               </div>
-              <div>
-                <p className="text-[13px] font-medium text-foreground">{isAr ? t.name_ar : t.name_en}</p>
-                <p className="text-[11px] text-muted-foreground">{isAr ? t.role_ar : t.role_en}</p>
-              </div>
+              <p className="text-[14px] text-foreground/80 leading-relaxed line-clamp-3" dir={isAr ? 'rtl' : 'ltr'}>
+                "{quote}"
+              </p>
             </div>
-            <p className="text-[14px] text-foreground/80 leading-relaxed line-clamp-2" dir={isAr ? 'rtl' : 'ltr'}>
-              "{isAr ? t.quote_ar : t.quote_en}"
-            </p>
-          </div>
-        ))}
+          );
+        })}
       </div>
-      {/* Dots */}
       <div className="flex justify-center gap-2 mt-4">
-        {TESTIMONIALS.map((_, i) => (
+        {testimonials.map((_: any, i: number) => (
           <button
             key={i}
             onClick={() => {
