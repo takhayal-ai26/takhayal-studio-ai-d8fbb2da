@@ -207,10 +207,10 @@ export default function TemplateDetail() {
                   onDragLeave={() => setDragOver(false)}
                   onDrop={handleDrop}
                   onClick={() => !uploading && fileInputRef.current?.click()}
-                  className={`flex flex-col items-center justify-center gap-2.5 py-8 rounded-2xl border-2 border-dashed cursor-pointer transition-all ${
+                  className={`flex flex-col items-center justify-center gap-3 py-10 rounded-2xl cursor-pointer transition-all ${
                     dragOver
-                      ? 'border-primary bg-primary/5'
-                      : 'border-border/40 bg-muted/5 hover:border-primary/40 hover:bg-muted/10'
+                      ? 'bg-primary/10 ring-2 ring-primary/40'
+                      : 'bg-muted/10 hover:bg-muted/15'
                   }`}
                 >
                   {uploading ? (
