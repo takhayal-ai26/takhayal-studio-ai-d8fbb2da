@@ -101,8 +101,8 @@ export default function PortalHome() {
           </>
         )}
 
-        {/* ═══ LOGGED-OUT: Marketing Mode — Tools Section ═══ */}
-        {!isLoggedIn && (
+        {/* ═══ Tools Section (both modes) ═══ */}
+
           <section className="my-8">
             <div className="rounded-2xl bg-card/40 border border-border/20 overflow-hidden">
               <div className="flex flex-col lg:flex-row">
@@ -139,8 +139,7 @@ export default function PortalHome() {
                 </div>
               </div>
             </div>
-          </section>
-        )}
+        </section>
 
         {/* ═══ LOGGED-OUT: Why Takhayal ═══ */}
         {!isLoggedIn && <WhyTakhayal />}
