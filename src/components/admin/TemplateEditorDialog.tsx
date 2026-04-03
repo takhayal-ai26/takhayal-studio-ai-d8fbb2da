@@ -85,6 +85,16 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
   const fileInputRef = useRef<HTMLInputElement>(null);
   const isEdit = !!template?.id;
 
+  // Fetch available models for dropdown
+  const [models, setModels] = useState<{ id: string; model_name: string }[]>([]);
+  const [modelSearch, setModelSearch] = useState('');
+
+  useEffect(() => {
+    supabase.from('models').select('id, model_name').eq('is_active', true).order('model_name').then(({ data }) => {
+      if (data) setModels(data);
+    });
+  }, []);
+
   useEffect(() => {
     if (open) {
       setForm(template ? { ...template, prompt_ar: template.prompt_ar || '' } : emptyTemplate());
