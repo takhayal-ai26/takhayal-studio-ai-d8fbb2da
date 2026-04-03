@@ -6,6 +6,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { useApp } from '@/context/AppContext';
 import { ImageDetailDrawer } from '@/components/gallery/ImageDetailDrawer';
+import { ImageLightbox } from '@/components/gallery/ImageLightbox';
 import { ShareModal } from '@/components/gallery/ShareModal';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
