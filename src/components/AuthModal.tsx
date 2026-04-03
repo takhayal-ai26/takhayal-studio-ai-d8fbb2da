@@ -262,16 +262,6 @@ export function AuthModal() {
                   )}
                 </button>
 
-                {/* Apple — SECONDARY */}
-                <button
-                  onClick={handleApple}
-                  disabled={loading}
-                  className="w-full h-[56px] rounded-2xl bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-[15px] font-semibold flex items-center justify-center gap-3 active:scale-[0.97] transition-all disabled:opacity-50"
-                >
-                  {appleIcon}
-                  {t.auth.continueWithApple}
-                </button>
-
                 {/* Divider */}
                 <div className="flex items-center gap-4 py-1">
                   <div className="flex-1 h-px bg-border/50" />
