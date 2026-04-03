@@ -237,15 +237,17 @@ export function DashboardHero() {
       <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6 h-full pb-6 md:pb-[72px] pt-14 md:pt-20">
         {/* Premium badge */}
         <div
-          className="animate-fade-in"
+          className="animate-enter"
           style={{
-            background: 'rgba(0,0,0,0.35)',
-            backdropFilter: 'blur(10px)',
-            WebkitBackdropFilter: 'blur(10px)',
-            color: '#EAEAEA',
+            background: 'linear-gradient(135deg, rgba(255,102,51,0.15), rgba(255,255,255,0.05))',
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            boxShadow: '0 4px 20px rgba(255,102,51,0.25)',
+            color: '#FFFFFF',
             fontSize: 13,
-            fontWeight: 500,
-            padding: '6px 14px',
+            fontWeight: 600,
+            padding: '8px 18px',
             borderRadius: 999,
             marginBottom: 14,
           }}
