@@ -15,6 +15,7 @@ import GenerateResult from "./pages/GenerateResult";
 import Pricing from "./pages/Pricing";
 import ToolPage from "./pages/ToolPage";
 import ToolsDirectory from "./pages/ToolsDirectory";
+import CreateHub from "./pages/CreateHub";
 import Community from "./pages/Community";
 import Templates from "./pages/Templates";
 import NotFound from "./pages/NotFound";
@@ -58,6 +59,7 @@ const App = () => (
                   <Route path="/generate/result" element={<GenerateResult />} />
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/tools" element={<ToolsDirectory />} />
+                  <Route path="/create" element={<CreateHub />} />
                   <Route path="/tools/:toolId" element={<ToolPage />} />
                   <Route path="/community" element={<Community />} />
                   <Route path="/templates" element={<Templates />} />

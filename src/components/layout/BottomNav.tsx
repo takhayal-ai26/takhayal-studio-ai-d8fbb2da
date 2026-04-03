@@ -6,7 +6,7 @@ import { useApp } from '@/context/AppContext';
 const navItems = [
   { id: 'home', route: '/', icon: Home, labelEn: 'Home', labelAr: 'الرئيسية' },
   { id: 'community', route: '/community', icon: Users, labelEn: 'Community', labelAr: 'المجتمع' },
-  { id: 'create', route: '/studio', icon: Sparkles, labelEn: 'Create', labelAr: 'إنشاء', primary: true },
+  { id: 'create', route: '/create', icon: Sparkles, labelEn: 'Create', labelAr: 'إنشاء', primary: true },
   { id: 'gallery', route: '/studio', studioPage: 'gallery' as const, icon: Image, labelEn: 'Gallery', labelAr: 'المعرض' },
   { id: 'templates', route: '/studio', studioPage: 'templates' as const, icon: LayoutGrid, labelEn: 'Library', labelAr: 'المكتبة' },
 ];
@@ -19,7 +19,7 @@ export function BottomNav() {
   const isAr = lang === 'ar';
 
   const isActive = (item: typeof navItems[0]) => {
-    if (item.id === 'create') return location.pathname === '/studio' && activePage === 'canvas';
+    if (item.id === 'create') return location.pathname === '/create';
     if (item.studioPage) return location.pathname === '/studio' && activePage === item.studioPage;
     if (item.route === '/') return location.pathname === '/' || location.pathname === '/home';
     return location.pathname.startsWith(item.route);
@@ -28,10 +28,10 @@ export function BottomNav() {
   const handleTap = (item: typeof navItems[0]) => {
     if (item.studioPage) {
       setActivePage(item.studioPage);
-    } else if (item.id === 'create') {
-      setActivePage('canvas');
+      navigate('/studio');
+    } else {
+      navigate(item.route);
     }
-    navigate(item.route);
   };
 
   return (
