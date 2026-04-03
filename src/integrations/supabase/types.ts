@@ -443,6 +443,7 @@ export type Database = {
           credits_per_generation: number | null
           default_ratio: string | null
           default_resolution: string | null
+          edit_endpoint_id: string | null
           endpoint_id: string
           id: string
           input_type: string
@@ -459,6 +460,7 @@ export type Database = {
           supported_quality_tiers: Json
           supported_ratios: Json
           supported_sizes: Json
+          supports_image_input: boolean
           supports_native_high_res: boolean
           updated_at: string
           upscale_strategy: string
@@ -472,6 +474,7 @@ export type Database = {
           credits_per_generation?: number | null
           default_ratio?: string | null
           default_resolution?: string | null
+          edit_endpoint_id?: string | null
           endpoint_id: string
           id?: string
           input_type?: string
@@ -488,6 +491,7 @@ export type Database = {
           supported_quality_tiers?: Json
           supported_ratios?: Json
           supported_sizes?: Json
+          supports_image_input?: boolean
           supports_native_high_res?: boolean
           updated_at?: string
           upscale_strategy?: string
@@ -501,6 +505,7 @@ export type Database = {
           credits_per_generation?: number | null
           default_ratio?: string | null
           default_resolution?: string | null
+          edit_endpoint_id?: string | null
           endpoint_id?: string
           id?: string
           input_type?: string
@@ -517,6 +522,7 @@ export type Database = {
           supported_quality_tiers?: Json
           supported_ratios?: Json
           supported_sizes?: Json
+          supports_image_input?: boolean
           supports_native_high_res?: boolean
           updated_at?: string
           upscale_strategy?: string
