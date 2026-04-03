@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom';
-import { Check } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useLanguage } from '@/i18n/LanguageContext';
 import { MobileBottomSheet } from './MobileBottomSheet';
 
 interface Props {
@@ -18,15 +18,33 @@ const RATIO_SHAPE: Record<string, { w: number; h: number }> = {
   '4:3': { w: 4, h: 3 }, '3:4': { w: 3, h: 4 }, '5:4': { w: 5, h: 4 }, '21:9': { w: 21, h: 9 },
 };
 
-function RatioIcon({ w, h, active, size = 22 }: { w: number; h: number; active: boolean; size?: number }) {
+const RATIO_LABELS: Record<string, { en: string; ar: string }> = {
+  '1:1': { en: 'Square', ar: 'مربع' },
+  '9:16': { en: 'Portrait', ar: 'عمودي' },
+  '16:9': { en: 'Landscape', ar: 'أفقي' },
+  '4:5': { en: 'Social', ar: 'اجتماعي' },
+  '3:2': { en: 'Photo', ar: 'صورة' },
+  '2:3': { en: 'Tall', ar: 'طولي' },
+  '4:3': { en: 'Classic', ar: 'كلاسيكي' },
+  '3:4': { en: 'Tablet', ar: 'تابلت' },
+  '5:4': { en: 'Wide', ar: 'عريض' },
+  '21:9': { en: 'Ultra Wide', ar: 'عريض جداً' },
+};
+
+function RatioIcon({ w, h, active, size = 28 }: { w: number; h: number; active: boolean; size?: number }) {
   const aspect = w / h;
   let rw: number, rh: number;
   if (aspect >= 1) { rw = size; rh = size / aspect; } else { rh = size; rw = size * aspect; }
   return (
     <div className="flex items-center justify-center" style={{ width: size + 4, height: size + 4 }}>
       <div
-        className="rounded-[2px] transition-colors"
-        style={{ width: rw, height: rh, border: `1.5px solid ${active ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground))'}` }}
+        className="rounded-[3px] transition-all duration-200"
+        style={{
+          width: rw,
+          height: rh,
+          border: `2px solid ${active ? 'hsl(var(--primary))' : 'hsl(var(--muted-foreground) / 0.3)'}`,
+          background: active ? 'hsl(var(--primary) / 0.1)' : 'transparent',
+        }}
       />
     </div>
   );
@@ -34,24 +52,34 @@ function RatioIcon({ w, h, active, size = 22 }: { w: number; h: number; active: 
 
 export function SizeDropdown({ availableRatios, selectedRatio, anchorRect, onSelect, onClose }: Props) {
   const isMobile = useIsMobile();
+  const { t, lang } = useLanguage();
 
   if (isMobile) {
+    const title = lang === 'ar' ? 'اختر المقاس' : 'Select Size';
     return (
-      <MobileBottomSheet title="Select Size" open onClose={onClose} maxHeight="50vh">
-        <div className="grid grid-cols-3 gap-2 px-4 pb-2">
+      <MobileBottomSheet title={title} open onClose={onClose} maxHeight="55vh">
+        <div className="grid grid-cols-3 gap-3 px-5 pb-4">
           {availableRatios.map(r => {
             const isActive = selectedRatio === r;
             const shape = RATIO_SHAPE[r] || { w: 1, h: 1 };
+            const label = RATIO_LABELS[r];
             return (
               <button
                 key={r}
                 onClick={() => onSelect(r)}
-                className={`flex flex-col items-center gap-2 py-4 rounded-xl transition-all ${
-                  isActive ? 'bg-primary/10 ring-1 ring-primary/30' : 'bg-foreground/[0.03]'
+                className={`flex flex-col items-center gap-2 py-4 rounded-2xl transition-all duration-200 ${
+                  isActive
+                    ? 'bg-primary/10 ring-1 ring-primary/25 shadow-[0_2px_12px_-2px] shadow-primary/15 scale-[1.02]'
+                    : 'bg-foreground/[0.03] active:scale-[0.97]'
                 }`}
               >
-                <RatioIcon w={shape.w} h={shape.h} active={isActive} size={28} />
-                <span className={`text-[13px] font-medium ${isActive ? 'text-primary' : 'text-foreground'}`}>{r}</span>
+                <RatioIcon w={shape.w} h={shape.h} active={isActive} size={30} />
+                <span className={`text-[14px] font-semibold ${isActive ? 'text-primary' : 'text-foreground'}`}>{r}</span>
+                {label && (
+                  <span className={`text-[10px] -mt-1 ${isActive ? 'text-primary/60' : 'text-muted-foreground/50'}`}>
+                    {lang === 'ar' ? label.ar : label.en}
+                  </span>
+                )}
               </button>
             );
           })}
@@ -96,7 +124,7 @@ export function SizeDropdown({ availableRatios, selectedRatio, anchorRect, onSel
                 onMouseLeave={e => { if (!isActive) (e.currentTarget.style.background = 'transparent'); }}
               >
                 <span className="text-[14px] font-medium" style={{ color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--foreground))' }}>{r}</span>
-                <RatioIcon w={shape.w} h={shape.h} active={isActive} />
+                <RatioIcon w={shape.w} h={shape.h} active={isActive} size={22} />
               </button>
             );
           })}

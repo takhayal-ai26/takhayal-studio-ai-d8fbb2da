@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { X } from 'lucide-react';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface Props {
   title: string;
@@ -9,10 +10,12 @@ interface Props {
   maxHeight?: string;
 }
 
-export function MobileBottomSheet({ title, open, onClose, children, maxHeight = '85vh' }: Props) {
+export function MobileBottomSheet({ title, open, onClose, children, maxHeight = '80vh' }: Props) {
   const sheetRef = useRef<HTMLDivElement>(null);
   const startY = useRef(0);
   const currentY = useRef(0);
+  const { lang } = useLanguage();
+  const isRTL = lang === 'ar';
 
   useEffect(() => {
     if (open) document.body.style.overflow = 'hidden';
@@ -45,34 +48,34 @@ export function MobileBottomSheet({ title, open, onClose, children, maxHeight = 
   };
 
   return (
-    <div className="fixed inset-0 z-[9998]">
+    <div className="fixed inset-0 z-[9998]" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Backdrop */}
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-fade-in" onClick={onClose} />
       {/* Sheet */}
       <div
         ref={sheetRef}
-        className="absolute bottom-0 left-0 right-0 bg-background rounded-t-2xl animate-slide-up transition-transform"
-        style={{ maxHeight }}
+        className="absolute left-0 right-0 bg-background rounded-t-3xl animate-slide-up transition-transform shadow-[0_-8px_40px_rgba(0,0,0,0.25)]"
+        style={{ bottom: 0, maxHeight, paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 80px)' }}
         onTouchStart={handleTouchStart}
         onTouchMove={handleTouchMove}
         onTouchEnd={handleTouchEnd}
       >
         {/* Handle */}
-        <div className="flex justify-center pt-3 pb-1">
-          <div className="w-10 h-1 rounded-full bg-muted-foreground/20" />
+        <div className="flex justify-center pt-3 pb-2">
+          <div className="w-9 h-1 rounded-full bg-muted-foreground/20" />
         </div>
         {/* Header */}
-        <div className="flex items-center justify-between px-5 pb-3">
-          <h3 className="text-[16px] font-semibold text-foreground">{title}</h3>
+        <div className="flex items-center justify-between px-5 pb-4">
+          <h3 className="text-[17px] font-bold text-foreground">{title}</h3>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-foreground/[0.05] flex items-center justify-center text-muted-foreground"
+            className="w-8 h-8 rounded-full bg-foreground/[0.06] flex items-center justify-center text-muted-foreground hover:bg-foreground/[0.1] transition-colors"
           >
-            <X size={16} />
+            <X size={15} />
           </button>
         </div>
         {/* Content */}
-        <div className="overflow-y-auto pb-[max(1rem,env(safe-area-inset-bottom))]" style={{ maxHeight: `calc(${maxHeight} - 80px)` }}>
+        <div className="overflow-y-auto" style={{ maxHeight: `calc(${maxHeight} - 140px)` }}>
           {children}
         </div>
       </div>
