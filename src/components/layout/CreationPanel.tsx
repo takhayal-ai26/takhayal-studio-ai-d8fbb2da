@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, ChevronRight, Sparkles, X, Coins, Cpu, Maximize, Image as ImageIcon, Check, Wand2, Zap, Lock } from 'lucide-react';
+import { Upload, ChevronRight, Sparkles, X, Coins, Cpu, Maximize, Image as ImageIcon, Wand2, Zap } from 'lucide-react';
 import { useApp, TEMPLATE_PROMPTS, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useGenerationJobs } from '@/hooks/useGenerationJobs';
@@ -11,12 +11,15 @@ import { CREDIT_VALUE_USD } from '@/lib/pricing-engine';
 import { ModelDropdown } from './dropdowns/ModelDropdown';
 import { SizeDropdown } from './dropdowns/SizeDropdown';
 import { ResolutionDropdown } from './dropdowns/ResolutionDropdown';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/context/AuthContext';
 
 const CREDIT_VALUE = CREDIT_VALUE_USD;
 type OpenDropdown = 'model' | 'size' | 'resolution' | null;
 
 export function CreationPanel() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, enhancePrompt, setEnhancePrompt, isGenerating, credits, getCreditCost, isAuthenticated, openAuthModal, openUpgradeModal } = useApp();
   const { createJob, startGeneration } = useGenerationJobs();
   const [localGenerating, setLocalGenerating] = useState(false);
@@ -28,12 +31,17 @@ export function CreationPanel() {
   const [selectedModelId, setSelectedModelId] = useState<string>('');
   const [selectedResolution, setSelectedResolution] = useState<string>('1K');
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
+  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
+  const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const modelRowRef = useRef<HTMLButtonElement>(null);
   const sizeRowRef = useRef<HTMLButtonElement>(null);
   const resRowRef = useRef<HTMLButtonElement>(null);
 
   const currentModel = activeModels.find(m => m.id === selectedModelId) || defaultModel || activeModels[0];
+  const supportsImageInput = currentModel?.supports_image_input ?? false;
 
   const modelQualityTiers = (() => {
     if (!currentModel) return ['1K'];
@@ -74,10 +82,54 @@ export function CreationPanel() {
     }
   }, [currentModel, aspectRatio, setAspectRatio]);
 
-  const canGenerate = prompt.trim().length > 0 && !isGenerating && !localGenerating && credits >= cost && !!currentModel;
+  // Clear uploaded image when switching to a model that doesn't support it
+  useEffect(() => {
+    if (!supportsImageInput && uploadedImageUrl) {
+      setUploadedImageUrl(null);
+      setUploadedImagePreview(null);
+    }
+  }, [supportsImageInput, uploadedImageUrl]);
+
+  const handleFileUpload = useCallback(async (file: File) => {
+    if (!user) { openAuthModal('signup'); return; }
+    if (!file.type.startsWith('image/')) return;
+    if (file.size > 10 * 1024 * 1024) return; // 10MB limit
+
+    // Show preview immediately
+    const preview = URL.createObjectURL(file);
+    setUploadedImagePreview(preview);
+    setIsUploading(true);
+
+    try {
+      const ext = file.name.split('.').pop() || 'png';
+      const path = `${user.id}/input-${Date.now()}.${ext}`;
+      const { error: uploadError } = await supabase.storage
+        .from('tool-files')
+        .upload(path, file, { contentType: file.type, upsert: true });
+
+      if (uploadError) throw uploadError;
+
+      const { data: urlData } = supabase.storage.from('tool-files').getPublicUrl(path);
+      setUploadedImageUrl(urlData.publicUrl);
+    } catch (err) {
+      console.error('Upload failed:', err);
+      setUploadedImagePreview(null);
+    } finally {
+      setIsUploading(false);
+    }
+  }, [user, openAuthModal]);
+
+  const clearUploadedImage = useCallback(() => {
+    setUploadedImageUrl(null);
+    setUploadedImagePreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, []);
+
+  const canGenerate = prompt.trim().length > 0 && !isGenerating && !localGenerating && credits >= cost && !!currentModel && !isUploading;
   const toggleDropdown = (key: OpenDropdown) => setOpenDropdown(prev => prev === key ? null : key);
 
   useEffect(() => { const handler = (e: MouseEvent) => { if (openDropdown && panelRef.current && !panelRef.current.contains(e.target as Node)) { const target = e.target as HTMLElement; if (target.closest('[data-dropdown-portal]')) return; setOpenDropdown(null); } }; document.addEventListener('mousedown', handler); return () => document.removeEventListener('mousedown', handler); }, [openDropdown]);
+
   const handleGenerate = useCallback(async () => {
     if (!canGenerate) return;
     if (!isAuthenticated) { openAuthModal('signup'); return; }
@@ -98,16 +150,16 @@ export function CreationPanel() {
 
     if (jobId) {
       navigate('/gallery');
-      // Fire generation in background
       startGeneration(jobId, {
         prompt: fullPrompt,
         aspectRatio,
         qualityTier: selectedResolution,
         modelId: currentModel?.id || null,
+        imageUrl: uploadedImageUrl || undefined,
       });
     }
     setLocalGenerating(false);
-  }, [canGenerate, isAuthenticated, credits, cost, prompt, selectedTemplate, aspectRatio, selectedResolution, currentModel, createJob, startGeneration, navigate, openAuthModal, openUpgradeModal]);
+  }, [canGenerate, isAuthenticated, credits, cost, prompt, selectedTemplate, aspectRatio, selectedResolution, currentModel, createJob, startGeneration, navigate, openAuthModal, openUpgradeModal, uploadedImageUrl]);
 
   useEffect(() => { const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenDropdown(null); if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); handleGenerate(); } }; window.addEventListener('keydown', handler); return () => window.removeEventListener('keydown', handler); }, [handleGenerate]);
 
@@ -116,6 +168,12 @@ export function CreationPanel() {
   const getAnchorRect = (ref: React.RefObject<HTMLElement>): DOMRect | null => {
     return ref.current?.getBoundingClientRect() ?? null;
   };
+
+  const handleDrop = useCallback((e: React.DragEvent) => {
+    e.preventDefault();
+    const file = e.dataTransfer.files[0];
+    if (file) handleFileUpload(file);
+  }, [handleFileUpload]);
 
   return (
     <aside ref={panelRef} className="w-full md:w-[380px] xl:w-[420px] flex flex-col bg-background flex-shrink-0 overflow-visible relative z-30">
@@ -163,14 +221,58 @@ export function CreationPanel() {
           </div>
         </div>
 
-        {/* Upload */}
-        <button className="w-full rounded-2xl bg-foreground/[0.02] border border-dashed border-border/20 p-4 flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 hover:text-foreground/60 hover:border-primary/20 hover:bg-primary/[0.02] transition-all duration-300 group">
-          <div className="w-9 h-9 rounded-xl bg-foreground/[0.04] flex items-center justify-center group-hover:bg-primary/10 transition-colors">
-            <Upload size={16} className="group-hover:text-primary/70 transition-colors" />
+        {/* Upload — only show when model supports image input */}
+        {supportsImageInput && (
+          <div
+            onDragOver={e => e.preventDefault()}
+            onDrop={handleDrop}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={e => {
+                const file = e.target.files?.[0];
+                if (file) handleFileUpload(file);
+              }}
+            />
+            {uploadedImagePreview ? (
+              <div className="relative rounded-2xl overflow-hidden border border-primary/20 bg-card/50">
+                <img
+                  src={uploadedImagePreview}
+                  alt="Uploaded reference"
+                  className="w-full h-32 object-cover"
+                />
+                {isUploading && (
+                  <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
+                    <span className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                  </div>
+                )}
+                <button
+                  onClick={clearUploadedImage}
+                  className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <X size={14} />
+                </button>
+                <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-background/80 backdrop-blur-sm text-[10px] text-muted-foreground font-medium">
+                  {language === 'ar' ? 'صورة مرجعية' : 'Reference image'}
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full rounded-2xl bg-foreground/[0.02] border border-dashed border-border/20 p-4 flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 hover:text-foreground/60 hover:border-primary/20 hover:bg-primary/[0.02] transition-all duration-300 group"
+              >
+                <div className="w-9 h-9 rounded-xl bg-foreground/[0.04] flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                  <Upload size={16} className="group-hover:text-primary/70 transition-colors" />
+                </div>
+                <span className="text-[12px] font-medium">{t.studio.uploadImages}</span>
+                <span className="text-[10px] text-muted-foreground/20">JPG / PNG up to 10MB</span>
+              </button>
+            )}
           </div>
-          <span className="text-[12px] font-medium">{t.studio.uploadImages}</span>
-          <span className="text-[10px] text-muted-foreground/20">JPG / PNG up to 10MB</span>
-        </button>
+        )}
 
         {/* Model / Size / Resolution selectors */}
         {[
@@ -216,7 +318,7 @@ export function CreationPanel() {
             </span>
           ) : (
             <>
-              {t.toolPage.generate}
+              {uploadedImageUrl ? (language === 'ar' ? 'تعديل الصورة' : 'Edit Image') : t.toolPage.generate}
               <span className="flex items-center gap-1 text-[12px] opacity-70">
                 <Coins size={11} />{cost}
               </span>
