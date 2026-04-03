@@ -251,8 +251,7 @@ export function SettingsView() {
               </div>
               <div>
                 <label className="text-[12px] text-muted-foreground mb-1 block">{l.email}</label>
-                <input
-                  <div className="w-full h-11 px-3 rounded-xl bg-muted/10 flex items-center text-sm text-muted-foreground/60 select-none">
+                <div className="w-full h-11 px-3 rounded-xl bg-muted/10 flex items-center text-sm text-muted-foreground/60 select-none">
                     {profile?.email || user?.email || ''}
                   </div>
               </div>
