@@ -9,6 +9,7 @@ interface StudioTemplate {
   title_en: string;
   title_ar: string;
   prompt: string;
+  prompt_ar: string;
   cover_image_url: string;
   ratio: string;
 }
@@ -31,7 +32,7 @@ export function InspirationFeed() {
   useEffect(() => {
     supabase
       .from('templates')
-      .select('id, title_en, title_ar, prompt, cover_image_url, ratio')
+      .select('id, title_en, title_ar, prompt, prompt_ar, cover_image_url, ratio')
       .eq('active', true)
       .eq('show_on_studio', true)
       .then(({ data }) => {
@@ -42,7 +43,8 @@ export function InspirationFeed() {
   }, []);
 
   const handleUse = (tpl: StudioTemplate) => {
-    setPrompt(tpl.prompt);
+    const promptText = isAr && tpl.prompt_ar ? tpl.prompt_ar : tpl.prompt;
+    setPrompt(promptText);
     setSelectedTemplate(null);
   };
 
