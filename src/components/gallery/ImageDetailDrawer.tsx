@@ -1,8 +1,10 @@
+import { useState } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { GenerationJob } from '@/hooks/useGenerationJobs';
 import { useModels } from '@/hooks/useModels';
 import { Drawer, DrawerContent, DrawerClose } from '@/components/ui/drawer';
-import { Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw, Calendar, Cpu, Ratio, Sparkles, Share2, Trash2 } from 'lucide-react';
+import { Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw, Calendar, Cpu, Ratio, Sparkles, Share2, Trash2, Copy, Check } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface Props {
   job: GenerationJob | null;
@@ -14,10 +16,31 @@ interface Props {
   onDelete?: (id: string) => void;
 }
 
+async function downloadImage(url: string, filename: string) {
+  try {
+    const resp = await fetch(url);
+    const blob = await resp.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+    toast.success('Download started');
+  } catch {
+    window.open(url, '_blank');
+    toast.info('Image opened in new tab');
+  }
+}
+
 export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShare, onDelete }: Props) {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
   const { models } = useModels();
+  const [downloading, setDownloading] = useState(false);
+  const [copied, setCopied] = useState(false);
 
   const modelName = job ? (models.find(m => m.id === job.model_id)?.model_name || (isAr ? 'افتراضي' : 'Default')) : '';
 
@@ -27,28 +50,28 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
   const isFailed = job.status === 'failed';
   const isCompleted = job.status === 'completed';
 
-  const handleDownload = (e: React.MouseEvent) => {
+  const handleDownload = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!job.image_url) return;
-    const a = document.createElement('a');
-    a.href = job.image_url;
-    a.download = `takhayal-${job.id}.png`;
-    a.target = '_blank';
-    a.click();
+    e.preventDefault();
+    if (!job.image_url || downloading) return;
+    setDownloading(true);
+    await downloadImage(job.image_url, `takhayal-${job.id}.png`);
+    setDownloading(false);
+  };
+
+  const handleCopyPrompt = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!job.prompt) return;
+    navigator.clipboard.writeText(job.prompt);
+    setCopied(true);
+    toast.success(isAr ? 'تم النسخ' : 'Copied');
+    setTimeout(() => setCopied(false), 2000);
   };
 
   const dateStr = new Date(job.created_at).toLocaleDateString(
     isAr ? 'ar-SA' : 'en-US',
     { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }
   );
-
-  const statusLabel = isProcessing
-    ? (isAr ? 'جاري التوليد...' : 'Generating...')
-    : isFailed
-    ? (isAr ? 'فشل التوليد' : 'Failed')
-    : (isAr ? 'مكتمل' : 'Completed');
-
-  const statusColor = isProcessing ? 'text-primary' : isFailed ? 'text-destructive' : 'text-green-500';
 
   return (
     <Drawer open={open} onOpenChange={(v) => !v && onClose()}>
@@ -57,7 +80,7 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
           {/* Close button */}
           <div className="flex justify-end p-3 pb-0">
             <DrawerClose asChild>
-              <button className="w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+              <button className="w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <X size={16} />
               </button>
             </DrawerClose>
@@ -68,12 +91,12 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
             {isProcessing ? (
               <div className="aspect-square rounded-xl bg-gradient-to-br from-primary/5 to-muted/10 flex flex-col items-center justify-center gap-3">
                 <Loader2 size={36} className="text-primary animate-spin" />
-                <span className="text-sm font-medium text-primary">{statusLabel}</span>
+                <span className="text-sm font-medium text-primary">{isAr ? 'جاري التوليد...' : 'Generating...'}</span>
               </div>
             ) : isFailed ? (
               <div className="aspect-square rounded-xl bg-muted/20 flex flex-col items-center justify-center gap-3">
                 <AlertCircle size={36} className="text-destructive/60" />
-                <span className="text-sm font-medium text-destructive">{statusLabel}</span>
+                <span className="text-sm font-medium text-destructive">{isAr ? 'فشل التوليد' : 'Failed'}</span>
               </div>
             ) : job.image_url ? (
               <img
@@ -89,25 +112,26 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
             {isCompleted && job.image_url && (
               <button
                 onClick={handleDownload}
-                className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:brightness-110 transition-all"
+                disabled={downloading}
+                className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50"
               >
-                <Download size={15} />
-                {isAr ? 'تحميل' : 'Download'}
+                {downloading ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
+                {downloading ? (isAr ? 'جاري...' : '...') : (isAr ? 'تحميل' : 'Download')}
               </button>
             )}
             {isCompleted && (
               <button
-                onClick={() => { onReuse(job.prompt || ''); onClose(); }}
-                className="h-10 px-4 rounded-xl border border-border/40 text-foreground text-sm font-medium flex items-center justify-center gap-2 hover:bg-muted/40 transition-colors"
+                onClick={(e) => { e.stopPropagation(); onReuse(job.prompt || ''); onClose(); }}
+                className="h-10 px-4 rounded-xl border border-border/40 text-foreground text-sm font-medium flex items-center justify-center gap-2 hover:bg-muted/40 transition-colors cursor-pointer"
               >
                 <RefreshCw size={15} />
                 {isAr ? 'إعادة استخدام' : 'Reuse'}
               </button>
             )}
-            {isCompleted && onShare && (
+            {isCompleted && (
               <button
-                onClick={() => { onShare(job); }}
-                className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:brightness-110 transition-all"
+                onClick={(e) => { e.stopPropagation(); onShare?.(job); }}
+                className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:brightness-110 transition-all cursor-pointer"
               >
                 <Share2 size={15} />
                 {isAr ? 'مشاركة' : 'Share'}
@@ -115,8 +139,8 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
             )}
             {isFailed && (
               <button
-                onClick={() => { onRetry(job.id); onClose(); }}
-                className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:brightness-110 transition-all"
+                onClick={(e) => { e.stopPropagation(); onRetry(job.id); onClose(); }}
+                className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:brightness-110 transition-all cursor-pointer"
               >
                 <RotateCcw size={15} />
                 {isAr ? 'إعادة المحاولة' : 'Retry'}
@@ -124,16 +148,23 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
             )}
           </div>
 
-          {/* Metadata */}
-          <div className="px-4 pb-6 space-y-3">
-            {/* Prompt */}
+          {/* Prompt with copy */}
+          <div className="px-4 pb-3 space-y-3">
             {job.prompt && (
               <div className="rounded-xl bg-muted/30 p-3">
-                <div className="flex items-center gap-1.5 mb-1.5">
-                  <Sparkles size={12} className="text-primary" />
-                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                    {isAr ? 'التعليمة' : 'Prompt'}
-                  </span>
+                <div className="flex items-center justify-between mb-1.5">
+                  <div className="flex items-center gap-1.5">
+                    <Sparkles size={12} className="text-primary" />
+                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      {isAr ? 'التعليمة' : 'Prompt'}
+                    </span>
+                  </div>
+                  <button
+                    onClick={handleCopyPrompt}
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 active:scale-95 transition-all cursor-pointer"
+                  >
+                    {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
+                  </button>
                 </div>
                 <p className="text-[13px] text-foreground leading-relaxed">{job.prompt}</p>
               </div>
@@ -141,34 +172,19 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
 
             {/* Info grid */}
             <div className="grid grid-cols-2 gap-2">
-              <MetaItem
-                icon={<Calendar size={13} />}
-                label={isAr ? 'التاريخ' : 'Date'}
-                value={dateStr}
-              />
-              <MetaItem
-                icon={<Cpu size={13} />}
-                label={isAr ? 'النموذج' : 'Model'}
-                value={modelName}
-              />
-              <MetaItem
-                icon={<Ratio size={13} />}
-                label={isAr ? 'النسبة' : 'Ratio'}
-                value={job.ratio || '1:1'}
-              />
-              <MetaItem
-                icon={<Sparkles size={13} />}
-                label={isAr ? 'الجودة' : 'Quality'}
-                value={job.quality_tier || '1K'}
-              />
+              <MetaItem icon={<Calendar size={13} />} label={isAr ? 'التاريخ' : 'Date'} value={dateStr} />
+              <MetaItem icon={<Cpu size={13} />} label={isAr ? 'النموذج' : 'Model'} value={modelName} />
+              <MetaItem icon={<Ratio size={13} />} label={isAr ? 'النسبة' : 'Ratio'} value={job.ratio || '1:1'} />
+              <MetaItem icon={<Sparkles size={13} />} label={isAr ? 'الجودة' : 'Quality'} value={job.quality_tier || '1K'} />
             </div>
           </div>
+
           {/* Delete */}
           {isCompleted && onDelete && (
             <div className="px-4 pb-4">
               <button
-                onClick={() => onDelete(job.id)}
-                className="w-full h-10 rounded-xl text-destructive text-sm font-medium flex items-center justify-center gap-2 hover:bg-destructive/5 transition-colors"
+                onClick={(e) => { e.stopPropagation(); onDelete(job.id); }}
+                className="w-full h-10 rounded-xl text-destructive text-sm font-medium flex items-center justify-center gap-2 hover:bg-destructive/5 transition-colors cursor-pointer"
               >
                 <Trash2 size={15} />
                 {isAr ? 'حذف' : 'Delete'}
