@@ -139,8 +139,7 @@ export default function PortalHome() {
                 </div>
               </div>
             </div>
-          </section>
-        )}
+        </section>
 
         {/* ═══ LOGGED-OUT: Why Takhayal ═══ */}
         {!isLoggedIn && <WhyTakhayal />}
