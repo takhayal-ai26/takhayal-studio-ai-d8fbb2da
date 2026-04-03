@@ -22,6 +22,8 @@ interface DBTemplate {
   category: string;
   cover_image_url: string;
   ratio: string;
+  width?: number | null;
+  height?: number | null;
   prompt: string;
   active: boolean;
   featured: boolean;
