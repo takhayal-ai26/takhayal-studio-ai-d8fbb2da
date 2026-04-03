@@ -92,11 +92,12 @@ export function CreationPanel() {
   const handleFileUpload = useCallback(async (file: File) => {
     if (!user) { openAuthModal('signup'); return; }
     if (!file.type.startsWith('image/')) return;
-    if (file.size > 10 * 1024 * 1024) return; // 10MB limit
+    if (file.size > 10 * 1024 * 1024) return;
+    if (uploadedImages.length >= maxImages) return;
 
-    // Show preview immediately
     const preview = URL.createObjectURL(file);
-    setUploadedImagePreview(preview);
+    const newEntry = { preview, url: null as string | null };
+    setUploadedImages(prev => [...prev, newEntry]);
     setIsUploading(true);
 
     try {
@@ -105,18 +106,17 @@ export function CreationPanel() {
       const { error: uploadError } = await supabase.storage
         .from('tool-files')
         .upload(path, file, { contentType: file.type, upsert: true });
-
       if (uploadError) throw uploadError;
 
       const { data: urlData } = supabase.storage.from('tool-files').getPublicUrl(path);
-      setUploadedImageUrl(urlData.publicUrl);
+      setUploadedImages(prev => prev.map(img => img.preview === preview ? { ...img, url: urlData.publicUrl } : img));
     } catch (err) {
       console.error('Upload failed:', err);
-      setUploadedImagePreview(null);
+      setUploadedImages(prev => prev.filter(img => img.preview !== preview));
     } finally {
       setIsUploading(false);
     }
-  }, [user, openAuthModal]);
+  }, [user, openAuthModal, uploadedImages.length, maxImages]);
 
   const clearUploadedImage = useCallback(() => {
     setUploadedImageUrl(null);
