@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { Check, Sparkles } from 'lucide-react';
+import { Check, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
 } from '@/components/ui/accordion';
@@ -189,11 +189,42 @@ function MobilePlanCarousel({ plans, isAr, ...cardProps }: { plans: any[] } & Om
     }
   }, [plans]);
 
+  const scrollToIdx = (i: number) => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const card = el.children[i] as HTMLElement;
+    if (card) {
+      const scrollTo = card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2;
+      el.scrollTo({ left: scrollTo, behavior: 'smooth' });
+    }
+  };
+
+  const canPrev = activeIdx > 0;
+  const canNext = activeIdx < plans.length - 1;
+
   return (
-    <div>
+    <div className="relative">
+      {/* Arrow buttons */}
+      {canPrev && (
+        <button
+          onClick={() => scrollToIdx(activeIdx - 1)}
+          className="absolute top-1/2 left-1 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-card/80 backdrop-blur-sm shadow-md flex items-center justify-center text-foreground/60 hover:text-foreground transition-colors"
+        >
+          {isAr ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+        </button>
+      )}
+      {canNext && (
+        <button
+          onClick={() => scrollToIdx(activeIdx + 1)}
+          className="absolute top-1/2 right-1 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-card/80 backdrop-blur-sm shadow-md flex items-center justify-center text-foreground/60 hover:text-foreground transition-colors"
+        >
+          {isAr ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+        </button>
+      )}
+
       <div
         ref={scrollRef}
-        className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-8 pb-4 scrollbar-none"
+        className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-8 pt-5 pb-4 scrollbar-none"
         style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
         dir={isAr ? 'rtl' : 'ltr'}
       >
@@ -218,15 +249,7 @@ function MobilePlanCarousel({ plans, isAr, ...cardProps }: { plans: any[] } & Om
         {plans.map((_: any, i: number) => (
           <button
             key={i}
-            onClick={() => {
-              const el = scrollRef.current;
-              if (!el) return;
-              const card = el.children[i] as HTMLElement;
-              if (card) {
-                const scrollTo = card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2;
-                el.scrollTo({ left: scrollTo, behavior: 'smooth' });
-              }
-            }}
+            onClick={() => scrollToIdx(i)}
             className={`rounded-full transition-all duration-200 ${
               i === activeIdx
                 ? 'w-6 h-2 bg-primary'
