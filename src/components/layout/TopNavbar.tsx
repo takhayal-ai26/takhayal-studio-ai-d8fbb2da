@@ -28,7 +28,8 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
   const initials = userName ? userName.slice(0, 2).toUpperCase() : 'U';
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const avatarRef = useRef<HTMLDivElement>(null);
+  const desktopAvatarRef = useRef<HTMLDivElement>(null);
+  const mobileAvatarRef = useRef<HTMLDivElement>(null);
 
   const lowCredits = credits <= 5 && credits > 0;
 
@@ -44,13 +45,38 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (avatarRef.current && !avatarRef.current.contains(e.target as Node)) {
+      const target = e.target as Node;
+      const clickedDesktopMenu = !!desktopAvatarRef.current?.contains(target);
+      const clickedMobileMenu = !!mobileAvatarRef.current?.contains(target);
+
+      if (!clickedDesktopMenu && !clickedMobileMenu) {
         setAvatarOpen(false);
       }
     };
+
     document.addEventListener('mousedown', handler);
     return () => document.removeEventListener('mousedown', handler);
   }, []);
+
+  const getAvatarMenuStyle = (triggerRef: React.RefObject<HTMLDivElement>) => {
+    const rect = triggerRef.current?.getBoundingClientRect();
+
+    if (!rect) {
+      return {
+        zIndex: 9999,
+        top: 64,
+        ...(isRTL ? { left: 16 } : { right: 16 }),
+      };
+    }
+
+    return {
+      zIndex: 9999,
+      top: rect.bottom + 8,
+      ...(isRTL
+        ? { left: Math.max(rect.left, 16) }
+        : { right: Math.max(window.innerWidth - rect.right, 16) }),
+    };
+  };
 
   const isActive = (item: typeof navItemDefs[0]) => {
     if (item.studioPage) return location.pathname === '/studio' && activePage === item.studioPage;
@@ -119,7 +145,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
                 </span>
               )}
 
-              <div ref={avatarRef} className="relative">
+              <div ref={desktopAvatarRef} className="relative">
                 <button
                   onClick={() => setAvatarOpen(!avatarOpen)}
                   className="w-8 h-8 rounded-full bg-foreground/[0.06] flex items-center justify-center text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors overflow-hidden"
@@ -132,13 +158,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
                 {avatarOpen && (
                   <div
                     className={`fixed ${isRTL ? 'left-auto right-auto' : ''} w-56 bg-popover/95 backdrop-blur-xl rounded-2xl p-2 shadow-xl shadow-black/20 animate-fade-in`}
-                    style={{
-                      zIndex: 9999,
-                      top: (avatarRef.current?.getBoundingClientRect().bottom ?? 0) + 8,
-                      ...(isRTL
-                        ? { left: avatarRef.current?.getBoundingClientRect().left ?? 0 }
-                        : { right: window.innerWidth - (avatarRef.current?.getBoundingClientRect().right ?? 0) }),
-                    }}
+                    style={getAvatarMenuStyle(desktopAvatarRef)}
                   >
                     {/* User info */}
                     <div className="px-3 py-3 mb-1">
@@ -235,7 +255,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
               </button>
 
               {/* Avatar */}
-              <div ref={avatarRef} className="relative">
+              <div ref={mobileAvatarRef} className="relative">
                 <button
                   onClick={() => setAvatarOpen(!avatarOpen)}
                   className="w-8 h-8 rounded-full bg-foreground/[0.06] flex items-center justify-center text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors overflow-hidden"
@@ -247,13 +267,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
                 {avatarOpen && (
                   <div
                     className={`fixed w-56 bg-popover/95 backdrop-blur-xl rounded-2xl p-2 shadow-xl shadow-black/20 animate-fade-in`}
-                    style={{
-                      zIndex: 9999,
-                      top: (avatarRef.current?.getBoundingClientRect().bottom ?? 0) + 8,
-                      ...(isRTL
-                        ? { left: avatarRef.current?.getBoundingClientRect().left ?? 0 }
-                        : { right: window.innerWidth - (avatarRef.current?.getBoundingClientRect().right ?? 0) }),
-                    }}
+                    style={getAvatarMenuStyle(mobileAvatarRef)}
                   >
                     {/* User info */}
                     <div className="px-3 py-3 mb-1">
