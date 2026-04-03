@@ -160,7 +160,6 @@ export default function Community() {
           </div>
         </div>
       )}
-      <Footer />
     </div>
   );
 }
