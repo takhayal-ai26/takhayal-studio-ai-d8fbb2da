@@ -219,25 +219,14 @@ export function SettingsView() {
 
             {/* Fields */}
             <div className="flex-1 w-full space-y-3">
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <div>
-                  <label className="text-[12px] text-muted-foreground mb-1 block">{l.firstName}</label>
-                  <input
-                    value={firstName}
-                    onChange={(e) => setFirstName(e.target.value)}
-                    className="w-full h-11 px-3 rounded-xl bg-muted/30 border-0 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-                    placeholder={l.firstName}
-                  />
-                </div>
-                <div>
-                  <label className="text-[12px] text-muted-foreground mb-1 block">{l.lastName}</label>
-                  <input
-                    value={lastName}
-                    onChange={(e) => setLastName(e.target.value)}
-                    className="w-full h-11 px-3 rounded-xl bg-muted/30 border-0 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
-                    placeholder={l.lastName}
-                  />
-                </div>
+              <div>
+                <label className="text-[12px] text-muted-foreground mb-1 block">{l.name}</label>
+                <input
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="w-full h-11 px-3 rounded-xl bg-muted/30 border-0 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                  placeholder={l.name}
+                />
               </div>
               <div>
                 <label className="text-[12px] text-muted-foreground mb-1 block">{l.email}</label>
