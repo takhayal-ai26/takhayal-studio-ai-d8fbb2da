@@ -10,6 +10,7 @@ import { ImageLightbox } from '@/components/gallery/ImageLightbox';
 import { ShareModal } from '@/components/gallery/ShareModal';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 type FilterKey = 'all' | 'today' | 'yesterday' | 'generated' | 'edited';
 type SortKey = 'newest' | 'oldest';
@@ -170,13 +171,13 @@ export default function Gallery() {
   const { user } = useAuth();
   const { openAuthModal, setPrompt } = useApp();
   const { jobs, loading, retryJob } = useGenerationJobs();
+  const isMobile = useIsMobile();
   const isAr = lang === 'ar';
   const [selectedJob, setSelectedJob] = useState<GenerationJob | null>(null);
   const [shareJob, setShareJob] = useState<GenerationJob | null>(null);
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortKey>('newest');
   const [filter, setFilter] = useState<FilterKey>('all');
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 768;
 
   const g = t.gallery;
 
@@ -373,8 +374,8 @@ export default function Gallery() {
         </div>
       </div>
 
-      {/* Mobile: drawer, Desktop: lightbox */}
-      <div className="md:hidden">
+      {/* Render only one detail UI at a time to avoid portal stacking across breakpoints */}
+      {isMobile ? (
         <ImageDetailDrawer
           job={selectedJob}
           open={!!selectedJob}
@@ -384,8 +385,7 @@ export default function Gallery() {
           onShare={setShareJob}
           onDelete={handleDelete}
         />
-      </div>
-      <div className="hidden md:block">
+      ) : (
         <ImageLightbox
           job={selectedJob}
           open={!!selectedJob}
@@ -399,7 +399,7 @@ export default function Gallery() {
           hasPrev={selectedIndex > 0}
           hasNext={selectedIndex < filteredJobs.length - 1}
         />
-      </div>
+      )}
 
       <ShareModal
         job={shareJob}
