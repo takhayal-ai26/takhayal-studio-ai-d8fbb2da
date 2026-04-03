@@ -39,6 +39,12 @@ const VERIFIED: Record<string, { type: string; cost1k: number; cost2k?: number; 
   "fal-ai/nano-banana-2":    { type: "flat_per_image", cost1k: 0.08, cost2k: 0.12, cost4k: 0.16 },
   "fal-ai/bytedance/seedream/v4.5/text-to-image": { type: "flat_per_image", cost1k: 0.06, cost2k: 0.08, cost4k: 0.12 },
   "fal-ai/bytedance/seedream/v5/lite/text-to-image": { type: "flat_per_image", cost1k: 0.04, cost2k: 0.06, cost4k: 0.10 },
+  "fal-ai/ideogram/v3/remix": { type: "quality_tier", cost1k: 0.03, cost2k: 0.06, cost4k: 0.09 },
+  "fal-ai/flux-pro/v1.1/redux": { type: "per_megapixel", cost1k: 0.04 },
+  "fal-ai/flux/schnell/redux": { type: "per_megapixel", cost1k: 0.003 },
+  "fal-ai/bytedance/seedream/v4.5/edit": { type: "flat_per_image", cost1k: 0.06, cost2k: 0.08, cost4k: 0.12 },
+  "fal-ai/bytedance/seedream/v5/lite/edit": { type: "flat_per_image", cost1k: 0.04, cost2k: 0.06, cost4k: 0.10 },
+  "fal-ai/qwen-image-edit-2511": { type: "per_megapixel", cost1k: 0.02 },
 };
 
 function calculateProviderCost(endpoint: string, ratio: string, quality: string, dbBaseCost: number, pricingMode: string): number {
@@ -62,24 +68,69 @@ function calculateProviderCost(endpoint: string, ratio: string, quality: string,
 }
 
 // ===== RESOLUTION PAYLOAD RESOLVERS =====
-function resolvePayload(endpoint: string, ratio: string, quality: string, inputType: string): Record<string, unknown> {
+function resolvePayload(endpoint: string, ratio: string, quality: string, inputType: string, imageUrl?: string): Record<string, unknown> {
+  const isEdit = !!imageUrl;
+
+  // GPT Image 1.5 — same endpoint for text & edit
   if (endpoint === "fal-ai/gpt-image-1.5") {
     const sizeMap: Record<string, string> = { "1:1": "1024x1024", "2:3": "1024x1536", "3:2": "1536x1024" };
-    return { quality: "low", image_size: sizeMap[ratio] || "1024x1024" };
+    const base: Record<string, unknown> = { quality: "low", image_size: sizeMap[ratio] || "1024x1024" };
+    if (isEdit) base.image_url = imageUrl;
+    return base;
   }
+
+  // Ideogram V3 remix
   if (endpoint.includes("ideogram")) {
     const speedMap: Record<string, string> = { "1K": "TURBO", "2K": "BALANCED", "4K": "QUALITY" };
-    return { aspect_ratio: ratio, rendering_speed: speedMap[quality] || "TURBO" };
+    const base: Record<string, unknown> = { aspect_ratio: ratio, rendering_speed: speedMap[quality] || "TURBO" };
+    if (isEdit) base.image_url = imageUrl;
+    return base;
   }
-  if (endpoint.includes("nano-banana")) return { aspect_ratio: ratio, resolution: quality };
+
+  // Nano Banana models — same endpoint for text & edit
+  if (endpoint.includes("nano-banana")) {
+    const base: Record<string, unknown> = { aspect_ratio: ratio, resolution: quality };
+    if (isEdit) base.image_url = imageUrl;
+    return base;
+  }
+
+  // Imagen 4 — no edit support
   if (endpoint.includes("imagen4")) return { aspect_ratio: ratio, resolution: quality };
+
+  // Seedream edit
+  if (endpoint.includes("seedream") && endpoint.includes("/edit")) {
+    const dims = getResolutionDims(ratio, quality);
+    return { image_url: imageUrl, image_size: { width: dims.width, height: dims.height } };
+  }
+
+  // Seedream text-to-image
   if (endpoint.includes("seedream")) {
     const dims = getResolutionDims(ratio, quality);
     return { image_size: { width: dims.width, height: dims.height } };
   }
-  if (inputType === "aspect_ratio") return { aspect_ratio: ratio };
+
+  // Flux redux (image variation)
+  if (endpoint.includes("/redux")) {
+    const dims = getResolutionDims(ratio, quality);
+    return { image_url: imageUrl, image_size: { width: dims.width, height: dims.height } };
+  }
+
+  // Qwen image edit
+  if (endpoint.includes("qwen-image-edit")) {
+    const dims = getResolutionDims(ratio, quality);
+    return { image_url: imageUrl, image_size: { width: dims.width, height: dims.height } };
+  }
+
+  // Default: per-megapixel models
+  if (inputType === "aspect_ratio") {
+    const base: Record<string, unknown> = { aspect_ratio: ratio };
+    if (isEdit) base.image_url = imageUrl;
+    return base;
+  }
   const dims = getResolutionDims(ratio, quality);
-  return { image_size: { width: dims.width, height: dims.height } };
+  const base: Record<string, unknown> = { image_size: { width: dims.width, height: dims.height } };
+  if (isEdit) base.image_url = imageUrl;
+  return base;
 }
 
 // ===== FAL QUEUE RUNNER =====
@@ -142,7 +193,7 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    const { prompt, model_endpoint, aspect_ratio, num_images, input_type, quality_tier, model_id, job_id } = await req.json();
+    const { prompt, model_endpoint, aspect_ratio, num_images, input_type, quality_tier, model_id, job_id, image_url } = await req.json();
 
     if (!prompt || typeof prompt !== "string") {
       return new Response(JSON.stringify({ error: "prompt is required" }),
@@ -156,6 +207,8 @@ serve(async (req) => {
     let dbBaseCost = 0;
     let pricingMode = "flat_per_image";
     let upscaleStrategy = "clarity";
+    let editEndpoint: string | null = null;
+    let supportsImageInput = false;
 
     const supabase = (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY)
       ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
@@ -177,6 +230,8 @@ serve(async (req) => {
           creditsUsed = modelData.credits_per_generation || 2;
           pricingMode = modelData.pricing_mode || "flat_per_image";
           upscaleStrategy = modelData.upscale_strategy || "clarity";
+          editEndpoint = modelData.edit_endpoint_id || null;
+          supportsImageInput = modelData.supports_image_input || false;
         }
 
         if (resolvedModelId && quality_tier) {
@@ -193,17 +248,23 @@ serve(async (req) => {
       }
     }
 
+    // Determine if this is an image-to-image request
+    const isImageToImage = !!image_url && supportsImageInput && !!editEndpoint;
+    const activeEndpoint = isImageToImage ? editEndpoint! : endpoint;
+
+    console.log(`[generate-image] mode=${isImageToImage ? 'image-to-image' : 'text-to-image'} endpoint=${activeEndpoint} ratio=${aspect_ratio || '1:1'} quality=${quality_tier || '1K'} job_id=${job_id || 'none'}`);
+
     const falHeaders = { Authorization: `Key ${FAL_AI_API_KEY}`, "Content-Type": "application/json" };
     const selectedRatio = aspect_ratio || "1:1";
     const selectedQuality = quality_tier || "1K";
 
-    const actualApiCost = calculateProviderCost(endpoint, selectedRatio, selectedQuality, dbBaseCost, pricingMode);
+    const actualApiCost = calculateProviderCost(activeEndpoint, selectedRatio, selectedQuality, dbBaseCost, pricingMode);
     const dims = getResolutionDims(selectedRatio, selectedQuality);
 
-    const needsUpscale = (selectedQuality === "2K" || selectedQuality === "4K") && upscaleStrategy === "clarity";
+    const needsUpscale = (selectedQuality === "2K" || selectedQuality === "4K") && upscaleStrategy === "clarity" && !isImageToImage;
     const generateQuality = needsUpscale ? "1K" : selectedQuality;
 
-    const payloadParams = resolvePayload(endpoint, selectedRatio, generateQuality, modelInputType);
+    const payloadParams = resolvePayload(activeEndpoint, selectedRatio, generateQuality, modelInputType, isImageToImage ? image_url : undefined);
     const payload: Record<string, unknown> = {
       prompt,
       num_images: num_images || 1,
@@ -211,15 +272,23 @@ serve(async (req) => {
       ...payloadParams,
     };
 
-    if (endpoint === "fal-ai/flux/schnell") payload.num_inference_steps = 4;
+    // Flux redux doesn't use prompt — it uses the image as the base
+    if (activeEndpoint.includes("/redux")) {
+      delete payload.prompt;
+      // Redux uses image_url as primary input; prompt becomes optional guidance
+      if (prompt && prompt.trim()) {
+        // Some redux endpoints don't accept prompt, but we keep it for those that do
+      }
+    }
 
-    console.log(`[generate-image] endpoint=${endpoint} ratio=${selectedRatio} quality=${selectedQuality} needsUpscale=${needsUpscale} cost=$${actualApiCost.toFixed(4)} job_id=${job_id || 'none'}`);
+    if (activeEndpoint === "fal-ai/flux/schnell") payload.num_inference_steps = 4;
+
+    console.log(`[generate-image] payload keys: ${Object.keys(payload).join(', ')}`);
 
     // ===== GENERATE =====
-    const genResult = await falQueueRun(endpoint, payload, falHeaders);
+    const genResult = await falQueueRun(activeEndpoint, payload, falHeaders);
 
     if (genResult.error) {
-      // Mark job as failed if job_id provided
       if (supabase && job_id) {
         await supabase.from("generation_logs").update({ status: "failed" }).eq("id", job_id);
       }
@@ -265,7 +334,7 @@ serve(async (req) => {
     const profitUsd = revenueUsd - totalCost;
     const marginPct = revenueUsd > 0 ? (profitUsd / revenueUsd) * 100 : 0;
 
-    const imageUrl = resultData?.images?.[0]?.url || null;
+    const imageResultUrl = resultData?.images?.[0]?.url || resultData?.image?.url || null;
 
     // ===== UPDATE OR INSERT LOG =====
     if (supabase) {
@@ -293,15 +362,13 @@ serve(async (req) => {
           upscale_model: upscaleModel,
           actual_output_width: finalWidth,
           actual_output_height: finalHeight,
-          image_url: imageUrl,
+          image_url: imageResultUrl,
           status: "completed",
         };
 
         if (job_id) {
-          // Update existing job record
           await supabase.from("generation_logs").update(logData).eq("id", job_id);
         } else {
-          // Legacy: insert new record
           await supabase.from("generation_logs").insert(logData);
         }
       } catch (e) {
@@ -309,11 +376,15 @@ serve(async (req) => {
       }
     }
 
-    console.log(`[generate-image] Complete. job_id=${job_id || 'none'} genCost=$${actualApiCost.toFixed(4)} total=$${totalCost.toFixed(4)} margin=${marginPct.toFixed(1)}%`);
+    console.log(`[generate-image] Complete. job_id=${job_id || 'none'} mode=${isImageToImage ? 'i2i' : 't2i'} genCost=$${actualApiCost.toFixed(4)} total=$${totalCost.toFixed(4)} margin=${marginPct.toFixed(1)}%`);
+
+    // Normalize output: some endpoints return { image: { url } } instead of { images: [{ url }] }
+    const normalizedImages = resultData?.images || (resultData?.image ? [resultData.image] : []);
 
     return new Response(JSON.stringify({
       ...resultData,
-      model_used: endpoint,
+      images: normalizedImages,
+      model_used: activeEndpoint,
       credits_used: creditsUsed,
       actual_api_cost: totalCost,
       revenue_usd: revenueUsd,
@@ -324,6 +395,7 @@ serve(async (req) => {
       was_upscaled: wasUpscaled,
       upscale_model: upscaleModel,
       job_id: job_id || null,
+      is_image_to_image: isImageToImage,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
