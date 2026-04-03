@@ -6,21 +6,29 @@ const features = [
     icon: Layers,
     en: 'All top AI models in one place',
     ar: 'جميع أفضل نماذج الذكاء الاصطناعي في مكان واحد',
+    descEn: 'Access FLUX, GPT Image, and more — no switching between tools.',
+    descAr: 'استخدم FLUX و GPT Image وغيرها بدون التنقل بين الأدوات.',
   },
   {
     icon: Globe,
     en: 'Built for Arabic & GCC creators',
     ar: 'مصمم للمبدعين في الخليج والعالم العربي',
+    descEn: 'Native Arabic UI, RTL-first design, localized for the region.',
+    descAr: 'واجهة عربية أصلية، تصميم من اليمين لليسار، مخصص للمنطقة.',
   },
   {
     icon: Zap,
     en: 'Faster workflow, no complexity',
     ar: 'تجربة أسرع بدون تعقيد',
+    descEn: 'One prompt, one click. No complicated settings or setups.',
+    descAr: 'أمر واحد، نقرة واحدة. بدون إعدادات معقدة.',
   },
   {
     icon: Clock,
     en: 'Create content in seconds',
     ar: 'أنشئ المحتوى خلال ثوانٍ',
+    descEn: 'Generate stunning visuals in under 10 seconds.',
+    descAr: 'أنشئ صورًا مذهلة في أقل من 10 ثوانٍ.',
   },
 ];
 
@@ -30,59 +38,50 @@ export function WhyTakhayal() {
 
   return (
     <section className="my-16 md:my-24 relative" dir={isRTL ? 'rtl' : 'ltr'}>
-      {/* Background glow */}
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full bg-primary/[0.04] blur-[100px]" />
-      </div>
-
       {/* Header */}
-      <div className="text-center mb-10 md:mb-14">
-        <h2 className="text-2xl md:text-4xl font-bold text-foreground">
+      <div className="text-center mb-12 md:mb-16">
+        <h2 className="text-2xl md:text-4xl font-bold text-foreground tracking-tight">
           {isAr ? 'لماذا ' : 'Why '}
-          <span className="bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent">
-            {isAr ? 'تخيّل' : 'Takhayal'}
-          </span>
+          <span className="text-primary">{isAr ? 'تخيّل' : 'Takhayal'}</span>
           {isAr ? '؟' : '?'}
         </h2>
+        <p className="text-sm text-muted-foreground mt-3 max-w-md mx-auto">
+          {isAr
+            ? 'كل ما تحتاجه لإنشاء محتوى بصري احترافي في مكان واحد'
+            : 'Everything you need to create professional visual content, in one place'}
+        </p>
       </div>
 
-      {/* Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-5">
+      {/* Stacked feature rows */}
+      <div className="space-y-3 md:space-y-0 md:grid md:grid-cols-2 md:gap-4 max-w-3xl mx-auto">
         {features.map((f, i) => (
           <div
             key={i}
-            className="group relative flex flex-col items-center text-center gap-4 p-6 md:p-8 rounded-[20px] overflow-hidden transition-all duration-500 hover:-translate-y-1"
-            style={{
-              background: 'linear-gradient(180deg, rgba(255,255,255,0.04) 0%, rgba(255,255,255,0.01) 100%)',
-              border: '1px solid rgba(255,255,255,0.06)',
-            }}
+            className="group flex items-start gap-4 p-5 rounded-2xl transition-all duration-300 hover:bg-card/60"
+            style={{ border: '1px solid transparent' }}
+            onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.06)')}
+            onMouseLeave={e => (e.currentTarget.style.borderColor = 'transparent')}
           >
-            {/* Hover glow */}
-            <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500 -z-[1]"
-              style={{ background: 'radial-gradient(circle at 50% 30%, rgba(240,62,27,0.08), transparent 70%)' }}
-            />
-
             {/* Icon */}
             <div
-              className="relative w-14 h-14 rounded-2xl flex items-center justify-center group-hover:scale-110 transition-transform duration-500"
+              className="flex-shrink-0 w-12 h-12 rounded-[14px] flex items-center justify-center transition-transform duration-300 group-hover:scale-105"
               style={{
-                background: 'linear-gradient(135deg, rgba(240,62,27,0.15), rgba(240,62,27,0.05))',
-                border: '1px solid rgba(240,62,27,0.15)',
-                boxShadow: '0 4px 20px rgba(240,62,27,0.1)',
+                background: 'linear-gradient(145deg, hsl(var(--primary) / 0.15), hsl(var(--primary) / 0.05))',
+                boxShadow: '0 0 0 1px hsl(var(--primary) / 0.1), 0 4px 12px hsl(var(--primary) / 0.08)',
               }}
             >
-              <f.icon size={24} className="text-primary" />
-              {/* Icon glow pulse */}
-              <div className="absolute inset-0 rounded-2xl bg-primary/10 animate-pulse opacity-0 group-hover:opacity-50" style={{ animationDuration: '2s' }} />
+              <f.icon size={22} className="text-primary" />
             </div>
 
             {/* Text */}
-            <p className="text-[14px] md:text-[15px] font-medium text-foreground/85 leading-relaxed">
-              {isAr ? f.ar : f.en}
-            </p>
-
-            {/* Bottom accent line */}
-            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-0 h-[2px] bg-gradient-to-r from-transparent via-primary to-transparent group-hover:w-3/4 transition-all duration-500" />
+            <div className="flex-1 min-w-0">
+              <h3 className="text-[15px] font-semibold text-foreground leading-snug mb-1">
+                {isAr ? f.ar : f.en}
+              </h3>
+              <p className="text-[13px] text-muted-foreground leading-relaxed">
+                {isAr ? f.descAr : f.descEn}
+              </p>
+            </div>
           </div>
         ))}
       </div>
