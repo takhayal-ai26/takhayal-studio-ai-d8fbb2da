@@ -235,6 +235,24 @@ export function DashboardHero() {
       </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6 h-full pb-6 md:pb-[72px] pt-14 md:pt-20">
+        {/* Premium badge */}
+        <div
+          className="animate-fade-in"
+          style={{
+            background: 'rgba(0,0,0,0.35)',
+            backdropFilter: 'blur(10px)',
+            WebkitBackdropFilter: 'blur(10px)',
+            color: '#EAEAEA',
+            fontSize: 13,
+            fontWeight: 500,
+            padding: '6px 14px',
+            borderRadius: 999,
+            marginBottom: 14,
+          }}
+        >
+          {isAr ? 'منصة للمبدعين العرب' : 'Built for Arab creators'}
+        </div>
+
         {title && (
           <h1
             className="text-white text-center font-extrabold drop-shadow-lg"
