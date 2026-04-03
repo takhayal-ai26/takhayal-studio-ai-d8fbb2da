@@ -70,12 +70,9 @@ export function WhyTakhayal() {
 
             {/* Text */}
             <div className="flex-1 min-w-0">
-              <h3 className="text-[15px] font-semibold text-foreground leading-snug mb-1">
+              <h3 className="text-[15px] font-semibold text-foreground leading-snug">
                 {isAr ? f.ar : f.en}
               </h3>
-              <p className="text-[13px] text-muted-foreground leading-relaxed">
-                {isAr ? f.descAr : f.descEn}
-              </p>
             </div>
           </div>
         ))}
