@@ -208,49 +208,68 @@ function MobilePlanCarousel({ plans, isAr, ...cardProps }: { plans: any[] } & Om
       {canPrev && (
         <button
           onClick={() => scrollToIdx(activeIdx - 1)}
-          className="absolute top-1/2 left-1 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-card/80 backdrop-blur-sm shadow-md flex items-center justify-center text-foreground/60 hover:text-foreground transition-colors"
+          className="absolute top-1/2 left-0.5 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-card/90 backdrop-blur-sm shadow-lg flex items-center justify-center text-foreground/50 active:scale-90 transition-all"
         >
-          {isAr ? <ChevronRight size={18} /> : <ChevronLeft size={18} />}
+          {isAr ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
       )}
       {canNext && (
         <button
           onClick={() => scrollToIdx(activeIdx + 1)}
-          className="absolute top-1/2 right-1 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-card/80 backdrop-blur-sm shadow-md flex items-center justify-center text-foreground/60 hover:text-foreground transition-colors"
+          className="absolute top-1/2 right-0.5 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-card/90 backdrop-blur-sm shadow-lg flex items-center justify-center text-foreground/50 active:scale-90 transition-all"
         >
-          {isAr ? <ChevronLeft size={18} /> : <ChevronRight size={18} />}
+          {isAr ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
         </button>
       )}
 
       <div
         ref={scrollRef}
-        className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-8 pt-5 pb-4 scrollbar-none"
-        style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+        className="flex overflow-x-auto snap-x snap-mandatory pt-5 pb-4 scrollbar-none"
+        style={{
+          scrollbarWidth: 'none',
+          WebkitOverflowScrolling: 'touch',
+          paddingLeft: '9vw',
+          paddingRight: '9vw',
+          gap: '12px',
+        }}
         dir={isAr ? 'rtl' : 'ltr'}
       >
-        {plans.map((p: any, i: number) => (
-          <div
-            key={p.id}
-            className="snap-center flex-shrink-0 transition-all duration-300"
-            style={{ width: 'calc(80vw)', maxWidth: 320 }}
-          >
-            <PlanCard
-              p={p}
-              isAr={isAr}
-              scale={i === activeIdx ? 1 : 0.93}
-              dimmed={i !== activeIdx}
-              {...cardProps}
-            />
-          </div>
-        ))}
+        {plans.map((p: any, i: number) => {
+          const isActive = i === activeIdx;
+          return (
+            <div
+              key={p.id}
+              className="snap-center flex-shrink-0 transition-all duration-300 ease-out"
+              style={{ width: '82vw', maxWidth: 340 }}
+            >
+              <div
+                className="transition-all duration-300 ease-out"
+                style={{
+                  transform: isActive ? 'scale(1)' : 'scale(0.92)',
+                  opacity: isActive ? 1 : 0.75,
+                  transformOrigin: 'center center',
+                }}
+              >
+                <PlanCard
+                  p={p}
+                  isAr={isAr}
+                  scale={1}
+                  dimmed={false}
+                  {...cardProps}
+                />
+              </div>
+            </div>
+          );
+        })}
       </div>
+
       {/* Pagination dots */}
-      <div className="flex justify-center gap-2 mt-4">
+      <div className="flex justify-center gap-2 mt-3">
         {plans.map((_: any, i: number) => (
           <button
             key={i}
             onClick={() => scrollToIdx(i)}
-            className={`rounded-full transition-all duration-200 ${
+            className={`rounded-full transition-all duration-300 ${
               i === activeIdx
                 ? 'w-6 h-2 bg-primary'
                 : 'w-2 h-2 bg-muted-foreground/20'
