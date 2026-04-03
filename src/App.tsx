@@ -61,6 +61,7 @@ const App = () => (
                   <Route path="/pricing" element={<Pricing />} />
                   <Route path="/tools" element={<ToolsDirectory />} />
                   <Route path="/create" element={<CreateHub />} />
+                  <Route path="/gallery" element={<Gallery />} />
                   <Route path="/tools/:toolId" element={<ToolPage />} />
                   <Route path="/community" element={<Community />} />
                   <Route path="/templates" element={<Templates />} />
