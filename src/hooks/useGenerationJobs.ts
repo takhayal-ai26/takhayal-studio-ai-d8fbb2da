@@ -206,6 +206,7 @@ export function useGenerationJobs() {
     aspectRatio: string;
     qualityTier: string;
     modelId: string | null;
+    imageUrl?: string;
   }) => {
     try {
       const { error } = await supabase.functions.invoke('generate-image', {
@@ -216,6 +217,7 @@ export function useGenerationJobs() {
           model_id: params.modelId,
           num_images: 1,
           job_id: jobId,
+          image_url: params.imageUrl || undefined,
         },
       });
       if (error) {
