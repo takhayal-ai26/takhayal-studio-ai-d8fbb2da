@@ -29,6 +29,7 @@ export interface ModelRecord {
   supports_native_high_res: boolean;
   supports_image_input: boolean;
   edit_endpoint_id: string | null;
+  max_image_inputs: number;
   created_at: string;
   updated_at: string;
 }
