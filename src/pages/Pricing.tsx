@@ -333,14 +333,14 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
 
   return (
     <section className="max-w-5xl mx-auto pb-20 px-0">
-      <div className="text-center mb-8 px-6">
-        <h2 className="text-2xl font-light text-foreground">{isAr ? 'ماذا يقول مستخدمونا' : 'What our users say'}</h2>
+      <div className="text-center mb-10 px-6">
+        <h2 className="text-2xl font-semibold text-foreground">{isAr ? 'ماذا يقول مستخدمونا' : 'What our users say'}</h2>
         <p className="text-sm text-muted-foreground mt-2">{isAr ? 'مبدعون حقيقيون، نتائج حقيقية' : 'Real creators, real results'}</p>
       </div>
       <div
         ref={scrollRef}
-        className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-6 pb-2 scrollbar-none"
-        style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+        className="flex overflow-x-auto snap-x snap-mandatory pb-4 scrollbar-none"
+        style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch', paddingLeft: '8vw', paddingRight: '8vw', gap: '16px' }}
         dir={isAr ? 'rtl' : 'ltr'}
       >
         {testimonials.map((t: any, i: number) => {
@@ -349,44 +349,53 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
           const quote = isAr ? t.testimonial_ar : t.testimonial_en;
           const location = isAr ? t.location_ar : t.location_en;
           const initials = (t.name_en || '').split(' ').map((w: string) => w[0]).join('').slice(0, 2);
+          const isActive = i === activeIdx;
 
           return (
             <div
               key={t.id}
-              className="snap-center flex-shrink-0 rounded-2xl p-5 flex flex-col gap-4 transition-all duration-300"
+              className="snap-center flex-shrink-0 rounded-2xl p-6 flex flex-col gap-4 transition-all duration-500"
               style={{
-                width: 'calc(82vw)',
-                maxWidth: 340,
-                background: 'hsl(var(--card) / 0.6)',
-                backdropFilter: 'blur(16px)',
-                WebkitBackdropFilter: 'blur(16px)',
-                border: '1px solid hsl(var(--border) / 0.15)',
-                boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-                opacity: i === activeIdx ? 1 : 0.6,
-                transform: i === activeIdx ? 'scale(1)' : 'scale(0.95)',
+                width: '84vw',
+                maxWidth: 360,
+                background: isActive
+                  ? 'linear-gradient(135deg, hsl(var(--primary) / 0.12), hsl(var(--card) / 0.8))'
+                  : 'hsl(var(--card) / 0.5)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: isActive
+                  ? '1px solid hsl(var(--primary) / 0.3)'
+                  : '1px solid hsl(var(--border) / 0.1)',
+                boxShadow: isActive
+                  ? '0 8px 32px rgba(240,62,27,0.15), 0 2px 12px rgba(0,0,0,0.1)'
+                  : '0 2px 12px rgba(0,0,0,0.06)',
+                opacity: isActive ? 1 : 0.5,
+                transform: isActive ? 'scale(1)' : 'scale(0.92)',
               }}
             >
-              <div className="flex items-center gap-3">
+              {/* Quote icon */}
+              <div className="text-primary/40 text-3xl font-serif leading-none select-none">"</div>
+              <p className="text-[15px] text-foreground/90 leading-relaxed" dir={isAr ? 'rtl' : 'ltr'}>
+                {quote}
+              </p>
+              <div className="flex items-center gap-3 mt-auto pt-2 border-t border-border/10">
                 {t.avatar_url ? (
-                  <img src={t.avatar_url} alt="" className="w-10 h-10 rounded-full object-cover flex-shrink-0" />
+                  <img src={t.avatar_url} alt="" className="w-11 h-11 rounded-full object-cover flex-shrink-0 ring-2 ring-primary/20" />
                 ) : (
-                  <div className="w-10 h-10 rounded-full bg-primary/15 text-primary flex items-center justify-center text-[13px] font-semibold flex-shrink-0">
+                  <div className="w-11 h-11 rounded-full bg-gradient-to-br from-primary/25 to-primary/10 text-primary flex items-center justify-center text-sm font-bold flex-shrink-0 ring-2 ring-primary/15">
                     {initials}
                   </div>
                 )}
                 <div>
-                  <p className="text-[13px] font-medium text-foreground">{name}</p>
-                  <p className="text-[11px] text-muted-foreground">{role}{location ? ` · ${location}` : ''}</p>
+                  <p className="text-sm font-semibold text-foreground">{name}</p>
+                  <p className="text-xs text-muted-foreground">{role}{location ? ` · ${location}` : ''}</p>
                 </div>
               </div>
-              <p className="text-[14px] text-foreground/80 leading-relaxed line-clamp-3" dir={isAr ? 'rtl' : 'ltr'}>
-                "{quote}"
-              </p>
             </div>
           );
         })}
       </div>
-      <div className="flex justify-center gap-2 mt-4">
+      <div className="flex justify-center gap-2.5 mt-5">
         {testimonials.map((_: any, i: number) => (
           <button
             key={i}
@@ -396,7 +405,7 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
               const card = el.children[i] as HTMLElement;
               if (card) el.scrollTo({ left: card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2, behavior: 'smooth' });
             }}
-            className={`rounded-full transition-all duration-200 ${i === activeIdx ? 'w-5 h-1.5 bg-primary' : 'w-1.5 h-1.5 bg-muted-foreground/20'}`}
+            className={`rounded-full transition-all duration-300 ${i === activeIdx ? 'w-6 h-2 bg-primary shadow-[0_0_8px_rgba(240,62,27,0.4)]' : 'w-2 h-2 bg-muted-foreground/25 hover:bg-muted-foreground/40'}`}
           />
         ))}
       </div>
