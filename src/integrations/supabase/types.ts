@@ -755,8 +755,11 @@ export type Database = {
           credits: number
           email: string
           first_login_complete: boolean
+          first_name: string
           full_name: string
           id: string
+          language: string
+          last_name: string
           plan: string
           theme_preference: string
           updated_at: string
@@ -768,8 +771,11 @@ export type Database = {
           credits?: number
           email?: string
           first_login_complete?: boolean
+          first_name?: string
           full_name?: string
           id?: string
+          language?: string
+          last_name?: string
           plan?: string
           theme_preference?: string
           updated_at?: string
@@ -781,8 +787,11 @@ export type Database = {
           credits?: number
           email?: string
           first_login_complete?: boolean
+          first_name?: string
           full_name?: string
           id?: string
+          language?: string
+          last_name?: string
           plan?: string
           theme_preference?: string
           updated_at?: string

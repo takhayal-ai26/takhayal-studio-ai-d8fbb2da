@@ -10,10 +10,14 @@ interface AuthState {
   loading: boolean;
   profile: {
     full_name: string;
+    first_name: string;
+    last_name: string;
     email: string;
     avatar_url: string | null;
     credits: number;
     plan: string;
+    language: string;
+    theme_preference: string;
   } | null;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -31,11 +35,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchProfile = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from('profiles')
-      .select('full_name, email, avatar_url, credits, plan')
+      .select('full_name, first_name, last_name, email, avatar_url, credits, plan, language, theme_preference')
       .eq('user_id', userId)
       .single();
     if (data) {
-      setProfile(data);
+      setProfile(data as any);
     }
   }, []);
 
