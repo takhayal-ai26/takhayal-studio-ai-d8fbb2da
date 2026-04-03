@@ -3,7 +3,7 @@ import { X, Mail, Loader2 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { LogoMark } from '@/components/Logo';
+import { Logo, LogoMark } from '@/components/Logo';
 import { useMedia } from '@/hooks/useMedia';
 import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
@@ -168,12 +168,7 @@ export function AuthModal() {
           <div className="px-6 pb-8 pt-2 overflow-y-auto" style={{ maxHeight: 'calc(90vh - 20px)' }}>
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
-              <div className="flex items-center gap-2">
-                <LogoMark size={24} />
-                <span className="text-[15px] font-semibold text-foreground tracking-tight">
-                  Takhayal<span className="text-primary">.ai</span>
-                </span>
-              </div>
+              <Logo size="small" />
               <button onClick={handleClose} className="w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground">
                 <X size={16} />
               </button>
