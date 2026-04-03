@@ -209,23 +209,6 @@ export const translations = {
       goToStudio: 'Go to Studio',
     },
     // Credits
-    gallery: {
-      myGallery: 'My Gallery',
-      imagesCount: 'images',
-      images: 'images',
-      noImagesYet: 'No images yet',
-      startCreatingStudio: 'Start creating in the Studio',
-      goToStudio: 'Go to Studio',
-      searchPlaceholder: 'Search prompts...',
-      newest: 'Newest',
-      oldest: 'Oldest',
-      all: 'All',
-      today: 'Today',
-      yesterday: 'Yesterday',
-      generated: 'Generated',
-      edited: 'Edited',
-      noResults: 'No matching images',
-    },
     creditsView: {
       title: 'Credits',
       currentBalance: 'Current Balance',
