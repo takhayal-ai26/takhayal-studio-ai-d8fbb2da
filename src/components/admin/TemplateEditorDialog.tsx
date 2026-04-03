@@ -284,14 +284,29 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
 
             {/* Prompt EN */}
             <div className="space-y-1.5">
-              <Label className="text-xs">Prompt (English) <span className="text-muted-foreground">— used when app language is English</span></Label>
+              <Label className="text-xs">Prompt (English) <span className="text-muted-foreground">— always used for generation</span></Label>
               <Textarea value={form.prompt} onChange={e => set('prompt', e.target.value)} className="bg-muted/30 text-sm border-border/40 min-h-[80px]" placeholder="English generation prompt..." />
             </div>
 
             {/* Prompt AR */}
             <div className="space-y-1.5">
-              <Label className="text-xs">Prompt (Arabic) <span className="text-muted-foreground">— used when app language is Arabic</span></Label>
+              <Label className="text-xs">Prompt (Arabic) <span className="text-muted-foreground">— display only, NOT used for generation</span></Label>
               <Textarea dir="rtl" value={form.prompt_ar} onChange={e => set('prompt_ar', e.target.value)} className="bg-muted/30 text-sm border-border/40 min-h-[80px] text-right" placeholder="وصف التوليد بالعربية..." />
+            </div>
+
+            {/* Default Model */}
+            <div className="space-y-1.5">
+              <Label className="text-xs">Default Model</Label>
+              <p className="text-[10px] text-muted-foreground">This model will be used automatically when generating this template.</p>
+              <Select value={form.default_model_id || 'none'} onValueChange={v => set('default_model_id', v === 'none' ? null : v)}>
+                <SelectTrigger className="h-9 text-xs bg-muted/30 border-border/40"><SelectValue placeholder="Select model" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">— None (use system default) —</SelectItem>
+                  {models.filter(m => m.model_name.toLowerCase().includes(modelSearch.toLowerCase())).map(m => (
+                    <SelectItem key={m.id} value={m.id}>{m.model_name}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
             </div>
 
             {/* Sort Order */}
