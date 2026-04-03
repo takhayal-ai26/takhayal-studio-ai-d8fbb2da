@@ -72,6 +72,7 @@ function emptyTemplate(): DBTemplate {
     featured: false,
     show_on_studio: false,
     sort_order: 0,
+    default_model_id: null,
   };
 }
 
