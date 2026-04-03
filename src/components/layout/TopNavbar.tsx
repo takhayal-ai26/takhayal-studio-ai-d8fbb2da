@@ -259,20 +259,20 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
             </>
           ) : (
             <div className="flex items-center gap-2.5">
-              {/* Menu icon */}
-              <button
-                onClick={() => setDrawerOpen(true)}
-                className="w-8 h-8 rounded-lg bg-foreground/[0.05] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Menu size={18} />
-              </button>
-
               {/* Try Free CTA */}
               <button
                 onClick={() => openAuthModal('signup')}
                 className="h-8 px-4 rounded-full bg-primary text-primary-foreground text-[12px] font-semibold shadow-lg shadow-primary/20 transition-all duration-200 active:scale-95"
               >
                 {isRTL ? 'جرّب مجاناً' : 'Try Free'}
+              </button>
+
+              {/* Menu icon */}
+              <button
+                onClick={() => setDrawerOpen(true)}
+                className="w-8 h-8 rounded-lg bg-foreground/[0.05] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Menu size={18} />
               </button>
             </div>
           )}
