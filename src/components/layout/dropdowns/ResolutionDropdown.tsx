@@ -1,5 +1,7 @@
 import { createPortal } from 'react-dom';
-import { Lock } from 'lucide-react';
+import { Check } from 'lucide-react';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { MobileBottomSheet } from './MobileBottomSheet';
 import type { PricingTier } from '@/hooks/usePricingTiers';
 
 interface Props {
@@ -17,6 +19,34 @@ interface Props {
 const ALL_TIERS = ['1K', '2K', '4K'];
 
 export function ResolutionDropdown({ tiers, selectedResolution, anchorRect, onSelect, onClose }: Props) {
+  const isMobile = useIsMobile();
+  const activeTiers = ALL_TIERS.filter(t => tiers.includes(t));
+
+  if (isMobile) {
+    return (
+      <MobileBottomSheet title="Select Resolution" open onClose={onClose} maxHeight="40vh">
+        <div className="flex gap-2 px-4 pb-2">
+          {activeTiers.map(tierKey => {
+            const isActive = selectedResolution === tierKey;
+            return (
+              <button
+                key={tierKey}
+                onClick={() => onSelect(tierKey)}
+                className={`flex-1 flex flex-col items-center gap-1 py-4 rounded-xl transition-all ${
+                  isActive ? 'bg-primary/10 ring-1 ring-primary/30' : 'bg-foreground/[0.03]'
+                }`}
+              >
+                <span className={`text-[16px] font-semibold ${isActive ? 'text-primary' : 'text-foreground'}`}>{tierKey}</span>
+                {isActive && <Check size={14} className="text-primary" />}
+              </button>
+            );
+          })}
+        </div>
+      </MobileBottomSheet>
+    );
+  }
+
+  // Desktop
   const panelW = 120;
   const panelMaxH = 200;
   let top = 0, left = 0;
@@ -33,17 +63,16 @@ export function ResolutionDropdown({ tiers, selectedResolution, anchorRect, onSe
       <div className="fixed inset-0 z-[9998]" onClick={onClose} />
       <div className="fixed z-[9999] animate-in fade-in slide-in-from-left-2 duration-150" style={{ top, left, width: panelW }}>
         <div className="rounded-xl border border-border overflow-hidden" style={{ background: 'var(--dropdown-bg)', boxShadow: '0 8px 32px rgba(0,0,0,0.3)' }}>
-          {ALL_TIERS.filter(t => tiers.includes(t)).map((tierKey, i, arr) => {
+          {activeTiers.map((tierKey, i) => {
             const isActive = selectedResolution === tierKey;
-            const isLast = i === arr.length - 1;
+            const isLast = i === activeTiers.length - 1;
             return (
               <button
                 key={tierKey}
                 onClick={() => onSelect(tierKey)}
                 className="w-full text-left transition-colors duration-[120ms]"
                 style={{
-                  padding: '10px 14px',
-                  height: 44,
+                  padding: '10px 14px', height: 44,
                   borderBottom: isLast ? 'none' : `1px solid var(--dropdown-divider)`,
                   borderLeft: isActive ? '2px solid hsl(var(--primary))' : '2px solid transparent',
                   background: isActive ? 'hsla(var(--primary) / 0.06)' : 'transparent',
