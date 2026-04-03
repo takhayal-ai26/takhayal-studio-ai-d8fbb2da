@@ -262,6 +262,114 @@ function MobilePlanCarousel({ plans, isAr, ...cardProps }: { plans: any[] } & Om
   );
 }
 
+const TESTIMONIALS = [
+  { name_en: 'Ahmed Al-Fahad', name_ar: 'أحمد الفهد', role_en: 'Content Creator', role_ar: 'صانع محتوى', quote_en: 'Saved me hours. The quality is insane.', quote_ar: 'وفّر علي وقت كبير، والنتائج خرافية.', avatar: 'AF' },
+  { name_en: 'Sara Al-Mutairi', name_ar: 'سارة المطيري', role_en: 'Small Business Owner', role_ar: 'صاحبة مشروع', quote_en: 'Finally an AI tool that understands our style.', quote_ar: 'أخيرًا أداة تفهم ذوقنا.', avatar: 'SM' },
+  { name_en: 'Khalid Al-Rashidi', name_ar: 'خالد الرشيدي', role_en: 'Graphic Designer', role_ar: 'مصمم جرافيك', quote_en: 'My go-to tool for every project now.', quote_ar: 'أداتي المفضلة لكل مشاريعي الآن.', avatar: 'KR' },
+  { name_en: 'Nora Al-Sabah', name_ar: 'نورة الصباح', role_en: 'Marketing Manager', role_ar: 'مديرة تسويق', quote_en: 'Incredible results in seconds. A game changer.', quote_ar: 'نتائج مذهلة في ثوانٍ. غيّرت قواعد اللعبة.', avatar: 'NS' },
+];
+
+function TestimonialCarousel({ isAr }: { isAr: boolean }) {
+  const scrollRef = useRef<HTMLDivElement>(null);
+  const [activeIdx, setActiveIdx] = useState(0);
+
+  const updateActive = useCallback(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    const center = el.scrollLeft + el.clientWidth / 2;
+    let closest = 0;
+    let minDist = Infinity;
+    for (let i = 0; i < el.children.length; i++) {
+      const card = el.children[i] as HTMLElement;
+      const dist = Math.abs(card.offsetLeft + card.offsetWidth / 2 - center);
+      if (dist < minDist) { minDist = dist; closest = i; }
+    }
+    setActiveIdx(closest);
+  }, []);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (!el) return;
+    el.addEventListener('scroll', updateActive, { passive: true });
+    return () => el.removeEventListener('scroll', updateActive);
+  }, [updateActive]);
+
+  // Auto-scroll
+  useEffect(() => {
+    const interval = setInterval(() => {
+      const el = scrollRef.current;
+      if (!el) return;
+      const next = (activeIdx + 1) % TESTIMONIALS.length;
+      const card = el.children[next] as HTMLElement;
+      if (card) {
+        el.scrollTo({ left: card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2, behavior: 'smooth' });
+      }
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [activeIdx]);
+
+  return (
+    <section className="max-w-5xl mx-auto pb-20 px-0">
+      <div className="text-center mb-8 px-6">
+        <h2 className="text-2xl font-light text-foreground">{isAr ? 'ماذا يقول مستخدمونا' : 'What our users say'}</h2>
+        <p className="text-sm text-muted-foreground mt-2">{isAr ? 'مبدعون حقيقيون، نتائج حقيقية' : 'Real creators, real results'}</p>
+      </div>
+      <div
+        ref={scrollRef}
+        className="flex gap-4 overflow-x-auto snap-x snap-mandatory px-6 pb-2 scrollbar-none"
+        style={{ scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' }}
+        dir={isAr ? 'rtl' : 'ltr'}
+      >
+        {TESTIMONIALS.map((t, i) => (
+          <div
+            key={i}
+            className="snap-center flex-shrink-0 rounded-2xl p-5 flex flex-col gap-4 transition-all duration-300"
+            style={{
+              width: 'calc(82vw)',
+              maxWidth: 340,
+              background: 'hsl(var(--card) / 0.6)',
+              backdropFilter: 'blur(16px)',
+              WebkitBackdropFilter: 'blur(16px)',
+              border: '1px solid hsl(var(--border) / 0.15)',
+              boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
+              opacity: i === activeIdx ? 1 : 0.6,
+              transform: i === activeIdx ? 'scale(1)' : 'scale(0.95)',
+            }}
+          >
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-full bg-primary/15 text-primary flex items-center justify-center text-[13px] font-semibold flex-shrink-0">
+                {t.avatar}
+              </div>
+              <div>
+                <p className="text-[13px] font-medium text-foreground">{isAr ? t.name_ar : t.name_en}</p>
+                <p className="text-[11px] text-muted-foreground">{isAr ? t.role_ar : t.role_en}</p>
+              </div>
+            </div>
+            <p className="text-[14px] text-foreground/80 leading-relaxed line-clamp-2" dir={isAr ? 'rtl' : 'ltr'}>
+              "{isAr ? t.quote_ar : t.quote_en}"
+            </p>
+          </div>
+        ))}
+      </div>
+      {/* Dots */}
+      <div className="flex justify-center gap-2 mt-4">
+        {TESTIMONIALS.map((_, i) => (
+          <button
+            key={i}
+            onClick={() => {
+              const el = scrollRef.current;
+              if (!el) return;
+              const card = el.children[i] as HTMLElement;
+              if (card) el.scrollTo({ left: card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2, behavior: 'smooth' });
+            }}
+            className={`rounded-full transition-all duration-200 ${i === activeIdx ? 'w-5 h-1.5 bg-primary' : 'w-1.5 h-1.5 bg-muted-foreground/20'}`}
+          />
+        ))}
+      </div>
+    </section>
+  );
+}
+
 const Pricing = () => {
   const navigate = useNavigate();
   const { isAuthenticated, plan: userPlan, openAuthModal } = useApp();
@@ -359,6 +467,9 @@ const Pricing = () => {
           <MobilePlanCarousel plans={activePlans} isAr={isAr} billing={billing} isAuthenticated={isAuthenticated} authLoading={authLoading} userPlan={userPlan} slugOrder={slugOrder} fmt={fmt} getPrice={getPrice} handleCta={handleCta} />
         </div>
       </section>
+
+      {/* Testimonials */}
+      <TestimonialCarousel isAr={isAr} />
 
       {/* Credit Cost Per Tool */}
       <section className="max-w-5xl mx-auto px-6 pb-20">
