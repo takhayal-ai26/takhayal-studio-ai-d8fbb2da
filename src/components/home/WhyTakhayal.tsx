@@ -37,9 +37,6 @@ export function WhyTakhayal() {
 
       {/* Header */}
       <div className="text-center mb-10 md:mb-14">
-        <span className="inline-block text-[11px] uppercase tracking-[0.2em] text-primary font-semibold mb-3">
-          {isAr ? 'المميزات' : 'Why us'}
-        </span>
         <h2 className="text-2xl md:text-4xl font-bold text-foreground">
           {isAr ? 'لماذا ' : 'Why '}
           <span className="bg-gradient-to-r from-primary to-orange-400 bg-clip-text text-transparent">
