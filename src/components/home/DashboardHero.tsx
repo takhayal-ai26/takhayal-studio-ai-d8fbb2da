@@ -284,7 +284,7 @@ export function DashboardHero() {
               onClick={handleExpand}
               className="cursor-text flex items-center gap-3 group"
               style={{
-                height: 52,
+                height: 48,
                 background: 'rgba(0,0,0,0.45)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: 999,
