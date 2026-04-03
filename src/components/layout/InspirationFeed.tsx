@@ -32,7 +32,7 @@ export function InspirationFeed() {
   useEffect(() => {
     supabase
       .from('templates')
-      .select('id, title_en, title_ar, prompt, cover_image_url, ratio')
+      .select('id, title_en, title_ar, prompt, prompt_ar, cover_image_url, ratio')
       .eq('active', true)
       .eq('show_on_studio', true)
       .then(({ data }) => {
