@@ -7,8 +7,8 @@ const navItems = [
   { id: 'home', route: '/', icon: Home, labelEn: 'Home', labelAr: 'الرئيسية' },
   { id: 'community', route: '/community', icon: Users, labelEn: 'Community', labelAr: 'المجتمع' },
   { id: 'create', route: '/create', icon: Sparkles, labelEn: 'Create', labelAr: 'إنشاء', primary: true },
-  { id: 'gallery', route: '/studio', studioPage: 'gallery' as const, icon: Image, labelEn: 'Gallery', labelAr: 'المعرض' },
-  { id: 'templates', route: '/studio', studioPage: 'templates' as const, icon: LayoutGrid, labelEn: 'Library', labelAr: 'المكتبة' },
+  { id: 'gallery', route: '/gallery', icon: Image, labelEn: 'Gallery', labelAr: 'المعرض' },
+  { id: 'templates', route: '/templates', icon: LayoutGrid, labelEn: 'Library', labelAr: 'المكتبة' },
 ];
 
 export function BottomNav() {
