@@ -17,7 +17,9 @@ type OpenDropdown = 'model' | 'size' | 'resolution' | null;
 
 export function CreationPanel() {
   const navigate = useNavigate();
-  const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, enhancePrompt, setEnhancePrompt, generate, isGenerating, credits, getCreditCost } = useApp();
+  const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, enhancePrompt, setEnhancePrompt, isGenerating, credits, getCreditCost, isAuthenticated, openAuthModal, openUpgradeModal } = useApp();
+  const { createJob, startGeneration } = useGenerationJobs();
+  const [localGenerating, setLocalGenerating] = useState(false);
   const { t, lang: language } = useLanguage();
   const { activeModels, defaultModel } = useModels();
   const { getCreditsForModel } = usePricing();
