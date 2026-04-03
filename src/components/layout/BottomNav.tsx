@@ -19,7 +19,7 @@ export function BottomNav() {
   const isAr = lang === 'ar';
 
   const isActive = (item: typeof navItems[0]) => {
-    if (item.id === 'create') return location.pathname === '/studio' && activePage === 'canvas';
+    if (item.id === 'create') return location.pathname === '/create';
     if (item.studioPage) return location.pathname === '/studio' && activePage === item.studioPage;
     if (item.route === '/') return location.pathname === '/' || location.pathname === '/home';
     return location.pathname.startsWith(item.route);
