@@ -340,7 +340,7 @@ export function CreationPanel() {
             </span>
           ) : (
             <>
-              {uploadedImageUrl ? (language === 'ar' ? 'تعديل الصورة' : 'Edit Image') : t.toolPage.generate}
+              {uploadedImages.length > 0 ? (language === 'ar' ? 'تعديل الصورة' : 'Edit Image') : t.toolPage.generate}
               <span className="flex items-center gap-1 text-[12px] opacity-70">
                 <Coins size={11} />{cost}
               </span>
