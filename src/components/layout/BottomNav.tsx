@@ -14,7 +14,6 @@ export function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const { lang } = useLanguage();
-  const { activePage, setActivePage } = useApp();
   const isAr = lang === 'ar';
 
   const isActive = (item: typeof navItems[0]) => {
