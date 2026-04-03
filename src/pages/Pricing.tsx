@@ -284,6 +284,8 @@ function MobilePlanCarousel({ plans, isAr, ...cardProps }: { plans: any[] } & Om
 function TestimonialCarousel({ isAr }: { isAr: boolean }) {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIdx, setActiveIdx] = useState(0);
+  const activeRef = useRef(activeIdx);
+  activeRef.current = activeIdx;
 
   const { data: testimonials = [] } = useQuery({
     queryKey: ['testimonials-public'],
@@ -293,6 +295,13 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
     },
     staleTime: 60000,
   });
+
+  const scrollToIdx = useCallback((idx: number) => {
+    const el = scrollRef.current;
+    if (!el || !el.children[idx]) return;
+    const card = el.children[idx] as HTMLElement;
+    el.scrollTo({ left: card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2, behavior: 'smooth' });
+  }, []);
 
   const updateActive = useCallback(() => {
     const el = scrollRef.current;
@@ -318,16 +327,11 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
   useEffect(() => {
     if (testimonials.length === 0) return;
     const interval = setInterval(() => {
-      const el = scrollRef.current;
-      if (!el) return;
-      const next = (activeIdx + 1) % testimonials.length;
-      const card = el.children[next] as HTMLElement;
-      if (card) {
-        el.scrollTo({ left: card.offsetLeft - (el.clientWidth - card.offsetWidth) / 2, behavior: 'smooth' });
-      }
-    }, 5000);
+      const next = (activeRef.current + 1) % testimonials.length;
+      scrollToIdx(next);
+    }, 4000);
     return () => clearInterval(interval);
-  }, [activeIdx, testimonials.length]);
+  }, [testimonials.length, scrollToIdx]);
 
   if (testimonials.length === 0) return null;
 
