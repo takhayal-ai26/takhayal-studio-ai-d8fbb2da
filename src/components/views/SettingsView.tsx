@@ -12,8 +12,7 @@ const t_labels = {
   en: {
     title: 'Settings',
     profile: 'Profile',
-    firstName: 'First Name',
-    lastName: 'Last Name',
+    name: 'Name',
     email: 'Email',
     saveChanges: 'Save Changes',
     saving: 'Saving…',
