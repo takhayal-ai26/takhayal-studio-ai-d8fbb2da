@@ -204,6 +204,14 @@ export default function Gallery() {
     setSelectedJob(job);
   }, []);
 
+  const selectedIndex = selectedJob ? filteredJobs.findIndex(j => j.id === selectedJob.id) : -1;
+  const handlePrev = useCallback(() => {
+    if (selectedIndex > 0) setSelectedJob(filteredJobs[selectedIndex - 1]);
+  }, [selectedIndex, filteredJobs]);
+  const handleNext = useCallback(() => {
+    if (selectedIndex < filteredJobs.length - 1) setSelectedJob(filteredJobs[selectedIndex + 1]);
+  }, [selectedIndex, filteredJobs]);
+
   const handleDelete = useCallback(async (jobId: string) => {
     const confirmed = window.confirm(isAr ? 'هل أنت متأكد من الحذف؟' : 'Delete this image?');
     if (!confirmed) return;
