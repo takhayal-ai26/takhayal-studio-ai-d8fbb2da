@@ -26,6 +26,7 @@ import AuthCallback from "./pages/AuthCallback";
 import ResetPassword from "./pages/ResetPassword";
 import Checkout from "./pages/Checkout";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
+import SharePage from "./pages/SharePage";
 
 // Admin
 import { AdminProtectedRoute } from "./components/AdminProtectedRoute";
@@ -72,6 +73,7 @@ const App = () => (
                   <Route path="/checkout/success" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
                 </Route>
 
+                <Route path="/share/:publicId" element={<SharePage />} />
                 <Route path="/auth/callback" element={<AuthCallback />} />
                 <Route path="/auth/reset" element={<ResetPassword />} />
 
