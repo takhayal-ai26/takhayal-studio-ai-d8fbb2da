@@ -273,7 +273,7 @@ serve(async (req) => {
     const needsUpscale = (selectedQuality === "2K" || selectedQuality === "4K") && upscaleStrategy === "clarity" && !isImageToImage;
     const generateQuality = needsUpscale ? "1K" : selectedQuality;
 
-    const payloadParams = resolvePayload(activeEndpoint, selectedRatio, generateQuality, modelInputType, isImageToImage ? image_url : undefined);
+    const payloadParams = resolvePayload(activeEndpoint, selectedRatio, generateQuality, modelInputType, isImageToImage ? image_url : undefined, isImageToImage ? image_urls : undefined);
     const payload: Record<string, unknown> = {
       prompt,
       num_images: num_images || 1,
