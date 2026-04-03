@@ -138,7 +138,7 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse }: Prop
               <MetaItem
                 icon={<Cpu size={13} />}
                 label={isAr ? 'النموذج' : 'Model'}
-                value={job.model_id || (isAr ? 'افتراضي' : 'Default')}
+                value={modelName}
               />
               <MetaItem
                 icon={<Ratio size={13} />}
