@@ -22,7 +22,7 @@ export function Footer() {
   return (
     <footer
       dir={isRTL ? 'rtl' : 'ltr'}
-      className="w-full bg-[hsl(0_0%_97%)] dark:bg-[hsl(0_0%_4%)] mt-12"
+      className="w-full bg-muted/50 mt-12"
     >
       <div className="max-w-7xl mx-auto px-5 md:px-8 py-12 md:py-16">
         {/* Main grid */}
