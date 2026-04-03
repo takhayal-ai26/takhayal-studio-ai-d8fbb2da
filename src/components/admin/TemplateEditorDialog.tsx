@@ -22,6 +22,7 @@ interface DBTemplate {
   width?: number | null;
   height?: number | null;
   prompt: string;
+  prompt_ar: string;
   active: boolean;
   featured: boolean;
   show_on_studio: boolean;
@@ -36,7 +37,7 @@ interface Props {
   categories: string[];
 }
 
-const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+const MAX_FILE_SIZE = 10 * 1024 * 1024;
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 
 function detectRatio(w: number, h: number): string {
@@ -47,7 +48,6 @@ function detectRatio(w: number, h: number): string {
   if (Math.abs(r - 16 / 9) < 0.08) return '16:9';
   if (Math.abs(r - 3 / 2) < 0.08) return '3:2';
   if (Math.abs(r - 2 / 3) < 0.08) return '2:3';
-  // fallback to closest standard
   if (r < 0.7) return '9:16';
   if (r < 0.9) return '2:3';
   if (r < 1.1) return '1:1';
@@ -66,6 +66,7 @@ function emptyTemplate(): DBTemplate {
     width: null,
     height: null,
     prompt: '',
+    prompt_ar: '',
     active: true,
     featured: false,
     show_on_studio: false,
@@ -84,7 +85,7 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
 
   useEffect(() => {
     if (open) {
-      setForm(template ? { ...template } : emptyTemplate());
+      setForm(template ? { ...template, prompt_ar: template.prompt_ar || '' } : emptyTemplate());
       setUploading(false);
       setUploadProgress(0);
     }
@@ -103,7 +104,6 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
     setUploading(true);
     setUploadProgress(10);
 
-    // Read dimensions
     const dims = await new Promise<{ w: number; h: number }>((resolve, reject) => {
       const img = new Image();
       img.onload = () => resolve({ w: img.naturalWidth, h: img.naturalHeight });
@@ -112,7 +112,6 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
     });
 
     setUploadProgress(30);
-
     const ratio = detectRatio(dims.w, dims.h);
     const ext = file.name.split('.').pop() || 'jpg';
     const fileName = `${crypto.randomUUID()}.${ext}`;
@@ -130,9 +129,7 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
     }
 
     setUploadProgress(80);
-
     const { data: urlData } = supabase.storage.from('template-covers').getPublicUrl(data.path);
-
     setUploadProgress(100);
 
     setForm(prev => ({
@@ -143,11 +140,7 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
       height: dims.h,
     }));
 
-    setTimeout(() => {
-      setUploading(false);
-      setUploadProgress(0);
-    }, 500);
-
+    setTimeout(() => { setUploading(false); setUploadProgress(0); }, 500);
     toast({ title: 'Image uploaded', description: `Auto-detected ratio: ${ratio} (${dims.w}×${dims.h})` });
   }, []);
 
@@ -226,43 +219,25 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
             <div className="space-y-1.5">
               <Label className="text-xs">Cover Image</Label>
               {form.cover_image_url ? (
-                /* Preview state */
                 <div className="relative rounded-xl overflow-hidden border border-border/40 bg-muted/20">
                   <div className="relative w-full" style={{ maxHeight: 280 }}>
-                    <img
-                      src={form.cover_image_url}
-                      alt="Cover preview"
-                      className="w-full h-full object-contain max-h-[280px]"
-                    />
+                    <img src={form.cover_image_url} alt="Cover preview" className="w-full h-full object-contain max-h-[280px]" />
                   </div>
-                  {/* Detected ratio badge */}
                   <div className="absolute top-3 left-3">
                     <span className="px-2.5 py-1 rounded-full bg-background/80 backdrop-blur text-[11px] font-medium text-foreground border border-border/40">
                       {form.ratio} {form.width && form.height ? `• ${form.width}×${form.height}` : ''}
                     </span>
                   </div>
-                  {/* Actions */}
                   <div className="absolute top-3 right-3 flex gap-1.5">
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="h-7 w-7 bg-background/80 backdrop-blur border border-border/40 hover:bg-background"
-                      onClick={() => fileInputRef.current?.click()}
-                    >
+                    <Button variant="secondary" size="icon" className="h-7 w-7 bg-background/80 backdrop-blur border border-border/40 hover:bg-background" onClick={() => fileInputRef.current?.click()}>
                       <RefreshCw size={12} />
                     </Button>
-                    <Button
-                      variant="secondary"
-                      size="icon"
-                      className="h-7 w-7 bg-background/80 backdrop-blur border border-border/40 hover:bg-destructive hover:text-destructive-foreground"
-                      onClick={removeImage}
-                    >
+                    <Button variant="secondary" size="icon" className="h-7 w-7 bg-background/80 backdrop-blur border border-border/40 hover:bg-destructive hover:text-destructive-foreground" onClick={removeImage}>
                       <X size={12} />
                     </Button>
                   </div>
                 </div>
               ) : (
-                /* Upload zone */
                 <div
                   onDragOver={e => { e.preventDefault(); setDragOver(true); }}
                   onDragLeave={() => setDragOver(false)}
@@ -270,9 +245,7 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
                   onClick={() => !uploading && fileInputRef.current?.click()}
                   className={`
                     relative flex flex-col items-center justify-center gap-3 py-10 rounded-xl border-2 border-dashed cursor-pointer transition-all duration-200
-                    ${dragOver
-                      ? 'border-primary bg-primary/5 scale-[1.01]'
-                      : 'border-border/40 bg-muted/10 hover:border-primary/50 hover:bg-muted/20'}
+                    ${dragOver ? 'border-primary bg-primary/5 scale-[1.01]' : 'border-border/40 bg-muted/10 hover:border-primary/50 hover:bg-muted/20'}
                     ${uploading ? 'pointer-events-none' : ''}
                   `}
                 >
@@ -280,15 +253,11 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
                     <>
                       <Loader2 size={28} className="text-primary animate-spin" />
                       <p className="text-xs text-muted-foreground">Uploading...</p>
-                      <div className="w-48">
-                        <Progress value={uploadProgress} className="h-1.5" />
-                      </div>
+                      <div className="w-48"><Progress value={uploadProgress} className="h-1.5" /></div>
                     </>
                   ) : (
                     <>
-                      <div className="p-3 rounded-xl bg-muted/30 border border-border/30">
-                        <ImageIcon size={24} className="text-muted-foreground" />
-                      </div>
+                      <div className="p-3 rounded-xl bg-muted/30 border border-border/30"><ImageIcon size={24} className="text-muted-foreground" /></div>
                       <div className="text-center">
                         <p className="text-sm font-medium text-foreground">Drag & drop image or click to upload</p>
                         <p className="text-[11px] text-muted-foreground mt-1">JPG, PNG, WebP • Max 10MB</p>
@@ -298,19 +267,19 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
                   )}
                 </div>
               )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/jpeg,image/png,image/webp"
-                className="hidden"
-                onChange={handleFileSelect}
-              />
+              <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" className="hidden" onChange={handleFileSelect} />
             </div>
 
-            {/* Prompt (internal) */}
+            {/* Prompt EN */}
             <div className="space-y-1.5">
-              <Label className="text-xs">Prompt <span className="text-muted-foreground">(internal — not shown on card)</span></Label>
-              <Textarea value={form.prompt} onChange={e => set('prompt', e.target.value)} className="bg-muted/30 text-sm border-border/40 min-h-[80px]" placeholder="Generation prompt..." />
+              <Label className="text-xs">Prompt (English) <span className="text-muted-foreground">— used when app language is English</span></Label>
+              <Textarea value={form.prompt} onChange={e => set('prompt', e.target.value)} className="bg-muted/30 text-sm border-border/40 min-h-[80px]" placeholder="English generation prompt..." />
+            </div>
+
+            {/* Prompt AR */}
+            <div className="space-y-1.5">
+              <Label className="text-xs">Prompt (Arabic) <span className="text-muted-foreground">— used when app language is Arabic</span></Label>
+              <Textarea dir="rtl" value={form.prompt_ar} onChange={e => set('prompt_ar', e.target.value)} className="bg-muted/30 text-sm border-border/40 min-h-[80px] text-right" placeholder="وصف التوليد بالعربية..." />
             </div>
 
             {/* Sort Order */}
@@ -330,7 +299,7 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
                 <Switch checked={form.featured} onCheckedChange={v => set('featured', v)} />
               </div>
               <div className="flex items-center justify-between py-2 border-b border-border/20">
-                <div><Label className="text-xs">Show on Studio</Label><p className="text-[10px] text-muted-foreground">Include in Studio page template rotation (3 random shown)</p></div>
+                <div><Label className="text-xs">Show on Studio</Label><p className="text-[10px] text-muted-foreground">Include in Studio page template rotation</p></div>
                 <Switch checked={form.show_on_studio} onCheckedChange={v => set('show_on_studio', v)} />
               </div>
             </div>
