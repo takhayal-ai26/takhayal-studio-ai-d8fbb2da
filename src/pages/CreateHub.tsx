@@ -1,19 +1,27 @@
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useToolsDB } from '@/hooks/useToolsDB';
+import { useApp } from '@/context/AppContext';
 import { Sparkles, ChevronRight } from 'lucide-react';
 
 export default function CreateHub() {
   const navigate = useNavigate();
   const { lang } = useLanguage();
   const { tools } = useToolsDB();
+  const { setActivePage } = useApp();
   const isAr = lang === 'ar';
 
   const heroTool = tools.find(t => t.slug === 'generate');
   const quickTools = tools.filter(t => t.slug !== 'generate');
 
   const handleToolClick = (tool: typeof tools[0]) => {
-    navigate(tool.slug === 'generate' ? '/studio' : `/tools/${tool.slug}`);
+    if (tool.slug === 'generate') {
+      setActivePage('canvas');
+      navigate('/studio');
+      return;
+    }
+
+    navigate(`/tools/${tool.slug}`);
   };
 
   return (
