@@ -282,103 +282,112 @@ function MobilePlanCarousel({ plans, isAr, ...cardProps }: { plans: any[] } & Om
 }
 
 function TestimonialCarousel({ isAr }: { isAr: boolean }) {
-  const [paused, setPaused] = useState(false);
+  const [activeIdx, setActiveIdx] = useState(0);
 
   const { data: testimonials = [] } = useQuery({
     queryKey: ['testimonials-public'],
     queryFn: async () => {
-      const { data } = await supabase.from('testimonials').select('*').eq('is_active', true).order('is_featured', { ascending: false }).order('sort_order');
+      const { data } = await supabase
+        .from('testimonials')
+        .select('*')
+        .eq('is_active', true)
+        .order('is_featured', { ascending: false })
+        .order('sort_order');
       return (data as any[]) || [];
     },
     staleTime: 60000,
   });
 
+  useEffect(() => {
+    if (!testimonials.length) return;
+    setActiveIdx((current) => (current >= testimonials.length ? 0 : current));
+  }, [testimonials.length]);
+
+  useEffect(() => {
+    if (testimonials.length < 2) return;
+    const interval = window.setInterval(() => {
+      setActiveIdx((current) => (current + 1) % testimonials.length);
+    }, 3000);
+
+    return () => window.clearInterval(interval);
+  }, [testimonials.length]);
+
   if (testimonials.length === 0) return null;
 
-  // Duplicate items for seamless infinite loop
-  const items = [...testimonials, ...testimonials];
-  const cardWidth = 320; // px
-  const gap = 20; // px
-  const totalWidth = testimonials.length * (cardWidth + gap);
-
-  const renderCard = (t: any, idx: number) => {
-    const name = isAr ? t.name_ar : t.name_en;
-    const role = isAr ? t.role_ar : t.role_en;
-    const quote = isAr ? t.testimonial_ar : t.testimonial_en;
-    const location = isAr ? t.location_ar : t.location_en;
-    const initials = (t.name_en || '').split(' ').map((w: string) => w[0]).join('').slice(0, 2);
-
-    return (
-      <div
-        key={`${t.id}-${idx}`}
-        className="flex-shrink-0 rounded-2xl p-5 flex flex-col gap-3"
-        style={{
-          width: cardWidth,
-          background: 'linear-gradient(145deg, hsl(var(--primary) / 0.08), hsl(var(--card) / 0.7))',
-          backdropFilter: 'blur(20px)',
-          WebkitBackdropFilter: 'blur(20px)',
-          border: '1px solid hsl(var(--primary) / 0.15)',
-          boxShadow: '0 4px 24px rgba(0,0,0,0.08)',
-        }}
-      >
-        <div className="text-primary/30 text-xl font-serif leading-none select-none">"</div>
-        <p className="text-[13px] text-foreground/85 leading-relaxed flex-1" dir={isAr ? 'rtl' : 'ltr'}>
-          {quote}
-        </p>
-        <div className="flex items-center gap-3 mt-auto pt-2">
-          {t.avatar_url ? (
-            <img src={t.avatar_url} alt="" className="w-9 h-9 rounded-full object-cover flex-shrink-0 ring-2 ring-primary/20" />
-          ) : (
-            <div className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/25 to-primary/10 text-primary flex items-center justify-center text-xs font-bold flex-shrink-0">
-              {initials}
-            </div>
-          )}
-          <div>
-            <p className="text-[12px] font-semibold text-foreground">{name}</p>
-            <p className="text-[10px] text-muted-foreground">{role}{location ? ` · ${location}` : ''}</p>
-          </div>
-        </div>
-      </div>
-    );
-  };
+  const activeTestimonial = testimonials[activeIdx];
+  const name = isAr ? activeTestimonial.name_ar : activeTestimonial.name_en;
+  const role = isAr ? activeTestimonial.role_ar : activeTestimonial.role_en;
+  const quote = isAr ? activeTestimonial.testimonial_ar : activeTestimonial.testimonial_en;
+  const location = isAr ? activeTestimonial.location_ar : activeTestimonial.location_en;
+  const meta = [role, location].filter(Boolean).join(' • ');
+  const initials = (name || activeTestimonial.name_en || '')
+    .split(' ')
+    .filter(Boolean)
+    .map((word: string) => word[0])
+    .join('')
+    .slice(0, 2);
 
   return (
-    <section className="max-w-full mx-auto pb-16 overflow-hidden">
-      <div className="text-center mb-8 px-6">
+    <section className="mx-auto max-w-5xl px-4 pb-16 sm:px-6">
+      <div className="mb-8 text-center">
         <h2 className="text-2xl font-semibold text-foreground">{isAr ? 'ماذا يقول مستخدمونا' : 'What our users say'}</h2>
-        <p className="text-sm text-muted-foreground mt-2">{isAr ? 'مبدعون حقيقيون، نتائج حقيقية' : 'Real creators, real results'}</p>
+        <p className="mt-2 text-sm text-muted-foreground">{isAr ? 'مبدعون حقيقيون، نتائج حقيقية' : 'Real creators, real results'}</p>
       </div>
-      {/* Infinite marquee */}
-      <div
-        className="relative w-full"
-        onMouseEnter={() => setPaused(true)}
-        onMouseLeave={() => setPaused(false)}
-        onTouchStart={() => setPaused(true)}
-        onTouchEnd={() => setPaused(false)}
-      >
-        {/* Fade edges */}
-        <div className="pointer-events-none absolute inset-y-0 left-0 w-16 z-10" style={{ background: 'linear-gradient(to right, hsl(var(--background)), transparent)' }} />
-        <div className="pointer-events-none absolute inset-y-0 right-0 w-16 z-10" style={{ background: 'linear-gradient(to left, hsl(var(--background)), transparent)' }} />
 
-        <div
-          className="flex py-4"
-          style={{
-            gap: `${gap}px`,
-            animation: `testimonialScroll ${testimonials.length * 6}s linear infinite`,
-            animationPlayState: paused ? 'paused' : 'running',
-            width: 'max-content',
-          }}
+      <div className="mx-auto max-w-[760px]">
+        <article
+          key={`${activeTestimonial.id}-${isAr ? 'ar' : 'en'}-${activeIdx}`}
+          dir={isAr ? 'rtl' : 'ltr'}
+          className={`animate-page-enter relative overflow-hidden rounded-[24px] border border-primary/15 bg-card/75 p-5 shadow-[0_24px_80px_-32px_hsl(var(--primary)/0.28)] backdrop-blur-xl sm:p-7 ${isAr ? 'text-right' : 'text-left'}`}
         >
-          {items.map((t, i) => renderCard(t, i))}
+          <div className={`pointer-events-none absolute -top-8 h-32 w-32 rounded-full bg-primary/12 blur-3xl ${isAr ? '-left-8' : '-right-8'}`} />
+          <div className={`relative flex min-h-[270px] flex-col ${isAr ? 'items-end' : 'items-start'} sm:min-h-[240px]`}>
+            <span className="mb-5 text-4xl leading-none text-primary/45">“</span>
+
+            <p className="text-[15px] leading-8 text-foreground/90 sm:text-lg sm:leading-8">
+              {quote}
+            </p>
+
+            <div className={`mt-auto flex items-center gap-3 pt-6 ${isAr ? 'flex-row-reverse' : ''}`}>
+              {activeTestimonial.avatar_url ? (
+                <img
+                  src={activeTestimonial.avatar_url}
+                  alt={name}
+                  className="h-11 w-11 flex-shrink-0 rounded-full object-cover ring-2 ring-primary/20"
+                />
+              ) : (
+                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center rounded-full bg-primary/12 text-sm font-semibold text-primary ring-2 ring-primary/15">
+                  {initials}
+                </div>
+              )}
+
+              <div>
+                <p className="text-base font-semibold text-foreground">{name}</p>
+                {meta ? <p className="text-sm text-muted-foreground">{meta}</p> : null}
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <div className="mt-5 flex items-center justify-center gap-2.5">
+          {testimonials.map((testimonial: any, idx: number) => {
+            const isActive = idx === activeIdx;
+
+            return (
+              <button
+                key={testimonial.id}
+                type="button"
+                aria-label={isAr ? `عرض الشهادة ${idx + 1}` : `Show testimonial ${idx + 1}`}
+                onClick={() => setActiveIdx(idx)}
+                className={`rounded-full transition-all duration-300 ${isActive ? 'w-7 bg-primary' : 'w-2.5 bg-muted-foreground/20 hover:bg-muted-foreground/35'} h-2.5`}
+                style={{
+                  boxShadow: isActive ? '0 0 18px hsl(var(--primary) / 0.4)' : undefined,
+                }}
+              />
+            );
+          })}
         </div>
       </div>
-
-      <style>{`
-        @keyframes testimonialScroll {
-          0% { transform: translateX(${isAr ? `-${totalWidth}px` : '0'}); }
-          100% { transform: translateX(${isAr ? '0' : `-${totalWidth}px`}); }
-        }
-      `}</style>
     </section>
   );
 }
