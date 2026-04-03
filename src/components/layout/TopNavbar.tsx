@@ -130,34 +130,64 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
                 </button>
 
                 {avatarOpen && (
-                  <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-full mt-2 w-52 bg-popover border border-border/40 rounded-2xl p-1.5 elevation-3 z-50 animate-fade-in`}>
-                    <div className="px-3 py-2.5 border-b border-border/30 mb-1">
-                      <p className="text-[13px] font-medium text-foreground">{userName}</p>
-                      <p className="text-[11px] text-muted-foreground">{plan === 'pro' ? t.avatar.proPlan : t.avatar.freePlan}</p>
+                  <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-full mt-2 w-56 bg-popover/95 backdrop-blur-xl rounded-2xl p-2 shadow-xl shadow-black/20 z-50 animate-fade-in`}>
+                    {/* User info */}
+                    <div className="px-3 py-3 mb-1">
+                      <p className="text-[13px] font-semibold text-foreground">{userName}</p>
+                      <p className="text-[11px] text-muted-foreground mt-0.5">{plan === 'pro' ? t.avatar.proPlan : t.avatar.freePlan}</p>
                     </div>
+
+                    <div className="h-px bg-foreground/[0.06] mx-2 mb-1" />
+
+                    {/* Menu items */}
                     <button
                       onClick={() => { setAvatarOpen(false); setActivePage('credits'); navigate('/studio'); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-foreground hover:bg-foreground/[0.04] transition-colors"
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-foreground hover:bg-foreground/[0.05] transition-colors"
                     >
-                      <CreditCard size={14} className="text-muted-foreground" />
+                      <CreditCard size={15} className="text-muted-foreground" />
                       {t.avatar.billingCredits}
                     </button>
                     <button
                       onClick={() => { setAvatarOpen(false); setActivePage('settings'); navigate('/studio'); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-foreground hover:bg-foreground/[0.04] transition-colors"
+                      className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-foreground hover:bg-foreground/[0.05] transition-colors"
                     >
-                      <Settings size={14} className="text-muted-foreground" />
+                      <Settings size={15} className="text-muted-foreground" />
                       {t.avatar.settings}
                     </button>
-                    <div className="border-t border-border/30 mt-1 pt-1">
-                      <button
-                        onClick={() => { setAvatarOpen(false); logout(); }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-red-400 hover:bg-red-500/10 transition-colors"
-                      >
-                        <LogOut size={14} />
-                        {t.avatar.logout}
+
+                    {/* Language & Theme */}
+                    <div className="flex items-center justify-between px-3 py-2.5">
+                      <div className="flex items-center gap-0.5 p-0.5 rounded-full bg-foreground/[0.05]">
+                        <button onClick={() => setLang('en')} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>EN</button>
+                        <button onClick={() => setLang('ar')} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${lang === 'ar' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>AR</button>
+                      </div>
+                      <button onClick={toggleMode} className="w-8 h-8 rounded-full bg-foreground/[0.05] flex items-center justify-center hover:bg-foreground/[0.08] transition-colors">
+                        {mode === 'dark' ? <Sun size={14} className="text-muted-foreground" /> : <Moon size={14} className="text-muted-foreground" />}
                       </button>
                     </div>
+
+                    <div className="h-px bg-foreground/[0.06] mx-2 my-1" />
+
+                    {/* Upgrade CTA */}
+                    {plan === 'free' && (
+                      <button
+                        onClick={() => { setAvatarOpen(false); navigate('/pricing'); }}
+                        className="w-full mt-1 mb-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-all hover:brightness-110 hover:shadow-lg hover:shadow-orange-500/20 active:scale-[0.98]"
+                        style={{ background: 'linear-gradient(135deg, #F03E1B 0%, #FF6B35 50%, #F03E1B 100%)' }}
+                      >
+                        <Crown size={14} />
+                        {t.nav.upgrade}
+                      </button>
+                    )}
+
+                    {/* Logout */}
+                    <button
+                      onClick={() => { setAvatarOpen(false); logout(); }}
+                      className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl text-[13px] text-muted-foreground hover:text-destructive hover:bg-destructive/5 transition-colors"
+                    >
+                      <LogOut size={14} />
+                      {t.avatar.logout}
+                    </button>
                   </div>
                 )}
               </div>
