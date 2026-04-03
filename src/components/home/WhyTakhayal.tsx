@@ -45,11 +45,6 @@ export function WhyTakhayal() {
           <span className="text-primary">{isAr ? 'تخيّل' : 'Takhayal'}</span>
           {isAr ? '؟' : '?'}
         </h2>
-        <p className="text-sm text-muted-foreground mt-3 max-w-md mx-auto">
-          {isAr
-            ? 'كل ما تحتاجه لإنشاء محتوى بصري احترافي في مكان واحد'
-            : 'Everything you need to create professional visual content, in one place'}
-        </p>
       </div>
 
       {/* Stacked feature rows */}
