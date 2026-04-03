@@ -258,7 +258,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
               </div>
             </>
           ) : (
-            <div className={`flex items-center gap-2.5 ${isRTL ? 'flex-row' : 'flex-row-reverse'}`}>
+            <div className="flex items-center gap-2.5">
               {/* Menu icon */}
               <button
                 onClick={() => setDrawerOpen(true)}
