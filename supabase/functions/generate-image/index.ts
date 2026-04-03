@@ -110,7 +110,7 @@ async function falQueueRun(endpoint: string, payload: Record<string, unknown>, f
   return { data: null, error: "Generation timed out" };
 }
 
-// ===== UPSCALE WITH CLARITY UPSCALER (replaces ESRGAN) =====
+// ===== UPSCALE WITH CLARITY UPSCALER =====
 async function upscaleWithClarity(imageUrl: string, falHeaders: Record<string, string>): Promise<{ url: string; cost: number } | null> {
   console.log("[upscale] Using Clarity Upscaler for 2K/4K pipeline");
   const result = await falQueueRun("fal-ai/clarity-upscaler", {
@@ -142,7 +142,7 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    const { prompt, model_endpoint, aspect_ratio, num_images, input_type, quality_tier, model_id } = await req.json();
+    const { prompt, model_endpoint, aspect_ratio, num_images, input_type, quality_tier, model_id, job_id } = await req.json();
 
     if (!prompt || typeof prompt !== "string") {
       return new Response(JSON.stringify({ error: "prompt is required" }),
@@ -155,7 +155,7 @@ serve(async (req) => {
     let creditsUsed = 2;
     let dbBaseCost = 0;
     let pricingMode = "flat_per_image";
-    let upscaleStrategy = "clarity"; // Default to clarity now
+    let upscaleStrategy = "clarity";
 
     const supabase = (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY)
       ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
@@ -200,9 +200,6 @@ serve(async (req) => {
     const actualApiCost = calculateProviderCost(endpoint, selectedRatio, selectedQuality, dbBaseCost, pricingMode);
     const dims = getResolutionDims(selectedRatio, selectedQuality);
 
-    // Determine if we need upscale pipeline
-    // Models that support native high-res generate at target resolution directly
-    // Others generate at 1K and upscale with Clarity
     const needsUpscale = (selectedQuality === "2K" || selectedQuality === "4K") && upscaleStrategy === "clarity";
     const generateQuality = needsUpscale ? "1K" : selectedQuality;
 
@@ -216,13 +213,16 @@ serve(async (req) => {
 
     if (endpoint === "fal-ai/flux/schnell") payload.num_inference_steps = 4;
 
-    console.log(`[generate-image] endpoint=${endpoint} ratio=${selectedRatio} quality=${selectedQuality} needsUpscale=${needsUpscale} cost=$${actualApiCost.toFixed(4)}`);
-    console.log(`[generate-image] payload:`, JSON.stringify(payload));
+    console.log(`[generate-image] endpoint=${endpoint} ratio=${selectedRatio} quality=${selectedQuality} needsUpscale=${needsUpscale} cost=$${actualApiCost.toFixed(4)} job_id=${job_id || 'none'}`);
 
     // ===== GENERATE =====
     const genResult = await falQueueRun(endpoint, payload, falHeaders);
 
     if (genResult.error) {
+      // Mark job as failed if job_id provided
+      if (supabase && job_id) {
+        await supabase.from("generation_logs").update({ status: "failed" }).eq("id", job_id);
+      }
       return new Response(JSON.stringify({ error: genResult.error }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
@@ -234,13 +234,10 @@ serve(async (req) => {
     let finalWidth = dims.width;
     let finalHeight = dims.height;
 
-    // ===== UPSCALE PIPELINE (Clarity Upscaler) =====
+    // ===== UPSCALE PIPELINE =====
     if (needsUpscale) {
       const generatedUrl = resultData?.images?.[0]?.url;
       if (generatedUrl) {
-        console.log(`[generate-image] Upscaling with Clarity Upscaler for ${selectedQuality}`);
-        
-        // For 4K, we may need to upscale twice (1K → 2K → 4K)
         let currentUrl = generatedUrl;
         const upscaleSteps = selectedQuality === "4K" ? 2 : 1;
         
@@ -252,7 +249,6 @@ serve(async (req) => {
             wasUpscaled = true;
             upscaleModel = "fal-ai/clarity-upscaler";
           } else {
-            console.log(`[generate-image] Upscale step ${step + 1} failed, using previous result`);
             break;
           }
         }
@@ -269,10 +265,12 @@ serve(async (req) => {
     const profitUsd = revenueUsd - totalCost;
     const marginPct = revenueUsd > 0 ? (profitUsd / revenueUsd) * 100 : 0;
 
-    // ===== LOG GENERATION =====
+    const imageUrl = resultData?.images?.[0]?.url || null;
+
+    // ===== UPDATE OR INSERT LOG =====
     if (supabase) {
       try {
-        await supabase.from("generation_logs").insert({
+        const logData = {
           model_id: resolvedModelId,
           prompt: prompt.slice(0, 500),
           ratio: selectedRatio,
@@ -295,13 +293,23 @@ serve(async (req) => {
           upscale_model: upscaleModel,
           actual_output_width: finalWidth,
           actual_output_height: finalHeight,
-        });
+          image_url: imageUrl,
+          status: "completed",
+        };
+
+        if (job_id) {
+          // Update existing job record
+          await supabase.from("generation_logs").update(logData).eq("id", job_id);
+        } else {
+          // Legacy: insert new record
+          await supabase.from("generation_logs").insert(logData);
+        }
       } catch (e) {
         console.log("Generation log error (non-fatal):", e);
       }
     }
 
-    console.log(`[generate-image] Complete. genCost=$${actualApiCost.toFixed(4)} upscaleCost=$${upscaleCost.toFixed(4)} total=$${totalCost.toFixed(4)} revenue=$${revenueUsd.toFixed(4)} margin=${marginPct.toFixed(1)}%`);
+    console.log(`[generate-image] Complete. job_id=${job_id || 'none'} genCost=$${actualApiCost.toFixed(4)} total=$${totalCost.toFixed(4)} margin=${marginPct.toFixed(1)}%`);
 
     return new Response(JSON.stringify({
       ...resultData,
@@ -315,6 +323,7 @@ serve(async (req) => {
       requested_quality: selectedQuality,
       was_upscaled: wasUpscaled,
       upscale_model: upscaleModel,
+      job_id: job_id || null,
     }), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

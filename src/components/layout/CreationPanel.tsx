@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Upload, ChevronRight, Sparkles, X, Coins, Cpu, Maximize, Image as ImageIcon, Check, Wand2, Zap, Lock } from 'lucide-react';
 import { useApp, TEMPLATE_PROMPTS, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { useGenerationJobs } from '@/hooks/useGenerationJobs';
 import { useModels, ModelRecord } from '@/hooks/useModels';
 import { usePricing } from '@/hooks/usePricing';
 import { usePricingTiers } from '@/hooks/usePricingTiers';
@@ -16,7 +17,9 @@ type OpenDropdown = 'model' | 'size' | 'resolution' | null;
 
 export function CreationPanel() {
   const navigate = useNavigate();
-  const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, enhancePrompt, setEnhancePrompt, generate, isGenerating, credits, getCreditCost } = useApp();
+  const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, enhancePrompt, setEnhancePrompt, isGenerating, credits, getCreditCost, isAuthenticated, openAuthModal, openUpgradeModal } = useApp();
+  const { createJob, startGeneration } = useGenerationJobs();
+  const [localGenerating, setLocalGenerating] = useState(false);
   const { t, lang: language } = useLanguage();
   const { activeModels, defaultModel } = useModels();
   const { getCreditsForModel } = usePricing();
@@ -71,11 +74,42 @@ export function CreationPanel() {
     }
   }, [currentModel, aspectRatio, setAspectRatio]);
 
-  const canGenerate = prompt.trim().length > 0 && !isGenerating && credits >= cost && !!currentModel;
+  const canGenerate = prompt.trim().length > 0 && !isGenerating && !localGenerating && credits >= cost && !!currentModel;
   const toggleDropdown = (key: OpenDropdown) => setOpenDropdown(prev => prev === key ? null : key);
 
   useEffect(() => { const handler = (e: MouseEvent) => { if (openDropdown && panelRef.current && !panelRef.current.contains(e.target as Node)) { const target = e.target as HTMLElement; if (target.closest('[data-dropdown-portal]')) return; setOpenDropdown(null); } }; document.addEventListener('mousedown', handler); return () => document.removeEventListener('mousedown', handler); }, [openDropdown]);
-  useEffect(() => { const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenDropdown(null); if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); generate(); } }; window.addEventListener('keydown', handler); return () => window.removeEventListener('keydown', handler); }, [generate]);
+  const handleGenerate = useCallback(async () => {
+    if (!canGenerate) return;
+    if (!isAuthenticated) { openAuthModal('signup'); return; }
+    if (credits < cost) { openUpgradeModal(); return; }
+
+    setLocalGenerating(true);
+    const fullPrompt = selectedTemplate
+      ? `${TEMPLATE_PROMPTS[selectedTemplate] || ''}, ${prompt}`
+      : prompt;
+
+    const jobId = await createJob({
+      prompt: fullPrompt,
+      ratio: aspectRatio,
+      qualityTier: selectedResolution,
+      modelId: currentModel?.id || null,
+      creditCost: cost,
+    });
+
+    if (jobId) {
+      navigate('/gallery');
+      // Fire generation in background
+      startGeneration(jobId, {
+        prompt: fullPrompt,
+        aspectRatio,
+        qualityTier: selectedResolution,
+        modelId: currentModel?.id || null,
+      });
+    }
+    setLocalGenerating(false);
+  }, [canGenerate, isAuthenticated, credits, cost, prompt, selectedTemplate, aspectRatio, selectedResolution, currentModel, createJob, startGeneration, navigate, openAuthModal, openUpgradeModal]);
+
+  useEffect(() => { const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenDropdown(null); if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); handleGenerate(); } }; window.addEventListener('keydown', handler); return () => window.removeEventListener('keydown', handler); }, [handleGenerate]);
 
   const handleResolution = (r: string) => { setSelectedResolution(r); setQuality(r === '1K' ? 'standard' : 'hd'); setOpenDropdown(null); };
 
@@ -167,7 +201,7 @@ export function CreationPanel() {
       {/* Generate button */}
       <div className="flex-shrink-0 p-4">
         <button
-          onClick={() => { generate({ modelId: currentModel?.id, qualityTier: selectedResolution, creditCost: cost }); navigate('/generate/result'); }}
+          onClick={handleGenerate}
           disabled={!canGenerate}
           className={`w-full h-[44px] rounded-xl text-[14px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
             canGenerate
@@ -175,7 +209,7 @@ export function CreationPanel() {
               : 'bg-foreground/[0.04] border border-border/10 text-muted-foreground/30 cursor-not-allowed'
           }`}
         >
-          {isGenerating ? (
+          {(isGenerating || localGenerating) ? (
             <span className="flex items-center gap-2">
               <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
               {t.studio.generating}

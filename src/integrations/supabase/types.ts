@@ -206,6 +206,7 @@ export type Database = {
           resolution: string | null
           revenue: number
           revenue_usd: number
+          status: string
           tool_id: string | null
           upscale_cost: number
           upscale_model: string | null
@@ -236,6 +237,7 @@ export type Database = {
           resolution?: string | null
           revenue?: number
           revenue_usd?: number
+          status?: string
           tool_id?: string | null
           upscale_cost?: number
           upscale_model?: string | null
@@ -266,6 +268,7 @@ export type Database = {
           resolution?: string | null
           revenue?: number
           revenue_usd?: number
+          status?: string
           tool_id?: string | null
           upscale_cost?: number
           upscale_model?: string | null
