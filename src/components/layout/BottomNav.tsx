@@ -25,12 +25,7 @@ export function BottomNav() {
   };
 
   const handleTap = (item: typeof navItems[0]) => {
-    if (item.studioPage) {
-      setActivePage(item.studioPage);
-      navigate('/studio');
-    } else {
-      navigate(item.route);
-    }
+    navigate(item.route);
   };
 
   return (
