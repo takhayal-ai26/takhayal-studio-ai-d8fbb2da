@@ -2,7 +2,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { GenerationJob } from '@/hooks/useGenerationJobs';
 import { useModels } from '@/hooks/useModels';
 import { Drawer, DrawerContent, DrawerClose } from '@/components/ui/drawer';
-import { Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw, Calendar, Cpu, Ratio, Sparkles } from 'lucide-react';
+import { Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw, Calendar, Cpu, Ratio, Sparkles, Share2, Trash2 } from 'lucide-react';
 
 interface Props {
   job: GenerationJob | null;
@@ -10,9 +10,11 @@ interface Props {
   onClose: () => void;
   onRetry: (id: string) => void;
   onReuse: (prompt: string) => void;
+  onShare?: (job: GenerationJob) => void;
+  onDelete?: (id: string) => void;
 }
 
-export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse }: Props) {
+export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShare, onDelete }: Props) {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
   const { models } = useModels();
@@ -96,10 +98,19 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse }: Prop
             {isCompleted && (
               <button
                 onClick={() => { onReuse(job.prompt || ''); onClose(); }}
-                className="flex-1 h-10 rounded-xl border border-border/40 text-foreground text-sm font-medium flex items-center justify-center gap-2 hover:bg-muted/40 transition-colors"
+                className="h-10 px-4 rounded-xl border border-border/40 text-foreground text-sm font-medium flex items-center justify-center gap-2 hover:bg-muted/40 transition-colors"
               >
                 <RefreshCw size={15} />
                 {isAr ? 'إعادة استخدام' : 'Reuse'}
+              </button>
+            )}
+            {isCompleted && onShare && (
+              <button
+                onClick={() => { onShare(job); }}
+                className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:brightness-110 transition-all"
+              >
+                <Share2 size={15} />
+                {isAr ? 'مشاركة' : 'Share'}
               </button>
             )}
             {isFailed && (
@@ -152,6 +163,18 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse }: Prop
               />
             </div>
           </div>
+          {/* Delete */}
+          {isCompleted && onDelete && (
+            <div className="px-4 pb-4">
+              <button
+                onClick={() => onDelete(job.id)}
+                className="w-full h-10 rounded-xl text-destructive text-sm font-medium flex items-center justify-center gap-2 hover:bg-destructive/5 transition-colors"
+              >
+                <Trash2 size={15} />
+                {isAr ? 'حذف' : 'Delete'}
+              </button>
+            </div>
+          )}
         </div>
       </DrawerContent>
     </Drawer>
