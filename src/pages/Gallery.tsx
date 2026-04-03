@@ -47,14 +47,24 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile }: 
   const isProcessing = job.status === 'processing';
   const isFailed = job.status === 'failed';
 
-  const handleDownload = (e: React.MouseEvent) => {
+  const handleDownload = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    e.preventDefault();
     if (!job.image_url) return;
-    const a = document.createElement('a');
-    a.href = job.image_url;
-    a.download = `takhayal-${job.id}.png`;
-    a.target = '_blank';
-    a.click();
+    try {
+      const resp = await fetch(job.image_url);
+      const blob = await resp.blob();
+      const blobUrl = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = blobUrl;
+      a.download = `takhayal-${job.id}.png`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    } catch {
+      window.open(job.image_url, '_blank');
+    }
   };
 
   const handleRetry = (e: React.MouseEvent) => {
