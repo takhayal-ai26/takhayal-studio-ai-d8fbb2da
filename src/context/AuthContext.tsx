@@ -10,10 +10,14 @@ interface AuthState {
   loading: boolean;
   profile: {
     full_name: string;
+    first_name: string;
+    last_name: string;
     email: string;
     avatar_url: string | null;
     credits: number;
     plan: string;
+    language: string;
+    theme_preference: string;
   } | null;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
