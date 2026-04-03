@@ -2,7 +2,7 @@ import { useApp, NavPage } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Logo } from '@/components/Logo';
-import { Flame, Menu, X, Crown, CreditCard, Settings, LogOut, Sun, Moon, User, Sparkles, Image as ImageIcon, LayoutGrid, Users } from 'lucide-react';
+import { Flame, Menu, X, Crown, CreditCard, Settings, LogOut, Sun, Moon, User, Sparkles, Image as ImageIcon, LayoutGrid, Users, Mail } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -407,6 +407,13 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
               >
                 <CreditCard size={18} className="text-muted-foreground" />
                 {isRTL ? 'الأسعار' : 'Pricing'}
+              </button>
+              <button
+                onClick={() => { setDrawerOpen(false); navigate('/contact'); }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] text-foreground hover:bg-foreground/[0.04] transition-colors"
+              >
+                <Mail size={18} className="text-muted-foreground" />
+                {isRTL ? 'تواصل معنا' : 'Contact Us'}
               </button>
 
               <div className="h-px bg-foreground/[0.06] my-2" />

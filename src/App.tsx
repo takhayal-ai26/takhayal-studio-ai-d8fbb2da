@@ -22,6 +22,7 @@ import Templates from "./pages/Templates";
 import NotFound from "./pages/NotFound";
 import LegalPage from "./pages/LegalPage";
 import About from "./pages/About";
+import Contact from "./pages/Contact";
 import AuthCallback from "./pages/AuthCallback";
 import ResetPassword from "./pages/ResetPassword";
 import Checkout from "./pages/Checkout";
@@ -67,6 +68,7 @@ const App = () => (
                   <Route path="/community" element={<Community />} />
                   <Route path="/templates" element={<Templates />} />
                   <Route path="/about" element={<About />} />
+                  <Route path="/contact" element={<Contact />} />
                   <Route path="/terms" element={<LegalPage />} />
                   <Route path="/privacy" element={<LegalPage />} />
                   <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
