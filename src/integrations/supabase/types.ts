@@ -450,6 +450,7 @@ export type Database = {
           is_active: boolean
           is_default: boolean
           last_sync_at: string | null
+          max_image_inputs: number
           max_resolution: string | null
           model_name: string
           notes: string | null
@@ -481,6 +482,7 @@ export type Database = {
           is_active?: boolean
           is_default?: boolean
           last_sync_at?: string | null
+          max_image_inputs?: number
           max_resolution?: string | null
           model_name: string
           notes?: string | null
@@ -512,6 +514,7 @@ export type Database = {
           is_active?: boolean
           is_default?: boolean
           last_sync_at?: string | null
+          max_image_inputs?: number
           max_resolution?: string | null
           model_name?: string
           notes?: string | null

@@ -68,39 +68,47 @@ function calculateProviderCost(endpoint: string, ratio: string, quality: string,
 }
 
 // ===== RESOLUTION PAYLOAD RESOLVERS =====
-function resolvePayload(endpoint: string, ratio: string, quality: string, inputType: string, imageUrl?: string): Record<string, unknown> {
-  const isEdit = !!imageUrl;
+function resolvePayload(endpoint: string, ratio: string, quality: string, inputType: string, imageUrl?: string, imageUrls?: string[]): Record<string, unknown> {
+  const hasImages = !!imageUrl || (imageUrls && imageUrls.length > 0);
+  const allImageUrls = imageUrls && imageUrls.length > 0 ? imageUrls : imageUrl ? [imageUrl] : [];
+  const singleUrl = allImageUrls[0] || undefined;
 
-  // GPT Image 1.5 — same endpoint for text & edit
+  // GPT Image 1.5 — same endpoint, accepts image_url (single) or image_urls (multi)
   if (endpoint === "fal-ai/gpt-image-1.5") {
     const sizeMap: Record<string, string> = { "1:1": "1024x1024", "2:3": "1024x1536", "3:2": "1536x1024" };
     const base: Record<string, unknown> = { quality: "low", image_size: sizeMap[ratio] || "1024x1024" };
-    if (isEdit) base.image_url = imageUrl;
+    if (allImageUrls.length > 1) base.image_urls = allImageUrls;
+    else if (singleUrl) base.image_url = singleUrl;
     return base;
   }
 
-  // Ideogram V3 remix
+  // Ideogram V3 remix — image_url (main) + optional style image_urls
   if (endpoint.includes("ideogram")) {
     const speedMap: Record<string, string> = { "1K": "TURBO", "2K": "BALANCED", "4K": "QUALITY" };
     const base: Record<string, unknown> = { aspect_ratio: ratio, rendering_speed: speedMap[quality] || "TURBO" };
-    if (isEdit) base.image_url = imageUrl;
+    if (singleUrl) base.image_url = singleUrl;
+    if (allImageUrls.length > 1) base.style_image_urls = allImageUrls.slice(1);
     return base;
   }
 
-  // Nano Banana models — same endpoint for text & edit
+  // Nano Banana models — accepts image_url for editing
   if (endpoint.includes("nano-banana")) {
     const base: Record<string, unknown> = { aspect_ratio: ratio, resolution: quality };
-    if (isEdit) base.image_url = imageUrl;
+    if (allImageUrls.length > 1) base.image_urls = allImageUrls;
+    else if (singleUrl) base.image_url = singleUrl;
     return base;
   }
 
   // Imagen 4 — no edit support
   if (endpoint.includes("imagen4")) return { aspect_ratio: ratio, resolution: quality };
 
-  // Seedream edit
+  // Seedream edit — accepts image_url (single) or image_urls (multi, up to 10)
   if (endpoint.includes("seedream") && endpoint.includes("/edit")) {
     const dims = getResolutionDims(ratio, quality);
-    return { image_url: imageUrl, image_size: { width: dims.width, height: dims.height } };
+    const base: Record<string, unknown> = { image_size: { width: dims.width, height: dims.height } };
+    if (allImageUrls.length > 1) base.image_urls = allImageUrls;
+    else if (singleUrl) base.image_url = singleUrl;
+    return base;
   }
 
   // Seedream text-to-image
@@ -109,27 +117,27 @@ function resolvePayload(endpoint: string, ratio: string, quality: string, inputT
     return { image_size: { width: dims.width, height: dims.height } };
   }
 
-  // Flux redux (image variation)
+  // Flux redux (image variation) — single image only
   if (endpoint.includes("/redux")) {
     const dims = getResolutionDims(ratio, quality);
-    return { image_url: imageUrl, image_size: { width: dims.width, height: dims.height } };
+    return { image_url: singleUrl, image_size: { width: dims.width, height: dims.height } };
   }
 
-  // Qwen image edit
+  // Qwen image edit — single image
   if (endpoint.includes("qwen-image-edit")) {
     const dims = getResolutionDims(ratio, quality);
-    return { image_url: imageUrl, image_size: { width: dims.width, height: dims.height } };
+    return { image_url: singleUrl, image_size: { width: dims.width, height: dims.height } };
   }
 
   // Default: per-megapixel models
   if (inputType === "aspect_ratio") {
     const base: Record<string, unknown> = { aspect_ratio: ratio };
-    if (isEdit) base.image_url = imageUrl;
+    if (singleUrl) base.image_url = singleUrl;
     return base;
   }
   const dims = getResolutionDims(ratio, quality);
   const base: Record<string, unknown> = { image_size: { width: dims.width, height: dims.height } };
-  if (isEdit) base.image_url = imageUrl;
+  if (singleUrl) base.image_url = singleUrl;
   return base;
 }
 
@@ -193,7 +201,7 @@ serve(async (req) => {
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-    const { prompt, model_endpoint, aspect_ratio, num_images, input_type, quality_tier, model_id, job_id, image_url } = await req.json();
+    const { prompt, model_endpoint, aspect_ratio, num_images, input_type, quality_tier, model_id, job_id, image_url, image_urls } = await req.json();
 
     if (!prompt || typeof prompt !== "string") {
       return new Response(JSON.stringify({ error: "prompt is required" }),
@@ -249,7 +257,8 @@ serve(async (req) => {
     }
 
     // Determine if this is an image-to-image request
-    const isImageToImage = !!image_url && supportsImageInput && !!editEndpoint;
+    const hasImageInput = (!!image_url || (Array.isArray(image_urls) && image_urls.length > 0));
+    const isImageToImage = hasImageInput && supportsImageInput && !!editEndpoint;
     const activeEndpoint = isImageToImage ? editEndpoint! : endpoint;
 
     console.log(`[generate-image] mode=${isImageToImage ? 'image-to-image' : 'text-to-image'} endpoint=${activeEndpoint} ratio=${aspect_ratio || '1:1'} quality=${quality_tier || '1K'} job_id=${job_id || 'none'}`);
@@ -264,7 +273,7 @@ serve(async (req) => {
     const needsUpscale = (selectedQuality === "2K" || selectedQuality === "4K") && upscaleStrategy === "clarity" && !isImageToImage;
     const generateQuality = needsUpscale ? "1K" : selectedQuality;
 
-    const payloadParams = resolvePayload(activeEndpoint, selectedRatio, generateQuality, modelInputType, isImageToImage ? image_url : undefined);
+    const payloadParams = resolvePayload(activeEndpoint, selectedRatio, generateQuality, modelInputType, isImageToImage ? image_url : undefined, isImageToImage ? image_urls : undefined);
     const payload: Record<string, unknown> = {
       prompt,
       num_images: num_images || 1,

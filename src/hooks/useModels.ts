@@ -29,6 +29,7 @@ export interface ModelRecord {
   supports_native_high_res: boolean;
   supports_image_input: boolean;
   edit_endpoint_id: string | null;
+  max_image_inputs: number;
   created_at: string;
   updated_at: string;
 }
@@ -48,6 +49,7 @@ function parseModel(row: any): ModelRecord {
     supports_native_high_res: row.supports_native_high_res ?? false,
     supports_image_input: row.supports_image_input ?? false,
     edit_endpoint_id: row.edit_endpoint_id ?? null,
+    max_image_inputs: row.max_image_inputs ?? 1,
   };
 }
 

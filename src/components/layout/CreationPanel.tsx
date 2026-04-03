@@ -31,8 +31,7 @@ export function CreationPanel() {
   const [selectedModelId, setSelectedModelId] = useState<string>('');
   const [selectedResolution, setSelectedResolution] = useState<string>('1K');
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
-  const [uploadedImageUrl, setUploadedImageUrl] = useState<string | null>(null);
-  const [uploadedImagePreview, setUploadedImagePreview] = useState<string | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<{ preview: string; url: string | null }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
@@ -42,6 +41,7 @@ export function CreationPanel() {
 
   const currentModel = activeModels.find(m => m.id === selectedModelId) || defaultModel || activeModels[0];
   const supportsImageInput = currentModel?.supports_image_input ?? false;
+  const maxImages = currentModel?.max_image_inputs ?? 1;
 
   const modelQualityTiers = (() => {
     if (!currentModel) return ['1K'];
@@ -82,22 +82,22 @@ export function CreationPanel() {
     }
   }, [currentModel, aspectRatio, setAspectRatio]);
 
-  // Clear uploaded image when switching to a model that doesn't support it
+  // Clear uploaded images when switching to a model that doesn't support it
   useEffect(() => {
-    if (!supportsImageInput && uploadedImageUrl) {
-      setUploadedImageUrl(null);
-      setUploadedImagePreview(null);
+    if (!supportsImageInput && uploadedImages.length > 0) {
+      setUploadedImages([]);
     }
-  }, [supportsImageInput, uploadedImageUrl]);
+  }, [supportsImageInput, uploadedImages.length]);
 
   const handleFileUpload = useCallback(async (file: File) => {
     if (!user) { openAuthModal('signup'); return; }
     if (!file.type.startsWith('image/')) return;
-    if (file.size > 10 * 1024 * 1024) return; // 10MB limit
+    if (file.size > 10 * 1024 * 1024) return;
+    if (uploadedImages.length >= maxImages) return;
 
-    // Show preview immediately
     const preview = URL.createObjectURL(file);
-    setUploadedImagePreview(preview);
+    const newEntry = { preview, url: null as string | null };
+    setUploadedImages(prev => [...prev, newEntry]);
     setIsUploading(true);
 
     try {
@@ -106,22 +106,25 @@ export function CreationPanel() {
       const { error: uploadError } = await supabase.storage
         .from('tool-files')
         .upload(path, file, { contentType: file.type, upsert: true });
-
       if (uploadError) throw uploadError;
 
       const { data: urlData } = supabase.storage.from('tool-files').getPublicUrl(path);
-      setUploadedImageUrl(urlData.publicUrl);
+      setUploadedImages(prev => prev.map(img => img.preview === preview ? { ...img, url: urlData.publicUrl } : img));
     } catch (err) {
       console.error('Upload failed:', err);
-      setUploadedImagePreview(null);
+      setUploadedImages(prev => prev.filter(img => img.preview !== preview));
     } finally {
       setIsUploading(false);
     }
-  }, [user, openAuthModal]);
+  }, [user, openAuthModal, uploadedImages.length, maxImages]);
 
-  const clearUploadedImage = useCallback(() => {
-    setUploadedImageUrl(null);
-    setUploadedImagePreview(null);
+  const removeImage = useCallback((index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, []);
+
+  const clearAllImages = useCallback(() => {
+    setUploadedImages([]);
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, []);
 
@@ -150,16 +153,18 @@ export function CreationPanel() {
 
     if (jobId) {
       navigate('/gallery');
+      const imageUrls = uploadedImages.filter(img => img.url).map(img => img.url!);
       startGeneration(jobId, {
         prompt: fullPrompt,
         aspectRatio,
         qualityTier: selectedResolution,
         modelId: currentModel?.id || null,
-        imageUrl: uploadedImageUrl || undefined,
+        imageUrl: imageUrls.length === 1 ? imageUrls[0] : undefined,
+        imageUrls: imageUrls.length > 1 ? imageUrls : undefined,
       });
     }
     setLocalGenerating(false);
-  }, [canGenerate, isAuthenticated, credits, cost, prompt, selectedTemplate, aspectRatio, selectedResolution, currentModel, createJob, startGeneration, navigate, openAuthModal, openUpgradeModal, uploadedImageUrl]);
+  }, [canGenerate, isAuthenticated, credits, cost, prompt, selectedTemplate, aspectRatio, selectedResolution, currentModel, createJob, startGeneration, navigate, openAuthModal, openUpgradeModal, uploadedImages]);
 
   useEffect(() => { const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenDropdown(null); if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); handleGenerate(); } }; window.addEventListener('keydown', handler); return () => window.removeEventListener('keydown', handler); }, [handleGenerate]);
 
@@ -231,32 +236,45 @@ export function CreationPanel() {
               ref={fileInputRef}
               type="file"
               accept="image/jpeg,image/png,image/webp"
+              multiple={maxImages > 1}
               className="hidden"
               onChange={e => {
-                const file = e.target.files?.[0];
-                if (file) handleFileUpload(file);
+                const files = Array.from(e.target.files || []);
+                files.forEach(f => handleFileUpload(f));
               }}
             />
-            {uploadedImagePreview ? (
-              <div className="relative rounded-2xl overflow-hidden border border-primary/20 bg-card/50">
-                <img
-                  src={uploadedImagePreview}
-                  alt="Uploaded reference"
-                  className="w-full h-32 object-cover"
-                />
-                {isUploading && (
-                  <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
-                    <span className="w-5 h-5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                  </div>
-                )}
-                <button
-                  onClick={clearUploadedImage}
-                  className="absolute top-2 right-2 w-7 h-7 rounded-lg bg-background/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <X size={14} />
-                </button>
-                <div className="absolute bottom-2 left-2 px-2 py-1 rounded-md bg-background/80 backdrop-blur-sm text-[10px] text-muted-foreground font-medium">
-                  {language === 'ar' ? 'صورة مرجعية' : 'Reference image'}
+            {uploadedImages.length > 0 ? (
+              <div className="space-y-2">
+                <div className={`grid gap-2 ${uploadedImages.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                  {uploadedImages.map((img, i) => (
+                    <div key={i} className="relative rounded-xl overflow-hidden border border-primary/20 bg-card/50">
+                      <img src={img.preview} alt={`Reference ${i + 1}`} className="w-full h-24 object-cover" />
+                      {!img.url && (
+                        <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
+                          <span className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                        </div>
+                      )}
+                      <button
+                        onClick={() => removeImage(i)}
+                        className="absolute top-1 right-1 w-6 h-6 rounded-md bg-background/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div className="flex items-center justify-between px-1">
+                  <span className="text-[10px] text-muted-foreground/40">
+                    {uploadedImages.length}/{maxImages} {language === 'ar' ? 'صور' : 'images'}
+                  </span>
+                  {uploadedImages.length < maxImages && (
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      className="text-[10px] text-primary/60 hover:text-primary font-medium transition-colors"
+                    >
+                      + {language === 'ar' ? 'إضافة المزيد' : 'Add more'}
+                    </button>
+                  )}
                 </div>
               </div>
             ) : (
@@ -268,7 +286,11 @@ export function CreationPanel() {
                   <Upload size={16} className="group-hover:text-primary/70 transition-colors" />
                 </div>
                 <span className="text-[12px] font-medium">{t.studio.uploadImages}</span>
-                <span className="text-[10px] text-muted-foreground/20">JPG / PNG up to 10MB</span>
+                <span className="text-[10px] text-muted-foreground/20">
+                  {maxImages > 1
+                    ? `${language === 'ar' ? `حتى ${maxImages} صور` : `Up to ${maxImages} images`} · JPG / PNG`
+                    : 'JPG / PNG up to 10MB'}
+                </span>
               </button>
             )}
           </div>
@@ -318,7 +340,7 @@ export function CreationPanel() {
             </span>
           ) : (
             <>
-              {uploadedImageUrl ? (language === 'ar' ? 'تعديل الصورة' : 'Edit Image') : t.toolPage.generate}
+              {uploadedImages.length > 0 ? (language === 'ar' ? 'تعديل الصورة' : 'Edit Image') : t.toolPage.generate}
               <span className="flex items-center gap-1 text-[12px] opacity-70">
                 <Coins size={11} />{cost}
               </span>
