@@ -27,6 +27,8 @@ export interface ModelRecord {
   credits_per_generation: number | null;
   upscale_strategy: string;
   supports_native_high_res: boolean;
+  supports_image_input: boolean;
+  edit_endpoint_id: string | null;
   created_at: string;
   updated_at: string;
 }
