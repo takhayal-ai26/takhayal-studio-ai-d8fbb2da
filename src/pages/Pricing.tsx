@@ -382,6 +382,7 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
       `}</style>
     </section>
   );
+}
 
 const Pricing = () => {
   const navigate = useNavigate();
