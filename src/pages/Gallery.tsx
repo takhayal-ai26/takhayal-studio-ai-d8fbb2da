@@ -382,7 +382,7 @@ export default function Gallery() {
           onClose={() => setSelectedJob(null)}
           onRetry={retryJob}
           onReuse={handleReuse}
-          onShare={(j) => { console.log('SHARE CLICKED', j.id); setSelectedJob(null); setTimeout(() => { console.log('SETTING SHARE JOB', j.id); setShareJob(j); }, 100); }}
+          onShare={setShareJob}
           onDelete={handleDelete}
           onPrev={handlePrev}
           onNext={handleNext}
