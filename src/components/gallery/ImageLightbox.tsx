@@ -126,7 +126,7 @@ export function ImageLightbox({
         className="absolute inset-0 z-10 flex items-stretch pointer-events-none"
       >
         {/* Left: Image area - takes remaining space */}
-        <div className="flex-1 flex items-center justify-center p-10 lg:p-16 pointer-events-auto">
+        <div className="flex-1 flex items-center justify-center p-10 lg:p-16 pointer-events-auto" onClick={onClose}>
           {isProcessing ? (
             <div className="flex flex-col items-center gap-4">
               <Loader2 size={44} className="text-primary animate-spin" />
