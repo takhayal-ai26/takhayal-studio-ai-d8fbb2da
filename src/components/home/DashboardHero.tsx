@@ -234,7 +234,7 @@ export function DashboardHero() {
         <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, rgba(0,0,0,${Number(overlayStrength) * 0.7}) 0%, rgba(0,0,0,${overlayStrength}) 60%, rgba(0,0,0,${Number(overlayStrength) * 1.1}) 100%)` }} />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6 h-full pb-10 md:pb-[72px] pt-16 md:pt-20">
+      <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6 h-full pb-6 md:pb-[72px] pt-14 md:pt-20">
         {title && (
           <h1
             className="text-white text-center font-extrabold drop-shadow-lg"
