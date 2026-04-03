@@ -64,8 +64,8 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
 
   return (
     <>
-      <nav dir="ltr" className={`fixed left-0 right-0 z-50 h-14 bg-background/80 backdrop-blur-xl flex items-center px-5 md:px-6 transition-[top] duration-200 ${bannerOffset ? 'top-[40px]' : 'top-0'}`}>
-        <div className={`flex-shrink-0 whitespace-nowrap ${isRTL ? 'order-2 md:order-first' : ''}`}>
+      <nav dir={isRTL ? 'rtl' : 'ltr'} className={`fixed left-0 right-0 z-50 h-14 bg-background/80 backdrop-blur-xl flex items-center px-5 md:px-6 transition-[top] duration-200 ${bannerOffset ? 'top-[40px]' : 'top-0'}`}>
+        <div className="flex-shrink-0 whitespace-nowrap">
           <Logo />
         </div>
 
@@ -181,7 +181,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
         </div>
 
         {/* ━━━ Mobile header ━━━ */}
-        <div className={`flex md:hidden items-center gap-2.5 ${isRTL ? 'order-1 mr-auto ml-0' : 'ml-auto'}`}>
+        <div className="flex md:hidden items-center gap-2.5 ms-auto">
           {isAuthenticated ? (
             <>
               {/* Credits pill */}
@@ -258,7 +258,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
               </div>
             </>
           ) : (
-            <div className={`flex items-center gap-2.5 ${isRTL ? 'flex-row' : 'flex-row-reverse'}`}>
+            <div className="flex items-center gap-2.5">
               {/* Menu icon */}
               <button
                 onClick={() => setDrawerOpen(true)}
