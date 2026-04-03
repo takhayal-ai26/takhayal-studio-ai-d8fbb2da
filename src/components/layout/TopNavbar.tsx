@@ -258,8 +258,8 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
               </div>
             </>
           ) : (
-            <>
-              {/* Menu icon → opens drawer (left of CTA) */}
+            <div className={`flex items-center gap-2.5 ${isRTL ? 'flex-row' : 'flex-row-reverse'}`}>
+              {/* Menu icon */}
               <button
                 onClick={() => setDrawerOpen(true)}
                 className="w-8 h-8 rounded-lg bg-foreground/[0.05] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
@@ -274,7 +274,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
               >
                 {isRTL ? 'جرّب مجاناً' : 'Try Free'}
               </button>
-            </>
+            </div>
           )}
         </div>
       </nav>
