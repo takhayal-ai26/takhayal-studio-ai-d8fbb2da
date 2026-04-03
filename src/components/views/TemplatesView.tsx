@@ -1,6 +1,7 @@
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useTemplates, FrontendTemplate } from '@/hooks/useTemplates';
 
