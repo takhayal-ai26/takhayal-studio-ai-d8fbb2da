@@ -65,123 +65,12 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
   return (
     <>
       <nav dir="ltr" className={`fixed left-0 right-0 z-50 h-14 bg-background/80 backdrop-blur-xl flex items-center px-5 md:px-6 transition-[top] duration-200 ${bannerOffset ? 'top-[40px]' : 'top-0'}`}>
-        <div className="flex-shrink-0">
+        <div className={`flex-shrink-0 ${isRTL ? 'order-2 md:order-none' : ''}`}>
           <Logo />
         </div>
-
-        {/* Center: Nav links (desktop) */}
-        <div className="hidden md:flex items-center gap-1 mx-auto">
-          {navItemDefs.filter(item => !(isAuthenticated && item.id === 'pricing')).map(item => (
-            <button
-              key={item.id}
-              onClick={() => handleNav(item)}
-              className={`relative px-3.5 py-1.5 text-[13px] font-medium rounded-lg transition-all duration-200 ${
-                isActive(item)
-                  ? 'text-foreground bg-foreground/[0.06]'
-                  : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.04]'
-              }`}
-            >
-              {navLabels[item.labelKey]}
-            </button>
-          ))}
-        </div>
-
-        {/* Right: Desktop controls */}
-        <div className="hidden md:flex items-center gap-2.5 flex-shrink-0">
-          {!isAdmin && <ThemeToggle />}
-          <LanguageToggle />
-          {isAuthenticated ? (
-            <>
-              <button
-                onClick={() => { setActivePage('credits'); navigate('/studio'); }}
-                title={t.common.viewCredits}
-                className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 ${
-                  lowCredits
-                    ? 'bg-primary/10 text-primary'
-                    : 'bg-foreground/[0.05] hover:bg-foreground/[0.08] text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Flame size={13} className={`${lowCredits ? 'text-primary animate-pulse' : ''}`} />
-                <span className="text-[13px] font-medium tabular-nums">{credits}</span>
-              </button>
-
-              {plan === 'free' ? (
-                <button
-                  onClick={() => navigate('/pricing')}
-                  className="h-8 px-4 rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-[12px] font-semibold hover:shadow-lg hover:shadow-primary/20 transition-all duration-200"
-                >
-                  {t.nav.upgrade}
-                </button>
-              ) : (
-                <span className="flex items-center gap-1 px-2.5 py-1 bg-primary/8 rounded-full text-[11px] font-semibold text-primary">
-                  <Crown size={11} />
-                  {t.nav.pro}
-                </span>
-              )}
-
-              <div ref={avatarRef} className="relative">
-                <button
-                  onClick={() => setAvatarOpen(!avatarOpen)}
-                  className="w-8 h-8 rounded-full bg-foreground/[0.06] flex items-center justify-center text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors overflow-hidden"
-                >
-                  {userAvatarUrl ? (
-                    <img src={userAvatarUrl} alt={userName} className="w-full h-full object-cover" />
-                  ) : initials}
-                </button>
-
-                {avatarOpen && (
-                  <div className={`absolute ${isRTL ? 'left-0' : 'right-0'} top-full mt-2 w-52 bg-popover border border-border/40 rounded-2xl p-1.5 elevation-3 z-50 animate-fade-in`}>
-                    <div className="px-3 py-2.5 border-b border-border/30 mb-1">
-                      <p className="text-[13px] font-medium text-foreground">{userName}</p>
-                      <p className="text-[11px] text-muted-foreground">{plan === 'pro' ? t.avatar.proPlan : t.avatar.freePlan}</p>
-                    </div>
-                    <button
-                      onClick={() => { setAvatarOpen(false); setActivePage('credits'); navigate('/studio'); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-foreground hover:bg-foreground/[0.04] transition-colors"
-                    >
-                      <CreditCard size={14} className="text-muted-foreground" />
-                      {t.avatar.billingCredits}
-                    </button>
-                    <button
-                      onClick={() => { setAvatarOpen(false); setActivePage('settings'); navigate('/studio'); }}
-                      className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-foreground hover:bg-foreground/[0.04] transition-colors"
-                    >
-                      <Settings size={14} className="text-muted-foreground" />
-                      {t.avatar.settings}
-                    </button>
-                    <div className="border-t border-border/30 mt-1 pt-1">
-                      <button
-                        onClick={() => { setAvatarOpen(false); logout(); }}
-                        className="w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-[13px] text-red-400 hover:bg-red-500/10 transition-colors"
-                      >
-                        <LogOut size={14} />
-                        {t.avatar.logout}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </div>
-            </>
-          ) : (
-            <>
-              <button
-                onClick={() => openAuthModal('login')}
-                className="text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors px-3 py-1.5 rounded-lg hover:bg-foreground/[0.04]"
-              >
-                {t.nav.login}
-              </button>
-              <button
-                onClick={() => openAuthModal('signup')}
-                className="h-9 px-5 rounded-full bg-primary text-primary-foreground text-[13px] font-semibold hover:shadow-lg hover:shadow-primary/20 transition-all duration-200"
-              >
-                {t.nav.signup}
-              </button>
-            </>
-          )}
-        </div>
-
+...
         {/* ━━━ Mobile header ━━━ */}
-        <div className="flex md:hidden items-center gap-2.5 ml-auto">
+        <div className={`flex md:hidden items-center gap-2.5 ${isRTL ? 'order-1 mr-auto ml-0' : 'ml-auto'}`}>
           {isAuthenticated ? (
             <>
               {/* Credits pill */}
