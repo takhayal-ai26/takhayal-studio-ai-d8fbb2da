@@ -82,13 +82,12 @@ export function CreationPanel() {
     }
   }, [currentModel, aspectRatio, setAspectRatio]);
 
-  // Clear uploaded image when switching to a model that doesn't support it
+  // Clear uploaded images when switching to a model that doesn't support it
   useEffect(() => {
-    if (!supportsImageInput && uploadedImageUrl) {
-      setUploadedImageUrl(null);
-      setUploadedImagePreview(null);
+    if (!supportsImageInput && uploadedImages.length > 0) {
+      setUploadedImages([]);
     }
-  }, [supportsImageInput, uploadedImageUrl]);
+  }, [supportsImageInput, uploadedImages.length]);
 
   const handleFileUpload = useCallback(async (file: File) => {
     if (!user) { openAuthModal('signup'); return; }
