@@ -23,6 +23,26 @@ interface Props {
   hasNext?: boolean;
 }
 
+async function downloadImage(url: string, filename: string) {
+  try {
+    const resp = await fetch(url);
+    const blob = await resp.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+    toast.success('Download started');
+  } catch {
+    // Fallback: open in new tab
+    window.open(url, '_blank');
+    toast.info('Image opened in new tab');
+  }
+}
+
 export function ImageLightbox({
   job, open, onClose, onRetry, onReuse, onShare, onDelete,
   onPrev, onNext, hasPrev, hasNext
@@ -31,6 +51,7 @@ export function ImageLightbox({
   const isAr = lang === 'ar';
   const { models } = useModels();
   const [copied, setCopied] = useState(false);
+  const [downloading, setDownloading] = useState(false);
 
   const modelName = job
     ? (models.find(m => m.id === job.model_id)?.model_name || (isAr ? 'افتراضي' : 'Default'))
@@ -67,13 +88,57 @@ export function ImageLightbox({
   const isFailed = job.status === 'failed';
   const isCompleted = job.status === 'completed';
 
-  const handleDownload = () => {
-    if (!job.image_url) return;
-    const a = document.createElement('a');
-    a.href = job.image_url;
-    a.download = `takhayal-${job.id}.png`;
-    a.target = '_blank';
-    a.click();
+  const handleDownload = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!job.image_url || downloading) return;
+    setDownloading(true);
+    await downloadImage(job.image_url, `takhayal-${job.id}.png`);
+    setDownloading(false);
+  };
+
+  const handleReuseClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onReuse(job.prompt || '');
+    onClose();
+  };
+
+  const handleShareClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onShare?.(job);
+  };
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onDelete?.(job.id);
+  };
+
+  const handleRetryClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onRetry(job.id);
+    onClose();
+  };
+
+  const handleCloseClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    onClose();
+  };
+
+  const handlePrevClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    isAr ? onNext?.() : onPrev?.();
+  };
+
+  const handleNextClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    e.preventDefault();
+    isAr ? onPrev?.() : onNext?.();
   };
 
   const dateStr = new Date(job.created_at).toLocaleDateString(
@@ -90,32 +155,32 @@ export function ImageLightbox({
     <div className="fixed inset-0 z-[90]" role="dialog" aria-modal="true">
       {/* Backdrop */}
       <div
-        className="absolute inset-0 bg-background/90 backdrop-blur-2xl"
-        onClick={onClose}
+        className="absolute inset-0 bg-background/90 backdrop-blur-2xl cursor-pointer"
+        onClick={handleCloseClick}
       />
 
-      {/* Nav arrows */}
+      {/* Nav arrows - outside the pointer-events-none container */}
       {hasPrev && (
         <button
-          onClick={() => { isAr ? onNext?.() : onPrev?.(); }}
-          className={`absolute top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-all shadow-md ${isAr ? 'right-5' : 'left-5'}`}
+          onClick={handlePrevClick}
+          className={`absolute top-1/2 -translate-y-1/2 z-[95] w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-all shadow-md cursor-pointer ${isAr ? 'right-5' : 'left-5'}`}
         >
           <ChevronLeft size={18} />
         </button>
       )}
       {hasNext && (
         <button
-          onClick={() => { isAr ? onPrev?.() : onNext?.(); }}
-          className={`absolute top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-all shadow-md ${isAr ? 'left-5' : 'right-5'}`}
+          onClick={handleNextClick}
+          className={`absolute top-1/2 -translate-y-1/2 z-[95] w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-all shadow-md cursor-pointer ${isAr ? 'left-5' : 'right-5'}`}
         >
           <ChevronRight size={18} />
         </button>
       )}
 
-      {/* Close button - floating top right */}
+      {/* Close button */}
       <button
-        onClick={onClose}
-        className={`absolute top-5 z-20 w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-colors shadow-md ${isAr ? 'left-5' : 'right-5'}`}
+        onClick={handleCloseClick}
+        className={`absolute top-5 z-[95] w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-colors shadow-md cursor-pointer ${isAr ? 'left-5' : 'right-5'}`}
       >
         <X size={15} />
       </button>
@@ -123,17 +188,17 @@ export function ImageLightbox({
       {/* Main layout */}
       <div
         dir={isAr ? 'rtl' : 'ltr'}
-        className="absolute inset-0 z-10 flex items-stretch pointer-events-none"
+        className="absolute inset-0 z-[92] flex items-stretch"
       >
-        {/* Left: Image area - takes remaining space */}
-        <div className="flex-1 flex items-center justify-center p-10 lg:p-16 pointer-events-auto">
+        {/* Left: Image area */}
+        <div className="flex-1 flex items-center justify-center p-10 lg:p-16" onClick={handleCloseClick}>
           {isProcessing ? (
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-4" onClick={e => e.stopPropagation()}>
               <Loader2 size={44} className="text-primary animate-spin" />
               <span className="text-sm font-medium text-primary">{isAr ? 'جاري التوليد...' : 'Generating...'}</span>
             </div>
           ) : isFailed ? (
-            <div className="flex flex-col items-center gap-4">
+            <div className="flex flex-col items-center gap-4" onClick={e => e.stopPropagation()}>
               <AlertCircle size={44} className="text-destructive/60" />
               <span className="text-sm font-medium text-destructive">{isAr ? 'فشل التوليد' : 'Failed'}</span>
             </div>
@@ -148,33 +213,37 @@ export function ImageLightbox({
         </div>
 
         {/* Right: Detail sidebar */}
-        <div className="w-[340px] xl:w-[380px] flex-shrink-0 bg-card/60 backdrop-blur-xl border-s border-border/10 overflow-y-auto pointer-events-auto" onClick={e => e.stopPropagation()}>
+        <div
+          className="w-[340px] xl:w-[380px] flex-shrink-0 bg-card/60 backdrop-blur-xl border-s border-border/10 overflow-y-auto"
+          onClick={e => e.stopPropagation()}
+        >
           <div className="p-6 xl:p-7 space-y-6 pt-16">
             {/* Actions row */}
             <div className="space-y-2.5">
               {isCompleted && job.image_url && (
                 <button
                   onClick={handleDownload}
-                  className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-semibold flex items-center justify-center gap-2.5 hover:brightness-110 active:scale-[0.98] transition-all"
+                  disabled={downloading}
+                  className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-semibold flex items-center justify-center gap-2.5 hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer disabled:opacity-50"
                 >
-                  <Download size={15} />
-                  {isAr ? 'تحميل الصورة' : 'Download Image'}
+                  {downloading ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
+                  {downloading ? (isAr ? 'جاري التحميل...' : 'Downloading...') : (isAr ? 'تحميل الصورة' : 'Download Image')}
                 </button>
               )}
               <div className="flex gap-2">
                 {isCompleted && (
                   <button
-                    onClick={() => { onReuse(job.prompt || ''); onClose(); }}
-                    className="flex-1 h-10 rounded-xl bg-muted/50 text-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-muted/70 active:scale-[0.98] transition-all"
+                    onClick={handleReuseClick}
+                    className="flex-1 h-10 rounded-xl bg-muted/50 text-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-muted/70 active:scale-[0.98] transition-all cursor-pointer"
                   >
                     <RefreshCw size={13} />
                     {isAr ? 'إعادة استخدام' : 'Reuse'}
                   </button>
                 )}
-                {isCompleted && onShare && (
+                {isCompleted && (
                   <button
-                    onClick={() => onShare(job)}
-                    className="flex-1 h-10 rounded-xl bg-muted/50 text-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-muted/70 active:scale-[0.98] transition-all"
+                    onClick={handleShareClick}
+                    className="flex-1 h-10 rounded-xl bg-muted/50 text-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-muted/70 active:scale-[0.98] transition-all cursor-pointer"
                   >
                     <Share2 size={13} />
                     {isAr ? 'مشاركة' : 'Share'}
@@ -183,8 +252,8 @@ export function ImageLightbox({
               </div>
               {isFailed && (
                 <button
-                  onClick={() => { onRetry(job.id); onClose(); }}
-                  className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-semibold flex items-center justify-center gap-2.5 hover:brightness-110 active:scale-[0.98] transition-all"
+                  onClick={handleRetryClick}
+                  className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-semibold flex items-center justify-center gap-2.5 hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
                 >
                   <RotateCcw size={14} />
                   {isAr ? 'إعادة المحاولة' : 'Retry'}
@@ -204,7 +273,7 @@ export function ImageLightbox({
                   </span>
                   <button
                     onClick={handleCopyPrompt}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/30 hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all"
+                    className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/30 hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all cursor-pointer"
                     title={isAr ? 'نسخ' : 'Copy'}
                   >
                     {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
@@ -230,13 +299,13 @@ export function ImageLightbox({
               </div>
             </div>
 
-            {/* Delete - pushed to bottom visually */}
+            {/* Delete */}
             {isCompleted && onDelete && (
               <>
                 <div className="h-px bg-border/10" />
                 <button
-                  onClick={() => onDelete(job.id)}
-                  className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground/30 hover:text-destructive transition-colors"
+                  onClick={handleDeleteClick}
+                  className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground/30 hover:text-destructive transition-colors cursor-pointer"
                 >
                   <Trash2 size={12} />
                   {isAr ? 'حذف' : 'Delete'}
