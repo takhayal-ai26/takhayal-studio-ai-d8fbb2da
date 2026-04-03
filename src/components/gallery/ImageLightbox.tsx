@@ -142,6 +142,7 @@ export function ImageLightbox({
               src={job.image_url}
               alt={job.prompt || ''}
               className="max-h-[85vh] max-w-full rounded-2xl object-contain shadow-2xl"
+              onClick={e => e.stopPropagation()}
             />
           ) : null}
         </div>
