@@ -1,7 +1,6 @@
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Home, Users, Sparkles, Image, LayoutGrid } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { useApp } from '@/context/AppContext';
 
 const navItems = [
   { id: 'home', route: '/', icon: Home, labelEn: 'Home', labelAr: 'الرئيسية' },
