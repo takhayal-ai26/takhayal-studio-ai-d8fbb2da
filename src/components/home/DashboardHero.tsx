@@ -220,7 +220,7 @@ export function DashboardHero() {
   });
 
   return (
-    <section className="relative w-full h-[42vh] md:h-[540px]">
+    <section className="relative w-full h-[48vh] md:h-[540px]">
       <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: '0 0 36px 36px' }}>
         <div
           className="absolute inset-0"
@@ -234,7 +234,7 @@ export function DashboardHero() {
         <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, rgba(0,0,0,${Number(overlayStrength) * 0.7}) 0%, rgba(0,0,0,${overlayStrength}) 60%, rgba(0,0,0,${Number(overlayStrength) * 1.1}) 100%)` }} />
       </div>
 
-      <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6 h-full pb-6 md:pb-[72px] pt-14 md:pt-20">
+      <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6 h-full pb-10 md:pb-[72px] pt-14 md:pt-20">
         {/* Premium badge */}
         <div
           className="animate-enter"
@@ -243,13 +243,13 @@ export function DashboardHero() {
             backdropFilter: 'blur(14px)',
             WebkitBackdropFilter: 'blur(14px)',
             border: '1px solid rgba(255,255,255,0.12)',
-            boxShadow: '0 4px 20px rgba(255,102,51,0.25)',
+            boxShadow: '0 2px 12px rgba(255,102,51,0.15)',
             color: '#FFFFFF',
-            fontSize: 13,
-            fontWeight: 600,
-            padding: '8px 18px',
+            fontSize: 12,
+            fontWeight: 500,
+            padding: '6px 16px',
             borderRadius: 999,
-            marginBottom: 14,
+            marginBottom: 20,
           }}
         >
           {isAr ? 'منصة للمبدعين العرب' : 'Built for Arab creators'}
@@ -262,7 +262,7 @@ export function DashboardHero() {
               fontSize: 'clamp(26px, 5vw, 64px)',
               letterSpacing: -2,
               lineHeight: 1.05,
-              marginBottom: subtitleText ? 8 : 16,
+              marginBottom: subtitleText ? 12 : 24,
               fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
               textShadow: '0 2px 20px rgba(0,0,0,0.4)',
             }}
@@ -272,7 +272,7 @@ export function DashboardHero() {
         )}
 
         {subtitleText && (
-          <p className="text-center" style={{ fontSize: 14, color: 'rgba(255,255,255,0.56)', marginBottom: 24, maxWidth: 680, lineHeight: 1.6 }}>
+          <p className="text-center hidden md:block" style={{ fontSize: 13, color: 'rgba(255,255,255,0.50)', marginBottom: 32, maxWidth: 680, lineHeight: 1.6 }}>
             {subtitleText}
           </p>
         )}
@@ -284,7 +284,7 @@ export function DashboardHero() {
               onClick={handleExpand}
               className="cursor-text flex items-center gap-3 group"
               style={{
-                height: 52,
+                height: 48,
                 background: 'rgba(0,0,0,0.45)',
                 border: '1px solid rgba(255,255,255,0.08)',
                 borderRadius: 999,
@@ -316,7 +316,7 @@ export function DashboardHero() {
               }}
             >
               {/* Input row */}
-              <div className="flex items-center" style={{ height: 52, padding: '0 16px' }}>
+              <div className="flex items-center" style={{ height: 48, padding: '0 16px' }}>
                 <ImageIcon size={17} style={{ color: 'rgba(255,255,255,0.35)', flexShrink: 0, marginRight: isRTL ? 0 : 12, marginLeft: isRTL ? 12 : 0 }} />
                 <input
                   ref={inputRef}
