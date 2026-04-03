@@ -118,9 +118,13 @@ export function CreationPanel() {
     }
   }, [user, openAuthModal, uploadedImages.length, maxImages]);
 
-  const clearUploadedImage = useCallback(() => {
-    setUploadedImageUrl(null);
-    setUploadedImagePreview(null);
+  const removeImage = useCallback((index: number) => {
+    setUploadedImages(prev => prev.filter((_, i) => i !== index));
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  }, []);
+
+  const clearAllImages = useCallback(() => {
+    setUploadedImages([]);
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, []);
 
