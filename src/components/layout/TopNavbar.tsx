@@ -2,7 +2,7 @@ import { useApp, NavPage } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Logo } from '@/components/Logo';
-import { Flame, Menu, X, Crown, CreditCard, Settings, LogOut, Sun, Moon, User } from 'lucide-react';
+import { Flame, Menu, X, Crown, CreditCard, Settings, LogOut, Sun, Moon, User, Sparkles, Image as ImageIcon, LayoutGrid, Users } from 'lucide-react';
 import { useState, useRef, useEffect } from 'react';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ThemeToggle } from '@/components/ThemeToggle';
@@ -282,46 +282,86 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
       {/* ━━━ Mobile menu drawer (logged-out only) ━━━ */}
       {drawerOpen && !isAuthenticated && (
         <>
-          {/* Backdrop */}
           <div
             className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm animate-fade-in md:hidden"
             onClick={() => setDrawerOpen(false)}
           />
-          {/* Drawer panel */}
-          <div className={`fixed ${isRTL ? 'left-0' : 'right-0'} top-0 bottom-0 z-[70] w-64 bg-background shadow-2xl p-5 flex flex-col gap-6 animate-slide-in-right md:hidden`}>
-            <div className="flex items-center justify-between">
-              <span className="text-[13px] font-semibold text-foreground">{isRTL ? 'القائمة' : 'Menu'}</span>
+          <div dir={isRTL ? 'rtl' : 'ltr'} className={`fixed ${isRTL ? 'left-0' : 'right-0'} top-0 bottom-0 z-[70] w-72 bg-background shadow-2xl flex flex-col animate-slide-in-right md:hidden`}>
+            {/* Header */}
+            <div className="flex items-center justify-between px-5 pt-5 pb-3">
+              <span className="text-[14px] font-semibold text-foreground">{isRTL ? 'القائمة' : 'Menu'}</span>
               <button onClick={() => setDrawerOpen(false)} className="w-8 h-8 rounded-lg bg-foreground/[0.05] flex items-center justify-center text-muted-foreground">
                 <X size={18} />
               </button>
             </div>
 
-            {/* Log in */}
-            <button
-              onClick={() => { setDrawerOpen(false); openAuthModal('login'); }}
-              className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium text-foreground hover:bg-foreground/[0.04] transition-colors"
-            >
-              <User size={18} className="text-muted-foreground" />
-              {t.nav.login}
-            </button>
+            {/* Scrollable content */}
+            <div className="flex-1 overflow-y-auto px-4 py-2 space-y-1">
+              {/* Log in */}
+              <button
+                onClick={() => { setDrawerOpen(false); openAuthModal('login'); }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] font-medium text-foreground hover:bg-foreground/[0.04] transition-colors"
+              >
+                <User size={18} className="text-muted-foreground" />
+                {isRTL ? 'تسجيل الدخول' : 'Log in'}
+              </button>
 
-            {/* Language */}
-            <div className="flex items-center justify-between px-3">
-              <span className="text-[13px] text-muted-foreground">{isRTL ? 'اللغة' : 'Language'}</span>
-              <div className="flex items-center gap-1 p-0.5 rounded-full bg-foreground/[0.04]">
-                <button onClick={() => setLang('en')} className={`px-3 py-1 rounded-full text-[12px] font-medium transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>EN</button>
-                <button onClick={() => setLang('ar')} className={`px-3 py-1 rounded-full text-[12px] font-medium transition-all ${lang === 'ar' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>AR</button>
+              <div className="h-px bg-foreground/[0.06] my-2" />
+
+              {/* Navigation */}
+              {[
+                { label: isRTL ? 'استكشاف الأدوات' : 'Explore Tools', icon: Sparkles, route: '/tools' },
+                { label: isRTL ? 'المعرض' : 'Gallery', icon: ImageIcon, route: '/gallery' },
+                { label: isRTL ? 'القوالب' : 'Templates', icon: LayoutGrid, route: '/templates' },
+                { label: isRTL ? 'المجتمع' : 'Community', icon: Users, route: '/community' },
+              ].map(item => (
+                <button
+                  key={item.route}
+                  onClick={() => { setDrawerOpen(false); navigate(item.route); }}
+                  className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] text-foreground hover:bg-foreground/[0.04] transition-colors"
+                >
+                  <item.icon size={18} className="text-muted-foreground" />
+                  {item.label}
+                </button>
+              ))}
+
+              <div className="h-px bg-foreground/[0.06] my-2" />
+
+              {/* Pricing */}
+              <button
+                onClick={() => { setDrawerOpen(false); navigate('/pricing'); }}
+                className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] text-foreground hover:bg-foreground/[0.04] transition-colors"
+              >
+                <CreditCard size={18} className="text-muted-foreground" />
+                {isRTL ? 'الأسعار' : 'Pricing'}
+              </button>
+
+              <div className="h-px bg-foreground/[0.06] my-2" />
+
+              {/* Settings row */}
+              <div className="flex items-center justify-between px-3 py-2">
+                <span className="text-[12px] text-muted-foreground">{isRTL ? 'اللغة' : 'Language'}</span>
+                <div className="flex items-center gap-1 p-0.5 rounded-full bg-foreground/[0.04]">
+                  <button onClick={() => setLang('en')} className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>EN</button>
+                  <button onClick={() => setLang('ar')} className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium transition-all ${lang === 'ar' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>AR</button>
+                </div>
+              </div>
+              <div className="flex items-center justify-between px-3 py-2">
+                <span className="text-[12px] text-muted-foreground">{isRTL ? 'الوضع' : 'Theme'}</span>
+                <button onClick={toggleMode} className="w-8 h-8 rounded-lg bg-foreground/[0.05] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                  {mode === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
+                </button>
               </div>
             </div>
 
-            {/* Theme */}
-            <div className="flex items-center justify-between px-3">
-              <span className="text-[13px] text-muted-foreground">{isRTL ? 'المظهر' : 'Theme'}</span>
+            {/* Bottom sticky CTA */}
+            <div className="px-5 pb-[max(1.25rem,env(safe-area-inset-bottom))] pt-3">
+              <p className="text-center text-[11px] text-muted-foreground mb-2">✨ {isRTL ? 'احصل على رصيد مجاني فوراً' : 'Get free credits instantly'}</p>
               <button
-                onClick={toggleMode}
-                className="w-9 h-9 rounded-lg bg-foreground/[0.05] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                onClick={() => { setDrawerOpen(false); openAuthModal('signup'); }}
+                className="w-full h-12 rounded-2xl bg-primary text-primary-foreground text-[15px] font-semibold shadow-lg shadow-primary/25 hover:shadow-xl hover:shadow-primary/30 transition-all duration-200 active:scale-[0.97]"
               >
-                {mode === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                {isRTL ? 'جرّب مجاناً' : 'Try Free'}
               </button>
             </div>
           </div>
