@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Footer } from '@/components/layout/Footer';
+
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useState } from 'react';
 import { Search } from 'lucide-react';
