@@ -14,13 +14,12 @@ function ratioToNumber(ratio: string): number {
 export function TemplatesView() {
   const { setPrompt, setSelectedTemplate, setActivePage } = useApp();
   const { t, isRTL } = useLanguage();
+  const navigate = useNavigate();
   const { templates, categories, categoryNames, loading } = useTemplates();
   const [activeCategory, setActiveCategory] = useState('All');
 
   const handleUse = (tpl: FrontendTemplate) => {
-    setPrompt(tpl.prompt);
-    setSelectedTemplate(tpl.name);
-    setActivePage('canvas');
+    navigate(`/templates/${tpl.id}`);
   };
 
   // Map displayed category name back to English name_en for DB filtering
