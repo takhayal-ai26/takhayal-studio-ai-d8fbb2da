@@ -1,3 +1,4 @@
+import { Navigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { InspirationFeed } from '@/components/layout/InspirationFeed';
 import { CreationPanel } from '@/components/layout/CreationPanel';
@@ -26,6 +27,10 @@ const Canvas = () => {
         );
     }
   };
+
+  if (activePage === 'gallery') {
+    return <Navigate to="/gallery" replace />;
+  }
 
   return (
     <>
