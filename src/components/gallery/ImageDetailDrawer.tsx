@@ -15,6 +15,9 @@ interface Props {
 export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse }: Props) {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
+  const { models } = useModels();
+
+  const modelName = job ? (models.find(m => m.id === job.model_id)?.model_name || (isAr ? 'افتراضي' : 'Default')) : '';
 
   if (!job) return null;
 
