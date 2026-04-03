@@ -41,8 +41,7 @@ const t_labels = {
   ar: {
     title: 'الإعدادات',
     profile: 'الملف الشخصي',
-    firstName: 'الاسم الأول',
-    lastName: 'اسم العائلة',
+    name: 'الاسم',
     email: 'البريد الإلكتروني',
     saveChanges: 'حفظ التغييرات',
     saving: 'جارٍ الحفظ…',
