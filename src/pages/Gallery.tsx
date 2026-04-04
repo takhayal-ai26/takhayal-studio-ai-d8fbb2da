@@ -261,6 +261,7 @@ export default function Gallery() {
   const { jobs, loading, retryJob } = useGenerationJobs();
   const { models } = useModels();
   const isMobile = useIsMobile();
+  const templateMap = useTemplateInfo(jobs);
   const isAr = lang === 'ar';
   const [selectedJob, setSelectedJob] = useState<GenerationJob | null>(null);
   const [shareJob, setShareJob] = useState<GenerationJob | null>(null);
