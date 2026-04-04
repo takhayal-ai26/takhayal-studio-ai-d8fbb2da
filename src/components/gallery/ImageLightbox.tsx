@@ -46,7 +46,7 @@ async function downloadImage(url: string, filename: string) {
 
 export function ImageLightbox({
   job, open, onClose, onRetry, onReuse, onShare, onDelete,
-  onPrev, onNext, hasPrev, hasNext
+  onPrev, onNext, hasPrev, hasNext, templateTitle
 }: Props) {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
