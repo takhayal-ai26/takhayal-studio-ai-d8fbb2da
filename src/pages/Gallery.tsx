@@ -482,6 +482,7 @@ export default function Gallery() {
                         isMobile={isMobile}
                         modelName={job.model_id ? (modelNames.get(job.model_id) || (isAr ? 'افتراضي' : 'Default')) : (isAr ? 'افتراضي' : 'Default')}
                         isHighlighted={highlightedJobId === job.id}
+                        templateTitle={getTemplateTitle(job, templateMap, isAr)}
                       />
                     </div>
                   ))}
