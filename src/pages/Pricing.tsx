@@ -596,7 +596,7 @@ const Pricing = () => {
       {/* FAQ */}
       <section className="max-w-2xl mx-auto px-6 pb-20">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-light text-foreground">{isAr ? 'أسئلة شائعة' : 'Common questions'}</h2>
+          <h2 className="typo-heading-section">{isAr ? 'أسئلة شائعة' : 'Common questions'}</h2>
         </div>
         <Accordion type="single" collapsible className="space-y-2">
           {faqs.map((faq: any, i: number) => (
