@@ -1,0 +1,1 @@
+CREATE POLICY "User delete own gen_logs" ON public.generation_logs FOR DELETE TO authenticated USING ((auth.uid())::text = user_id);
