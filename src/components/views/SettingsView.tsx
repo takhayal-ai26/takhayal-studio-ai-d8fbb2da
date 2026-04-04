@@ -187,7 +187,7 @@ export function SettingsView() {
   return (
     <div className="flex-1 p-4 md:p-8 overflow-y-auto pb-24 md:pb-8">
       <div className="max-w-xl mx-auto space-y-5">
-        <h1 className="text-xl font-semibold text-foreground">{l.title}</h1>
+        <h1 className="typo-heading-page">{l.title}</h1>
 
         {/* ── Profile ── */}
         <Section title={l.profile}>

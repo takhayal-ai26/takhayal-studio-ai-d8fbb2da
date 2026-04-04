@@ -20,7 +20,7 @@ export function CreditsView() {
 
   return (
     <div className="flex-1 p-4 md:p-6 overflow-y-auto pb-20 md:pb-6 max-w-4xl">
-      <h1 className="text-xl font-medium text-foreground mb-2">{isAr ? 'إضافة رصيد' : 'Top up credits'}</h1>
+      <h1 className="typo-heading-page mb-2">{isAr ? 'إضافة رصيد' : 'Top up credits'}</h1>
       <p className="text-sm text-muted-foreground mb-6">
         {isAr ? '1 رصيد = $0.016 · الأرصدة لا تنتهي صلاحيتها' : '1 credit = $0.016 · Credits never expire'}
       </p>
