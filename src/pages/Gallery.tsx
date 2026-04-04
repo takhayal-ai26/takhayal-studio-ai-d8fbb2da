@@ -366,7 +366,7 @@ export default function Gallery() {
     { key: 'all', label: g.all },
     { key: 'today', label: g.today },
     { key: 'yesterday', label: g.yesterday },
-    { key: 'generated', label: g.generated },
+    
   ];
 
   // ── Auth gate ──
