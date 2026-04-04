@@ -104,7 +104,6 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
     <Drawer open={open} onOpenChange={(v) => !v && onClose()}>
       <DrawerContent className="max-h-[92vh] outline-none">
         <div className="flex flex-col max-h-[90vh] overflow-y-auto" dir={isAr ? 'rtl' : 'ltr'}>
-          {/* Close button - positioned clearly above content */}
           <div className="flex justify-end p-3 pb-2">
             <DrawerClose asChild>
               <button className="w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
@@ -113,7 +112,6 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
             </DrawerClose>
           </div>
 
-          {/* Image area */}
           <div className="px-4 pb-3">
             {isProcessing ? (
               <div className="aspect-square rounded-xl bg-gradient-to-br from-primary/5 to-muted/10 flex flex-col items-center justify-center gap-3">
@@ -134,51 +132,60 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
             ) : null}
           </div>
 
-          {/* Actions bar */}
-          <div className="px-4 pb-3 flex gap-2">
-            {isCompleted && job.image_url && (
+          <div className="px-4 pb-3 space-y-2">
+            <div className="flex gap-2">
+              {isCompleted && job.image_url && (
+                <button
+                  onClick={handleDownload}
+                  disabled={downloading}
+                  className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50"
+                >
+                  {downloading ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
+                  {downloading ? (isAr ? 'جاري...' : '...') : (isAr ? 'تحميل' : 'Download')}
+                </button>
+              )}
+              {isCompleted && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onReuse(job.prompt || ''); onClose(); }}
+                  className="h-10 px-4 rounded-xl border border-border/40 text-foreground text-sm font-medium flex items-center justify-center gap-2 hover:bg-muted/40 transition-colors cursor-pointer"
+                >
+                  <RefreshCw size={15} />
+                  {isAr ? 'إعادة استخدام' : 'Reuse'}
+                </button>
+              )}
+              {isCompleted && (
+                <button
+                  onClick={handleShareClick}
+                  className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:brightness-110 transition-all cursor-pointer"
+                >
+                  <Share2 size={15} />
+                  {isAr ? 'مشاركة' : 'Share'}
+                </button>
+              )}
+              {isFailed && (
+                <button
+                  onClick={(e) => { e.stopPropagation(); onRetry(job.id); onClose(); }}
+                  className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:brightness-110 transition-all cursor-pointer"
+                >
+                  <RotateCcw size={15} />
+                  {isAr ? 'إعادة المحاولة' : 'Retry'}
+                </button>
+              )}
+            </div>
+
+            {isCompleted && onDelete && (
               <button
-                onClick={handleDownload}
-                disabled={downloading}
-                className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50"
+                onClick={(e) => { e.stopPropagation(); onDelete(job.id); }}
+                className="w-full h-10 rounded-xl border border-destructive/25 bg-destructive/10 text-destructive text-sm font-semibold flex items-center justify-center gap-2 hover:bg-destructive/15 transition-colors cursor-pointer"
               >
-                {downloading ? <Loader2 size={15} className="animate-spin" /> : <Download size={15} />}
-                {downloading ? (isAr ? 'جاري...' : '...') : (isAr ? 'تحميل' : 'Download')}
-              </button>
-            )}
-            {isCompleted && (
-              <button
-                onClick={(e) => { e.stopPropagation(); onReuse(job.prompt || ''); onClose(); }}
-                className="h-10 px-4 rounded-xl border border-border/40 text-foreground text-sm font-medium flex items-center justify-center gap-2 hover:bg-muted/40 transition-colors cursor-pointer"
-              >
-                <RefreshCw size={15} />
-                {isAr ? 'إعادة استخدام' : 'Reuse'}
-              </button>
-            )}
-            {isCompleted && (
-              <button
-                onClick={handleShareClick}
-                className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:brightness-110 transition-all cursor-pointer"
-              >
-                <Share2 size={15} />
-                {isAr ? 'مشاركة' : 'Share'}
-              </button>
-            )}
-            {isFailed && (
-              <button
-                onClick={(e) => { e.stopPropagation(); onRetry(job.id); onClose(); }}
-                className="flex-1 h-10 rounded-xl bg-primary text-primary-foreground text-sm font-medium flex items-center justify-center gap-2 hover:brightness-110 transition-all cursor-pointer"
-              >
-                <RotateCcw size={15} />
-                {isAr ? 'إعادة المحاولة' : 'Retry'}
+                <Trash2 size={15} />
+                {isAr ? 'حذف الصورة' : 'Delete Image'}
               </button>
             )}
           </div>
 
-          {/* Prompt / Template info */}
           <div className="px-4 pb-3 space-y-3">
             {templateTitle ? (
-              /* ── Template result ── */
               <div className="rounded-xl bg-muted/30 p-3">
                 <div className="flex items-center gap-1.5 mb-2">
                   <LayoutTemplate size={12} className="text-primary" />
@@ -189,7 +196,6 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
                 <p className="text-[14px] font-semibold text-foreground">{templateTitle}</p>
               </div>
             ) : (
-              /* ── Regular prompt ── */
               <>
                 {job.prompt && (
                   <div className="rounded-xl bg-muted/30 p-3">
@@ -213,7 +219,6 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
               </>
             )}
 
-            {/* Info grid - only for non-template */}
             {!templateTitle && (
               <div className="grid grid-cols-2 gap-2">
                 <MetaItem icon={<Calendar size={13} />} label={isAr ? 'التاريخ' : 'Date'} value={dateStr} />
@@ -223,26 +228,12 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
               </div>
             )}
 
-            {/* Date only for template */}
             {templateTitle && (
               <div className="grid grid-cols-1 gap-2">
                 <MetaItem icon={<Calendar size={13} />} label={isAr ? 'التاريخ' : 'Date'} value={dateStr} />
               </div>
             )}
           </div>
-
-          {/* Delete */}
-          {isCompleted && onDelete && (
-            <div className="px-4 pb-4">
-              <button
-                onClick={(e) => { e.stopPropagation(); onDelete(job.id); }}
-                className="w-full h-10 rounded-xl text-destructive text-sm font-medium flex items-center justify-center gap-2 hover:bg-destructive/5 transition-colors cursor-pointer"
-              >
-                <Trash2 size={15} />
-                {isAr ? 'حذف' : 'Delete'}
-              </button>
-            </div>
-          )}
         </div>
       </DrawerContent>
     </Drawer>
