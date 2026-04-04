@@ -212,10 +212,10 @@ export function CreationPanel() {
             value={prompt}
             onChange={e => setPrompt(e.target.value.slice(0, 500))}
             placeholder={t.studio.describeCreate}
-            className="w-full min-h-[120px] bg-foreground/[0.03] border border-border/20 rounded-xl p-3.5 text-[14px] text-foreground placeholder:text-muted-foreground/60 focus:border-primary/30 focus:bg-foreground/[0.04] focus:outline-none focus:ring-2 focus:ring-primary/10 resize-none leading-relaxed transition-all"
+            className="w-full min-h-[120px] bg-foreground/[0.03] border border-border/20 rounded-xl p-3.5 text-[15px] font-medium text-foreground placeholder:text-foreground/40 focus:border-primary/30 focus:bg-foreground/[0.04] focus:outline-none focus:ring-2 focus:ring-primary/10 resize-none leading-relaxed transition-all"
           />
           <div className="flex items-center justify-between mt-1.5 px-0.5">
-            <span className="text-[11px] text-muted-foreground tabular-nums">{prompt.length}/500</span>
+            <span className="text-[12px] font-medium text-foreground/50 tabular-nums">{prompt.length}/500</span>
             {prompt.length > 0 && (
               <span className="text-[11px] text-primary/70 flex items-center gap-1">
                 <Zap size={8} />{t.studio.ready}
@@ -309,11 +309,11 @@ export function CreationPanel() {
             }`}
           >
             <div className="flex items-center gap-2.5">
-              <span className="text-muted-foreground">{item.icon}</span>
-              <span className="text-[11px] text-muted-foreground uppercase tracking-[1px] font-semibold">{item.label}</span>
+              <span className="text-foreground/60">{item.icon}</span>
+              <span className="text-[12px] text-foreground/60 uppercase tracking-[0.5px] font-semibold">{item.label}</span>
             </div>
             <div className="flex items-center gap-2">
-              <span className="text-[13px] font-medium text-foreground">{item.value}</span>
+              <span className="text-[14px] font-semibold text-foreground">{item.value}</span>
               <ChevronRight size={13} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === item.key ? 'rotate-90' : ''}`} />
             </div>
           </button>
