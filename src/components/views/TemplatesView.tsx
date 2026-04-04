@@ -36,6 +36,7 @@ export function TemplatesView() {
       {/* Header */}
       <div className="px-6 md:px-10 pt-8 pb-6">
         <h1 className="text-3xl font-bold text-foreground tracking-tight">{t.templatesView.title}</h1>
+        <p className="text-sm text-muted-foreground mt-1.5">{t.templatesView.subtitle}</p>
       </div>
 
       {/* Category Pills */}
