@@ -48,9 +48,11 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
   modelName: string;
   isHighlighted: boolean;
 }) {
-  const isProcessing = job.status === 'queued' || job.status === 'generating' || job.status === 'processing';
+  // Treat "completed" with no image as still processing (prevents blank white cards)
+  const hasValidImage = !!job.image_url && job.image_url.length > 5;
+  const isProcessing = job.status === 'queued' || job.status === 'generating' || job.status === 'processing' || (job.status === 'completed' && !hasValidImage);
   const isQueued = job.status === 'queued';
-  const isFailed = job.status === 'failed';
+  const isFailed = job.status === 'failed' && !hasValidImage;
   const resolution = job.resolution || job.quality_tier || '1K';
   const startedTime = new Date(job.created_at).toLocaleTimeString(isAr ? 'ar' : 'en-US', {
     hour: '2-digit',
@@ -172,15 +174,13 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
     );
   }
 
-  // Completed
+  // Completed with valid image
   return (
     <button
       onClick={() => onTap(job)}
       className={`${shellClassName} group relative animate-in fade-in zoom-in-95 duration-300 hover:shadow-xl hover:shadow-black/10`}
     >
-      {job.image_url && (
-        <img src={job.image_url} alt={job.prompt || ''} className="w-full aspect-square object-cover" loading="lazy" />
-      )}
+      <img src={job.image_url!} alt={job.prompt || ''} className="w-full aspect-square object-cover" loading="lazy" />
       {/* Hover overlay - desktop shows all actions; mobile shows share icon */}
       <div className={`absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent ${isMobile ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-200 flex flex-col justify-between p-3`}>
         {/* Top-right actions */}

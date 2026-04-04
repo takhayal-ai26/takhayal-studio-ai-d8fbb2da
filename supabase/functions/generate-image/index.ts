@@ -343,7 +343,18 @@ serve(async (req) => {
     const profitUsd = revenueUsd - totalCost;
     const marginPct = revenueUsd > 0 ? (profitUsd / revenueUsd) * 100 : 0;
 
-    const imageResultUrl = resultData?.images?.[0]?.url || resultData?.image?.url || null;
+    // Robust image URL extraction — different providers return different shapes
+    const imageResultUrl = resultData?.images?.[0]?.url
+      || resultData?.image?.url
+      || resultData?.output?.url
+      || (typeof resultData?.output === 'string' ? resultData.output : null)
+      || (Array.isArray(resultData?.output) ? resultData.output[0]?.url || resultData.output[0] : null)
+      || null;
+
+    if (!imageResultUrl) {
+      console.log(`[generate-image] WARNING: No image URL found in provider response. Keys: ${Object.keys(resultData || {}).join(', ')}`);
+      console.log(`[generate-image] Response snippet: ${JSON.stringify(resultData).slice(0, 500)}`);
+    }
 
     // ===== UPDATE OR INSERT LOG =====
     if (supabase) {
@@ -372,7 +383,7 @@ serve(async (req) => {
           actual_output_width: finalWidth,
           actual_output_height: finalHeight,
           image_url: imageResultUrl,
-          status: "completed",
+          status: imageResultUrl ? "completed" : "failed",
         };
 
         if (job_id) {

@@ -84,9 +84,10 @@ export function ImageLightbox({
 
   if (!open || !job) return null;
 
-  const isProcessing = job.status === 'queued' || job.status === 'generating' || job.status === 'processing';
-  const isFailed = job.status === 'failed';
-  const isCompleted = job.status === 'completed';
+  const hasValidImage = !!job.image_url && job.image_url.length > 5;
+  const isProcessing = job.status === 'queued' || job.status === 'generating' || job.status === 'processing' || (job.status === 'completed' && !hasValidImage);
+  const isFailed = job.status === 'failed' && !hasValidImage;
+  const isCompleted = hasValidImage && (job.status === 'completed');
   const processingLabel = job.status === 'queued'
     ? (isAr ? 'في الانتظار...' : 'Queued...')
     : (isAr ? 'جاري التوليد...' : 'Generating...');
