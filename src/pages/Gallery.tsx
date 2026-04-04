@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Download, RefreshCw, Image as ImageIcon, ArrowRight, Loader2, AlertCircle, RotateCcw, Share2, Search, SortAsc, SortDesc, Trash2 } from 'lucide-react';
+import { Download, RefreshCw, Image as ImageIcon, ArrowRight, Loader2, AlertCircle, RotateCcw, Share2, Search, SortAsc, SortDesc, Trash2, LayoutTemplate } from 'lucide-react';
 import { useGenerationJobs, GenerationJob } from '@/hooks/useGenerationJobs';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
@@ -12,6 +12,7 @@ import { useModels } from '@/hooks/useModels';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTemplateInfo, isTemplateJob, getTemplateTitle } from '@/hooks/useTemplateInfo';
 
 type FilterKey = 'all' | 'today' | 'yesterday' | 'generated' | 'edited';
 type SortKey = 'newest' | 'oldest';
