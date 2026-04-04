@@ -48,9 +48,11 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
   modelName: string;
   isHighlighted: boolean;
 }) {
-  const isProcessing = job.status === 'queued' || job.status === 'generating' || job.status === 'processing';
+  // Treat "completed" with no image as still processing (prevents blank white cards)
+  const hasValidImage = !!job.image_url && job.image_url.length > 5;
+  const isProcessing = job.status === 'queued' || job.status === 'generating' || job.status === 'processing' || (job.status === 'completed' && !hasValidImage);
   const isQueued = job.status === 'queued';
-  const isFailed = job.status === 'failed';
+  const isFailed = job.status === 'failed' && !hasValidImage;
   const resolution = job.resolution || job.quality_tier || '1K';
   const startedTime = new Date(job.created_at).toLocaleTimeString(isAr ? 'ar' : 'en-US', {
     hour: '2-digit',
