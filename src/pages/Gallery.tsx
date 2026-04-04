@@ -513,7 +513,7 @@ export default function Gallery() {
           onRetry={retryJob}
           onReuse={handleReuse}
           onShare={setShareJob}
-          onDelete={handleDelete}
+          onDelete={handleDeleteRequest}
           templateTitle={selectedJob ? getTemplateTitle(selectedJob, templateMap, isAr) : null}
         />
       ) : (
