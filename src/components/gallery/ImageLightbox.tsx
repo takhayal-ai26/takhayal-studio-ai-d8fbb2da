@@ -168,13 +168,11 @@ export function ImageLightbox({
 
   return (
     <div className="fixed inset-0 z-[90]" role="dialog" aria-modal="true">
-      {/* Backdrop */}
       <div
         className="absolute inset-0 bg-background/90 backdrop-blur-2xl cursor-pointer"
         onClick={handleCloseClick}
       />
 
-      {/* Nav arrows - outside the pointer-events-none container */}
       {hasPrev && (
         <button
           onClick={handlePrevClick}
@@ -192,7 +190,6 @@ export function ImageLightbox({
         </button>
       )}
 
-      {/* Close button - positioned before the sidebar */}
       <button
         onClick={handleCloseClick}
         className={`absolute top-5 z-[95] w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-colors shadow-md cursor-pointer ${isAr ? 'left-[360px] xl:left-[400px]' : 'right-[360px] xl:right-[400px]'}`}
@@ -200,17 +197,15 @@ export function ImageLightbox({
         <X size={15} />
       </button>
 
-      {/* Main layout */}
       <div
         dir={isAr ? 'rtl' : 'ltr'}
         className="absolute inset-0 z-[92] flex items-stretch"
       >
-        {/* Left: Image area */}
         <div className="flex-1 flex items-center justify-center p-10 lg:p-16" onClick={handleCloseClick}>
           {isProcessing ? (
             <div className="flex flex-col items-center gap-4" onClick={e => e.stopPropagation()}>
               <Loader2 size={44} className="text-primary animate-spin" />
-                <span className="text-sm font-medium text-primary">{processingLabel}</span>
+              <span className="text-sm font-medium text-primary">{processingLabel}</span>
             </div>
           ) : isFailed ? (
             <div className="flex flex-col items-center gap-4" onClick={e => e.stopPropagation()}>
@@ -227,13 +222,11 @@ export function ImageLightbox({
           ) : null}
         </div>
 
-        {/* Right: Detail sidebar */}
         <div
           className="w-[340px] xl:w-[380px] flex-shrink-0 bg-card/60 backdrop-blur-xl border-s border-border/10 overflow-y-auto"
           onClick={e => e.stopPropagation()}
         >
           <div className="p-6 xl:p-7 space-y-6 pt-16">
-            {/* Actions row */}
             <div className="space-y-2.5">
               {isCompleted && job.image_url && (
                 <button
@@ -265,6 +258,15 @@ export function ImageLightbox({
                   </button>
                 )}
               </div>
+              {isCompleted && onDelete && (
+                <button
+                  onClick={handleDeleteClick}
+                  className="w-full h-10 rounded-xl border border-destructive/25 bg-destructive/10 text-destructive text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-destructive/15 active:scale-[0.98] transition-all cursor-pointer"
+                >
+                  <Trash2 size={14} />
+                  {isAr ? 'حذف الصورة' : 'Delete Image'}
+                </button>
+              )}
               {isFailed && (
                 <button
                   onClick={handleRetryClick}
@@ -276,11 +278,9 @@ export function ImageLightbox({
               )}
             </div>
 
-            {/* Divider */}
             <div className="h-px bg-border/10" />
 
             {templateTitle ? (
-              /* ── Template-specific detail ── */
               <div>
                 <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.15em] mb-3 block">
                   {isAr ? 'القالب' : 'Template'}
@@ -296,7 +296,6 @@ export function ImageLightbox({
                 </div>
               </div>
             ) : (
-              /* ── Regular prompt detail ── */
               <>
                 {job.prompt && (
                   <div>
@@ -329,20 +328,6 @@ export function ImageLightbox({
                     <MetaRow icon={<Sparkles size={14} />} label={isAr ? 'الجودة' : 'Quality'} value={job.quality_tier || '1K'} />
                   </div>
                 </div>
-              </>
-            )}
-
-            {/* Delete */}
-            {isCompleted && onDelete && (
-              <>
-                <div className="h-px bg-border/10" />
-                <button
-                  onClick={handleDeleteClick}
-                  className="flex items-center gap-1.5 text-[11px] font-medium text-muted-foreground/30 hover:text-destructive transition-colors cursor-pointer"
-                >
-                  <Trash2 size={12} />
-                  {isAr ? 'حذف' : 'Delete'}
-                </button>
               </>
             )}
           </div>
