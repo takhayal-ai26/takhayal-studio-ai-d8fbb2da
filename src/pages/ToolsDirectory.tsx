@@ -20,7 +20,7 @@ export default function ToolsDirectory() {
       <section className="max-w-6xl mx-auto px-5 md:px-8 pt-10 pb-8">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground leading-tight tracking-tight">
+            <h1 className="typo-heading-page">
               {t.toolsDir.findNewWays}
             </h1>
           </div>

@@ -121,7 +121,7 @@ export default function Contact() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
           {/* Left: Copy */}
           <div className="space-y-6 lg:sticky lg:top-32">
-            <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">
+            <h1 className="typo-heading-page">
               {t.title}
             </h1>
             <p className="text-[15px] md:text-[16px] text-muted-foreground leading-relaxed max-w-md">

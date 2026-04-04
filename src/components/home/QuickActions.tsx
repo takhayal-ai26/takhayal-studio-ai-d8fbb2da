@@ -16,7 +16,7 @@ export function QuickActions() {
 
   return (
     <section className="my-8" dir={isRTL ? 'rtl' : 'ltr'}>
-      <h2 className="text-lg font-semibold text-foreground mb-4">
+      <h2 className="typo-heading-section mb-4">
         {isAr ? 'إجراءات سريعة' : 'Quick Actions'}
       </h2>
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
