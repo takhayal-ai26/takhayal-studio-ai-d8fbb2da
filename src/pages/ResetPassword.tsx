@@ -54,7 +54,7 @@ export default function ResetPassword() {
             Takhayal<span className="text-primary">.ai</span>
           </span>
         </div>
-        <h2 className="text-[22px] font-extralight text-foreground mb-6">Set new password</h2>
+        <h2 className="typo-heading-section mb-6">Set new password</h2>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label className="text-[12px] font-medium text-foreground/80 block mb-1.5">New password</label>
