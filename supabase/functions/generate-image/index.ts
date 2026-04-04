@@ -383,7 +383,7 @@ serve(async (req) => {
           actual_output_width: finalWidth,
           actual_output_height: finalHeight,
           image_url: imageResultUrl,
-          status: "completed",
+          status: imageResultUrl ? "completed" : "failed",
         };
 
         if (job_id) {
