@@ -440,20 +440,21 @@ export default function Gallery() {
                   {isAr ? group.labelAr : group.label}
                 </h2>
                 {/* Mobile: 2 cols masonry, Desktop: 4-6 col grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-3 [column-fill:_balance]">
                   {group.items.map(job => (
-                    <GalleryCard
-                      key={job.id}
-                      job={job}
-                      isAr={isAr}
-                      onRetry={retryJob}
-                      onReuse={handleReuse}
-                      onTap={handleTap}
-                      onShare={setShareJob}
-                      isMobile={isMobile}
-                      modelName={job.model_id ? (modelNames.get(job.model_id) || (isAr ? 'افتراضي' : 'Default')) : (isAr ? 'افتراضي' : 'Default')}
-                      isHighlighted={highlightedJobId === job.id}
-                    />
+                    <div key={job.id} className="mb-3 break-inside-avoid">
+                      <GalleryCard
+                        job={job}
+                        isAr={isAr}
+                        onRetry={retryJob}
+                        onReuse={handleReuse}
+                        onTap={handleTap}
+                        onShare={setShareJob}
+                        isMobile={isMobile}
+                        modelName={job.model_id ? (modelNames.get(job.model_id) || (isAr ? 'افتراضي' : 'Default')) : (isAr ? 'افتراضي' : 'Default')}
+                        isHighlighted={highlightedJobId === job.id}
+                      />
+                    </div>
                   ))}
                 </div>
               </div>
