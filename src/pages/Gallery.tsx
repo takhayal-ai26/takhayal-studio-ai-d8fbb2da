@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTemplateInfo, isTemplateJob, getTemplateTitle } from '@/hooks/useTemplateInfo';
+import { DeleteConfirmDialog } from '@/components/gallery/DeleteConfirmDialog';
 
 type FilterKey = 'all' | 'today' | 'yesterday' | 'generated' | 'edited';
 type SortKey = 'newest' | 'oldest';
@@ -337,13 +338,23 @@ export default function Gallery() {
     if (selectedIndex < filteredJobs.length - 1) setSelectedJob(filteredJobs[selectedIndex + 1]);
   }, [selectedIndex, filteredJobs]);
 
-  const handleDelete = useCallback(async (jobId: string) => {
-    const confirmed = window.confirm(isAr ? 'هل أنت متأكد من الحذف؟' : 'Delete this image?');
-    if (!confirmed) return;
-    await supabase.from('generation_logs').delete().eq('id', jobId);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+
+  const handleDeleteRequest = useCallback((jobId: string) => {
+    setDeleteTargetId(jobId);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!deleteTargetId) return;
+    await supabase.from('generation_logs').delete().eq('id', deleteTargetId);
     toast.success(isAr ? 'تم الحذف' : 'Deleted');
     setSelectedJob(null);
-  }, [isAr]);
+    setDeleteTargetId(null);
+  }, [deleteTargetId, isAr]);
+
+  const handleDeleteCancel = useCallback(() => {
+    setDeleteTargetId(null);
+  }, []);
 
   const filters: { key: FilterKey; label: string }[] = [
     { key: 'all', label: g.all },
@@ -502,7 +513,7 @@ export default function Gallery() {
           onRetry={retryJob}
           onReuse={handleReuse}
           onShare={setShareJob}
-          onDelete={handleDelete}
+          onDelete={handleDeleteRequest}
           templateTitle={selectedJob ? getTemplateTitle(selectedJob, templateMap, isAr) : null}
         />
       ) : (
@@ -513,7 +524,7 @@ export default function Gallery() {
           onRetry={retryJob}
           onReuse={handleReuse}
           onShare={setShareJob}
-          onDelete={handleDelete}
+          onDelete={handleDeleteRequest}
           onPrev={handlePrev}
           onNext={handleNext}
           hasPrev={selectedIndex > 0}
@@ -526,6 +537,12 @@ export default function Gallery() {
         job={shareJob}
         open={!!shareJob}
         onClose={() => setShareJob(null)}
+      />
+
+      <DeleteConfirmDialog
+        open={!!deleteTargetId}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
       />
     </>
   );

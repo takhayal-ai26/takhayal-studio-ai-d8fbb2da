@@ -19,20 +19,31 @@ interface Props {
 
 async function downloadImage(url: string, filename: string) {
   try {
-    const resp = await fetch(url);
+    const resp = await fetch(url, { mode: 'cors' });
+    if (!resp.ok) throw new Error('fetch failed');
     const blob = await resp.blob();
     const blobUrl = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = blobUrl;
     a.download = filename;
+    a.style.display = 'none';
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => {
+      document.body.removeChild(a);
+      URL.revokeObjectURL(blobUrl);
+    }, 200);
+    toast.success('Download started');
+  } catch {
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.target = '_blank';
+    a.rel = 'noopener';
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(blobUrl);
-    toast.success('Download started');
-  } catch {
-    window.open(url, '_blank');
-    toast.info('Image opened in new tab');
+    toast.info('Download started');
   }
 }
 
@@ -93,8 +104,8 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
     <Drawer open={open} onOpenChange={(v) => !v && onClose()}>
       <DrawerContent className="max-h-[92vh] outline-none">
         <div className="flex flex-col max-h-[90vh] overflow-y-auto" dir={isAr ? 'rtl' : 'ltr'}>
-          {/* Close button */}
-          <div className="flex justify-end p-3 pb-0">
+          {/* Close button - positioned clearly above content */}
+          <div className="flex justify-end p-3 pb-2">
             <DrawerClose asChild>
               <button className="w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <X size={16} />
