@@ -288,7 +288,7 @@ export default function ToolPage() {
                     <Icon size={18} className="text-primary" />
                   </div>
                   <div>
-                    <h1 className="text-lg font-semibold text-foreground">{tool.name}</h1>
+                    <h1 className="typo-heading-card">{tool.name}</h1>
                     <p className="text-[12px] text-muted-foreground mt-0.5">{tool.shortDesc || tool.description}</p>
                   </div>
                 </div>

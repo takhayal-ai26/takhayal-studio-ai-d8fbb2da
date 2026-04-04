@@ -330,7 +330,7 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
   return (
     <section className="mx-auto max-w-5xl px-4 pb-16 sm:px-6">
       <div className="mb-8 text-center">
-        <h2 className="text-2xl font-semibold text-foreground">{isAr ? 'ماذا يقول مستخدمونا' : 'What our users say'}</h2>
+        <h2 className="typo-heading-section">{isAr ? 'ماذا يقول مستخدمونا' : 'What our users say'}</h2>
         <p className="mt-2 text-sm text-muted-foreground">{isAr ? 'مبدعون حقيقيون، نتائج حقيقية' : 'Real creators, real results'}</p>
       </div>
 
@@ -455,7 +455,7 @@ const Pricing = () => {
 
       {/* Hero */}
       <section className="pt-20 pb-10 px-6 text-center">
-        <h1 className="text-[42px] md:text-[52px] font-extralight text-foreground leading-tight">
+        <h1 className="typo-display-hero">
           {isAr ? 'أسعار بسيطة وشفافة' : 'Simple, transparent pricing'}
         </h1>
         <p className="text-[16px] text-muted-foreground mt-4 max-w-md mx-auto font-light">
@@ -496,7 +496,7 @@ const Pricing = () => {
       {/* Credit Cost Per Tool */}
       <section className="max-w-5xl mx-auto px-6 pb-20">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-light text-foreground">{isAr ? 'تكلفة الرصيد لكل أداة' : 'Credit cost per tool'}</h2>
+          <h2 className="typo-heading-section">{isAr ? 'تكلفة الرصيد لكل أداة' : 'Credit cost per tool'}</h2>
           <p className="text-sm text-muted-foreground mt-2">{isAr ? 'شاهد إلى أي مدى تصل أرصدتك' : 'See exactly how far your credits go'}</p>
         </div>
 

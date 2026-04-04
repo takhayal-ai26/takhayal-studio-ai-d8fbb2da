@@ -40,7 +40,7 @@ export function WhyTakhayal() {
     <section className="my-16 md:my-24 relative" dir={isRTL ? 'rtl' : 'ltr'}>
       {/* Header */}
       <div className="text-center mb-12 md:mb-16">
-        <h2 className="text-2xl md:text-4xl font-bold text-foreground tracking-tight">
+        <h2 className="typo-heading-section">
           {isAr ? 'لماذا ' : 'Why '}
           <span className="text-primary">{isAr ? 'تخيّل' : 'Takhayal'}</span>
           {isAr ? '؟' : '?'}
