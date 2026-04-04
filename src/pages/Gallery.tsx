@@ -58,10 +58,20 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
     hour: '2-digit',
     minute: '2-digit',
   });
-  const shellClassName = `rounded-2xl overflow-hidden bg-card/60 border w-full text-start cursor-pointer active:scale-[0.98] transition-all ${
+  // Compute CSS aspect-ratio from the stored ratio string (e.g. "9:16" → "9/16")
+  const cssRatio = (() => {
+    const r = job.ratio || '1:1';
+    const map: Record<string, string> = {
+      '1:1': '1/1', '16:9': '16/9', '9:16': '9/16', '4:5': '4/5',
+      '4:3': '4/3', '3:2': '3/2', '3:4': '3/4', '2:3': '2/3', '5:4': '5/4',
+    };
+    return map[r] || '1/1';
+  })();
+
+  const shellClassName = `rounded-2xl overflow-hidden bg-card/60 w-full text-start cursor-pointer active:scale-[0.98] transition-all ${
     isHighlighted
-      ? 'border-primary/40 ring-2 ring-primary/35 shadow-lg shadow-primary/10'
-      : 'border-border/20 hover:border-border/40'
+      ? 'ring-2 ring-primary/35 shadow-lg shadow-primary/10'
+      : 'hover:shadow-lg hover:shadow-black/8'
   }`;
 
   const handleDownload = async (e: React.MouseEvent) => {
@@ -100,7 +110,7 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
         onClick={() => onTap(job)}
         className={shellClassName}
       >
-        <div className="aspect-square relative overflow-hidden bg-gradient-to-br from-primary/10 via-muted/20 to-background">
+        <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-muted/20 to-background" style={{ aspectRatio: cssRatio }}>
           <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.14),transparent_60%)]" />
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-background/80 text-primary shadow-sm">
@@ -147,7 +157,7 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
         onClick={() => onTap(job)}
         className={shellClassName}
       >
-        <div className="aspect-square flex flex-col items-center justify-center gap-3 p-4 text-center">
+        <div className="flex flex-col items-center justify-center gap-3 p-4 text-center" style={{ aspectRatio: cssRatio }}>
           <AlertCircle size={28} className="text-destructive/60" />
           <span className="text-xs font-medium text-destructive">
             {isAr ? 'فشل التوليد' : 'Failed'}
@@ -180,7 +190,7 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
       onClick={() => onTap(job)}
       className={`${shellClassName} group relative animate-in fade-in zoom-in-95 duration-300 hover:shadow-xl hover:shadow-black/10`}
     >
-      <img src={job.image_url!} alt={job.prompt || ''} className="w-full aspect-square object-cover" loading="lazy" />
+      <img src={job.image_url!} alt={job.prompt || ''} className="w-full block" style={{ aspectRatio: cssRatio }} loading="lazy" />
       {/* Hover overlay - desktop shows all actions; mobile shows share icon */}
       <div className={`absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent ${isMobile ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-200 flex flex-col justify-between p-3`}>
         {/* Top-right actions */}
@@ -430,20 +440,21 @@ export default function Gallery() {
                   {isAr ? group.labelAr : group.label}
                 </h2>
                 {/* Mobile: 2 cols masonry, Desktop: 4-6 col grid */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 xl:columns-6 gap-3 [column-fill:_balance]">
                   {group.items.map(job => (
-                    <GalleryCard
-                      key={job.id}
-                      job={job}
-                      isAr={isAr}
-                      onRetry={retryJob}
-                      onReuse={handleReuse}
-                      onTap={handleTap}
-                      onShare={setShareJob}
-                      isMobile={isMobile}
-                      modelName={job.model_id ? (modelNames.get(job.model_id) || (isAr ? 'افتراضي' : 'Default')) : (isAr ? 'افتراضي' : 'Default')}
-                      isHighlighted={highlightedJobId === job.id}
-                    />
+                    <div key={job.id} className="mb-3 break-inside-avoid">
+                      <GalleryCard
+                        job={job}
+                        isAr={isAr}
+                        onRetry={retryJob}
+                        onReuse={handleReuse}
+                        onTap={handleTap}
+                        onShare={setShareJob}
+                        isMobile={isMobile}
+                        modelName={job.model_id ? (modelNames.get(job.model_id) || (isAr ? 'افتراضي' : 'Default')) : (isAr ? 'افتراضي' : 'Default')}
+                        isHighlighted={highlightedJobId === job.id}
+                      />
+                    </div>
                   ))}
                 </div>
               </div>
