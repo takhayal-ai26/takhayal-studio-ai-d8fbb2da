@@ -188,7 +188,7 @@ export function CreationPanel() {
               <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Wand2 size={12} className="text-primary" />
               </div>
-              <label className="text-[13px] font-semibold text-foreground">{t.studio.prompt}</label>
+              <label className="typo-label-strong text-[14px]">{t.studio.prompt}</label>
             </div>
             <div className="flex items-center gap-1.5">
               {prompt.length > 0 && (
