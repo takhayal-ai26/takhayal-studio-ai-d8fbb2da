@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Download, RefreshCw, Image as ImageIcon, ArrowRight, Loader2, AlertCircle, RotateCcw, Share2, Search, SortAsc, SortDesc, Trash2 } from 'lucide-react';
+import { Download, RefreshCw, Image as ImageIcon, ArrowRight, Loader2, AlertCircle, RotateCcw, Share2, Search, SortAsc, SortDesc, Trash2, LayoutTemplate } from 'lucide-react';
 import { useGenerationJobs, GenerationJob } from '@/hooks/useGenerationJobs';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
@@ -12,6 +12,7 @@ import { useModels } from '@/hooks/useModels';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { useTemplateInfo, isTemplateJob, getTemplateTitle } from '@/hooks/useTemplateInfo';
 
 type FilterKey = 'all' | 'today' | 'yesterday' | 'generated' | 'edited';
 type SortKey = 'newest' | 'oldest';
@@ -37,7 +38,7 @@ function groupByDate(jobs: GenerationJob[]): { label: string; labelAr: string; k
   return groups.filter(g => g.items.length > 0);
 }
 
-function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, modelName, isHighlighted }: {
+function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, modelName, isHighlighted, templateTitle }: {
   job: GenerationJob;
   isAr: boolean;
   onRetry: (id: string) => void;
@@ -47,6 +48,7 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
   isMobile: boolean;
   modelName: string;
   isHighlighted: boolean;
+  templateTitle: string | null;
 }) {
   // Treat "completed" with no image as still processing (prevents blank white cards)
   const hasValidImage = !!job.image_url && job.image_url.length > 5;
@@ -127,25 +129,34 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
           </div>
         </div>
         <div className="p-3 space-y-2.5">
-          <p className="text-[12px] font-medium text-foreground line-clamp-2">{job.prompt}</p>
-          <div className="grid grid-cols-2 gap-2 text-[11px]">
-            <div className="rounded-xl bg-muted/35 px-2.5 py-2">
-              <span className="text-muted-foreground/70">{isAr ? 'النموذج' : 'Model'}</span>
-              <span className="mt-0.5 block text-foreground/85 line-clamp-1">{modelName}</span>
+          <p className="text-[12px] font-medium text-foreground line-clamp-2">
+            {templateTitle || job.prompt}
+          </p>
+          {templateTitle ? (
+            <div className="flex items-center gap-1.5 text-[11px] text-primary/70">
+              <LayoutTemplate size={11} />
+              <span>{isAr ? 'من قالب' : 'From Template'}</span>
             </div>
-            <div className="rounded-xl bg-muted/35 px-2.5 py-2">
-              <span className="text-muted-foreground/70">{isAr ? 'الدقة' : 'Resolution'}</span>
-              <span className="mt-0.5 block text-foreground/85">{resolution}</span>
+          ) : (
+            <div className="grid grid-cols-2 gap-2 text-[11px]">
+              <div className="rounded-xl bg-muted/35 px-2.5 py-2">
+                <span className="text-muted-foreground/70">{isAr ? 'النموذج' : 'Model'}</span>
+                <span className="mt-0.5 block text-foreground/85 line-clamp-1">{modelName}</span>
+              </div>
+              <div className="rounded-xl bg-muted/35 px-2.5 py-2">
+                <span className="text-muted-foreground/70">{isAr ? 'الدقة' : 'Resolution'}</span>
+                <span className="mt-0.5 block text-foreground/85">{resolution}</span>
+              </div>
+              <div className="rounded-xl bg-muted/35 px-2.5 py-2">
+                <span className="text-muted-foreground/70">{isAr ? 'النسبة' : 'Ratio'}</span>
+                <span className="mt-0.5 block text-foreground/85">{job.ratio || '1:1'}</span>
+              </div>
+              <div className="rounded-xl bg-muted/35 px-2.5 py-2">
+                <span className="text-muted-foreground/70">{isAr ? 'بدأ في' : 'Started'}</span>
+                <span className="mt-0.5 block text-foreground/85">{startedTime}</span>
+              </div>
             </div>
-            <div className="rounded-xl bg-muted/35 px-2.5 py-2">
-              <span className="text-muted-foreground/70">{isAr ? 'النسبة' : 'Ratio'}</span>
-              <span className="mt-0.5 block text-foreground/85">{job.ratio || '1:1'}</span>
-            </div>
-            <div className="rounded-xl bg-muted/35 px-2.5 py-2">
-              <span className="text-muted-foreground/70">{isAr ? 'بدأ في' : 'Started'}</span>
-              <span className="mt-0.5 block text-foreground/85">{startedTime}</span>
-            </div>
-          </div>
+          )}
         </div>
       </button>
     );
@@ -174,11 +185,20 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
           </span>
         </div>
         <div className="p-3 space-y-2">
-          <p className="text-[12px] font-medium text-foreground line-clamp-2">{job.prompt}</p>
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>{modelName}</span>
-            <span>{resolution}</span>
-          </div>
+          <p className="text-[12px] font-medium text-foreground line-clamp-2">
+            {templateTitle || job.prompt}
+          </p>
+          {templateTitle ? (
+            <div className="flex items-center gap-1.5 text-[11px] text-primary/70">
+              <LayoutTemplate size={11} />
+              <span>{isAr ? 'من قالب' : 'From Template'}</span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <span>{modelName}</span>
+              <span>{resolution}</span>
+            </div>
+          )}
         </div>
       </button>
     );
@@ -204,8 +224,16 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
         </div>
         {/* Bottom info */}
         <div>
-          <p className="text-[12px] text-white/90 line-clamp-2 mb-1.5">{job.prompt}</p>
-          <span className="text-[11px] text-white/40">
+          <p className="text-[12px] text-white/90 line-clamp-2 mb-1.5">
+            {templateTitle || job.prompt}
+          </p>
+          {templateTitle && (
+            <span className="inline-flex items-center gap-1 text-[10px] text-white/50 mb-1">
+              <LayoutTemplate size={10} />
+              {isAr ? 'من قالب' : 'Template'}
+            </span>
+          )}
+          <span className="text-[11px] text-white/40 block">
             {new Date(job.created_at).toLocaleDateString(isAr ? 'ar' : 'en-US', { month: 'short', day: 'numeric' })}
           </span>
         </div>
@@ -233,6 +261,7 @@ export default function Gallery() {
   const { jobs, loading, retryJob } = useGenerationJobs();
   const { models } = useModels();
   const isMobile = useIsMobile();
+  const templateMap = useTemplateInfo(jobs);
   const isAr = lang === 'ar';
   const [selectedJob, setSelectedJob] = useState<GenerationJob | null>(null);
   const [shareJob, setShareJob] = useState<GenerationJob | null>(null);
@@ -453,6 +482,7 @@ export default function Gallery() {
                         isMobile={isMobile}
                         modelName={job.model_id ? (modelNames.get(job.model_id) || (isAr ? 'افتراضي' : 'Default')) : (isAr ? 'افتراضي' : 'Default')}
                         isHighlighted={highlightedJobId === job.id}
+                        templateTitle={getTemplateTitle(job, templateMap, isAr)}
                       />
                     </div>
                   ))}
@@ -473,6 +503,7 @@ export default function Gallery() {
           onReuse={handleReuse}
           onShare={setShareJob}
           onDelete={handleDelete}
+          templateTitle={selectedJob ? getTemplateTitle(selectedJob, templateMap, isAr) : null}
         />
       ) : (
         <ImageLightbox
@@ -487,6 +518,7 @@ export default function Gallery() {
           onNext={handleNext}
           hasPrev={selectedIndex > 0}
           hasNext={selectedIndex < filteredJobs.length - 1}
+          templateTitle={selectedJob ? getTemplateTitle(selectedJob, templateMap, isAr) : null}
         />
       )}
 
