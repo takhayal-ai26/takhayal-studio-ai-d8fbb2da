@@ -46,9 +46,12 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
 
   if (!job) return null;
 
-  const isProcessing = job.status === 'processing';
+  const isProcessing = job.status === 'queued' || job.status === 'generating' || job.status === 'processing';
   const isFailed = job.status === 'failed';
   const isCompleted = job.status === 'completed';
+  const processingLabel = job.status === 'queued'
+    ? (isAr ? 'في الانتظار...' : 'Queued...')
+    : (isAr ? 'جاري التوليد...' : 'Generating...');
 
   const handleDownload = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -102,7 +105,7 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
             {isProcessing ? (
               <div className="aspect-square rounded-xl bg-gradient-to-br from-primary/5 to-muted/10 flex flex-col items-center justify-center gap-3">
                 <Loader2 size={36} className="text-primary animate-spin" />
-                <span className="text-sm font-medium text-primary">{isAr ? 'جاري التوليد...' : 'Generating...'}</span>
+                <span className="text-sm font-medium text-primary">{processingLabel}</span>
               </div>
             ) : isFailed ? (
               <div className="aspect-square rounded-xl bg-muted/20 flex flex-col items-center justify-center gap-3">

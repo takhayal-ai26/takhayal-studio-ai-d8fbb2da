@@ -6,6 +6,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useModels } from '@/hooks/useModels';
 import { usePricing } from '@/hooks/usePricing';
 import { usePricingTiers } from '@/hooks/usePricingTiers';
+import { useGenerationJobs } from '@/hooks/useGenerationJobs';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 
@@ -61,15 +62,17 @@ type DropdownType = 'ratio' | 'quality' | 'model' | null;
 
 export function DashboardHero() {
   const navigate = useNavigate();
-  const { prompt, setPrompt, setAspectRatio, aspectRatio, setSelectedQualityTier, generate, isGenerating, credits, setActivePage, setSelectedModelId: setGlobalModelId, requireAuth } = useApp();
+  const { prompt, setPrompt, setAspectRatio, aspectRatio, credits, requireAuth } = useApp();
   const { isRTL, lang } = useLanguage();
   const { activeModels, defaultModel } = useModels();
   const { getCreditsForModel } = usePricing();
   const { getCreditsForModelQuality } = usePricingTiers();
+  const { submitJob } = useGenerationJobs();
 
   const [expanded, setExpanded] = useState(false);
   const [localModelId, setLocalModelId] = useState('');
   const [localResolution, setLocalResolution] = useState('1K');
+  const [localGenerating, setLocalGenerating] = useState(false);
   const [openDrop, setOpenDrop] = useState<DropdownType>(null);
   const [initialHeroConfig] = useState<Record<string, string>>(() => readCachedHeroConfig());
   const containerRef = useRef<HTMLDivElement>(null);
@@ -169,17 +172,30 @@ export function DashboardHero() {
   }, [expanded, hasText, openDrop]);
 
   const handleGenerate = () => {
-    if (!prompt.trim() || !currentModel) return;
-    requireAuth(() => {
-      setGlobalModelId(currentModel.id);
-      setSelectedQualityTier(localResolution);
-      setActivePage('canvas');
-      generate({ modelId: currentModel.id, qualityTier: localResolution, creditCost: cost });
-      navigate('/generate/result');
+    if (!prompt.trim() || !currentModel || localGenerating) return;
+
+    requireAuth(async () => {
+      setLocalGenerating(true);
+
+      const jobId = await submitJob({
+        prompt: prompt.trim(),
+        ratio: aspectRatio,
+        qualityTier: localResolution,
+        modelId: currentModel.id,
+        creditCost: cost,
+        sourceTag: 'home_hero',
+      });
+
+      if (!jobId) {
+        setLocalGenerating(false);
+        return;
+      }
+
+      navigate(`/gallery?highlight=${jobId}`);
     });
   };
 
-  const canGenerate = hasText && !isGenerating && credits >= cost && !!currentModel;
+  const canGenerate = hasText && !localGenerating && credits >= cost && !!currentModel;
   const modelDisplayName = currentModel?.model_name || 'Auto';
 
   const pillBase = 'flex items-center gap-1.5 px-3 h-8 rounded-full text-[12px] font-medium transition-all duration-150 whitespace-nowrap cursor-pointer';
@@ -424,7 +440,7 @@ export function DashboardHero() {
                     marginTop: 2,
                   }}
                 >
-                  {isGenerating ? (
+                  {localGenerating ? (
                     <span className="flex items-center gap-2">
                       <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                       {isAr ? 'جاري التوليد...' : 'Generating...'}
