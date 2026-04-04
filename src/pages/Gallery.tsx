@@ -224,8 +224,16 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
         </div>
         {/* Bottom info */}
         <div>
-          <p className="text-[12px] text-white/90 line-clamp-2 mb-1.5">{job.prompt}</p>
-          <span className="text-[11px] text-white/40">
+          <p className="text-[12px] text-white/90 line-clamp-2 mb-1.5">
+            {templateTitle || job.prompt}
+          </p>
+          {templateTitle && (
+            <span className="inline-flex items-center gap-1 text-[10px] text-white/50 mb-1">
+              <LayoutTemplate size={10} />
+              {isAr ? 'من قالب' : 'Template'}
+            </span>
+          )}
+          <span className="text-[11px] text-white/40 block">
             {new Date(job.created_at).toLocaleDateString(isAr ? 'ar' : 'en-US', { month: 'short', day: 'numeric' })}
           </span>
         </div>
