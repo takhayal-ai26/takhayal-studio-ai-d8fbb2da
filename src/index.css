@@ -16,38 +16,38 @@
   /* ── Dark Mode (default) ── */
   :root,
   [data-theme="dark"] {
-    --background: 0 0% 4%;
-    --foreground: 0 0% 93%;
-    --card: 0 0% 8%;
-    --card-foreground: 0 0% 93%;
-    --popover: 0 0% 8%;
-    --popover-foreground: 0 0% 93%;
-    --secondary: 0 0% 11%;
-    --secondary-foreground: 0 0% 93%;
-    --muted: 0 0% 14%;
-    --muted-foreground: 0 0% 45%;
-    --accent: 0 0% 11%;
-    --accent-foreground: 0 0% 93%;
-    --border: 0 0% 100% / 0;
+    --background: 0 0% 12%;
+    --foreground: 0 0% 100%;
+    --card: 0 0% 18%;
+    --card-foreground: 0 0% 100%;
+    --popover: 0 0% 15%;
+    --popover-foreground: 0 0% 100%;
+    --secondary: 0 0% 15%;
+    --secondary-foreground: 0 0% 100%;
+    --muted: 0 0% 18%;
+    --muted-foreground: 0 0% 70%;
+    --accent: 0 0% 15%;
+    --accent-foreground: 0 0% 100%;
+    --border: 0 0% 100% / 0.08;
     --input: 0 0% 100% / 0.08;
     --input-focus: 10 88% 52% / 0.4;
-    --surface: 0 0% 11%;
-    --surface-border: 0 0% 100% / 0.06;
-    --card-border: 0 0% 100% / 0.05;
-    --text-secondary: 0 0% 45%;
-    --text-tertiary: 0 0% 32%;
-    --text-disabled: 0 0% 60%;
-    --sidebar-background: 0 0% 4%;
-    --sidebar-foreground: 0 0% 45%;
+    --surface: 0 0% 15%;
+    --surface-border: 0 0% 100% / 0.08;
+    --card-border: 0 0% 100% / 0.08;
+    --text-secondary: 0 0% 70%;
+    --text-tertiary: 0 0% 50%;
+    --text-disabled: 0 0% 53%;
+    --sidebar-background: 0 0% 15%;
+    --sidebar-foreground: 0 0% 70%;
     --sidebar-primary: 10 88% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 0 0% 11%;
-    --sidebar-accent-foreground: 0 0% 93%;
-    --sidebar-border: 0 0% 100% / 0.06;
+    --sidebar-accent: 0 0% 18%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 0 0% 100% / 0.08;
     --sidebar-ring: 10 88% 52%;
-    --shadow-color: 0 0% 0% / 0.4;
-    --dropdown-bg: rgba(18, 18, 18, 0.95);
-    --dropdown-divider: rgba(255, 255, 255, 0.06);
+    --shadow-color: 0 0% 0% / 0.3;
+    --dropdown-bg: rgba(37, 37, 37, 0.97);
+    --dropdown-divider: rgba(255, 255, 255, 0.08);
   }
 
   /* ── Light Mode ── */
