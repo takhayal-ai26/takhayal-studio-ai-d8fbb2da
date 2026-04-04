@@ -259,7 +259,7 @@ export default function Gallery() {
   const { t } = useLanguage();
   const { user } = useAuth();
   const { openAuthModal, setPrompt } = useApp();
-  const { jobs, loading, retryJob } = useGenerationJobs();
+  const { jobs, loading, retryJob, refetch } = useGenerationJobs();
   const { models } = useModels();
   const isMobile = useIsMobile();
   const templateMap = useTemplateInfo(jobs);
