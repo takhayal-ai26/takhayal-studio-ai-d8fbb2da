@@ -38,7 +38,7 @@ function groupByDate(jobs: GenerationJob[]): { label: string; labelAr: string; k
   return groups.filter(g => g.items.length > 0);
 }
 
-function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, modelName, isHighlighted }: {
+function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, modelName, isHighlighted, templateTitle }: {
   job: GenerationJob;
   isAr: boolean;
   onRetry: (id: string) => void;
@@ -48,6 +48,7 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
   isMobile: boolean;
   modelName: string;
   isHighlighted: boolean;
+  templateTitle: string | null;
 }) {
   // Treat "completed" with no image as still processing (prevents blank white cards)
   const hasValidImage = !!job.image_url && job.image_url.length > 5;
