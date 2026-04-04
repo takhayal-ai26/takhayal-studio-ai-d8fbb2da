@@ -346,11 +346,17 @@ export default function Gallery() {
 
   const handleDeleteConfirm = useCallback(async () => {
     if (!deleteTargetId) return;
-    await supabase.from('generation_logs').delete().eq('id', deleteTargetId);
-    toast.success(isAr ? 'تم الحذف' : 'Deleted');
+    const { error } = await supabase.from('generation_logs').delete().eq('id', deleteTargetId);
+    if (error) {
+      toast.error(isAr ? 'فشل الحذف' : 'Delete failed');
+      console.error('Delete error:', error);
+    } else {
+      toast.success(isAr ? 'تم الحذف' : 'Deleted');
+      refetch();
+    }
     setSelectedJob(null);
     setDeleteTargetId(null);
-  }, [deleteTargetId, isAr]);
+  }, [deleteTargetId, isAr, refetch]);
 
   const handleDeleteCancel = useCallback(() => {
     setDeleteTargetId(null);
