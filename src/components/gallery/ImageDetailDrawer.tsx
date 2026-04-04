@@ -36,7 +36,7 @@ async function downloadImage(url: string, filename: string) {
   }
 }
 
-export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShare, onDelete }: Props) {
+export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShare, onDelete, templateTitle }: Props) {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
   const { models } = useModels();
