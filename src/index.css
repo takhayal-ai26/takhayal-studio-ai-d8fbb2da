@@ -282,6 +282,35 @@
   [data-state="open"] h2 {
     @apply text-xl font-bold;
   }
+
+  /* ── Global readability ── */
+  body {
+    font-size: 15px;
+    line-height: 1.6;
+  }
+
+  /* Labels */
+  label {
+    color: hsl(var(--label-color));
+    font-weight: 500;
+    font-size: 14px;
+  }
+
+  /* Disabled states — still readable */
+  [disabled], :disabled, .disabled {
+    color: hsl(var(--text-disabled)) !important;
+    opacity: 0.85;
+  }
+
+  /* Arabic body text spacing */
+  [lang="ar"] body, .arabic body, [lang="ar"], .arabic {
+    line-height: 1.7;
+    word-spacing: 0.02em;
+  }
+  [lang="ar"] label, .arabic label {
+    font-size: 14px;
+    font-weight: 600;
+  }
 }
 
 /* ══════════════════════════════════════════
