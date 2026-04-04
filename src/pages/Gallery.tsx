@@ -157,7 +157,7 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
         onClick={() => onTap(job)}
         className={shellClassName}
       >
-        <div className="aspect-square flex flex-col items-center justify-center gap-3 p-4 text-center">
+        <div className="flex flex-col items-center justify-center gap-3 p-4 text-center" style={{ aspectRatio: cssRatio }}>
           <AlertCircle size={28} className="text-destructive/60" />
           <span className="text-xs font-medium text-destructive">
             {isAr ? 'فشل التوليد' : 'Failed'}
