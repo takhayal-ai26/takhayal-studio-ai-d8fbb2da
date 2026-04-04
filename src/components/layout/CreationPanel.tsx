@@ -192,7 +192,7 @@ export function CreationPanel() {
             </div>
             <div className="flex items-center gap-1.5">
               {prompt.length > 0 && (
-                <button onClick={() => { setPrompt(''); setSelectedTemplate(null); }} className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/40 hover:text-foreground hover:bg-foreground/[0.06] transition-all">
+                <button onClick={() => { setPrompt(''); setSelectedTemplate(null); }} className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/[0.06] transition-all">
                   <X size={13} />
                 </button>
               )}
@@ -201,7 +201,7 @@ export function CreationPanel() {
                 className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-200 ${
                   enhancePrompt
                     ? 'bg-primary/10 text-primary border border-primary/20'
-                    : 'text-muted-foreground/50 hover:text-foreground hover:bg-foreground/[0.06]'
+                    : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.06]'
                 }`}
               >
                 <Sparkles size={11} />{t.studio.enhance}
@@ -212,12 +212,12 @@ export function CreationPanel() {
             value={prompt}
             onChange={e => setPrompt(e.target.value.slice(0, 500))}
             placeholder={t.studio.describeCreate}
-            className="w-full min-h-[120px] bg-foreground/[0.03] border border-border/20 rounded-xl p-3.5 text-[13px] text-foreground placeholder:text-muted-foreground/25 focus:border-primary/30 focus:bg-foreground/[0.04] focus:outline-none focus:ring-2 focus:ring-primary/10 resize-none leading-relaxed transition-all"
+            className="w-full min-h-[120px] bg-foreground/[0.03] border border-border/20 rounded-xl p-3.5 text-[14px] text-foreground placeholder:text-muted-foreground/60 focus:border-primary/30 focus:bg-foreground/[0.04] focus:outline-none focus:ring-2 focus:ring-primary/10 resize-none leading-relaxed transition-all"
           />
           <div className="flex items-center justify-between mt-1.5 px-0.5">
-            <span className="text-[10px] text-muted-foreground/25 tabular-nums">{prompt.length}/500</span>
+            <span className="text-[11px] text-muted-foreground tabular-nums">{prompt.length}/500</span>
             {prompt.length > 0 && (
-              <span className="text-[10px] text-primary/40 flex items-center gap-1">
+              <span className="text-[11px] text-primary/70 flex items-center gap-1">
                 <Zap size={8} />{t.studio.ready}
               </span>
             )}
@@ -262,7 +262,7 @@ export function CreationPanel() {
                   ))}
                 </div>
                 <div className="flex items-center justify-between px-1">
-                  <span className="text-[10px] text-muted-foreground/40">
+                  <span className="text-[11px] text-muted-foreground">
                     {uploadedImages.length}/{maxImages} {language === 'ar' ? 'صور' : 'images'}
                   </span>
                   {uploadedImages.length < maxImages && (
@@ -278,13 +278,13 @@ export function CreationPanel() {
             ) : (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full rounded-2xl bg-foreground/[0.02] border border-dashed border-border/20 p-4 flex flex-col items-center justify-center gap-1.5 text-muted-foreground/40 hover:text-foreground/60 hover:border-primary/20 hover:bg-primary/[0.02] transition-all duration-300 group"
+                className="w-full rounded-2xl bg-foreground/[0.03] border border-dashed border-border/30 p-4 flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground/80 hover:border-primary/20 hover:bg-primary/[0.02] transition-all duration-300 group"
               >
                 <div className="w-9 h-9 rounded-xl bg-foreground/[0.04] flex items-center justify-center group-hover:bg-primary/10 transition-colors">
                   <Upload size={16} className="group-hover:text-primary/70 transition-colors" />
                 </div>
-                <span className="text-[12px] font-medium">{t.studio.uploadImages}</span>
-                <span className="text-[10px] text-muted-foreground/20">
+                <span className="text-[13px] font-medium">{t.studio.uploadImages}</span>
+                <span className="text-[11px] text-muted-foreground/60">
                   {maxImages > 1
                     ? `${language === 'ar' ? `حتى ${maxImages} صور` : `Up to ${maxImages} images`} · JPG / PNG`
                     : 'JPG / PNG up to 10MB'}
@@ -309,12 +309,12 @@ export function CreationPanel() {
             }`}
           >
             <div className="flex items-center gap-2.5">
-              <span className="text-muted-foreground/30">{item.icon}</span>
-              <span className="text-[10px] text-muted-foreground/35 uppercase tracking-[1px] font-medium">{item.label}</span>
+              <span className="text-muted-foreground">{item.icon}</span>
+              <span className="text-[11px] text-muted-foreground uppercase tracking-[1px] font-semibold">{item.label}</span>
             </div>
             <div className="flex items-center gap-2">
               <span className="text-[13px] font-medium text-foreground">{item.value}</span>
-              <ChevronRight size={13} className={`text-muted-foreground/25 transition-transform duration-200 ${openDropdown === item.key ? 'rotate-90' : ''}`} />
+              <ChevronRight size={13} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === item.key ? 'rotate-90' : ''}`} />
             </div>
           </button>
         ))}
@@ -328,7 +328,7 @@ export function CreationPanel() {
           className={`w-full h-[44px] rounded-xl text-[14px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
             canGenerate
               ? 'bg-primary text-primary-foreground hover:brightness-110 active:scale-[0.98] shadow-[0_4px_20px_-4px] shadow-primary/25'
-              : 'bg-foreground/[0.04] border border-border/10 text-muted-foreground/30 cursor-not-allowed'
+              : 'bg-foreground/[0.04] border border-border/10 text-muted-foreground cursor-not-allowed'
           }`}
         >
           {(isGenerating || localGenerating) ? (
@@ -345,7 +345,7 @@ export function CreationPanel() {
             </>
           )}
         </button>
-        <p className="text-[10px] text-muted-foreground/20 text-center mt-2">⌘ Enter</p>
+        <p className="text-[11px] text-muted-foreground text-center mt-2">⌘ Enter</p>
       </div>
 
       {openDropdown === 'model' && (
