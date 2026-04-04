@@ -5,7 +5,7 @@ import { GenerationJob } from '@/hooks/useGenerationJobs';
 import {
   Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw,
   Calendar, Cpu, Ratio, Sparkles, Share2, Trash2,
-  ChevronLeft, ChevronRight, Copy, Check
+  ChevronLeft, ChevronRight, Copy, Check, LayoutTemplate
 } from 'lucide-react';
 import { toast } from 'sonner';
 
@@ -21,6 +21,7 @@ interface Props {
   onNext?: () => void;
   hasPrev?: boolean;
   hasNext?: boolean;
+  templateTitle?: string | null;
 }
 
 async function downloadImage(url: string, filename: string) {
