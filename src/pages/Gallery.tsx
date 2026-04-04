@@ -110,7 +110,7 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
         onClick={() => onTap(job)}
         className={shellClassName}
       >
-        <div className="aspect-square relative overflow-hidden bg-gradient-to-br from-primary/10 via-muted/20 to-background">
+        <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-muted/20 to-background" style={{ aspectRatio: cssRatio }}>
           <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.14),transparent_60%)]" />
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
             <div className="flex h-12 w-12 items-center justify-center rounded-full bg-background/80 text-primary shadow-sm">
