@@ -503,6 +503,7 @@ export default function Gallery() {
           onReuse={handleReuse}
           onShare={setShareJob}
           onDelete={handleDelete}
+          templateTitle={selectedJob ? getTemplateTitle(selectedJob, templateMap, isAr) : null}
         />
       ) : (
         <ImageLightbox
