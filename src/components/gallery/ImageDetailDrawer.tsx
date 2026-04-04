@@ -3,7 +3,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { GenerationJob } from '@/hooks/useGenerationJobs';
 import { useModels } from '@/hooks/useModels';
 import { Drawer, DrawerContent, DrawerClose } from '@/components/ui/drawer';
-import { Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw, Calendar, Cpu, Ratio, Sparkles, Share2, Trash2, Copy, Check } from 'lucide-react';
+import { Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw, Calendar, Cpu, Ratio, Sparkles, Share2, Trash2, Copy, Check, LayoutTemplate } from 'lucide-react';
 import { toast } from 'sonner';
 
 interface Props {
@@ -14,6 +14,7 @@ interface Props {
   onReuse: (prompt: string) => void;
   onShare?: (job: GenerationJob) => void;
   onDelete?: (id: string) => void;
+  templateTitle?: string | null;
 }
 
 async function downloadImage(url: string, filename: string) {
