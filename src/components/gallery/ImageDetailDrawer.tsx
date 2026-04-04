@@ -164,35 +164,60 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
             )}
           </div>
 
-          {/* Prompt with copy */}
+          {/* Prompt / Template info */}
           <div className="px-4 pb-3 space-y-3">
-            {job.prompt && (
+            {templateTitle ? (
+              /* ── Template result ── */
               <div className="rounded-xl bg-muted/30 p-3">
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-1.5">
-                    <Sparkles size={12} className="text-primary" />
-                    <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
-                      {isAr ? 'التعليمة' : 'Prompt'}
-                    </span>
-                  </div>
-                  <button
-                    onClick={handleCopyPrompt}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 active:scale-95 transition-all cursor-pointer"
-                  >
-                    {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
-                  </button>
+                <div className="flex items-center gap-1.5 mb-2">
+                  <LayoutTemplate size={12} className="text-primary" />
+                  <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                    {isAr ? 'القالب' : 'Template'}
+                  </span>
                 </div>
-                <p className="text-[13px] text-foreground leading-relaxed">{job.prompt}</p>
+                <p className="text-[14px] font-semibold text-foreground">{templateTitle}</p>
+              </div>
+            ) : (
+              /* ── Regular prompt ── */
+              <>
+                {job.prompt && (
+                  <div className="rounded-xl bg-muted/30 p-3">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles size={12} className="text-primary" />
+                        <span className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                          {isAr ? 'التعليمة' : 'Prompt'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={handleCopyPrompt}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/50 hover:text-foreground hover:bg-muted/50 active:scale-95 transition-all cursor-pointer"
+                      >
+                        {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
+                      </button>
+                    </div>
+                    <p className="text-[13px] text-foreground leading-relaxed">{job.prompt}</p>
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Info grid - only for non-template */}
+            {!templateTitle && (
+              <div className="grid grid-cols-2 gap-2">
+                <MetaItem icon={<Calendar size={13} />} label={isAr ? 'التاريخ' : 'Date'} value={dateStr} />
+                <MetaItem icon={<Cpu size={13} />} label={isAr ? 'النموذج' : 'Model'} value={modelName} />
+                <MetaItem icon={<Ratio size={13} />} label={isAr ? 'النسبة' : 'Ratio'} value={job.ratio || '1:1'} />
+                <MetaItem icon={<Sparkles size={13} />} label={isAr ? 'الجودة' : 'Quality'} value={job.quality_tier || '1K'} />
               </div>
             )}
 
-            {/* Info grid */}
-            <div className="grid grid-cols-2 gap-2">
-              <MetaItem icon={<Calendar size={13} />} label={isAr ? 'التاريخ' : 'Date'} value={dateStr} />
-              <MetaItem icon={<Cpu size={13} />} label={isAr ? 'النموذج' : 'Model'} value={modelName} />
-              <MetaItem icon={<Ratio size={13} />} label={isAr ? 'النسبة' : 'Ratio'} value={job.ratio || '1:1'} />
-              <MetaItem icon={<Sparkles size={13} />} label={isAr ? 'الجودة' : 'Quality'} value={job.quality_tier || '1K'} />
-            </div>
+            {/* Date only for template */}
+            {templateTitle && (
+              <div className="grid grid-cols-1 gap-2">
+                <MetaItem icon={<Calendar size={13} />} label={isAr ? 'التاريخ' : 'Date'} value={dateStr} />
+              </div>
+            )}
           </div>
 
           {/* Delete */}
