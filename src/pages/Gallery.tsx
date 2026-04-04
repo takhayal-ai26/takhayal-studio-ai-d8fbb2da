@@ -15,7 +15,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { useTemplateInfo, isTemplateJob, getTemplateTitle } from '@/hooks/useTemplateInfo';
 import { DeleteConfirmDialog } from '@/components/gallery/DeleteConfirmDialog';
 
-type FilterKey = 'all' | 'today' | 'yesterday' | 'generated' | 'edited';
+type FilterKey = 'all' | 'today' | 'yesterday' | 'edited';
 type SortKey = 'newest' | 'oldest';
 
 function groupByDate(jobs: GenerationJob[]): { label: string; labelAr: string; key: string; items: GenerationJob[] }[] {
