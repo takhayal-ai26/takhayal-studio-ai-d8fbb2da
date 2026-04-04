@@ -4,7 +4,7 @@ import { ToolProvider } from '@/hooks/useToolProviders';
 
 interface ToolProviderSelectorProps {
   providers: ToolProvider[];
-  selected: string; // provider id
+  selected: string;
   onSelect: (providerId: string) => void;
 }
 
@@ -19,44 +19,64 @@ export function ToolProviderSelector({ providers, selected, onSelect }: ToolProv
   if (providers.length <= 1) return null;
 
   return (
-    <div className="grid grid-cols-2 gap-3 mt-4">
-      {providers.map(p => {
-        const Icon = tierIcons[p.tier] || Sparkles;
-        const isSelected = p.id === selected;
-        const isAdvanced = p.tier === 'advanced' || p.tier === 'premium';
+    <div className="space-y-2">
+      <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider block">
+        Processing Mode
+      </label>
+      <div className="grid grid-cols-2 gap-2.5">
+        {providers.map(p => {
+          const Icon = tierIcons[p.tier] || Sparkles;
+          const isSelected = p.id === selected;
+          const isAdvanced = p.tier === 'advanced' || p.tier === 'premium';
 
-        return (
-          <button
-            key={p.id}
-            onClick={() => onSelect(p.id)}
-            className={cn(
-              'relative flex flex-col items-start p-4 rounded-xl border transition-all text-left',
-              isSelected
-                ? isAdvanced
-                  ? 'border-[1.5px] border-[hsl(var(--primary))] bg-primary/5'
-                  : 'border-primary bg-primary/5'
-                : 'border-border bg-card/40 hover:border-muted-foreground/30'
-            )}
-          >
-            {isAdvanced && (
-              <div className="absolute top-2 right-2 px-1.5 py-0.5 rounded bg-primary text-primary-foreground text-[9px] font-semibold">
-                Best Quality
+          return (
+            <button
+              key={p.id}
+              onClick={() => onSelect(p.id)}
+              className={cn(
+                'relative flex flex-col items-start p-4 rounded-xl border-[1.5px] transition-all text-left cursor-pointer group',
+                isSelected
+                  ? 'border-primary bg-primary/5'
+                  : 'border-border/40 bg-muted/5 hover:border-border hover:bg-muted/10'
+              )}
+            >
+              {isAdvanced && (
+                <div className="absolute -top-2 right-3 px-2 py-0.5 rounded-md bg-primary text-primary-foreground text-[9px] font-bold tracking-wide">
+                  BEST
+                </div>
+              )}
+
+              <div className="flex items-center gap-2.5 mb-2">
+                <div className={cn(
+                  'w-8 h-8 rounded-lg flex items-center justify-center transition-colors',
+                  isSelected ? 'bg-primary/15' : 'bg-muted/20 group-hover:bg-muted/30'
+                )}>
+                  <Icon size={15} className={isSelected ? 'text-primary' : 'text-muted-foreground'} />
+                </div>
+                <div>
+                  <span className={cn(
+                    'text-[13px] font-semibold block leading-tight',
+                    isSelected ? 'text-foreground' : 'text-foreground/80'
+                  )}>
+                    {p.display_name}
+                  </span>
+                </div>
               </div>
-            )}
-            <div className={cn(
-              'w-8 h-8 rounded-lg flex items-center justify-center mb-2',
-              isAdvanced ? 'bg-primary/10' : 'bg-primary/10'
-            )}>
-              <Icon size={16} className="text-primary" />
-            </div>
-            <span className="text-[13px] font-medium text-foreground">{p.display_name}</span>
-            <span className="text-[11px] text-muted-foreground mt-0.5">{p.description}</span>
-            <div className="mt-2 px-2 py-0.5 rounded-md bg-muted/40 text-[10px] text-muted-foreground font-medium">
-              {p.credit_cost} credits
-            </div>
-          </button>
-        );
-      })}
+
+              <p className="text-[11px] text-muted-foreground leading-relaxed mb-2.5">{p.description}</p>
+
+              <div className={cn(
+                'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold',
+                isSelected
+                  ? 'bg-primary/10 text-primary'
+                  : 'bg-muted/20 text-muted-foreground'
+              )}>
+                {p.credit_cost} credits
+              </div>
+            </button>
+          );
+        })}
+      </div>
     </div>
   );
 }
