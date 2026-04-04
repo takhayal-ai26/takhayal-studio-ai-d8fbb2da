@@ -56,6 +56,7 @@ export default {
           DEFAULT: "hsl(var(--surface))",
           border: "hsl(var(--surface-border))",
         },
+        label: "hsl(var(--label-color))",
         ember: {
           DEFAULT: "hsl(var(--primary))",
           hover: "hsl(var(--ember-hover))",
