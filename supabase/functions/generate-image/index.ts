@@ -103,11 +103,12 @@ function resolvePayload(endpoint: string, ratio: string, quality: string, inputT
   if (endpoint.includes("imagen4")) return { aspect_ratio: ratio, resolution: quality };
 
   // Seedream edit — accepts image_url (single) or image_urls (multi, up to 10)
+  // Seedream edit — ALWAYS requires image_urls as an array (not image_url singular)
   if (endpoint.includes("seedream") && endpoint.includes("/edit")) {
     const dims = getResolutionDims(ratio, quality);
     const base: Record<string, unknown> = { image_size: { width: dims.width, height: dims.height } };
-    if (allImageUrls.length > 1) base.image_urls = allImageUrls;
-    else if (singleUrl) base.image_url = singleUrl;
+    // Seedream edit API requires image_urls (array), never image_url (singular)
+    if (allImageUrls.length > 0) base.image_urls = allImageUrls;
     return base;
   }
 
