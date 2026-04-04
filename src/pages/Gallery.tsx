@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTemplateInfo, isTemplateJob, getTemplateTitle } from '@/hooks/useTemplateInfo';
+import { DeleteConfirmDialog } from '@/components/gallery/DeleteConfirmDialog';
 
 type FilterKey = 'all' | 'today' | 'yesterday' | 'generated' | 'edited';
 type SortKey = 'newest' | 'oldest';
