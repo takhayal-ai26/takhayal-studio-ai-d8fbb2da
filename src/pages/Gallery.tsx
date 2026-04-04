@@ -129,25 +129,34 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
           </div>
         </div>
         <div className="p-3 space-y-2.5">
-          <p className="text-[12px] font-medium text-foreground line-clamp-2">{job.prompt}</p>
-          <div className="grid grid-cols-2 gap-2 text-[11px]">
-            <div className="rounded-xl bg-muted/35 px-2.5 py-2">
-              <span className="text-muted-foreground/70">{isAr ? 'النموذج' : 'Model'}</span>
-              <span className="mt-0.5 block text-foreground/85 line-clamp-1">{modelName}</span>
+          <p className="text-[12px] font-medium text-foreground line-clamp-2">
+            {templateTitle || job.prompt}
+          </p>
+          {templateTitle ? (
+            <div className="flex items-center gap-1.5 text-[11px] text-primary/70">
+              <LayoutTemplate size={11} />
+              <span>{isAr ? 'من قالب' : 'From Template'}</span>
             </div>
-            <div className="rounded-xl bg-muted/35 px-2.5 py-2">
-              <span className="text-muted-foreground/70">{isAr ? 'الدقة' : 'Resolution'}</span>
-              <span className="mt-0.5 block text-foreground/85">{resolution}</span>
+          ) : (
+            <div className="grid grid-cols-2 gap-2 text-[11px]">
+              <div className="rounded-xl bg-muted/35 px-2.5 py-2">
+                <span className="text-muted-foreground/70">{isAr ? 'النموذج' : 'Model'}</span>
+                <span className="mt-0.5 block text-foreground/85 line-clamp-1">{modelName}</span>
+              </div>
+              <div className="rounded-xl bg-muted/35 px-2.5 py-2">
+                <span className="text-muted-foreground/70">{isAr ? 'الدقة' : 'Resolution'}</span>
+                <span className="mt-0.5 block text-foreground/85">{resolution}</span>
+              </div>
+              <div className="rounded-xl bg-muted/35 px-2.5 py-2">
+                <span className="text-muted-foreground/70">{isAr ? 'النسبة' : 'Ratio'}</span>
+                <span className="mt-0.5 block text-foreground/85">{job.ratio || '1:1'}</span>
+              </div>
+              <div className="rounded-xl bg-muted/35 px-2.5 py-2">
+                <span className="text-muted-foreground/70">{isAr ? 'بدأ في' : 'Started'}</span>
+                <span className="mt-0.5 block text-foreground/85">{startedTime}</span>
+              </div>
             </div>
-            <div className="rounded-xl bg-muted/35 px-2.5 py-2">
-              <span className="text-muted-foreground/70">{isAr ? 'النسبة' : 'Ratio'}</span>
-              <span className="mt-0.5 block text-foreground/85">{job.ratio || '1:1'}</span>
-            </div>
-            <div className="rounded-xl bg-muted/35 px-2.5 py-2">
-              <span className="text-muted-foreground/70">{isAr ? 'بدأ في' : 'Started'}</span>
-              <span className="mt-0.5 block text-foreground/85">{startedTime}</span>
-            </div>
-          </div>
+          )}
         </div>
       </button>
     );
