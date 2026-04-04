@@ -227,65 +227,11 @@
   }
 
   /* ── Premium Typography System ── */
-  h1 {
-    @apply text-4xl font-extrabold tracking-tight;
-    line-height: 1.15;
-  }
-  h2 {
-    @apply text-2xl font-bold tracking-tight;
-    line-height: 1.2;
-  }
-  h3 {
-    @apply text-xl font-bold;
-    line-height: 1.25;
-  }
-  h4 {
-    @apply text-lg font-semibold;
-    line-height: 1.3;
-  }
-
-  /* Arabic headline adjustments */
-  [lang="ar"] h1, .arabic h1 {
-    @apply text-[2.25rem] leading-[1.3];
-    letter-spacing: 0;
-  }
-  [lang="ar"] h2, .arabic h2 {
-    @apply text-[1.625rem] leading-[1.35];
-    letter-spacing: 0;
-  }
-  [lang="ar"] h3, .arabic h3 {
-    @apply text-[1.3rem] leading-[1.35];
-    letter-spacing: 0;
-  }
-
-  /* Responsive headline scaling */
-  @media (min-width: 768px) {
-    h1 {
-      @apply text-5xl;
-    }
-    h2 {
-      @apply text-3xl;
-    }
-    h3 {
-      @apply text-2xl;
-    }
-    [lang="ar"] h1, .arabic h1 {
-      @apply text-[2.75rem];
-    }
-    [lang="ar"] h2, .arabic h2 {
-      @apply text-[1.875rem];
-    }
-  }
-
-  /* Dialog / drawer / modal titles */
-  [role="dialog"] h2,
-  [data-state="open"] h2 {
-    @apply text-xl font-bold;
-  }
+  /* Remove old h1-h4 base overrides — use utility classes instead */
 
   /* ── Global readability ── */
   body {
-    font-size: 15px;
+    font-size: 16px;
     line-height: 1.6;
   }
 
@@ -310,6 +256,146 @@
   [lang="ar"] label, .arabic label {
     font-size: 14px;
     font-weight: 600;
+  }
+}
+
+/* ══════════════════════════════════════════
+   TYPOGRAPHY SYSTEM — Semantic Utility Classes
+   ══════════════════════════════════════════ */
+
+@layer components {
+  /* ── display-hero ── */
+  .typo-display-hero {
+    font-size: 38px;
+    line-height: 1.08;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: hsl(var(--foreground));
+  }
+  @media (min-width: 768px) {
+    .typo-display-hero {
+      font-size: 56px;
+      line-height: 1.05;
+    }
+  }
+
+  /* ── heading-page ── */
+  .typo-heading-page {
+    font-size: 30px;
+    line-height: 1.15;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+    color: hsl(var(--foreground));
+  }
+  @media (min-width: 768px) {
+    .typo-heading-page {
+      font-size: 40px;
+    }
+  }
+
+  /* ── heading-section ── */
+  .typo-heading-section {
+    font-size: 24px;
+    line-height: 1.2;
+    font-weight: 700;
+    letter-spacing: -0.005em;
+    color: hsl(var(--foreground));
+  }
+  @media (min-width: 768px) {
+    .typo-heading-section {
+      font-size: 30px;
+    }
+  }
+
+  /* ── heading-card ── */
+  .typo-heading-card {
+    font-size: 19px;
+    line-height: 1.25;
+    font-weight: 700;
+    color: hsl(var(--foreground));
+  }
+  @media (min-width: 768px) {
+    .typo-heading-card {
+      font-size: 22px;
+    }
+  }
+
+  /* ── heading-modal ── */
+  .typo-heading-modal {
+    font-size: 22px;
+    line-height: 1.2;
+    font-weight: 700;
+    color: hsl(var(--foreground));
+  }
+  @media (min-width: 768px) {
+    .typo-heading-modal {
+      font-size: 28px;
+    }
+  }
+
+  /* ── label-strong ── */
+  .typo-label-strong {
+    font-size: 15px;
+    line-height: 1.3;
+    font-weight: 600;
+    color: hsl(var(--foreground));
+  }
+  @media (min-width: 768px) {
+    .typo-label-strong {
+      font-size: 16px;
+    }
+  }
+
+  /* ── body-base ── */
+  .typo-body-base {
+    font-size: 16px;
+    line-height: 1.6;
+    font-weight: 400;
+  }
+
+  /* ── body-small ── */
+  .typo-body-small {
+    font-size: 14px;
+    line-height: 1.5;
+    font-weight: 400;
+  }
+
+  /* ── Arabic overrides ── */
+  [lang="ar"] .typo-display-hero,
+  .arabic .typo-display-hero {
+    line-height: 1.15;
+    letter-spacing: 0;
+  }
+  [lang="ar"] .typo-heading-page,
+  .arabic .typo-heading-page {
+    line-height: 1.2;
+    letter-spacing: 0;
+  }
+  [lang="ar"] .typo-heading-section,
+  .arabic .typo-heading-section {
+    line-height: 1.3;
+    letter-spacing: 0;
+  }
+  [lang="ar"] .typo-heading-card,
+  .arabic .typo-heading-card {
+    line-height: 1.35;
+  }
+  [lang="ar"] .typo-heading-modal,
+  .arabic .typo-heading-modal {
+    line-height: 1.3;
+  }
+  [lang="ar"] .typo-label-strong,
+  .arabic .typo-label-strong {
+    font-weight: 700;
+    font-size: 16px;
+  }
+
+  /* Dialog / drawer / modal titles — auto-apply */
+  [role="dialog"] h2,
+  [data-state="open"] h2 {
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 1.2;
   }
 }
 
