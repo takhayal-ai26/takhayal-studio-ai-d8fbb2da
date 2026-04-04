@@ -93,8 +93,8 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
     <Drawer open={open} onOpenChange={(v) => !v && onClose()}>
       <DrawerContent className="max-h-[92vh] outline-none">
         <div className="flex flex-col max-h-[90vh] overflow-y-auto" dir={isAr ? 'rtl' : 'ltr'}>
-          {/* Close button */}
-          <div className="flex justify-end p-3 pb-0">
+          {/* Close button - positioned clearly above content */}
+          <div className="flex justify-end p-3 pb-2">
             <DrawerClose asChild>
               <button className="w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
                 <X size={16} />
