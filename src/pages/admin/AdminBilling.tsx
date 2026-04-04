@@ -220,7 +220,7 @@ export default function AdminBilling({ embedded }: { embedded?: boolean } = {}) 
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Billing & Credits</h1>
+        <h1 className="typo-heading-page">Billing & Credits</h1>
         <p className="text-sm text-muted-foreground mt-1">Manage plans, packages, pricing page content, FAQs, and credit explanations</p>
       </div>
 

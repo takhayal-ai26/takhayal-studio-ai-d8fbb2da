@@ -25,7 +25,7 @@ export default function AdminContent({ embedded }: { embedded?: boolean } = {}) 
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Content Management</h1>
+          <h1 className="typo-heading-page">Content Management</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage banners, sections, and dynamic content across the platform</p>
         </div>
         <Button size="sm" className="gap-1.5 text-xs"><Plus size={14} /> Add Content Block</Button>

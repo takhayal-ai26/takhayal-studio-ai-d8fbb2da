@@ -374,7 +374,7 @@ export default function Gallery() {
     return (
       <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] animate-page-enter" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
         <ImageIcon size={56} className="text-muted-foreground/15 mb-4" />
-        <h2 className="text-xl font-semibold text-foreground">{isAr ? 'سجل الدخول لعرض معرضك' : 'Sign in to view your gallery'}</h2>
+        <h2 className="typo-heading-section">{isAr ? 'سجل الدخول لعرض معرضك' : 'Sign in to view your gallery'}</h2>
         <button onClick={() => openAuthModal('signup')} className="mt-6 h-10 px-6 bg-primary hover:brightness-110 text-primary-foreground rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all">
           {isAr ? 'جرب مجاناً' : 'Try Free'}
         </button>
@@ -394,7 +394,7 @@ export default function Gallery() {
     return (
       <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] animate-page-enter" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
         <ImageIcon size={56} className="text-muted-foreground/15 mb-4" />
-        <h2 className="text-xl font-semibold text-foreground">{g.noImagesYet || (isAr ? 'لا توجد صور بعد' : 'No images yet')}</h2>
+        <h2 className="typo-heading-section">{g.noImagesYet || (isAr ? 'لا توجد صور بعد' : 'No images yet')}</h2>
         <p className="text-sm text-muted-foreground/50 mt-2">{g.startCreatingStudio || (isAr ? 'ابدأ الإبداع في الاستوديو' : 'Start creating in the Studio')}</p>
         <button onClick={() => navigate('/studio')} className="mt-6 h-10 px-6 bg-primary hover:brightness-110 text-primary-foreground rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all">
           {g.goToStudio || (isAr ? 'الاستوديو' : 'Go to Studio')}
@@ -416,7 +416,7 @@ export default function Gallery() {
           {/* ── Header row ── */}
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3 mb-4">
             <div className="flex items-baseline gap-3">
-              <h1 className="text-xl font-semibold text-foreground">{g.myGallery}</h1>
+              <h1 className="typo-heading-page">{g.myGallery}</h1>
               <span className="text-sm text-muted-foreground/50">{filteredJobs.length} {g.images}</span>
             </div>
 

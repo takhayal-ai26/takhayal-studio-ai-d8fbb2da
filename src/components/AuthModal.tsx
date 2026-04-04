@@ -304,7 +304,7 @@ export function AuthModal() {
         <div className="w-full lg:w-[46%] flex flex-col p-8 lg:p-10 overflow-y-auto bg-card">
           <div className="flex items-center gap-2.5 mb-10"><LogoMark size={28} /><span className="text-[17px] font-medium text-foreground tracking-tight">Takhayal<span className="text-primary">.ai</span></span></div>
           <div className="mb-8">
-            <h2 className="text-[26px] font-extralight text-foreground leading-tight">{t.auth.startCreatingWith}</h2>
+            <h2 className="typo-heading-section leading-tight">{t.auth.startCreatingWith}</h2>
             <p className="text-sm text-muted-foreground mt-2">{t.auth.turnIdeas}</p>
           </div>
           <div className="flex p-1 rounded-full bg-muted mb-7 w-fit">
@@ -371,7 +371,7 @@ export function AuthModal() {
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-black/30" />
           <div className="absolute inset-0 flex flex-col justify-end p-10">
             <span className="inline-flex w-fit px-3 py-1 rounded-full bg-primary/15 border border-primary/30 text-primary text-[11px] font-medium mb-4">{t.auth.arabicFirstBadge}</span>
-            <h3 className="text-[22px] font-extralight text-foreground leading-snug max-w-[320px]">{t.auth.brandTagline}</h3>
+            <h3 className="typo-heading-card leading-snug max-w-[320px]">{t.auth.brandTagline}</h3>
             <div className="flex gap-4 mt-5">
               {[t.auth.productShots, t.auth.socialVisuals, t.auth.campaignCreatives].map(f => (<span key={f} className="text-[11px] text-white/50">{f}</span>))}
             </div>

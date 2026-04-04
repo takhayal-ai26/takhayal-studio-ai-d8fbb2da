@@ -168,7 +168,7 @@ export default function TemplateDetail() {
           <div className="flex-1 order-2 md:order-1 space-y-5 md:max-w-md">
             {/* Title */}
             <div>
-              <h1 className="text-2xl md:text-3xl font-bold text-foreground leading-tight">{title}</h1>
+              <h1 className="typo-heading-page leading-tight">{title}</h1>
               <p className="text-sm text-muted-foreground mt-1.5">
                 {isAr ? 'ارفع صورتك وسنتكفل بالباقي' : "Upload your image and we'll handle the rest"}
               </p>

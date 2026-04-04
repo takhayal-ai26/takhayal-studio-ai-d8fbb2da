@@ -87,7 +87,7 @@ export default function PortalHome() {
                   <div className="absolute inset-0 opacity-[0.06]" style={{ background: 'radial-gradient(ellipse at 30% 50%, hsl(var(--primary)), transparent 70%)' }} />
                   <div className="relative">
                     <Sparkles size={18} className="text-primary mb-4 opacity-70" />
-                    <h2 className="text-2xl md:text-3xl font-extralight text-foreground leading-tight">
+                    <h2 className="typo-heading-section">
                       {t.portal.whatWillYouCreate}<br />
                       <span className="text-primary font-light">{t.portal.createToday}</span>
                     </h2>
@@ -125,7 +125,7 @@ export default function PortalHome() {
         <section className="mb-12">
           <div className="flex items-end justify-between mb-6">
             <div>
-              <h2 className="text-xl md:text-2xl font-light text-foreground">{t.portal.startFromPowerful}</h2>
+              <h2 className="typo-heading-section">{t.portal.startFromPowerful}</h2>
               <p className="text-[13px] text-muted-foreground mt-1.5">{t.portal.readyMadePrompts}</p>
             </div>
             <button onClick={() => navigate('/templates')} className="hidden md:flex items-center gap-1.5 text-[12px] text-primary font-medium hover:underline group">
@@ -176,7 +176,7 @@ export default function PortalHome() {
         <section className="mt-6 mb-14">
           <div className="flex items-end justify-between mb-5">
             <div>
-              <h2 className="text-lg font-medium text-foreground">{t.portal.communityWorks}</h2>
+              <h2 className="typo-heading-section">{t.portal.communityWorks}</h2>
               <p className="text-[13px] text-muted-foreground mt-1">{t.portal.seeWhatCreators}</p>
             </div>
             <button onClick={() => navigate('/community')} className="text-[12px] text-primary font-medium hover:underline flex items-center gap-1 group">

@@ -137,7 +137,7 @@ export default function About() {
           <Sparkles size={14} />
           {isAr ? 'من نحن' : 'ABOUT US'}
         </span>
-        <h1 className="relative text-4xl md:text-6xl lg:text-7xl font-extralight text-foreground leading-[1.1] max-w-[800px] animate-fade-in" style={{ animationDelay: '100ms' }}>
+        <h1 className="relative typo-display-hero max-w-[800px] animate-fade-in" style={{ animationDelay: '100ms' }}>
           {isAr ? 'صُمم لمبدعي' : 'Built for the'}{' '}
           <br className="hidden md:block" />
           <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent font-light">
@@ -206,7 +206,7 @@ export default function About() {
               <span className="text-[11px] font-medium text-primary uppercase tracking-[0.2em] mb-4 block">
                 {isAr ? 'ما نؤمن به' : 'WHAT WE STAND FOR'}
               </span>
-              <h2 className="text-3xl md:text-5xl font-light text-foreground">
+              <h2 className="typo-heading-section">
                 {isAr ? 'قيمنا الأساسية' : 'Our Core Values'}
               </h2>
             </div>
@@ -239,7 +239,7 @@ export default function About() {
               <span className="text-[11px] font-medium text-primary uppercase tracking-[0.2em] mb-4 block">
                 {isAr ? 'قصتنا' : 'OUR STORY'}
               </span>
-              <h2 className="text-3xl md:text-5xl font-light text-foreground">
+              <h2 className="typo-heading-section">
                 {isAr ? 'كيف بدأنا' : 'How it started'}
               </h2>
             </div>
@@ -315,7 +315,7 @@ export default function About() {
             <div className="absolute inset-0 rounded-3xl border border-border/30 bg-card/20" />
             <div className="relative">
               <Sparkles size={24} className="text-primary mx-auto mb-6 opacity-60" />
-              <h2 className="text-3xl md:text-5xl font-light text-foreground mb-4">
+              <h2 className="typo-heading-section mb-4">
                 {isAr ? 'مستعد لإنشاء شيء مذهل؟' : 'Ready to create something?'}
               </h2>
               <p className="text-muted-foreground mb-10 text-base max-w-md mx-auto">

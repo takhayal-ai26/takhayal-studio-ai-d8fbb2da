@@ -10,7 +10,7 @@ export default function AdminContentMerged() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Content</h1>
+        <h1 className="typo-heading-page">Content</h1>
         <p className="text-sm text-muted-foreground mt-1">Manage templates, landing page content, dashboard hero, testimonials, and legal policies</p>
       </div>
 

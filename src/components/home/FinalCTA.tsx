@@ -13,7 +13,7 @@ export function FinalCTA() {
         {/* Subtle glow */}
         <div className="absolute inset-0 rounded-3xl bg-primary/5 blur-3xl -z-10" />
 
-        <h2 className="text-2xl md:text-3xl font-bold text-foreground mb-3">
+        <h2 className="typo-heading-section mb-3">
           {isAr ? 'ابدأ الإنشاء خلال ثوانٍ' : 'Start creating in seconds'}
         </h2>
         <p className="text-[14px] text-muted-foreground mb-8">

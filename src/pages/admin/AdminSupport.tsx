@@ -37,7 +37,7 @@ export default function AdminSupport() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Support & Reports</h1>
+        <h1 className="typo-heading-page">Support & Reports</h1>
         <p className="text-sm text-muted-foreground mt-1">Manage tickets, bug reports, abuse reports, and feature requests</p>
       </div>
 

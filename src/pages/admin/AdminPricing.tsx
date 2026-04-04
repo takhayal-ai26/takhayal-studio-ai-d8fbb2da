@@ -89,7 +89,7 @@ function MetricCard({ label, value, sub, icon: Icon, color = 'primary' }: { labe
         </div>
         <span className="text-[12px] text-muted-foreground font-medium">{label}</span>
       </div>
-      <p className="text-2xl font-bold text-foreground">{value}</p>
+      <p className="typo-heading-page">{value}</p>
       {sub && <p className="text-[11px] text-muted-foreground mt-1">{sub}</p>}
     </div>
   );
@@ -215,7 +215,7 @@ export default function AdminPricing() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Pricing & Economics</h1>
+          <h1 className="typo-heading-page">Pricing & Economics</h1>
           <p className="text-sm text-muted-foreground mt-1">Control pricing at provider, model, and tool level</p>
         </div>
         <Button variant="outline" size="sm" onClick={load} className="gap-2"><RefreshCw size={14} />Refresh</Button>

@@ -86,7 +86,7 @@ export default function Community() {
       <div className="flex-1 overflow-y-auto" style={{ paddingTop: 'calc(4rem + var(--banner-h, 0px))' }} onScroll={handleScroll}>
         <section className="text-center px-5 pt-12 pb-8 animate-fade-in">
           <span className="text-[11px] uppercase tracking-[0.2em] text-primary font-medium">{t.community.label}</span>
-          <h1 className="text-3xl md:text-4xl font-extralight text-foreground mt-3 leading-tight">{t.community.title}</h1>
+          <h1 className="typo-heading-page mt-3">{t.community.title}</h1>
           <p className="text-base font-light mt-2"><span className="text-primary">{t.community.poweredBy}</span></p>
           <button onClick={() => requireAuth(() => navigate('/studio'))} className="mt-6 h-11 px-6 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium hover:opacity-90 transition-opacity">
             {t.community.shareCreations}

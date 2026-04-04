@@ -12,7 +12,7 @@ export function GalleryView() {
     return (
       <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] animate-page-enter">
         <ImageIcon size={56} className="text-muted-foreground/15 mb-4" />
-        <h2 className="text-xl font-semibold text-foreground">{t.gallery.noImagesYet}</h2>
+        <h2 className="typo-heading-section">{t.gallery.noImagesYet}</h2>
         <p className="text-sm text-muted-foreground/50 mt-2">{t.gallery.startCreatingStudio}</p>
         <button onClick={() => setActivePage('canvas')} className="mt-6 h-10 px-6 bg-primary hover:bg-ember-hover text-primary-foreground rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all hover:shadow-lg hover:shadow-primary/20">
           {t.gallery.goToStudio} <ArrowRight size={15} className={isRTL ? 'rotate-180' : ''} />
@@ -24,7 +24,7 @@ export function GalleryView() {
   return (
     <div className="flex-1 p-4 md:p-6 overflow-y-auto pb-20 md:pb-6 animate-page-enter">
       <div className="flex items-baseline gap-3 mb-6">
-        <h1 className="text-xl font-semibold text-foreground">{t.gallery.myGallery}</h1>
+        <h1 className="typo-heading-page">{t.gallery.myGallery}</h1>
         <span className="text-sm text-muted-foreground/50">{gallery.length} {t.gallery.imagesCount}</span>
       </div>
       <div className="flex flex-wrap gap-2 mb-6">

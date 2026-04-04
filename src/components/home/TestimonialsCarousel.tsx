@@ -40,7 +40,7 @@ export function TestimonialsCarousel() {
 
   return (
     <section className="my-12 md:my-16" dir={isRTL ? 'rtl' : 'ltr'}>
-      <h2 className="text-xl md:text-2xl font-semibold text-foreground text-center mb-2">
+      <h2 className="typo-heading-section text-center mb-2">
         {isAr ? 'موثوق من قبل المبدعين في الخليج' : 'Trusted by creators across the GCC'}
       </h2>
       <p className="text-[13px] text-muted-foreground text-center mb-8">

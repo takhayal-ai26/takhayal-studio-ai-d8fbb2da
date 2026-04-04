@@ -227,7 +227,7 @@ export default function AdminMedia() {
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Media Library</h1>
+          <h1 className="typo-heading-page">Media Library</h1>
           <p className="text-sm text-muted-foreground mt-1">Centralized asset management for the platform</p>
         </div>
         <div className="flex items-center gap-2">

@@ -33,7 +33,7 @@ export default function CreateHub() {
       <div className="max-w-lg mx-auto px-5 pt-6">
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-foreground">
+          <h1 className="typo-heading-page">
             {isAr ? 'إنشاء' : 'Create'}
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
