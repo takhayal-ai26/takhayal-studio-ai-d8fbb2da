@@ -63,7 +63,15 @@ export function useTemplates() {
     fetch();
   }, [lang, isAr]);
 
-  const categoryNames = ['All', ...categories.map(c => c.name)];
+  const othersNames = ['Others', 'أخرى'];
+  const sorted = [...categories].sort((a, b) => {
+    const aIsOthers = othersNames.includes(a.name_en) || othersNames.includes(a.name);
+    const bIsOthers = othersNames.includes(b.name_en) || othersNames.includes(b.name);
+    if (aIsOthers && !bIsOthers) return 1;
+    if (!aIsOthers && bIsOthers) return -1;
+    return a.sort_order - b.sort_order;
+  });
+  const categoryNames = ['All', ...sorted.map(c => c.name)];
 
   return { templates, categories, categoryNames, loading };
 }
