@@ -538,6 +538,12 @@ export default function Gallery() {
         open={!!shareJob}
         onClose={() => setShareJob(null)}
       />
+
+      <DeleteConfirmDialog
+        open={!!deleteTargetId}
+        onConfirm={handleDeleteConfirm}
+        onCancel={handleDeleteCancel}
+      />
     </>
   );
 }
