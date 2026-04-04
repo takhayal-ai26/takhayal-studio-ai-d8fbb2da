@@ -524,7 +524,7 @@ export default function Gallery() {
           onRetry={retryJob}
           onReuse={handleReuse}
           onShare={setShareJob}
-          onDelete={handleDelete}
+          onDelete={handleDeleteRequest}
           onPrev={handlePrev}
           onNext={handleNext}
           hasPrev={selectedIndex > 0}
