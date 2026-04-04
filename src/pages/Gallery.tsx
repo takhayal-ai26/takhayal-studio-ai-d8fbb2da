@@ -338,13 +338,23 @@ export default function Gallery() {
     if (selectedIndex < filteredJobs.length - 1) setSelectedJob(filteredJobs[selectedIndex + 1]);
   }, [selectedIndex, filteredJobs]);
 
-  const handleDelete = useCallback(async (jobId: string) => {
-    const confirmed = window.confirm(isAr ? 'هل أنت متأكد من الحذف؟' : 'Delete this image?');
-    if (!confirmed) return;
-    await supabase.from('generation_logs').delete().eq('id', jobId);
+  const [deleteTargetId, setDeleteTargetId] = useState<string | null>(null);
+
+  const handleDeleteRequest = useCallback((jobId: string) => {
+    setDeleteTargetId(jobId);
+  }, []);
+
+  const handleDeleteConfirm = useCallback(async () => {
+    if (!deleteTargetId) return;
+    await supabase.from('generation_logs').delete().eq('id', deleteTargetId);
     toast.success(isAr ? 'تم الحذف' : 'Deleted');
     setSelectedJob(null);
-  }, [isAr]);
+    setDeleteTargetId(null);
+  }, [deleteTargetId, isAr]);
+
+  const handleDeleteCancel = useCallback(() => {
+    setDeleteTargetId(null);
+  }, []);
 
   const filters: { key: FilterKey; label: string }[] = [
     { key: 'all', label: g.all },

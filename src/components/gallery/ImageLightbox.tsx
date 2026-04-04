@@ -182,10 +182,10 @@ export function ImageLightbox({
         </button>
       )}
 
-      {/* Close button */}
+      {/* Close button - positioned before the sidebar */}
       <button
         onClick={handleCloseClick}
-        className={`absolute top-5 z-[95] w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-colors shadow-md cursor-pointer ${isAr ? 'left-5' : 'right-5'}`}
+        className={`absolute top-5 z-[95] w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-colors shadow-md cursor-pointer ${isAr ? 'left-[360px] xl:left-[400px]' : 'right-[360px] xl:right-[400px]'}`}
       >
         <X size={15} />
       </button>
