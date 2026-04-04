@@ -37,7 +37,7 @@ function groupByDate(jobs: GenerationJob[]): { label: string; labelAr: string; k
   return groups.filter(g => g.items.length > 0);
 }
 
-function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile }: {
+function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, modelName, isHighlighted }: {
   job: GenerationJob;
   isAr: boolean;
   onRetry: (id: string) => void;
