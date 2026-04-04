@@ -21,7 +21,7 @@ export function CreationPanel() {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, enhancePrompt, setEnhancePrompt, isGenerating, credits, getCreditCost, isAuthenticated, openAuthModal, openUpgradeModal } = useApp();
-  const { createJob, startGeneration } = useGenerationJobs();
+  const { submitJob } = useGenerationJobs();
   const [localGenerating, setLocalGenerating] = useState(false);
   const { t, lang: language } = useLanguage();
   const { activeModels, defaultModel } = useModels();
@@ -143,28 +143,26 @@ export function CreationPanel() {
       ? `${TEMPLATE_PROMPTS[selectedTemplate] || ''}, ${prompt}`
       : prompt;
 
-    const jobId = await createJob({
+    const imageUrls = uploadedImages.filter(img => img.url).map(img => img.url!);
+
+    const jobId = await submitJob({
       prompt: fullPrompt,
       ratio: aspectRatio,
       qualityTier: selectedResolution,
       modelId: currentModel?.id || null,
       creditCost: cost,
+      sourceTag: 'studio',
+      imageUrl: imageUrls.length === 1 ? imageUrls[0] : undefined,
+      imageUrls: imageUrls.length > 1 ? imageUrls : undefined,
     });
 
-    if (jobId) {
-      navigate('/gallery');
-      const imageUrls = uploadedImages.filter(img => img.url).map(img => img.url!);
-      startGeneration(jobId, {
-        prompt: fullPrompt,
-        aspectRatio,
-        qualityTier: selectedResolution,
-        modelId: currentModel?.id || null,
-        imageUrl: imageUrls.length === 1 ? imageUrls[0] : undefined,
-        imageUrls: imageUrls.length > 1 ? imageUrls : undefined,
-      });
+    if (!jobId) {
+      setLocalGenerating(false);
+      return;
     }
-    setLocalGenerating(false);
-  }, [canGenerate, isAuthenticated, credits, cost, prompt, selectedTemplate, aspectRatio, selectedResolution, currentModel, createJob, startGeneration, navigate, openAuthModal, openUpgradeModal, uploadedImages]);
+
+    navigate(`/gallery?highlight=${jobId}`);
+  }, [canGenerate, isAuthenticated, credits, cost, prompt, selectedTemplate, aspectRatio, selectedResolution, currentModel, submitJob, navigate, openAuthModal, openUpgradeModal, uploadedImages]);
 
   useEffect(() => { const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenDropdown(null); if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); handleGenerate(); } }; window.addEventListener('keydown', handler); return () => window.removeEventListener('keydown', handler); }, [handleGenerate]);
 

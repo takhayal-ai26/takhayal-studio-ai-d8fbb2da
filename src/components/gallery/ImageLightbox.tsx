@@ -84,9 +84,12 @@ export function ImageLightbox({
 
   if (!open || !job) return null;
 
-  const isProcessing = job.status === 'processing';
+  const isProcessing = job.status === 'queued' || job.status === 'generating' || job.status === 'processing';
   const isFailed = job.status === 'failed';
   const isCompleted = job.status === 'completed';
+  const processingLabel = job.status === 'queued'
+    ? (isAr ? 'في الانتظار...' : 'Queued...')
+    : (isAr ? 'جاري التوليد...' : 'Generating...');
 
   const handleDownload = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -195,7 +198,7 @@ export function ImageLightbox({
           {isProcessing ? (
             <div className="flex flex-col items-center gap-4" onClick={e => e.stopPropagation()}>
               <Loader2 size={44} className="text-primary animate-spin" />
-              <span className="text-sm font-medium text-primary">{isAr ? 'جاري التوليد...' : 'Generating...'}</span>
+                <span className="text-sm font-medium text-primary">{processingLabel}</span>
             </div>
           ) : isFailed ? (
             <div className="flex flex-col items-center gap-4" onClick={e => e.stopPropagation()}>

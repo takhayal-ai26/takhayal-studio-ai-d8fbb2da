@@ -33,7 +33,7 @@ export default function TemplateDetail() {
   const { lang, isRTL } = useLanguage();
   const { user } = useAuth();
   const { openAuthModal } = useApp();
-  const { createJob, startGeneration } = useGenerationJobs();
+  const { submitJob } = useGenerationJobs();
   const isAr = lang === 'ar';
 
   const [template, setTemplate] = useState<TemplateData | null>(null);
@@ -111,12 +111,14 @@ export default function TemplateDetail() {
     const generationPrompt = template.prompt;
     const ratio = template.ratio || '1:1';
 
-    const jobId = await createJob({
+    const jobId = await submitJob({
       prompt: generationPrompt,
       ratio,
       qualityTier: '1K',
       modelId: resolvedModelId,
       creditCost: 2,
+      sourceTag: `template:${template.id}`,
+      imageUrl: uploadedImage,
     });
 
     if (!jobId) {
@@ -125,15 +127,7 @@ export default function TemplateDetail() {
       return;
     }
 
-    await startGeneration(jobId, {
-      prompt: generationPrompt,
-      aspectRatio: ratio,
-      qualityTier: '1K',
-      modelId: resolvedModelId,
-      imageUrl: uploadedImage,
-    });
-
-    navigate('/gallery');
+    navigate(`/gallery?highlight=${jobId}`);
   };
 
   if (loading) {

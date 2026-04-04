@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 
-export type JobStatus = 'processing' | 'completed' | 'failed';
+export type JobStatus = 'queued' | 'generating' | 'processing' | 'completed' | 'failed';
 
 export interface GenerationJob {
   id: string;
@@ -10,18 +10,42 @@ export interface GenerationJob {
   prompt: string;
   image_url: string | null;
   ratio: string | null;
+  resolution: string | null;
   quality_tier: string | null;
   model_id: string | null;
   credits_used: number;
   created_at: string;
+  tool_id: string | null;
 }
 
-const JOB_COLUMNS = 'id, status, prompt, image_url, ratio, quality_tier, model_id, credits_used, created_at';
+const JOB_COLUMNS = 'id, status, prompt, image_url, ratio, resolution, quality_tier, model_id, credits_used, created_at, tool_id';
+const IN_PROGRESS_STATUSES: JobStatus[] = ['queued', 'generating', 'processing'];
+
+function normalizeStatus(status: string | null | undefined): JobStatus {
+  if (status === 'queued' || status === 'generating' || status === 'processing' || status === 'failed') {
+    return status;
+  }
+
+  return 'completed';
+}
 
 export function useGenerationJobs() {
   const { user } = useAuth();
   const [jobs, setJobs] = useState<GenerationJob[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const markJobFailed = useCallback(async (jobId: string) => {
+    setJobs(prev => prev.map(job => job.id === jobId ? { ...job, status: 'failed' as JobStatus } : job));
+
+    const { error } = await supabase
+      .from('generation_logs')
+      .update({ status: 'failed' as string })
+      .eq('id', jobId);
+
+    if (error) {
+      console.error('Failed to mark generation job as failed:', error);
+    }
+  }, []);
 
   // Fetch existing jobs for the user from the database
   const fetchJobs = useCallback(async () => {
@@ -41,7 +65,9 @@ export function useGenerationJobs() {
       if (data) {
         setJobs(data.map(d => ({
           ...d,
-          status: (d.status || 'completed') as JobStatus,
+          status: normalizeStatus(d.status),
+          resolution: d.resolution || d.quality_tier || null,
+          tool_id: d.tool_id || null,
         })));
       }
     } catch (err) {
@@ -59,33 +85,51 @@ export function useGenerationJobs() {
   // Realtime subscription for INSERT and UPDATE events
   useEffect(() => {
     if (!user) return;
+
     const channel = supabase
       .channel('generation-jobs')
       .on(
         'postgres_changes',
         { event: 'UPDATE', schema: 'public', table: 'generation_logs', filter: `user_id=eq.${user.id}` },
         (payload) => {
-          const updated = payload.new as any;
+          const updated = payload.new as Record<string, any>;
+
           setJobs(prev => {
             const exists = prev.some(j => j.id === updated.id);
+
             if (exists) {
               return prev.map(j =>
                 j.id === updated.id
-                  ? { ...j, status: updated.status as JobStatus, image_url: updated.image_url, credits_used: updated.credits_used }
+                  ? {
+                      ...j,
+                      status: normalizeStatus(updated.status),
+                      prompt: updated.prompt ?? j.prompt,
+                      image_url: updated.image_url ?? j.image_url,
+                      ratio: updated.ratio ?? j.ratio,
+                      resolution: updated.resolution ?? updated.quality_tier ?? j.resolution,
+                      quality_tier: updated.quality_tier ?? j.quality_tier,
+                      model_id: updated.model_id ?? j.model_id,
+                      credits_used: updated.credits_used ?? j.credits_used,
+                      created_at: updated.created_at ?? j.created_at,
+                      tool_id: updated.tool_id ?? j.tool_id,
+                    }
                   : j
               );
             }
+
             // Edge case: record was inserted from another device/session
             return [{
-              id: updated.id,
-              status: (updated.status || 'completed') as JobStatus,
+              id: String(updated.id),
+              status: normalizeStatus(updated.status),
               prompt: updated.prompt || '',
-              image_url: updated.image_url,
-              ratio: updated.ratio,
-              quality_tier: updated.quality_tier,
-              model_id: updated.model_id,
+              image_url: updated.image_url ?? null,
+              ratio: updated.ratio ?? null,
+              resolution: updated.resolution ?? updated.quality_tier ?? null,
+              quality_tier: updated.quality_tier ?? null,
+              model_id: updated.model_id ?? null,
               credits_used: updated.credits_used || 0,
-              created_at: updated.created_at,
+              created_at: updated.created_at || new Date().toISOString(),
+              tool_id: updated.tool_id ?? null,
             }, ...prev];
           });
         }
@@ -94,27 +138,46 @@ export function useGenerationJobs() {
         'postgres_changes',
         { event: 'INSERT', schema: 'public', table: 'generation_logs', filter: `user_id=eq.${user.id}` },
         (payload) => {
-          const inserted = payload.new as any;
+          const inserted = payload.new as Record<string, any>;
+
           setJobs(prev => {
             // Don't duplicate if we already have it (optimistic insert)
             if (prev.some(j => j.id === inserted.id)) return prev;
+
             return [{
-              id: inserted.id,
-              status: (inserted.status || 'completed') as JobStatus,
+              id: String(inserted.id),
+              status: normalizeStatus(inserted.status),
               prompt: inserted.prompt || '',
-              image_url: inserted.image_url,
-              ratio: inserted.ratio,
-              quality_tier: inserted.quality_tier,
-              model_id: inserted.model_id,
+              image_url: inserted.image_url ?? null,
+              ratio: inserted.ratio ?? null,
+              resolution: inserted.resolution ?? inserted.quality_tier ?? null,
+              quality_tier: inserted.quality_tier ?? null,
+              model_id: inserted.model_id ?? null,
               credits_used: inserted.credits_used || 0,
-              created_at: inserted.created_at,
+              created_at: inserted.created_at || new Date().toISOString(),
+              tool_id: inserted.tool_id ?? null,
             }, ...prev];
           });
         }
       )
       .subscribe();
+
     return () => { supabase.removeChannel(channel); };
   }, [user]);
+
+  // Poll as a reliability fallback while jobs are still in progress.
+  useEffect(() => {
+    if (!user) return;
+    if (!jobs.some(job => IN_PROGRESS_STATUSES.includes(job.status))) return;
+
+    const intervalId = window.setInterval(() => {
+      fetchJobs();
+    }, 4000);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [user, jobs, fetchJobs]);
 
   // Create a processing job optimistically and return its ID
   const createJob = useCallback(async (params: {
@@ -123,80 +186,69 @@ export function useGenerationJobs() {
     qualityTier: string;
     modelId: string | null;
     creditCost: number;
+    sourceTag?: string;
   }): Promise<string | null> => {
     if (!user) return null;
 
-    // Don't pass model_id in the initial insert to avoid FK constraint failures
-    // The edge function will resolve and set the correct model_id with service role
-    const { data, error } = await supabase
+    const baseInsert = {
+      user_id: user.id,
+      status: 'queued' as string,
+      prompt: params.prompt.slice(0, 500),
+      ratio: params.ratio,
+      resolution: params.qualityTier,
+      requested_ratio: params.ratio,
+      quality_tier: params.qualityTier,
+      requested_quality_tier: params.qualityTier,
+      credits_used: params.creditCost,
+      tool_id: params.sourceTag || null,
+    };
+
+    let insertedModelId = params.modelId || null;
+
+    let { data, error } = await supabase
       .from('generation_logs')
       .insert({
-        user_id: user.id,
-        status: 'processing' as string,
-        prompt: params.prompt.slice(0, 500),
-        ratio: params.ratio,
-        requested_ratio: params.ratio,
-        quality_tier: params.qualityTier,
-        requested_quality_tier: params.qualityTier,
-        model_id: params.modelId || null,
-        credits_used: params.creditCost,
+        ...baseInsert,
+        model_id: insertedModelId,
       })
       .select('id')
       .single();
 
+    if ((error || !data) && error?.code === '23503' && params.modelId) {
+      insertedModelId = null;
+
+      const retryResult = await supabase
+        .from('generation_logs')
+        .insert({
+          ...baseInsert,
+          model_id: null,
+        })
+        .select('id')
+        .single();
+
+      data = retryResult.data;
+      error = retryResult.error;
+    }
+
     if (error || !data) {
       console.error('Failed to create generation job:', error);
-      // If FK constraint on model_id, retry without it
-      if (error?.code === '23503' && params.modelId) {
-        const { data: retryData, error: retryError } = await supabase
-          .from('generation_logs')
-          .insert({
-            user_id: user.id,
-            status: 'processing' as string,
-            prompt: params.prompt.slice(0, 500),
-            ratio: params.ratio,
-            requested_ratio: params.ratio,
-            quality_tier: params.qualityTier,
-            requested_quality_tier: params.qualityTier,
-            model_id: null,
-            credits_used: params.creditCost,
-          })
-          .select('id')
-          .single();
-
-        if (retryError || !retryData) {
-          console.error('Retry also failed:', retryError);
-          return null;
-        }
-
-        setJobs(prev => [{
-          id: retryData.id,
-          status: 'processing' as JobStatus,
-          prompt: params.prompt,
-          image_url: null,
-          ratio: params.ratio,
-          quality_tier: params.qualityTier,
-          model_id: null,
-          credits_used: params.creditCost,
-          created_at: new Date().toISOString(),
-        }, ...prev]);
-        return retryData.id;
-      }
       return null;
     }
 
-    // Add optimistically to local state
     setJobs(prev => [{
       id: data.id,
-      status: 'processing' as JobStatus,
+      status: 'queued' as JobStatus,
       prompt: params.prompt,
       image_url: null,
       ratio: params.ratio,
+      resolution: params.qualityTier,
       quality_tier: params.qualityTier,
-      model_id: params.modelId,
+      model_id: insertedModelId,
       credits_used: params.creditCost,
       created_at: new Date().toISOString(),
+      tool_id: params.sourceTag || null,
     }, ...prev]);
+
     return data.id;
   }, [user]);
 
@@ -210,6 +262,34 @@ export function useGenerationJobs() {
     imageUrls?: string[];
   }) => {
     try {
+      setJobs(prev => prev.map(job =>
+        job.id === jobId
+          ? {
+              ...job,
+              status: 'generating' as JobStatus,
+              ratio: params.aspectRatio,
+              resolution: params.qualityTier,
+              quality_tier: params.qualityTier,
+              model_id: params.modelId ?? job.model_id,
+            }
+          : job
+      ));
+
+      const { error: statusError } = await supabase
+        .from('generation_logs')
+        .update({
+          status: 'generating' as string,
+          ratio: params.aspectRatio,
+          resolution: params.qualityTier,
+          quality_tier: params.qualityTier,
+          model_id: params.modelId || null,
+        })
+        .eq('id', jobId);
+
+      if (statusError) {
+        console.error('Failed to update generation status to generating:', statusError);
+      }
+
       const { error } = await supabase.functions.invoke('generate-image', {
         body: {
           prompt: params.prompt,
@@ -222,29 +302,67 @@ export function useGenerationJobs() {
           image_urls: params.imageUrls || undefined,
         },
       });
+
       if (error) {
         console.error('Generation invoke error:', error);
-        setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: 'failed' as JobStatus } : j));
+        await markJobFailed(jobId);
       }
     } catch (err) {
       console.error('Generation call failed:', err);
-      setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: 'failed' as JobStatus } : j));
+      await markJobFailed(jobId);
     }
-  }, []);
+  }, [markJobFailed]);
+
+  const submitJob = useCallback(async (params: {
+    prompt: string;
+    ratio: string;
+    qualityTier: string;
+    modelId: string | null;
+    creditCost: number;
+    sourceTag?: string;
+    imageUrl?: string;
+    imageUrls?: string[];
+  }) => {
+    const jobId = await createJob({
+      prompt: params.prompt,
+      ratio: params.ratio,
+      qualityTier: params.qualityTier,
+      modelId: params.modelId,
+      creditCost: params.creditCost,
+      sourceTag: params.sourceTag,
+    });
+
+    if (!jobId) {
+      return null;
+    }
+
+    void startGeneration(jobId, {
+      prompt: params.prompt,
+      aspectRatio: params.ratio,
+      qualityTier: params.qualityTier,
+      modelId: params.modelId,
+      imageUrl: params.imageUrl,
+      imageUrls: params.imageUrls,
+    });
+
+    return jobId;
+  }, [createJob, startGeneration]);
 
   // Retry a failed job
   const retryJob = useCallback(async (jobId: string) => {
     const job = jobs.find(j => j.id === jobId);
     if (!job) return;
-    setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: 'processing' as JobStatus } : j));
-    await supabase.from('generation_logs').update({ status: 'processing' }).eq('id', jobId);
-    startGeneration(jobId, {
+
+    setJobs(prev => prev.map(j => j.id === jobId ? { ...j, status: 'generating' as JobStatus } : j));
+    await supabase.from('generation_logs').update({ status: 'generating' as string }).eq('id', jobId);
+
+    void startGeneration(jobId, {
       prompt: job.prompt,
       aspectRatio: job.ratio || '1:1',
-      qualityTier: job.quality_tier || '1K',
+      qualityTier: job.resolution || job.quality_tier || '1K',
       modelId: job.model_id,
     });
   }, [jobs, startGeneration]);
 
-  return { jobs, loading, createJob, startGeneration, retryJob, refetch: fetchJobs };
+  return { jobs, loading, createJob, startGeneration, submitJob, retryJob, refetch: fetchJobs };
 }

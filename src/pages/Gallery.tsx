@@ -1,5 +1,5 @@
-import { useMemo, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useEffect, useMemo, useState, useCallback, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Download, RefreshCw, Image as ImageIcon, ArrowRight, Loader2, AlertCircle, RotateCcw, Share2, Search, SortAsc, SortDesc, Trash2 } from 'lucide-react';
 import { useGenerationJobs, GenerationJob } from '@/hooks/useGenerationJobs';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -8,6 +8,7 @@ import { useApp } from '@/context/AppContext';
 import { ImageDetailDrawer } from '@/components/gallery/ImageDetailDrawer';
 import { ImageLightbox } from '@/components/gallery/ImageLightbox';
 import { ShareModal } from '@/components/gallery/ShareModal';
+import { useModels } from '@/hooks/useModels';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -44,9 +45,22 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile }: 
   onTap: (job: GenerationJob) => void;
   onShare: (job: GenerationJob) => void;
   isMobile: boolean;
+  modelName: string;
+  isHighlighted: boolean;
 }) {
-  const isProcessing = job.status === 'processing';
+  const isProcessing = job.status === 'queued' || job.status === 'generating' || job.status === 'processing';
+  const isQueued = job.status === 'queued';
   const isFailed = job.status === 'failed';
+  const resolution = job.resolution || job.quality_tier || '1K';
+  const startedTime = new Date(job.created_at).toLocaleTimeString(isAr ? 'ar' : 'en-US', {
+    hour: '2-digit',
+    minute: '2-digit',
+  });
+  const shellClassName = `rounded-2xl overflow-hidden bg-card/60 border w-full text-start cursor-pointer active:scale-[0.98] transition-all ${
+    isHighlighted
+      ? 'border-primary/40 ring-2 ring-primary/35 shadow-lg shadow-primary/10'
+      : 'border-border/20 hover:border-border/40'
+  }`;
 
   const handleDownload = async (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -82,16 +96,44 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile }: 
     return (
       <button
         onClick={() => onTap(job)}
-        className="rounded-2xl overflow-hidden bg-card/60 w-full text-start cursor-pointer active:scale-[0.98] transition-transform"
+        className={shellClassName}
       >
-        <div className="aspect-square flex flex-col items-center justify-center gap-3 p-4 bg-gradient-to-br from-primary/5 to-muted/10">
-          <Loader2 size={28} className="text-primary animate-spin" />
-          <span className="text-xs font-medium text-primary">
-            {isAr ? 'جاري التوليد...' : 'Generating...'}
-          </span>
+        <div className="aspect-square relative overflow-hidden bg-gradient-to-br from-primary/10 via-muted/20 to-background">
+          <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.14),transparent_60%)]" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
+            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-background/80 text-primary shadow-sm">
+              <Loader2 size={22} className="animate-spin" />
+            </div>
+            <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary">
+              {isQueued ? (isAr ? 'في الانتظار' : 'Queued') : (isAr ? 'جاري التوليد' : 'Generating')}
+            </span>
+            <p className="text-[11px] text-muted-foreground max-w-[220px]">
+              {isQueued
+                ? (isAr ? 'نجهز طلبك الآن…' : 'Preparing your generation…')
+                : (isAr ? 'سيظهر الناتج هنا فور اكتماله' : 'Your result will appear here as soon as it is ready')}
+            </p>
+          </div>
         </div>
-        <div className="p-3">
-          <p className="text-[11px] text-muted-foreground line-clamp-2">{job.prompt}</p>
+        <div className="p-3 space-y-2.5">
+          <p className="text-[12px] font-medium text-foreground line-clamp-2">{job.prompt}</p>
+          <div className="grid grid-cols-2 gap-2 text-[11px]">
+            <div className="rounded-xl bg-muted/35 px-2.5 py-2">
+              <span className="text-muted-foreground/70">{isAr ? 'النموذج' : 'Model'}</span>
+              <span className="mt-0.5 block text-foreground/85 line-clamp-1">{modelName}</span>
+            </div>
+            <div className="rounded-xl bg-muted/35 px-2.5 py-2">
+              <span className="text-muted-foreground/70">{isAr ? 'الدقة' : 'Resolution'}</span>
+              <span className="mt-0.5 block text-foreground/85">{resolution}</span>
+            </div>
+            <div className="rounded-xl bg-muted/35 px-2.5 py-2">
+              <span className="text-muted-foreground/70">{isAr ? 'النسبة' : 'Ratio'}</span>
+              <span className="mt-0.5 block text-foreground/85">{job.ratio || '1:1'}</span>
+            </div>
+            <div className="rounded-xl bg-muted/35 px-2.5 py-2">
+              <span className="text-muted-foreground/70">{isAr ? 'بدأ في' : 'Started'}</span>
+              <span className="mt-0.5 block text-foreground/85">{startedTime}</span>
+            </div>
+          </div>
         </div>
       </button>
     );
@@ -101,13 +143,16 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile }: 
     return (
       <button
         onClick={() => onTap(job)}
-        className="rounded-2xl overflow-hidden bg-card/60 w-full text-start cursor-pointer active:scale-[0.98] transition-transform"
+        className={shellClassName}
       >
-        <div className="aspect-square flex flex-col items-center justify-center gap-3 p-4">
+        <div className="aspect-square flex flex-col items-center justify-center gap-3 p-4 text-center">
           <AlertCircle size={28} className="text-destructive/60" />
           <span className="text-xs font-medium text-destructive">
             {isAr ? 'فشل التوليد' : 'Failed'}
           </span>
+          <p className="max-w-[220px] text-[11px] text-muted-foreground">
+            {isAr ? 'فشل التوليد. يرجى المحاولة مرة أخرى.' : 'Generation failed. Please try again.'}
+          </p>
           <span
             onClick={handleRetry}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
@@ -116,8 +161,12 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile }: 
             {isAr ? 'إعادة المحاولة' : 'Retry'}
           </span>
         </div>
-        <div className="p-3">
-          <p className="text-[11px] text-muted-foreground line-clamp-2">{job.prompt}</p>
+        <div className="p-3 space-y-2">
+          <p className="text-[12px] font-medium text-foreground line-clamp-2">{job.prompt}</p>
+          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+            <span>{modelName}</span>
+            <span>{resolution}</span>
+          </div>
         </div>
       </button>
     );
@@ -127,7 +176,7 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile }: 
   return (
     <button
       onClick={() => onTap(job)}
-      className="group relative rounded-2xl overflow-hidden transition-all duration-300 hover:shadow-xl hover:shadow-black/10 animate-in fade-in zoom-in-95 duration-300 w-full text-start cursor-pointer active:scale-[0.98]"
+      className={`${shellClassName} group relative animate-in fade-in zoom-in-95 duration-300 hover:shadow-xl hover:shadow-black/10`}
     >
       {job.image_url && (
         <img src={job.image_url} alt={job.prompt || ''} className="w-full aspect-square object-cover" loading="lazy" />
@@ -166,11 +215,13 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile }: 
 
 export default function Gallery() {
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const { lang, isRTL } = useLanguage();
   const { t } = useLanguage();
   const { user } = useAuth();
   const { openAuthModal, setPrompt } = useApp();
   const { jobs, loading, retryJob } = useGenerationJobs();
+  const { models } = useModels();
   const isMobile = useIsMobile();
   const isAr = lang === 'ar';
   const [selectedJob, setSelectedJob] = useState<GenerationJob | null>(null);
@@ -178,8 +229,32 @@ export default function Gallery() {
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortKey>('newest');
   const [filter, setFilter] = useState<FilterKey>('all');
+  const [highlightedJobId, setHighlightedJobId] = useState<string | null>(null);
+  const scrollerRef = useRef<HTMLDivElement>(null);
 
   const g = t.gallery;
+  const modelNames = useMemo(() => new Map(models.map(model => [model.id, model.model_name])), [models]);
+
+  useEffect(() => {
+    const highlightId = searchParams.get('highlight');
+    if (!highlightId) return;
+
+    setHighlightedJobId(highlightId);
+    scrollerRef.current?.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete('highlight');
+    setSearchParams(nextParams, { replace: true });
+
+    const timeoutId = window.setTimeout(() => {
+      setHighlightedJobId(current => current === highlightId ? null : current);
+    }, 2400);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [searchParams, setSearchParams]);
 
   // Filter + search + sort
   const filteredJobs = useMemo(() => {
@@ -276,6 +351,7 @@ export default function Gallery() {
   return (
     <>
       <div
+        ref={scrollerRef}
         className="flex-1 overflow-y-auto pb-24 md:pb-6 animate-page-enter"
         dir={isAr ? 'rtl' : 'ltr'}
         style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}
@@ -365,6 +441,8 @@ export default function Gallery() {
                       onTap={handleTap}
                       onShare={setShareJob}
                       isMobile={isMobile}
+                      modelName={job.model_id ? (modelNames.get(job.model_id) || (isAr ? 'افتراضي' : 'Default')) : (isAr ? 'افتراضي' : 'Default')}
+                      isHighlighted={highlightedJobId === job.id}
                     />
                   ))}
                 </div>
