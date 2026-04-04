@@ -185,11 +185,20 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
           </span>
         </div>
         <div className="p-3 space-y-2">
-          <p className="text-[12px] font-medium text-foreground line-clamp-2">{job.prompt}</p>
-          <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>{modelName}</span>
-            <span>{resolution}</span>
-          </div>
+          <p className="text-[12px] font-medium text-foreground line-clamp-2">
+            {templateTitle || job.prompt}
+          </p>
+          {templateTitle ? (
+            <div className="flex items-center gap-1.5 text-[11px] text-primary/70">
+              <LayoutTemplate size={11} />
+              <span>{isAr ? 'من قالب' : 'From Template'}</span>
+            </div>
+          ) : (
+            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+              <span>{modelName}</span>
+              <span>{resolution}</span>
+            </div>
+          )}
         </div>
       </button>
     );
