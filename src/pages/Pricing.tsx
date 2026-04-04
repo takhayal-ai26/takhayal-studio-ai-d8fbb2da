@@ -546,7 +546,7 @@ const Pricing = () => {
       {/* Top-Up Packages */}
       <section className="max-w-5xl mx-auto px-6 pb-20">
         <div className="text-center mb-8">
-          <h2 className="text-2xl font-light text-foreground">{isAr ? 'اشحن في أي وقت' : 'Top up anytime'}</h2>
+          <h2 className="typo-heading-section">{isAr ? 'اشحن في أي وقت' : 'Top up anytime'}</h2>
           <p className="text-sm text-muted-foreground mt-2">{isAr ? 'الأرصدة لا تنتهي صلاحيتها. اشترِ المزيد متى احتجت.' : 'Credits never expire. Buy more whenever you need them.'}</p>
         </div>
 
