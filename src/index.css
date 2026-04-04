@@ -25,7 +25,7 @@
     --secondary: 0 0% 15%;
     --secondary-foreground: 0 0% 100%;
     --muted: 0 0% 18%;
-    --muted-foreground: 0 0% 70%;
+    --muted-foreground: 0 0% 77%;
     --accent: 0 0% 15%;
     --accent-foreground: 0 0% 100%;
     --border: 0 0% 100% / 0.08;
@@ -34,11 +34,13 @@
     --surface: 0 0% 15%;
     --surface-border: 0 0% 100% / 0.08;
     --card-border: 0 0% 100% / 0.08;
-    --text-secondary: 0 0% 70%;
-    --text-tertiary: 0 0% 50%;
-    --text-disabled: 0 0% 53%;
+    --text-secondary: 0 0% 77%;
+    --text-tertiary: 0 0% 62%;
+    --text-disabled: 0 0% 58%;
+    --label-color: 0 0% 88%;
+    --placeholder-color: 0 0% 62%;
     --sidebar-background: 0 0% 15%;
-    --sidebar-foreground: 0 0% 70%;
+    --sidebar-foreground: 0 0% 77%;
     --sidebar-primary: 10 88% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 0 0% 18%;
@@ -53,32 +55,34 @@
   /* ── Light Mode ── */
   [data-theme="light"] {
     --background: 30 5% 97%;
-    --foreground: 0 0% 8%;
+    --foreground: 0 0% 7%;
     --card: 0 0% 100%;
-    --card-foreground: 0 0% 8%;
+    --card-foreground: 0 0% 7%;
     --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 8%;
+    --popover-foreground: 0 0% 7%;
     --secondary: 30 5% 96%;
-    --secondary-foreground: 0 0% 8%;
+    --secondary-foreground: 0 0% 7%;
     --muted: 30 3% 93%;
-    --muted-foreground: 0 0% 40%;
+    --muted-foreground: 0 0% 33%;
     --accent: 0 0% 100%;
-    --accent-foreground: 0 0% 8%;
+    --accent-foreground: 0 0% 7%;
     --border: 0 0% 0% / 0;
     --input: 0 0% 0% / 0.08;
     --input-focus: 10 88% 52% / 0.4;
     --surface: 0 0% 100%;
     --surface-border: 0 0% 0% / 0.06;
     --card-border: 0 0% 0% / 0.05;
-    --text-secondary: 0 0% 40%;
-    --text-tertiary: 0 0% 55%;
-    --text-disabled: 0 0% 75%;
+    --text-secondary: 0 0% 33%;
+    --text-tertiary: 0 0% 42%;
+    --text-disabled: 0 0% 55%;
+    --label-color: 0 0% 20%;
+    --placeholder-color: 0 0% 53%;
     --sidebar-background: 0 0% 100%;
-    --sidebar-foreground: 0 0% 40%;
+    --sidebar-foreground: 0 0% 33%;
     --sidebar-primary: 10 88% 52%;
     --sidebar-primary-foreground: 0 0% 100%;
     --sidebar-accent: 30 5% 96%;
-    --sidebar-accent-foreground: 0 0% 8%;
+    --sidebar-accent-foreground: 0 0% 7%;
     --sidebar-border: 0 0% 0% / 0.06;
     --sidebar-ring: 10 88% 52%;
     --shadow-color: 0 0% 0% / 0.06;
@@ -108,8 +112,14 @@
   background: #FFFFFF !important;
   border: 1px solid transparent !important;
   border-radius: 12px;
-  color: hsl(0 0% 8%);
+  color: #111111;
+  font-size: 15px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+}
+[data-theme="light"] input:not([data-hero-input])::placeholder,
+[data-theme="light"] textarea:not([data-hero-input])::placeholder {
+  color: #888888;
+  opacity: 1;
 }
 [data-theme="light"] input:not([data-hero-input]):focus,
 [data-theme="light"] textarea:not([data-hero-input]):focus,
@@ -121,10 +131,16 @@
 [data-theme="dark"] input:not([data-hero-input]),
 [data-theme="dark"] textarea:not([data-hero-input]),
 [data-theme="dark"] select {
-  background: rgba(255, 255, 255, 0.04) !important;
+  background: hsl(0 0% 18%) !important;
   border: 1px solid transparent !important;
   border-radius: 12px;
-  color: hsl(0 0% 93%);
+  color: #FFFFFF;
+  font-size: 15px;
+}
+[data-theme="dark"] input:not([data-hero-input])::placeholder,
+[data-theme="dark"] textarea:not([data-hero-input])::placeholder {
+  color: #9E9E9E;
+  opacity: 1;
 }
 [data-theme="dark"] input:not([data-hero-input]):focus,
 [data-theme="dark"] textarea:not([data-hero-input]):focus,
