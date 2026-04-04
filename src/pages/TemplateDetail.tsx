@@ -60,6 +60,11 @@ export default function TemplateDetail() {
   }, [id]);
 
   const processFile = useCallback(async (file: File) => {
+    if (!user) {
+      openAuthModal('signup');
+      return;
+    }
+
     if (!ACCEPTED_TYPES.includes(file.type)) {
       toast({ title: isAr ? 'ملف غير صالح' : 'Invalid file', description: isAr ? 'JPG أو PNG أو WebP فقط' : 'JPG, PNG, or WebP only', variant: 'destructive' });
       return;
@@ -71,9 +76,10 @@ export default function TemplateDetail() {
     setUploading(true);
     const ext = file.name.split('.').pop() || 'jpg';
     const fileName = `${crypto.randomUUID()}.${ext}`;
+    const filePath = `${user.id}/${fileName}`;
     const { data, error } = await supabase.storage
       .from('tool-files')
-      .upload(fileName, file, { cacheControl: '3600', upsert: true });
+      .upload(filePath, file, { cacheControl: '3600', upsert: true });
     if (error) {
       toast({ title: isAr ? 'فشل الرفع' : 'Upload failed', description: error.message, variant: 'destructive' });
       setUploading(false);
@@ -82,7 +88,7 @@ export default function TemplateDetail() {
     const { data: urlData } = supabase.storage.from('tool-files').getPublicUrl(data.path);
     setUploadedImage(urlData.publicUrl);
     setUploading(false);
-  }, [isAr]);
+  }, [isAr, openAuthModal, user]);
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
