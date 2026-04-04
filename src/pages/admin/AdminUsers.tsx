@@ -34,7 +34,7 @@ export default function AdminUsers({ embedded }: { embedded?: boolean } = {}) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Users</h1>
+          <h1 className="typo-heading-page">Users</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage platform users and accounts</p>
         </div>
         <Button size="sm" className="gap-1.5 text-xs"><Download size={14} /> Export CSV</Button>

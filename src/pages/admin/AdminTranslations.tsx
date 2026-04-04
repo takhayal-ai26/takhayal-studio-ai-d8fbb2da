@@ -232,7 +232,7 @@ export default function AdminTranslations({ embedded }: { embedded?: boolean } =
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Translations</h1>
+          <h1 className="typo-heading-page">Translations</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage all app content in multiple languages — edits go live instantly</p>
         </div>
         <div className="flex items-center gap-2">
@@ -259,25 +259,25 @@ export default function AdminTranslations({ embedded }: { embedded?: boolean } =
         <Card className="bg-card/60 border-border/40">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2.5 rounded-lg bg-primary/10"><Languages size={18} className="text-primary" /></div>
-            <div><p className="text-2xl font-bold">{totalKeys}</p><p className="text-xs text-muted-foreground">Total Keys</p></div>
+            <div><p className="typo-heading-page">{totalKeys}</p><p className="text-xs text-muted-foreground">Total Keys</p></div>
           </CardContent>
         </Card>
         <Card className="bg-card/60 border-border/40">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2.5 rounded-lg bg-emerald-500/10"><CheckCircle2 size={18} className="text-emerald-400" /></div>
-            <div><p className="text-2xl font-bold">{completed}</p><p className="text-xs text-muted-foreground">Completed</p></div>
+            <div><p className="typo-heading-page">{completed}</p><p className="text-xs text-muted-foreground">Completed</p></div>
           </CardContent>
         </Card>
         <Card className="bg-card/60 border-border/40">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2.5 rounded-lg bg-red-500/10"><AlertCircle size={18} className="text-red-400" /></div>
-            <div><p className="text-2xl font-bold">{missingAr}</p><p className="text-xs text-muted-foreground">Missing Arabic</p></div>
+            <div><p className="typo-heading-page">{missingAr}</p><p className="text-xs text-muted-foreground">Missing Arabic</p></div>
           </CardContent>
         </Card>
         <Card className="bg-card/60 border-border/40">
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2.5 rounded-lg bg-yellow-500/10"><Clock size={18} className="text-yellow-400" /></div>
-            <div><p className="text-2xl font-bold">{missingEn}</p><p className="text-xs text-muted-foreground">Missing English</p></div>
+            <div><p className="typo-heading-page">{missingEn}</p><p className="text-xs text-muted-foreground">Missing English</p></div>
           </CardContent>
         </Card>
       </div>

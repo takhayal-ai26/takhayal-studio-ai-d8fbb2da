@@ -7,7 +7,7 @@ export default function AdminStudioConfig() {
   return (
     <div className="space-y-6">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">Studio Config</h1>
+        <h1 className="typo-heading-page">Studio Config</h1>
         <p className="text-sm text-muted-foreground mt-1">Manage tools, models, routing rules, and provider connections</p>
       </div>
 

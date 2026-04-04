@@ -34,7 +34,7 @@ export default function AdminNotifications({ embedded }: { embedded?: boolean } 
       <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Notifications</h1>
+          <h1 className="typo-heading-page">Notifications</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage banners, alerts, and in-app messaging</p>
         </div>
         <Button size="sm" className="gap-1.5 text-xs"><Plus size={14} /> Create Notification</Button>

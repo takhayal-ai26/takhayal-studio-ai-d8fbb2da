@@ -89,7 +89,7 @@ export default function AdminDashboard() {
     <div className="space-y-8">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-foreground tracking-tight">Dashboard</h1>
+          <h1 className="typo-heading-page">Dashboard</h1>
           <p className="text-sm text-muted-foreground mt-1">Real-time platform metrics from your database</p>
         </div>
       </div>

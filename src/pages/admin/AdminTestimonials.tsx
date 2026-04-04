@@ -95,7 +95,7 @@ export default function AdminTestimonials({ embedded }: { embedded?: boolean } =
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          {!embedded && <h1 className="text-2xl font-bold tracking-tight">Testimonials</h1>}
+          {!embedded && <h1 className="typo-heading-page">Testimonials</h1>}
           <p className="text-sm text-muted-foreground mt-1">Manage customer testimonials shown on the website</p>
         </div>
         <Button size="sm" onClick={openCreate} className="gap-1.5 text-xs"><Plus size={14} /> Add Testimonial</Button>

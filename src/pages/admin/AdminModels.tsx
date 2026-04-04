@@ -199,7 +199,7 @@ export default function AdminModels({ embedded }: { embedded?: boolean } = {}) {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Models & Providers</h1>
+          <h1 className="typo-heading-page">Models & Providers</h1>
           <p className="text-sm text-muted-foreground mt-1">Manage AI providers, model routing, costs, and failover</p>
         </div>
         <div className="flex items-center gap-2">

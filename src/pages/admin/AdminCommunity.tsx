@@ -27,7 +27,7 @@ export default function AdminCommunity() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Community Moderation</h1>
+          <h1 className="typo-heading-page">Community Moderation</h1>
           <p className="text-sm text-muted-foreground mt-1">Review submissions, moderate content, and manage community</p>
         </div>
       </div>
