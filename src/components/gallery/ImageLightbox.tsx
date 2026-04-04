@@ -269,40 +269,58 @@ export function ImageLightbox({
             {/* Divider */}
             <div className="h-px bg-border/10" />
 
-            {/* Prompt */}
-            {job.prompt && (
+            {templateTitle ? (
+              /* ── Template-specific detail ── */
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.15em]">
-                    {isAr ? 'التعليمة' : 'Prompt'}
-                  </span>
-                  <button
-                    onClick={handleCopyPrompt}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/30 hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all cursor-pointer"
-                    title={isAr ? 'نسخ' : 'Copy'}
-                  >
-                    {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
-                  </button>
+                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.15em] mb-3 block">
+                  {isAr ? 'القالب' : 'Template'}
+                </span>
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <LayoutTemplate size={14} className="text-primary" />
+                  </div>
+                  <span className="text-[14px] font-semibold text-foreground">{templateTitle}</span>
                 </div>
-                <p className="text-[13px] text-foreground/80 leading-[1.7]">{job.prompt}</p>
+                <div className="space-y-3">
+                  <MetaRow icon={<Calendar size={14} />} label={isAr ? 'التاريخ' : 'Date'} value={`${dateStr} · ${timeStr}`} />
+                </div>
               </div>
+            ) : (
+              /* ── Regular prompt detail ── */
+              <>
+                {job.prompt && (
+                  <div>
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.15em]">
+                        {isAr ? 'التعليمة' : 'Prompt'}
+                      </span>
+                      <button
+                        onClick={handleCopyPrompt}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/30 hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all cursor-pointer"
+                        title={isAr ? 'نسخ' : 'Copy'}
+                      >
+                        {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
+                      </button>
+                    </div>
+                    <p className="text-[13px] text-foreground/80 leading-[1.7]">{job.prompt}</p>
+                  </div>
+                )}
+
+                <div className="h-px bg-border/10" />
+
+                <div>
+                  <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.15em] mb-3 block">
+                    {isAr ? 'التفاصيل' : 'Details'}
+                  </span>
+                  <div className="space-y-3">
+                    <MetaRow icon={<Calendar size={14} />} label={isAr ? 'التاريخ' : 'Date'} value={`${dateStr} · ${timeStr}`} />
+                    <MetaRow icon={<Cpu size={14} />} label={isAr ? 'النموذج' : 'Model'} value={modelName} />
+                    <MetaRow icon={<Ratio size={14} />} label={isAr ? 'النسبة' : 'Ratio'} value={job.ratio || '1:1'} />
+                    <MetaRow icon={<Sparkles size={14} />} label={isAr ? 'الجودة' : 'Quality'} value={job.quality_tier || '1K'} />
+                  </div>
+                </div>
+              </>
             )}
-
-            {/* Divider */}
-            <div className="h-px bg-border/10" />
-
-            {/* Metadata */}
-            <div>
-              <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.15em] mb-3 block">
-                {isAr ? 'التفاصيل' : 'Details'}
-              </span>
-              <div className="space-y-3">
-                <MetaRow icon={<Calendar size={14} />} label={isAr ? 'التاريخ' : 'Date'} value={`${dateStr} · ${timeStr}`} />
-                <MetaRow icon={<Cpu size={14} />} label={isAr ? 'النموذج' : 'Model'} value={modelName} />
-                <MetaRow icon={<Ratio size={14} />} label={isAr ? 'النسبة' : 'Ratio'} value={job.ratio || '1:1'} />
-                <MetaRow icon={<Sparkles size={14} />} label={isAr ? 'الجودة' : 'Quality'} value={job.quality_tier || '1K'} />
-              </div>
-            </div>
 
             {/* Delete */}
             {isCompleted && onDelete && (
