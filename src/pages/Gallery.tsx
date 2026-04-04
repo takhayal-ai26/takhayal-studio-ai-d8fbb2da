@@ -58,10 +58,20 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
     hour: '2-digit',
     minute: '2-digit',
   });
-  const shellClassName = `rounded-2xl overflow-hidden bg-card/60 border w-full text-start cursor-pointer active:scale-[0.98] transition-all ${
+  // Compute CSS aspect-ratio from the stored ratio string (e.g. "9:16" → "9/16")
+  const cssRatio = (() => {
+    const r = job.ratio || '1:1';
+    const map: Record<string, string> = {
+      '1:1': '1/1', '16:9': '16/9', '9:16': '9/16', '4:5': '4/5',
+      '4:3': '4/3', '3:2': '3/2', '3:4': '3/4', '2:3': '2/3', '5:4': '5/4',
+    };
+    return map[r] || '1/1';
+  })();
+
+  const shellClassName = `rounded-2xl overflow-hidden bg-card/60 w-full text-start cursor-pointer active:scale-[0.98] transition-all ${
     isHighlighted
-      ? 'border-primary/40 ring-2 ring-primary/35 shadow-lg shadow-primary/10'
-      : 'border-border/20 hover:border-border/40'
+      ? 'ring-2 ring-primary/35 shadow-lg shadow-primary/10'
+      : 'hover:shadow-lg hover:shadow-black/8'
   }`;
 
   const handleDownload = async (e: React.MouseEvent) => {
