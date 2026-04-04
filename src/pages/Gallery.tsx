@@ -518,6 +518,7 @@ export default function Gallery() {
           onNext={handleNext}
           hasPrev={selectedIndex > 0}
           hasNext={selectedIndex < filteredJobs.length - 1}
+          templateTitle={selectedJob ? getTemplateTitle(selectedJob, templateMap, isAr) : null}
         />
       )}
 
