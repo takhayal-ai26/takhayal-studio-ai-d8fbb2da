@@ -16,6 +16,9 @@ export interface PricingTier {
   pricing_mode: string;
   is_default: boolean;
   is_active: boolean;
+  is_available: boolean;
+  resolution_label: string | null;
+  actual_pixels: number | null;
   notes: string | null;
 }
 
