@@ -1,6 +1,7 @@
 import { Sparkles, Wand2, Zap, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ToolProvider } from '@/hooks/useToolProviders';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface ToolProviderSelectorProps {
   providers: ToolProvider[];
@@ -16,12 +17,13 @@ const tierIcons: Record<string, any> = {
 };
 
 export function ToolProviderSelector({ providers, selected, onSelect }: ToolProviderSelectorProps) {
+  const { isRTL, t } = useLanguage();
   if (providers.length <= 1) return null;
 
   return (
     <div className="space-y-2">
       <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider block">
-        Processing Mode
+        {t.toolPage.processingMode}
       </label>
       <div className="grid grid-cols-2 gap-2.5">
         {providers.map(p => {
