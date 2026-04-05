@@ -45,7 +45,8 @@ export default function CreateHub() {
         {heroTool && (
           <button
             onClick={() => handleToolClick(heroTool)}
-            className="w-full rounded-3xl overflow-hidden relative group mb-4 text-left focus:outline-none active:scale-[0.98] transition-transform shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
+            className="w-full rounded-3xl overflow-hidden relative group mb-4 focus:outline-none active:scale-[0.98] transition-transform shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
+            style={{ textAlign: isAr ? 'right' : 'left' }}
           >
             <div className="aspect-[2/1] relative">
               {heroTool.image ? (
@@ -60,18 +61,9 @@ export default function CreateHub() {
                 </div>
               )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/5" />
-              {/* Orange glow */}
               <div className="absolute -bottom-4 left-1/2 -translate-x-1/2 w-3/4 h-12 bg-primary/20 blur-2xl rounded-full pointer-events-none" />
             </div>
             <div className="absolute bottom-0 left-0 right-0 p-5">
-              <div className="flex items-center gap-2 mb-1.5">
-                <div className="w-8 h-8 rounded-xl bg-primary/90 flex items-center justify-center shadow-lg shadow-primary/30">
-                  <Sparkles size={16} className="text-primary-foreground" />
-                </div>
-                <span className="text-xs font-medium text-white/60">
-                  {heroTool.creditCost} {isAr ? 'رصيد' : 'credits'}
-                </span>
-              </div>
               <h2 className="text-xl font-bold text-white">{heroTool.name}</h2>
               <p className="text-sm text-white/60 mt-0.5">{heroTool.shortDesc}</p>
             </div>
