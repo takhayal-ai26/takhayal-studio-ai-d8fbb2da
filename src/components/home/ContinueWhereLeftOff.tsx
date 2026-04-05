@@ -34,7 +34,7 @@ export function ContinueWhereLeftOff() {
   return (
     <section className="my-8" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-foreground font-extrabold text-4xl">
+        <h2 className="text-foreground font-extrabold text-xl">
           {isAr ? 'أكمل من حيث توقفت' : 'Continue where you left off'}
         </h2>
         <button
