@@ -141,12 +141,12 @@ export default function PortalHome() {
 
           <div className="columns-2 md:columns-3 lg:columns-4 gap-1.5 [column-fill:_balance]">
             {filteredTemplates.map((tpl) => (
-              <button key={tpl.id} onClick={() => goToTemplateDetail(tpl.id)} className="group w-full rounded-2xl overflow-hidden break-inside-avoid mb-2 block text-left hover:shadow-lg hover:shadow-black/10 transition-shadow duration-300">
+              <button key={tpl.id} onClick={() => goToTemplateDetail(tpl.id)} dir={isRTL ? 'rtl' : 'ltr'} className="group w-full rounded-2xl overflow-hidden break-inside-avoid mb-2 block text-start hover:shadow-lg hover:shadow-black/10 transition-shadow duration-300">
                 <div className="relative overflow-hidden" style={{ aspectRatio: ratioToNumber(tpl.ratio) }}>
                   <img src={tpl.image} alt={tpl.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                   <h3 className="absolute bottom-2.5 left-3 right-3 font-semibold text-white leading-tight drop-shadow-md text-lg">{tpl.name}</h3>
-                  <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                  <div className={`absolute top-2.5 ${isRTL ? 'left-2.5' : 'right-2.5'} opacity-0 group-hover:opacity-100 transition-opacity duration-200`}>
                     <span className="h-7 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium flex items-center gap-1 shadow-lg">{t.portal.use}</span>
                   </div>
                 </div>
