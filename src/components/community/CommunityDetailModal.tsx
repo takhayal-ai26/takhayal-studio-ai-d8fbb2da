@@ -210,9 +210,9 @@ export function CommunityDetailModal({
         />
       </div>
 
-      {/* Info panel — right side, always dark */}
+      {/* Info panel — right side, theme-aware */}
       <div
-        className="w-[360px] shrink-0 flex flex-col bg-[#111111] overflow-y-auto h-screen"
+        className="w-[360px] shrink-0 flex flex-col bg-white dark:bg-[#111111] overflow-y-auto h-screen"
         onClick={e => e.stopPropagation()}
       >
         {/* Top: creator + close */}
