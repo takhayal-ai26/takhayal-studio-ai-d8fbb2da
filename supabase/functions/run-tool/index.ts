@@ -26,7 +26,7 @@ async function falQueueRun(
   const { status_url, response_url } = submitData;
   if (!status_url || !response_url) return { data: submitData };
 
-  const maxPolls = endpoint.includes("flux-vision") ? 90 : 60;
+  const maxPolls = endpoint.includes("topaz") ? 45 : 60;
   for (let i = 0; i < maxPolls; i++) {
     await new Promise((r) => setTimeout(r, 2000));
     const statusRes = await fetch(status_url, { headers: falHeaders });
@@ -199,11 +199,11 @@ serve(async (req) => {
               shape_preservation: 0.25,
             } : {}),
           };
-        } else if (endpoint.includes("flux-vision")) {
+        } else if (endpoint.includes("topaz")) {
           payload = {
             image_url,
-            scale_factor: 2,
-            prompt: "highly detailed, sharp, professional quality, enhanced textures",
+            model: "Standard V2",
+            upscale_factor: 2,
           };
         } else if (endpoint.includes("esrgan")) {
           payload = { image_url, scale: 2 };
