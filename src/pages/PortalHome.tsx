@@ -74,7 +74,7 @@ export default function PortalHome() {
         {/* ═══ LOGGED-IN: Product Mode ═══ */}
         {isLoggedIn && (
           <>
-            {/* Continue where you left off */}
+            <WelcomeBack />
             <ContinueWhereLeftOff />
           </>
         )}
