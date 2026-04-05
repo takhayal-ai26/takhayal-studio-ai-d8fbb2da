@@ -69,6 +69,8 @@ export default function AdminCommunity() {
   });
   const [testFile, setTestFile] = useState<File | null>(null);
   const [testPreview, setTestPreview] = useState('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const fetchPosts = useCallback(async () => {
@@ -174,6 +176,14 @@ export default function AdminCommunity() {
     }
   };
 
+  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleSubmitTest = async () => {
     if (!testFile && !testForm.image_url) { toast.error('Please provide an image'); return; }
     setSubmitting(true);
@@ -186,10 +196,20 @@ export default function AdminCommunity() {
       const { data: urlData } = supabase.storage.from('tool-covers').getPublicUrl(path);
       imageUrl = urlData.publicUrl;
     }
+    let avatarUrl = testForm.avatar_url;
+    if (avatarFile) {
+      const ext = avatarFile.name.split('.').pop();
+      const path = `community-avatars/${Date.now()}.${ext}`;
+      const { error: avatarErr } = await supabase.storage.from('avatars').upload(path, avatarFile, { contentType: avatarFile.type });
+      if (!avatarErr) {
+        const { data: avatarData } = supabase.storage.from('avatars').getPublicUrl(path);
+        avatarUrl = avatarData.publicUrl;
+      }
+    }
     const { error } = await supabase.from('community_posts').insert({
       image_url: imageUrl,
       username: testForm.username,
-      avatar_url: testForm.avatar_url || null,
+      avatar_url: avatarUrl || null,
       prompt: testForm.prompt,
       model: testForm.model,
       ratio: testForm.ratio,
@@ -204,6 +224,8 @@ export default function AdminCommunity() {
       setTestForm({ image_url: '', username: 'Takhayal Team', avatar_url: '', prompt: '', model: '', ratio: '1:1', quality_or_resolution: '1K', status: 'approved', is_featured: false });
       setTestFile(null);
       setTestPreview('');
+      setAvatarFile(null);
+      setAvatarPreview('');
     } else toast.error('Failed to create post');
     setSubmitting(false);
   };
@@ -287,13 +309,34 @@ export default function AdminCommunity() {
               </div>
             </div>
           </div>
+          <div className="space-y-2">
+            <label className="text-sm font-medium text-foreground">Creator Profile</label>
+            <div className="flex items-center gap-4">
+              <label className="w-14 h-14 rounded-full border-2 border-dashed border-border flex items-center justify-center cursor-pointer hover:border-primary/40 transition-colors overflow-hidden bg-muted/10 shrink-0">
+                {avatarPreview || testForm.avatar_url ? (
+                  <img src={avatarPreview || testForm.avatar_url} className="w-full h-full object-cover" alt="" />
+                ) : (
+                  <Upload size={16} className="text-muted-foreground" />
+                )}
+                <input type="file" accept="image/*" className="hidden" onChange={handleAvatarFileChange} />
+              </label>
+              <div className="flex-1 grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground">Username</label>
+                  <Input value={testForm.username} onChange={e => setTestForm({ ...testForm, username: e.target.value })} className="h-9 text-sm" />
+                </div>
+                <div className="space-y-1">
+                  <label className="text-xs text-muted-foreground">Avatar URL <span className="text-muted-foreground/60">(or upload)</span></label>
+                  <Input value={testForm.avatar_url} onChange={e => setTestForm({ ...testForm, avatar_url: e.target.value })} placeholder="https://..." className="h-9 text-sm" />
+                </div>
+              </div>
+            </div>
+          </div>
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-1"><label className="text-sm font-medium text-foreground">Username</label><Input value={testForm.username} onChange={e => setTestForm({ ...testForm, username: e.target.value })} className="h-9 text-sm" /></div>
             <div className="space-y-1"><label className="text-sm font-medium text-foreground">Model</label>
               <Select value={testForm.model} onValueChange={v => setTestForm({ ...testForm, model: v })}><SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select model..." /></SelectTrigger><SelectContent>{activeModels.map(m => (<SelectItem key={m.id} value={m.model_name}>{m.model_name}</SelectItem>))}</SelectContent></Select>
             </div>
           </div>
-          <div className="space-y-1"><label className="text-sm font-medium text-foreground">Avatar URL <span className="text-muted-foreground text-xs">(optional)</span></label><Input value={testForm.avatar_url} onChange={e => setTestForm({ ...testForm, avatar_url: e.target.value })} placeholder="https://... profile picture URL" className="h-9 text-sm" /></div>
           <div className="space-y-1"><label className="text-sm font-medium text-foreground">Prompt</label><Textarea value={testForm.prompt} onChange={e => setTestForm({ ...testForm, prompt: e.target.value })} placeholder="Enter the generation prompt..." rows={4} className="text-sm" /></div>
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1"><label className="text-sm font-medium text-foreground">Ratio</label>
