@@ -196,10 +196,20 @@ export default function AdminCommunity() {
       const { data: urlData } = supabase.storage.from('tool-covers').getPublicUrl(path);
       imageUrl = urlData.publicUrl;
     }
+    let avatarUrl = testForm.avatar_url;
+    if (avatarFile) {
+      const ext = avatarFile.name.split('.').pop();
+      const path = `community-avatars/${Date.now()}.${ext}`;
+      const { error: avatarErr } = await supabase.storage.from('avatars').upload(path, avatarFile, { contentType: avatarFile.type });
+      if (!avatarErr) {
+        const { data: avatarData } = supabase.storage.from('avatars').getPublicUrl(path);
+        avatarUrl = avatarData.publicUrl;
+      }
+    }
     const { error } = await supabase.from('community_posts').insert({
       image_url: imageUrl,
       username: testForm.username,
-      avatar_url: testForm.avatar_url || null,
+      avatar_url: avatarUrl || null,
       prompt: testForm.prompt,
       model: testForm.model,
       ratio: testForm.ratio,
@@ -214,6 +224,8 @@ export default function AdminCommunity() {
       setTestForm({ image_url: '', username: 'Takhayal Team', avatar_url: '', prompt: '', model: '', ratio: '1:1', quality_or_resolution: '1K', status: 'approved', is_featured: false });
       setTestFile(null);
       setTestPreview('');
+      setAvatarFile(null);
+      setAvatarPreview('');
     } else toast.error('Failed to create post');
     setSubmitting(false);
   };
