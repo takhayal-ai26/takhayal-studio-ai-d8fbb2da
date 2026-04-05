@@ -34,6 +34,20 @@ export interface ToolRecord {
   sort_order: number;
   created_at: string;
   updated_at: string;
+  // Guided image tool fields
+  tool_mode: string;
+  selected_model_id: string | null;
+  default_prompt_en: string;
+  default_prompt_ar: string;
+  cta_label_en: string;
+  cta_label_ar: string;
+  upload_label_en: string;
+  upload_label_ar: string;
+  upload_helper_en: string;
+  upload_helper_ar: string;
+  requires_upload: boolean;
+  auto_run: boolean;
+  prompt_hidden: boolean;
 }
 
 export interface ToolView {
@@ -54,6 +68,16 @@ export interface ToolView {
   internalCost: number;
   active: boolean;
   featured: boolean;
+  toolMode: string;
+  selectedModelId: string | null;
+  defaultPromptEn: string;
+  defaultPromptAr: string;
+  ctaLabel: string;
+  uploadLabel: string;
+  uploadHelper: string;
+  requiresUpload: boolean;
+  autoRun: boolean;
+  promptHidden: boolean;
 }
 
 export function useToolsDB() {
@@ -73,29 +97,7 @@ export function useToolsDB() {
     },
   });
 
-  const tools: ToolView[] = rawTools
-    .filter(t => t.active)
-    .map(t => ({
-      id: t.id,
-      slug: t.slug,
-      name: isAr && t.title_ar ? t.title_ar : t.title_en,
-      description: isAr && t.description_ar ? t.description_ar : t.description_en,
-      shortDesc: isAr && t.short_desc_ar ? t.short_desc_ar : t.short_desc_en,
-      heroTitle: isAr && t.hero_title_ar ? t.hero_title_ar : t.hero_title_en,
-      heroSubtitle: isAr && t.hero_subtitle_ar ? t.hero_subtitle_ar : t.hero_subtitle_en,
-      image: t.cover_image_url,
-      route: t.route,
-      icon: iconLookup[t.icon_name] || Sparkles,
-      inputType: t.input_type as 'prompt' | 'upload' | 'mixed',
-      creditCost: t.default_credit_cost,
-      providerEndpoint: t.provider_endpoint,
-      providerName: t.provider_name,
-      internalCost: Number(t.internal_provider_cost_estimate),
-      active: t.active,
-      featured: t.featured,
-    }));
-
-  const allTools = rawTools.map(t => ({
+  const mapToolView = (t: ToolRecord): ToolView => ({
     id: t.id,
     slug: t.slug,
     name: isAr && t.title_ar ? t.title_ar : t.title_en,
@@ -113,7 +115,20 @@ export function useToolsDB() {
     internalCost: Number(t.internal_provider_cost_estimate),
     active: t.active,
     featured: t.featured,
-  }));
+    toolMode: t.tool_mode || 'standard',
+    selectedModelId: t.selected_model_id,
+    defaultPromptEn: t.default_prompt_en || '',
+    defaultPromptAr: t.default_prompt_ar || '',
+    ctaLabel: isAr && t.cta_label_ar ? t.cta_label_ar : t.cta_label_en,
+    uploadLabel: isAr && t.upload_label_ar ? t.upload_label_ar : t.upload_label_en,
+    uploadHelper: isAr && t.upload_helper_ar ? t.upload_helper_ar : t.upload_helper_en,
+    requiresUpload: t.requires_upload ?? false,
+    autoRun: t.auto_run ?? false,
+    promptHidden: t.prompt_hidden ?? false,
+  });
+
+  const tools: ToolView[] = rawTools.filter(t => t.active).map(mapToolView);
+  const allTools = rawTools.map(mapToolView);
 
   const featuredTools = tools.filter(t => t.featured);
 

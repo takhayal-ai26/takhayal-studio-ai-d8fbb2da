@@ -13,7 +13,7 @@ import PortalHome from "./pages/PortalHome";
 import Canvas from "./pages/Canvas";
 import GenerateResult from "./pages/GenerateResult";
 import Pricing from "./pages/Pricing";
-import ToolPage from "./pages/ToolPage";
+import ToolPageRouter from "./pages/ToolPageRouter";
 import ToolsDirectory from "./pages/ToolsDirectory";
 import CreateHub from "./pages/CreateHub";
 import Gallery from "./pages/Gallery";
@@ -66,7 +66,7 @@ const App = () => (
                   <Route path="/tools" element={<ToolsDirectory />} />
                   <Route path="/create" element={<CreateHub />} />
                   <Route path="/gallery" element={<Gallery />} />
-                  <Route path="/tools/:toolId" element={<ToolPage />} />
+                  <Route path="/tools/:toolId" element={<ToolPageRouter />} />
                   <Route path="/community" element={<Community />} />
                   <Route path="/templates" element={<Templates />} />
                   <Route path="/templates/:id" element={<TemplateDetail />} />

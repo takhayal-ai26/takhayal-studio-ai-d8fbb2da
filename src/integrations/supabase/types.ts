@@ -1476,9 +1476,14 @@ export type Database = {
       tools: {
         Row: {
           active: boolean
+          auto_run: boolean
           cover_image_url: string
           created_at: string
+          cta_label_ar: string
+          cta_label_en: string
           default_credit_cost: number
+          default_prompt_ar: string
+          default_prompt_en: string
           description_ar: string
           description_en: string
           featured: boolean
@@ -1490,23 +1495,36 @@ export type Database = {
           id: string
           input_type: string
           internal_provider_cost_estimate: number
+          prompt_hidden: boolean
           provider_endpoint: string
           provider_name: string
+          requires_upload: boolean
           result_type: string
           route: string
+          selected_model_id: string | null
           short_desc_ar: string
           short_desc_en: string
           slug: string
           sort_order: number
           title_ar: string
           title_en: string
+          tool_mode: string
           updated_at: string
+          upload_helper_ar: string
+          upload_helper_en: string
+          upload_label_ar: string
+          upload_label_en: string
         }
         Insert: {
           active?: boolean
+          auto_run?: boolean
           cover_image_url?: string
           created_at?: string
+          cta_label_ar?: string
+          cta_label_en?: string
           default_credit_cost?: number
+          default_prompt_ar?: string
+          default_prompt_en?: string
           description_ar?: string
           description_en?: string
           featured?: boolean
@@ -1518,23 +1536,36 @@ export type Database = {
           id?: string
           input_type?: string
           internal_provider_cost_estimate?: number
+          prompt_hidden?: boolean
           provider_endpoint?: string
           provider_name?: string
+          requires_upload?: boolean
           result_type?: string
           route: string
+          selected_model_id?: string | null
           short_desc_ar?: string
           short_desc_en?: string
           slug: string
           sort_order?: number
           title_ar?: string
           title_en?: string
+          tool_mode?: string
           updated_at?: string
+          upload_helper_ar?: string
+          upload_helper_en?: string
+          upload_label_ar?: string
+          upload_label_en?: string
         }
         Update: {
           active?: boolean
+          auto_run?: boolean
           cover_image_url?: string
           created_at?: string
+          cta_label_ar?: string
+          cta_label_en?: string
           default_credit_cost?: number
+          default_prompt_ar?: string
+          default_prompt_en?: string
           description_ar?: string
           description_en?: string
           featured?: boolean
@@ -1546,19 +1577,35 @@ export type Database = {
           id?: string
           input_type?: string
           internal_provider_cost_estimate?: number
+          prompt_hidden?: boolean
           provider_endpoint?: string
           provider_name?: string
+          requires_upload?: boolean
           result_type?: string
           route?: string
+          selected_model_id?: string | null
           short_desc_ar?: string
           short_desc_en?: string
           slug?: string
           sort_order?: number
           title_ar?: string
           title_en?: string
+          tool_mode?: string
           updated_at?: string
+          upload_helper_ar?: string
+          upload_helper_en?: string
+          upload_label_ar?: string
+          upload_label_en?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "tools_selected_model_id_fkey"
+            columns: ["selected_model_id"]
+            isOneToOne: false
+            referencedRelation: "models"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tools_pricing: {
         Row: {

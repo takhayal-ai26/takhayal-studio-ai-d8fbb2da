@@ -11,9 +11,9 @@ export default function ToolsDirectory() {
   const { tools } = useToolsDB();
   const [search, setSearch] = useState('');
 
-  const filtered = tools.filter(t =>
-    !search || t.name.toLowerCase().includes(search.toLowerCase()) || t.shortDesc.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = tools
+    .filter(t => !search || t.name.toLowerCase().includes(search.toLowerCase()) || t.shortDesc.toLowerCase().includes(search.toLowerCase()))
+    .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
 
   return (
     <div className="flex-1 overflow-y-auto animate-page-enter" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>

@@ -15,6 +15,7 @@ import { useToolsDB, ToolRecord } from '@/hooks/useToolsDB';
 import { useToolProviders, ToolProvider } from '@/hooks/useToolProviders';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { useModels } from '@/hooks/useModels';
 
 interface Props {
   open: boolean;
@@ -34,12 +35,18 @@ const TIER_COLORS: Record<string, string> = {
 
 function emptyTool(): Partial<ToolRecord> {
   return {
-    slug: '', route: '/tools/', input_type: 'prompt', icon_name: 'Sparkles',
+    slug: '', route: '/tools/', input_type: 'upload', icon_name: 'Sparkles',
     active: true, featured: false, title_en: '', title_ar: '',
     description_en: '', description_ar: '', short_desc_en: '', short_desc_ar: '',
     hero_title_en: '', hero_title_ar: '', hero_subtitle_en: '', hero_subtitle_ar: '',
     cover_image_url: '', provider_name: 'fal.ai', provider_endpoint: '',
     default_credit_cost: 2, internal_provider_cost_estimate: 0, result_type: 'image', sort_order: 0,
+    tool_mode: 'standard', selected_model_id: null,
+    default_prompt_en: '', default_prompt_ar: '',
+    cta_label_en: 'Generate', cta_label_ar: 'إنشاء',
+    upload_label_en: 'Upload Image', upload_label_ar: 'رفع صورة',
+    upload_helper_en: 'JPG, PNG up to 10MB', upload_helper_ar: 'JPG، PNG حتى 10 ميغابايت',
+    requires_upload: false, auto_run: false, prompt_hidden: false,
   };
 }
 
@@ -300,6 +307,7 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { updateTool, addTool } = useToolsDB();
   const { providers, updateProvider, deleteProvider, setDefault } = useToolProviders(tool?.id);
+  const { activeModels } = useModels();
   const isEdit = !!tool;
 
   useEffect(() => {
@@ -409,9 +417,10 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
 
         <ScrollArea className="max-h-[60vh] px-6">
           <Tabs defaultValue="content" className="w-full">
-            <TabsList className="bg-muted/30 mb-4">
+            <TabsList className="bg-muted/30 mb-4 flex-wrap">
               <TabsTrigger value="content" className="text-xs">Content</TabsTrigger>
               <TabsTrigger value="hero" className="text-xs">Hero & CTA</TabsTrigger>
+              <TabsTrigger value="guided" className="text-xs">Guided Mode</TabsTrigger>
               <TabsTrigger value="settings" className="text-xs">Settings</TabsTrigger>
               <TabsTrigger value="provider" className="text-xs">Providers ({providers.length})</TabsTrigger>
               {isEdit && <TabsTrigger value="analytics" className="text-xs">Analytics</TabsTrigger>}
@@ -461,6 +470,65 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
                 )}
                 <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" onChange={handleFileSelect} className="hidden" />
               </div>
+            </TabsContent>
+
+            {/* Guided Mode Tab */}
+            <TabsContent value="guided" className="space-y-4 pb-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Tool Mode</Label>
+                <Select value={form.tool_mode || 'standard'} onValueChange={v => set('tool_mode', v)}>
+                  <SelectTrigger className="h-9 text-xs bg-muted/30 border-border/40"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="standard">Standard (existing behavior)</SelectItem>
+                    <SelectItem value="guided_image">Guided Image (upload → generate)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-muted-foreground">Guided tools use a hidden prompt + admin-selected model</p>
+              </div>
+
+              {form.tool_mode === 'guided_image' && (
+                <>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">AI Model</Label>
+                    <Select value={form.selected_model_id || ''} onValueChange={v => set('selected_model_id', v || null)}>
+                      <SelectTrigger className="h-9 text-xs bg-muted/30 border-border/40"><SelectValue placeholder="Select active model..." /></SelectTrigger>
+                      <SelectContent>
+                        {activeModels.map(m => (
+                          <SelectItem key={m.id} value={m.id}>{m.model_name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[10px] text-muted-foreground">This model powers the guided generation</p>
+                  </div>
+
+                  <BiField label="Hidden Prompt" enKey="default_prompt_en" arKey="default_prompt_ar" textarea />
+                  <BiField label="CTA Button Label" enKey="cta_label_en" arKey="cta_label_ar" />
+                  <BiField label="Upload Label" enKey="upload_label_en" arKey="upload_label_ar" />
+                  <BiField label="Upload Helper Text" enKey="upload_helper_en" arKey="upload_helper_ar" />
+
+                  <div className="flex items-center justify-between py-2 border-t border-border/20">
+                    <div><Label className="text-xs">Requires Upload</Label><p className="text-[10px] text-muted-foreground">User must upload an image</p></div>
+                    <Switch checked={form.requires_upload ?? false} onCheckedChange={v => set('requires_upload', v)} />
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-t border-border/20">
+                    <div><Label className="text-xs">Auto Run</Label><p className="text-[10px] text-muted-foreground">Auto-generate after upload</p></div>
+                    <Switch checked={form.auto_run ?? false} onCheckedChange={v => set('auto_run', v)} />
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-t border-border/20">
+                    <div><Label className="text-xs">Hide Prompt</Label><p className="text-[10px] text-muted-foreground">Don't show prompt field to users</p></div>
+                    <Switch checked={form.prompt_hidden ?? false} onCheckedChange={v => set('prompt_hidden', v)} />
+                  </div>
+
+                  {/* Validation warnings */}
+                  {form.tool_mode === 'guided_image' && (
+                    <div className="space-y-1 pt-2">
+                      {!form.selected_model_id && <p className="text-[10px] text-yellow-500 flex items-center gap-1"><AlertTriangle size={10} /> No AI model selected</p>}
+                      {!form.default_prompt_en && <p className="text-[10px] text-yellow-500 flex items-center gap-1"><AlertTriangle size={10} /> Missing hidden prompt (EN)</p>}
+                      {!form.cover_image_url && <p className="text-[10px] text-yellow-500 flex items-center gap-1"><AlertTriangle size={10} /> Missing cover image</p>}
+                    </div>
+                  )}
+                </>
+              )}
             </TabsContent>
 
             {/* Settings Tab */}
