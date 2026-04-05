@@ -6,6 +6,7 @@ import { Switch } from '@/components/ui/switch';
 import { Input } from '@/components/ui/input';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
+import { formatDate } from '@/lib/utils';
 import {
   DollarSign, TrendingUp, AlertTriangle, Percent, Coins,
   Settings2, Save, RefreshCw, Cpu, Wrench, Zap, BarChart3, Clock, Loader2
@@ -386,7 +387,7 @@ export default function AdminPricing() {
                           <Badge variant={mm.pct < 0 ? 'destructive' : mm.pct < 20 ? 'secondary' : 'default'} className="text-[10px]">{mm.pct.toFixed(1)}%</Badge>
                         </td>
                         <td className="px-4 py-3"><Badge variant="outline" className="text-[10px]">{tierCount}</Badge></td>
-                        <td className="px-4 py-3 text-[11px] text-muted-foreground">{m.last_sync_at ? new Date(m.last_sync_at).toLocaleDateString() : '-'}</td>
+                        <td className="px-4 py-3 text-[11px] text-muted-foreground">{m.last_sync_at ? formatDate(m.last_sync_at) : '-'}</td>
                         <td className="px-4 py-3"><Badge variant={m.is_active ? 'default' : 'secondary'} className="text-[10px]">{m.is_active ? 'Active' : 'Off'}</Badge></td>
                       </tr>
                       {isExpanded && (

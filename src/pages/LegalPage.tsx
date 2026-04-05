@@ -4,6 +4,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { LogoMark } from '@/components/Logo';
 import { ArrowLeft } from 'lucide-react';
+import { formatDate } from '@/lib/utils';
 
 const TITLES: Record<string, { en: string; ar: string }> = {
   terms: { en: 'Terms & Conditions', ar: 'الشروط والأحكام' },
@@ -32,9 +33,7 @@ export default function LegalPage() {
         if (data) {
           const text = isAr && data.content_ar ? data.content_ar : data.content_en;
           setContent(text);
-          setLastUpdated(new Date(data.last_updated).toLocaleDateString(isAr ? 'ar-SA' : 'en-US', {
-            year: 'numeric', month: 'long', day: 'numeric',
-          }));
+          setLastUpdated(formatDate(data.last_updated, isAr));
         }
         setLoading(false);
       });

@@ -4,6 +4,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { LogoMark } from '@/components/Logo';
 import { Check, ArrowRight } from 'lucide-react';
 import { usePricingPlans } from '@/hooks/useBillingData';
+import { formatDate } from '@/lib/utils';
 
 export default function CheckoutSuccess() {
   const navigate = useNavigate();
@@ -60,7 +61,7 @@ export default function CheckoutSuccess() {
                 <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'الخطة' : 'Plan'}</span><span className="text-foreground">{isAr ? plan.name_ar : plan.name_en}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'الفوترة' : 'Billing'}</span><span className="text-foreground">{billingType === 'annual' ? (isAr ? 'سنوي' : 'Annual') : (isAr ? 'شهري' : 'Monthly')}</span></div>
                 <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'المبلغ' : 'Amount'}</span><span className="text-foreground">${totalPrice.toFixed(2)}</span></div>
-                <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'الفوترة القادمة' : 'Next billing'}</span><span className="text-foreground">{nextBilling.toLocaleDateString()}</span></div>
+                <div className="flex justify-between"><span className="text-muted-foreground">{isAr ? 'الفوترة القادمة' : 'Next billing'}</span><span className="text-foreground">{formatDate(nextBilling, isAr)}</span></div>
               </>
             ) : null}
           </div>
