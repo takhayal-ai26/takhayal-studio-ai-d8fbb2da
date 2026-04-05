@@ -175,7 +175,7 @@ export function CommunityDetailModal({
   // ── DESKTOP LAYOUT ──
   return (
     <div
-      className="fixed inset-0 z-[70] bg-neutral-100 dark:bg-black flex animate-in fade-in duration-200"
+      className="fixed inset-0 z-[70] bg-background flex animate-in fade-in duration-200"
       onClick={onClose}
       dir={isAr ? 'rtl' : 'ltr'}
     >
@@ -212,7 +212,7 @@ export function CommunityDetailModal({
 
       {/* Info panel — right side, theme-aware */}
       <div
-        className="w-[360px] shrink-0 flex flex-col bg-white dark:bg-[#111111] overflow-y-auto h-screen"
+        className="w-[360px] shrink-0 flex flex-col bg-card overflow-y-auto h-screen"
         onClick={e => e.stopPropagation()}
       >
         {/* Top: creator + close */}
