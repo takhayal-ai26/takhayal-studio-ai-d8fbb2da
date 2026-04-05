@@ -108,7 +108,7 @@ export function usePricingTiers(modelId?: string) {
   }, [fetchTiers, tiers, allTiers]);
 
   const getCreditsForModelQuality = useCallback((mId: string, quality: string): number | null => {
-    const modelTiers = (allTiers[mId] || tiers.filter(t => t.model_id === mId)).filter(t => t.is_active !== false);
+    const modelTiers = (allTiers[mId] || tiers.filter(t => t.model_id === mId)).filter(t => t.is_active !== false && t.is_available !== false);
     const match = modelTiers.find(t => t.quality_level === quality);
     if (match) return match.credits_charged;
     const def = modelTiers.find(t => t.is_default);
