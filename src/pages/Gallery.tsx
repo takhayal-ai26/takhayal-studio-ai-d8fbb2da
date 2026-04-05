@@ -161,7 +161,7 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
       onClick={() => onTap(job)}
       className={`${shellClassName} group relative animate-in fade-in zoom-in-95 duration-300 hover:shadow-xl hover:shadow-black/10`}
     >
-      <img src={job.image_url!} alt={job.prompt || ''} className="w-full block" style={{ aspectRatio: cssRatio }} loading="lazy" />
+      <img src={job.image_url!} alt={job.prompt || ''} className="w-full block" loading="lazy" />
       {/* Hover overlay - desktop shows all actions; mobile shows share icon */}
       <div className={`absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent ${isMobile ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-200 flex flex-col justify-between p-3`}>
         {/* Top-right actions */}
