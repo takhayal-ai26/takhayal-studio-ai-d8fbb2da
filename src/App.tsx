@@ -41,6 +41,7 @@ import AdminCommerce from "./pages/admin/AdminCommerce";
 import AdminContentMerged from "./pages/admin/AdminContentMerged";
 import AdminAnalytics from "./pages/admin/AdminAnalytics";
 import AdminSettingsMerged from "./pages/admin/AdminSettingsMerged";
+import AdminCommunity from "./pages/admin/AdminCommunity";
 
 const queryClient = new QueryClient();
 
@@ -92,6 +93,7 @@ const App = () => (
                   <Route path="models" element={<AdminStudioConfig />} />
                   <Route path="tools" element={<AdminStudioConfig />} />
                   <Route path="templates" element={<AdminContentMerged />} />
+                  <Route path="community" element={<AdminCommunity />} />
                   <Route path="content" element={<AdminContentMerged />} />
                   <Route path="analytics" element={<AdminAnalytics />} />
                   <Route path="settings" element={<AdminSettingsMerged />} />
