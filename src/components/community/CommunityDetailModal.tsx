@@ -84,14 +84,8 @@ export function CommunityDetailModal({
 
   const creatorInitial = post.creator_name?.charAt(0)?.toUpperCase() || '?';
   const backgroundLayer = (
-    <div aria-hidden="true" className="fixed inset-0 z-0 overflow-hidden bg-background pointer-events-none">
-      <img
-        src={post.image_url}
-        alt=""
-        className="absolute inset-0 h-full w-full object-cover object-center scale-[1.1] blur-[40px] opacity-[0.78]"
-      />
-      <div className="absolute inset-0 dark:hidden bg-[linear-gradient(180deg,hsl(0_0%_100%_/_0.44),hsl(0_0%_98%_/_0.5))]" />
-      <div className="absolute inset-0 hidden dark:block bg-[linear-gradient(180deg,hsl(0_0%_0%_/_0.64),hsl(0_0%_0%_/_0.7))]" />
+    <div aria-hidden="true" className="community-detail-backdrop">
+      <img src={post.image_url} alt="" className="community-detail-backdrop-image" />
     </div>
   );
 
