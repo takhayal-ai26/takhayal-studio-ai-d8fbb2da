@@ -71,7 +71,7 @@ export function useTemplates() {
     if (!aIsOthers && bIsOthers) return -1;
     return a.sort_order - b.sort_order;
   });
-  const categoryNames = ['All', ...sorted.map(c => c.name)];
+  const categoryNames = [t.templatesView.all, ...sorted.map(c => c.name)];
 
   return { templates, categories, categoryNames, loading };
 }
