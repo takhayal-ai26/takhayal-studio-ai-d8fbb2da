@@ -5,17 +5,18 @@ import { GenerationJob } from '@/hooks/useGenerationJobs';
 import {
   Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw,
   Calendar, Cpu, Ratio, Sparkles, Share2, Trash2,
-  ChevronLeft, ChevronRight, Copy, Check, LayoutTemplate
+  ChevronLeft, ChevronRight, Copy, Check, LayoutTemplate, Wrench
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDate } from '@/lib/utils';
+import { isToolJob, getToolName, getToolAction } from '@/hooks/useToolInfo';
 
 interface Props {
   job: GenerationJob | null;
   open: boolean;
   onClose: () => void;
   onRetry: (id: string) => void;
-  onReuse: (prompt: string) => void;
+  onReuse: (prompt: string, job?: GenerationJob) => void;
   onShare?: (job: GenerationJob) => void;
   onDelete?: (id: string) => void;
   onPrev?: () => void;
@@ -104,6 +105,10 @@ export function ImageLightbox({
     ? (isAr ? 'في الانتظار...' : 'Queued...')
     : (isAr ? 'جاري التوليد...' : 'Generating...');
 
+  const isTool = isToolJob(job.tool_id);
+  const toolName = isTool ? getToolName(job.tool_id, isAr) : '';
+  const toolAction = isTool ? getToolAction(job.tool_id, isAr) : '';
+
   const handleDownload = async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -116,7 +121,7 @@ export function ImageLightbox({
   const handleReuseClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    onReuse(job.prompt || '');
+    onReuse(job.prompt || '', job);
     onClose();
   };
 
@@ -220,6 +225,7 @@ export function ImageLightbox({
           onClick={e => e.stopPropagation()}
         >
           <div className="p-6 xl:p-7 space-y-6 pt-16">
+            {/* Action buttons */}
             <div className="space-y-2.5">
               {isCompleted && job.image_url && (
                 <button
@@ -238,7 +244,7 @@ export function ImageLightbox({
                     className="flex-1 h-10 rounded-xl bg-muted/50 text-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-muted/70 active:scale-[0.98] transition-all cursor-pointer"
                   >
                     <RefreshCw size={13} />
-                    {isAr ? 'إعادة استخدام' : 'Reuse'}
+                    {isTool ? (isAr ? 'استخدام الأداة' : 'Use Tool') : (isAr ? 'إعادة استخدام' : 'Reuse')}
                   </button>
                 )}
                 {isCompleted && (
@@ -273,7 +279,26 @@ export function ImageLightbox({
 
             <div className="h-px bg-border/10" />
 
-            {templateTitle ? (
+            {/* Tool-generated: clean tool info */}
+            {isTool ? (
+              <div>
+                <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.15em] mb-3 block">
+                  {isAr ? 'الأداة' : 'Tool'}
+                </span>
+                <div className="flex items-center gap-2.5 mb-4">
+                  <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                    <Wrench size={14} className="text-primary" />
+                  </div>
+                  <div>
+                    <span className="text-[14px] font-semibold text-foreground block">{toolName}</span>
+                    <span className="text-[11px] text-muted-foreground/50">{toolAction}</span>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <MetaRow icon={<Calendar size={14} />} label={isAr ? 'التاريخ' : 'Date'} value={dateStr} />
+                </div>
+              </div>
+            ) : templateTitle ? (
               <div>
                 <span className="text-[10px] font-bold text-muted-foreground/40 uppercase tracking-[0.15em] mb-3 block">
                   {isAr ? 'القالب' : 'Template'}

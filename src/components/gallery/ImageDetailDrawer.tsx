@@ -3,16 +3,17 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { GenerationJob } from '@/hooks/useGenerationJobs';
 import { useModels } from '@/hooks/useModels';
 import { Drawer, DrawerContent, DrawerClose } from '@/components/ui/drawer';
-import { Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw, Calendar, Cpu, Ratio, Sparkles, Share2, Trash2, Copy, Check, LayoutTemplate, ChevronDown } from 'lucide-react';
+import { Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw, Calendar, Cpu, Ratio, Sparkles, Share2, Trash2, Copy, Check, LayoutTemplate, ChevronDown, Wrench } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
+import { isToolJob, getToolName, getToolAction } from '@/hooks/useToolInfo';
 
 interface Props {
   job: GenerationJob | null;
   open: boolean;
   onClose: () => void;
   onRetry: (id: string) => void;
-  onReuse: (prompt: string) => void;
+  onReuse: (prompt: string, job?: GenerationJob) => void;
   onShare?: (job: GenerationJob) => void;
   onDelete?: (id: string) => void;
   templateTitle?: string | null;
@@ -67,6 +68,10 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
     ? (isAr ? 'في الانتظار...' : 'Queued...')
     : (isAr ? 'جاري التوليد...' : 'Generating...');
 
+  const isTool = isToolJob(job.tool_id);
+  const toolName = isTool ? getToolName(job.tool_id, isAr) : '';
+  const toolAction = isTool ? getToolAction(job.tool_id, isAr) : '';
+
   const handleDownload = async (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -90,6 +95,12 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
     if (!onShare) return;
     onClose();
     window.setTimeout(() => { onShare(job); }, 0);
+  };
+
+  const handleReuseClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    onReuse(job.prompt || '', job);
+    onClose();
   };
 
   const dateStr = formatDate(job.created_at, isAr);
@@ -144,11 +155,11 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
                   {downloading ? '...' : (isAr ? 'تحميل' : 'Download')}
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); onReuse(job.prompt || ''); onClose(); }}
+                  onClick={handleReuseClick}
                   className="h-11 px-4 rounded-xl bg-muted/30 text-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-muted/50 transition-colors cursor-pointer"
                 >
                   <RefreshCw size={14} />
-                  {isAr ? 'إعادة' : 'Reuse'}
+                  {isTool ? (isAr ? 'استخدام الأداة' : 'Use Tool') : (isAr ? 'إعادة' : 'Reuse')}
                 </button>
                 <button
                   onClick={handleShareClick}
@@ -172,49 +183,66 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
 
           {/* Metadata */}
           <div className="px-4 space-y-3">
-            {templateTitle ? (
-              <div className="rounded-xl bg-muted/15 p-3.5">
-                <div className="flex items-center gap-1.5 mb-2">
-                  <LayoutTemplate size={12} className="text-primary" />
-                  <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                    {isAr ? 'القالب' : 'Template'}
-                  </span>
-                </div>
-                <p className="text-[14px] font-semibold text-foreground">{templateTitle}</p>
-              </div>
-            ) : job.prompt ? (
-              <div className="rounded-xl bg-muted/15 p-3.5">
-                <div className="flex items-center justify-between mb-1.5">
-                  <div className="flex items-center gap-1.5">
-                    <Sparkles size={12} className="text-primary" />
+            {/* Tool-generated: show tool info */}
+            {isTool ? (
+              <>
+                <div className="rounded-xl bg-muted/15 p-3.5">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <Wrench size={12} className="text-primary" />
                     <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
-                      {isAr ? 'التعليمة' : 'Prompt'}
+                      {isAr ? 'الأداة' : 'Tool'}
                     </span>
                   </div>
-                  <button
-                    onClick={handleCopyPrompt}
-                    className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/50 hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all cursor-pointer"
-                  >
-                    {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
-                  </button>
+                  <p className="text-[14px] font-semibold text-foreground">{toolName}</p>
+                  <p className="text-[12px] text-muted-foreground/60 mt-1">{toolAction}</p>
                 </div>
-                <p className="text-[13px] text-foreground/80 leading-relaxed">{job.prompt}</p>
-              </div>
-            ) : null}
-
-            {!templateTitle && (
-              <div className="grid grid-cols-2 gap-2">
-                <MetaItem icon={<Calendar size={12} />} label={isAr ? 'التاريخ' : 'Date'} value={dateStr} />
-                <MetaItem icon={<Cpu size={12} />} label={isAr ? 'النموذج' : 'Model'} value={modelName} />
-                <MetaItem icon={<Ratio size={12} />} label={isAr ? 'النسبة' : 'Ratio'} value={job.ratio || '1:1'} />
-                <MetaItem icon={<Sparkles size={12} />} label={isAr ? 'الجودة' : 'Quality'} value={job.quality_tier || '1K'} />
-              </div>
-            )}
-
-            {templateTitle && (
-              <div className="grid grid-cols-1 gap-2">
-                <MetaItem icon={<Calendar size={12} />} label={isAr ? 'التاريخ' : 'Date'} value={dateStr} />
-              </div>
+                <div className="grid grid-cols-1 gap-2">
+                  <MetaItem icon={<Calendar size={12} />} label={isAr ? 'التاريخ' : 'Date'} value={dateStr} />
+                </div>
+              </>
+            ) : templateTitle ? (
+              <>
+                <div className="rounded-xl bg-muted/15 p-3.5">
+                  <div className="flex items-center gap-1.5 mb-2">
+                    <LayoutTemplate size={12} className="text-primary" />
+                    <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                      {isAr ? 'القالب' : 'Template'}
+                    </span>
+                  </div>
+                  <p className="text-[14px] font-semibold text-foreground">{templateTitle}</p>
+                </div>
+                <div className="grid grid-cols-1 gap-2">
+                  <MetaItem icon={<Calendar size={12} />} label={isAr ? 'التاريخ' : 'Date'} value={dateStr} />
+                </div>
+              </>
+            ) : (
+              <>
+                {job.prompt && (
+                  <div className="rounded-xl bg-muted/15 p-3.5">
+                    <div className="flex items-center justify-between mb-1.5">
+                      <div className="flex items-center gap-1.5">
+                        <Sparkles size={12} className="text-primary" />
+                        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                          {isAr ? 'التعليمة' : 'Prompt'}
+                        </span>
+                      </div>
+                      <button
+                        onClick={handleCopyPrompt}
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/50 hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all cursor-pointer"
+                      >
+                        {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
+                      </button>
+                    </div>
+                    <p className="text-[13px] text-foreground/80 leading-relaxed">{job.prompt}</p>
+                  </div>
+                )}
+                <div className="grid grid-cols-2 gap-2">
+                  <MetaItem icon={<Calendar size={12} />} label={isAr ? 'التاريخ' : 'Date'} value={dateStr} />
+                  <MetaItem icon={<Cpu size={12} />} label={isAr ? 'النموذج' : 'Model'} value={modelName} />
+                  <MetaItem icon={<Ratio size={12} />} label={isAr ? 'النسبة' : 'Ratio'} value={job.ratio || '1:1'} />
+                  <MetaItem icon={<Sparkles size={12} />} label={isAr ? 'الجودة' : 'Quality'} value={job.quality_tier || '1K'} />
+                </div>
+              </>
             )}
 
             {/* Delete — subtle at bottom */}
