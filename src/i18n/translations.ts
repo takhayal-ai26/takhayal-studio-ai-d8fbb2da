@@ -362,6 +362,7 @@ export const translations = {
       featured: 'Featured',
       allTemplates: 'All Templates',
       noTemplatesFound: 'No templates found',
+      all: 'All',
     },
     // 404
     notFound: {
@@ -707,6 +708,7 @@ export const translations = {
       featured: 'مميز',
       allTemplates: 'جميع القوالب',
       noTemplatesFound: 'لم يتم العثور على قوالب',
+      all: 'الكل',
     },
     notFound: {
       title: '٤٠٤',
