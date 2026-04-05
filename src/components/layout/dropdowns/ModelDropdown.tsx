@@ -77,9 +77,9 @@ export function ModelDropdown({ models, selectedModelId, language, anchorRect, o
     );
   }
 
-  // Desktop: portal dropdown
-  const panelW = 290;
-  const panelMaxH = 420;
+  // Desktop: premium portal dropdown
+  const panelW = 320;
+  const panelMaxH = 460;
   let top = 0, left = 0;
   if (anchorRect) {
     top = Math.max(8, anchorRect.top - panelMaxH + anchorRect.height + 60);
@@ -92,41 +92,39 @@ export function ModelDropdown({ models, selectedModelId, language, anchorRect, o
   return createPortal(
     <div data-dropdown-portal>
       <div className="fixed inset-0 z-[9998]" onClick={onClose} />
-      <div ref={panelRef} className="fixed z-[9999] animate-in fade-in slide-in-from-left-2 duration-150" style={{ top, left, width: panelW }}>
-        <div className="rounded-xl border border-border overflow-hidden" style={{ background: 'var(--dropdown-bg)', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', maxHeight: panelMaxH, display: 'flex', flexDirection: 'column' }}>
-          <div className="sticky top-0 z-[1] px-3.5 py-2.5 border-b border-border" style={{ background: 'var(--dropdown-bg)' }}>
-            <p className="text-[10px] uppercase tracking-[2.5px] font-medium text-muted-foreground">{t.studio.selectModel}</p>
+      <div ref={panelRef} className="fixed z-[9999] animate-in fade-in slide-in-from-left-2 duration-200" style={{ top, left, width: panelW }}>
+        <div className="rounded-2xl overflow-hidden bg-popover" style={{ boxShadow: '0 12px 48px -8px rgba(0,0,0,0.25), 0 4px 16px -4px rgba(0,0,0,0.1)', maxHeight: panelMaxH, display: 'flex', flexDirection: 'column' }}>
+          <div className="sticky top-0 z-[1] px-5 py-3.5 border-b border-border/40 bg-popover">
+            <p className="text-[11px] uppercase tracking-[2px] font-medium text-muted-foreground/60">{t.studio.selectModel}</p>
           </div>
-          <div className="overflow-y-auto flex-1 scrollbar-thin" style={{ maxHeight: panelMaxH - 40 }}>
-            {models.map((m, i) => {
+          <div className="overflow-y-auto flex-1 scrollbar-thin py-1.5" style={{ maxHeight: panelMaxH - 48 }}>
+            {models.map((m) => {
               const isActive = selectedModelId === m.id;
               const bestFor = language === 'ar' ? (m.best_for_ar || m.best_for) : m.best_for;
-              const isLast = i === models.length - 1;
               return (
                 <button
                   key={m.id}
                   data-selected={isActive}
                   onClick={(e) => { e.stopPropagation(); onSelect(m.id); }}
-                  className="w-full flex items-center gap-3 text-left transition-colors duration-[120ms]"
-                  style={{
-                    padding: '10px 14px', minHeight: 52,
-                    borderBottom: isLast ? 'none' : `1px solid var(--dropdown-divider)`,
-                    borderLeft: isActive ? '2px solid hsl(var(--primary))' : '2px solid transparent',
-                    background: isActive ? 'hsla(var(--primary) / 0.06)' : 'transparent',
-                  }}
-                  onMouseEnter={e => { if (!isActive) (e.currentTarget.style.background = 'hsl(var(--muted))'); }}
-                  onMouseLeave={e => { if (!isActive) (e.currentTarget.style.background = 'transparent'); }}
+                  className={`w-full flex items-center gap-3 text-start transition-all duration-150 px-5 py-3.5 ${
+                    isActive
+                      ? 'bg-primary/[0.07]'
+                      : 'hover:bg-muted/50'
+                  }`}
                 >
                   <div className="flex-1 min-w-0">
-                    <p className="text-[14px] font-medium leading-tight" style={{ color: isActive ? 'hsl(var(--primary))' : 'hsl(var(--foreground))' }}>{m.model_name}</p>
-                    {bestFor && <p className="text-[11px] mt-0.5 truncate text-muted-foreground">{bestFor}</p>}
+                    <p className={`text-[14px] font-semibold leading-snug ${isActive ? 'text-primary' : 'text-foreground'}`}>{m.model_name}</p>
+                    {bestFor && <p className="text-[12px] mt-0.5 text-muted-foreground/70 truncate">{bestFor}</p>}
                   </div>
-                  <span className="text-[9px] flex-shrink-0 text-muted-foreground">{(m.supported_quality_tiers || ['1K']).join('  ')}</span>
-                  {isActive && <Check size={14} className="text-primary flex-shrink-0" />}
+                  {isActive && (
+                    <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                      <Check size={12} className="text-primary-foreground" />
+                    </div>
+                  )}
                 </button>
               );
             })}
-            {models.length === 0 && <p className="text-[12px] text-center py-6 text-muted-foreground">No active models</p>}
+            {models.length === 0 && <p className="text-[12px] text-center py-8 text-muted-foreground">No active models</p>}
           </div>
         </div>
       </div>
