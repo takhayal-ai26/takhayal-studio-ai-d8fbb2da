@@ -94,7 +94,7 @@ export function CommunityDetailModal({
         </div>
         <div className="absolute inset-0 bg-background/80 dark:bg-background/75" />
         {/* Top bar */}
-        <div className="flex items-center justify-between px-4 py-3 shrink-0">
+        <div className="relative z-[1] flex items-center justify-between px-4 py-3 shrink-0">
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center text-foreground">
             <X size={16} />
           </button>
@@ -109,12 +109,12 @@ export function CommunityDetailModal({
         </div>
 
         {/* Image */}
-        <div className="flex-1 min-h-0 flex items-center justify-center px-4 overflow-hidden">
+        <div className="relative z-[1] flex-1 min-h-0 flex items-center justify-center px-4 overflow-hidden">
           <img src={post.image_url} alt={promptText} className="max-w-full max-h-full object-contain rounded-xl" />
         </div>
 
         {/* Info panel */}
-        <div className="shrink-0 px-4 pt-4 pb-6 space-y-3">
+        <div className="relative z-[1] shrink-0 px-4 pt-4 pb-6 space-y-3">
           {/* Creator */}
           <div className="flex items-center gap-2">
             {post.creator_avatar ? (
