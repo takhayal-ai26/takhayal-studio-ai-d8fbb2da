@@ -200,7 +200,7 @@ export default function AdminCommunity() {
     } as any);
     if (!error) {
       toast.success('Test post created successfully');
-      setTestForm({ image_url: '', username: 'Takhayal Team', prompt: '', model: '', ratio: '1:1', quality_or_resolution: '1K', status: 'approved', is_featured: false });
+      setTestForm({ image_url: '', username: 'Takhayal Team', avatar_url: '', prompt: '', model: '', ratio: '1:1', quality_or_resolution: '1K', status: 'approved', is_featured: false });
       setTestFile(null);
       setTestPreview('');
     } else toast.error('Failed to create post');
