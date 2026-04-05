@@ -22,7 +22,7 @@ export interface TemplateCategory {
 }
 
 export function useTemplates() {
-  const { lang, t } = useLanguage();
+  const { lang } = useLanguage();
   const isAr = lang === 'ar';
   const [templates, setTemplates] = useState<FrontendTemplate[]>([]);
   const [categories, setCategories] = useState<TemplateCategory[]>([]);
@@ -71,7 +71,7 @@ export function useTemplates() {
     if (!aIsOthers && bIsOthers) return -1;
     return a.sort_order - b.sort_order;
   });
-  const categoryNames = [t.templatesView.all, ...sorted.map(c => c.name)];
+  const categoryNames = ['All', ...sorted.map(c => c.name)];
 
   return { templates, categories, categoryNames, loading };
 }
