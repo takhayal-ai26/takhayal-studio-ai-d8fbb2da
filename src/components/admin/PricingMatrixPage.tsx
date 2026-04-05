@@ -173,11 +173,13 @@ export default function PricingMatrixPage() {
         const val = editValues[key];
         if (!val) continue;
         const act = editActive[key];
-        if (val.cost !== t.cost_per_run || val.credits !== t.credits_charged || act !== t.is_active) {
+        const avail = editAvailable[key];
+        if (val.cost !== t.cost_per_run || val.credits !== t.credits_charged || act !== t.is_active || avail !== (t.is_available !== false)) {
           await supabase.from('model_pricing_tiers').update({
             cost_per_run: val.cost,
             credits_charged: val.credits,
             is_active: act,
+            is_available: avail,
             updated_at: new Date().toISOString(),
           } as any).eq('id', t.id);
           // Audit log
@@ -185,8 +187,8 @@ export default function PricingMatrixPage() {
             action: 'pricing_update',
             entity_type: 'model_pricing_tier',
             entity_id: t.id,
-            old_value: { cost: t.cost_per_run, credits: t.credits_charged, is_active: t.is_active },
-            new_value: { cost: val.cost, credits: val.credits, is_active: act },
+            old_value: { cost: t.cost_per_run, credits: t.credits_charged, is_active: t.is_active, is_available: t.is_available },
+            new_value: { cost: val.cost, credits: val.credits, is_active: act, is_available: avail },
           } as any);
         }
       }
