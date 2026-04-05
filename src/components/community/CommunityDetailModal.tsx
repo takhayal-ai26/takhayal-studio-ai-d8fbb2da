@@ -197,121 +197,121 @@ export function CommunityDetailModal({
         </button>
       )}
 
+      {/* Image area — fills remaining space */}
       <div
-        className="relative bg-card border border-border/50 rounded-2xl overflow-hidden max-w-5xl w-full max-h-[90vh] flex flex-row shadow-2xl shadow-black/30 animate-in zoom-in-95 duration-300"
+        className="flex-1 min-w-0 flex items-center justify-center overflow-hidden"
+        onClick={onClose}
+      >
+        <img
+          src={post.image_url}
+          alt={promptText}
+          className="max-w-full max-h-screen object-contain animate-in zoom-in-95 duration-300"
+          onClick={e => e.stopPropagation()}
+        />
+      </div>
+
+      {/* Info panel — right side, always dark */}
+      <div
+        className="w-[360px] shrink-0 flex flex-col bg-[#111111] overflow-y-auto h-screen"
         onClick={e => e.stopPropagation()}
       >
-        {/* Close */}
-        <button
-          onClick={onClose}
-          className={`absolute top-3 ${isRTL ? 'left-3' : 'right-3'} z-10 w-8 h-8 rounded-full bg-black/40 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white transition-colors`}
-        >
-          <X size={16} />
-        </button>
-
-        {/* Image side */}
-        <div className="flex-1 min-w-0 bg-black/20 flex items-center justify-center p-4 max-h-[90vh] overflow-hidden">
-          <img
-            src={post.image_url}
-            alt={promptText}
-            className="max-w-full max-h-[82vh] object-contain rounded-lg"
-          />
-        </div>
-
-        {/* Info panel */}
-        <div className="w-[340px] shrink-0 flex flex-col p-5 overflow-y-auto max-h-[90vh] border-s border-border/30">
-          {/* Creator */}
-          <div className="flex items-center gap-2.5 mb-5">
+        {/* Top: creator + close */}
+        <div className="flex items-center justify-between px-5 pt-5 pb-3">
+          <div className="flex items-center gap-2.5">
             {post.creator_avatar ? (
               <img src={post.creator_avatar} className="w-8 h-8 rounded-full object-cover" alt="" />
             ) : (
-              <span className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-xs font-bold text-primary">
+              <span className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white/60">
                 {creatorInitial}
               </span>
             )}
             <div>
-              <span className="text-sm text-foreground font-medium block">
+              <span className="text-sm text-white font-medium block">
                 {post.creator_name || (isAr ? 'مبدع' : 'Creator')}
               </span>
-              <span className="text-[10px] text-muted-foreground/40">
+              <span className="text-[10px] text-white/30">
                 {formatDate(post.created_at, isAr)}
               </span>
             </div>
           </div>
+          <button
+            onClick={onClose}
+            className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/20 transition-colors"
+          >
+            <X size={14} />
+          </button>
+        </div>
 
-          {/* Prompt */}
-          {promptText && (
-            <div className="mb-4">
-              <h3 className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-medium mb-2">
+        {/* Prompt section */}
+        {promptText && (
+          <div className="px-5 py-3">
+            <div className="flex items-center justify-between mb-2">
+              <h3 className="text-[11px] uppercase tracking-widest text-white/30 font-medium">
                 {isAr ? 'الأمر' : 'Prompt'}
               </h3>
-              <div className="bg-muted/20 rounded-xl p-3">
-                <p className="text-[13px] text-foreground/80 leading-relaxed whitespace-pre-wrap">
-                  {displayPrompt}
-                </p>
-                <div className="flex items-center gap-2 mt-2.5">
-                  {isLongPrompt && (
-                    <button onClick={() => setExpanded(!expanded)} className="text-[11px] text-primary font-medium flex items-center gap-0.5 hover:underline">
-                      {expanded ? (isAr ? 'أقل' : 'Show less') : (isAr ? 'عرض الكل' : 'Show more')}
-                      {expanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-                    </button>
-                  )}
-                  <button
-                    onClick={handleCopyPrompt}
-                    className="text-[11px] text-muted-foreground hover:text-foreground font-medium flex items-center gap-1 ms-auto transition-colors"
-                  >
-                    {copied ? <Check size={11} className="text-green-500" /> : <Copy size={11} />}
-                    {copied ? (isAr ? 'تم النسخ' : 'Copied') : (isAr ? 'نسخ' : 'Copy')}
-                  </button>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Metadata */}
-          {meta.length > 0 && (
-            <div className="mb-4">
-              <h3 className="text-[10px] uppercase tracking-widest text-muted-foreground/50 font-medium mb-2">
-                {isAr ? 'التفاصيل' : 'Details'}
-              </h3>
-              <div className="space-y-1.5">
-                {meta.map(m => (
-                  <div key={m.label} className="flex items-center justify-between text-[12px]">
-                    <span className="text-muted-foreground/60">{m.label}</span>
-                    <span className="text-foreground/80 font-medium">{m.value}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Actions */}
-          <div className="mt-auto pt-4 space-y-2.5">
-            {promptText && (
               <button
-                onClick={() => onUsePrompt(promptText)}
-                className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-semibold flex items-center justify-center gap-2 hover:brightness-110 transition-all"
+                onClick={handleCopyPrompt}
+                className="text-[11px] text-white/40 hover:text-white font-medium flex items-center gap-1 px-2 py-1 rounded-md hover:bg-white/10 transition-colors"
               >
-                {isAr ? 'استخدم هذا الأمر' : 'Use this prompt'}
-                <ArrowRight size={14} className={isRTL ? 'rotate-180' : ''} />
+                {copied ? <Check size={11} className="text-green-400" /> : <Copy size={11} />}
+                {copied ? (isAr ? 'تم' : 'Copied') : (isAr ? 'نسخ' : 'Copy')}
+              </button>
+            </div>
+            <p className="text-[13px] text-white/70 leading-relaxed whitespace-pre-wrap">
+              {displayPrompt}
+            </p>
+            {isLongPrompt && (
+              <button onClick={() => setExpanded(!expanded)} className="text-[11px] text-primary font-medium flex items-center gap-0.5 mt-2 hover:underline">
+                {expanded ? (isAr ? 'أقل' : 'See less') : (isAr ? 'عرض الكل' : 'See all')}
+                {expanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
               </button>
             )}
-            <div className="flex gap-2">
-              <button
-                onClick={() => onShare(post)}
-                className="flex-1 h-9 rounded-xl border border-border/50 text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/30 flex items-center justify-center gap-1.5 transition-colors"
-              >
-                <Share2 size={12} />
-                {isAr ? 'مشاركة' : 'Share'}
-              </button>
-              <button
-                onClick={handleDownload}
-                className="flex-1 h-9 rounded-xl border border-border/50 text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/30 flex items-center justify-center gap-1.5 transition-colors"
-              >
-                <Download size={12} />
-                {isAr ? 'تحميل' : 'Download'}
-              </button>
+          </div>
+        )}
+
+        {/* Metadata */}
+        {meta.length > 0 && (
+          <div className="px-5 py-3">
+            <h3 className="text-[11px] uppercase tracking-widest text-white/30 font-medium mb-2">
+              {isAr ? 'التفاصيل' : 'Information'}
+            </h3>
+            <div className="space-y-2">
+              {meta.map(m => (
+                <div key={m.label} className="flex items-center justify-between text-[12px]">
+                  <span className="text-white/40">{m.label}</span>
+                  <span className="text-white/80 font-medium">{m.value}</span>
+                </div>
+              ))}
             </div>
+          </div>
+        )}
+
+        {/* Actions — pushed to bottom */}
+        <div className="mt-auto px-5 pb-5 pt-4 space-y-2.5">
+          {promptText && (
+            <button
+              onClick={() => onUsePrompt(promptText)}
+              className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-semibold flex items-center justify-center gap-2 hover:brightness-110 transition-all"
+            >
+              {isAr ? 'استخدم هذا الأمر' : 'Use this prompt'}
+              <ArrowRight size={14} className={isRTL ? 'rotate-180' : ''} />
+            </button>
+          )}
+          <div className="flex gap-2">
+            <button
+              onClick={() => onShare(post)}
+              className="flex-1 h-9 rounded-xl bg-white/[0.06] text-[12px] font-medium text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center gap-1.5 transition-colors"
+            >
+              <Share2 size={12} />
+              {isAr ? 'مشاركة' : 'Share'}
+            </button>
+            <button
+              onClick={handleDownload}
+              className="flex-1 h-9 rounded-xl bg-white/[0.06] text-[12px] font-medium text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center gap-1.5 transition-colors"
+            >
+              <Download size={12} />
+              {isAr ? 'تحميل' : 'Download'}
+            </button>
           </div>
         </div>
       </div>
