@@ -59,6 +59,7 @@ export default function AdminCommunity() {
   const [testForm, setTestForm] = useState({
     image_url: '',
     username: 'Takhayal Team',
+    avatar_url: '',
     prompt: '',
     model: '',
     ratio: '1:1',
