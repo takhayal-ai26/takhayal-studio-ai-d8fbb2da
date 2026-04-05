@@ -22,7 +22,7 @@ export interface TemplateCategory {
 }
 
 export function useTemplates() {
-  const { lang } = useLanguage();
+  const { lang, t } = useLanguage();
   const isAr = lang === 'ar';
   const [templates, setTemplates] = useState<FrontendTemplate[]>([]);
   const [categories, setCategories] = useState<TemplateCategory[]>([]);
