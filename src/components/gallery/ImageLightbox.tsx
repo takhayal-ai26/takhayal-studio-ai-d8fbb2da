@@ -156,15 +156,7 @@ export function ImageLightbox({
     isAr ? onPrev?.() : onNext?.();
   };
 
-  const dateStr = new Date(job.created_at).toLocaleDateString(
-    isAr ? 'ar-SA' : 'en-US',
-    { year: 'numeric', month: 'short', day: 'numeric' }
-  );
-
-  const timeStr = new Date(job.created_at).toLocaleTimeString(
-    isAr ? 'ar-SA' : 'en-US',
-    { hour: '2-digit', minute: '2-digit' }
-  );
+  const dateStr = formatDate(job.created_at, isAr);
 
   return (
     <div className="fixed inset-0 z-[90]" role="dialog" aria-modal="true">
