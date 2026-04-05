@@ -708,7 +708,7 @@ export const translations = {
       featured: 'مميز',
       allTemplates: 'جميع القوالب',
       noTemplatesFound: 'لم يتم العثور على قوالب',
-      all: 'الكل',
+      all: 'All',
     },
     notFound: {
       title: '٤٠٤',
