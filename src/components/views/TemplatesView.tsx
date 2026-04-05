@@ -16,7 +16,7 @@ export function TemplatesView() {
   const { t, isRTL } = useLanguage();
   const navigate = useNavigate();
   const { templates, categories, categoryNames, loading } = useTemplates();
-  const [activeCategory, setActiveCategory] = useState(t.templatesView.all);
+  const [activeCategory, setActiveCategory] = useState<string>(t.templatesView.all);
 
   const handleUse = (tpl: FrontendTemplate) => {
     navigate(`/templates/${tpl.id}`);
