@@ -2,13 +2,113 @@ import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
-import { DollarSign, TrendingUp, Percent, BarChart3, RefreshCw, Info, Grid3X3 } from 'lucide-react';
-import { useToolProviders } from '@/hooks/useToolProviders';
+import { Input } from '@/components/ui/input';
+import { Switch } from '@/components/ui/switch';
+import { DollarSign, TrendingUp, Percent, BarChart3, RefreshCw, Grid3X3, Pencil, Save, X } from 'lucide-react';
+import { useToolProviders, type ToolProvider } from '@/hooks/useToolProviders';
 import EconomicsTab from '@/components/admin/EconomicsTab';
 import PricingMatrixPage from '@/components/admin/PricingMatrixPage';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Card, CardHeader, CardTitle } from '@/components/ui/card';
+import { toast } from 'sonner';
+
+const CREDIT_VALUE_USD = 0.016;
+
+function ToolProviderMarginsEditable({ providers: allProviders }: { providers: ToolProvider[] }) {
+  const { updateProvider } = useToolProviders();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editCredits, setEditCredits] = useState(0);
+  const [editActive, setEditActive] = useState(true);
+
+  const startEdit = (p: ToolProvider) => {
+    setEditingId(p.id);
+    setEditCredits(p.credit_cost);
+    setEditActive(p.is_active);
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    try {
+      await updateProvider.mutateAsync({ id: editingId, updates: { credit_cost: editCredits, is_active: editActive } });
+      toast.success('Provider updated');
+      setEditingId(null);
+    } catch { toast.error('Failed to save'); }
+  };
+
+  return (
+    <Card className="border-border/40 bg-card/50">
+      <CardHeader className="pb-2">
+        <CardTitle className="text-sm font-semibold">Tool Provider Pricing</CardTitle>
+        <p className="text-xs text-muted-foreground">Edit credits and toggle availability. Margin auto-calculates at ${CREDIT_VALUE_USD}/credit.</p>
+      </CardHeader>
+      <Table>
+        <TableHeader>
+          <TableRow className="border-border/40">
+            <TableHead className="text-[11px] uppercase text-muted-foreground">Tool</TableHead>
+            <TableHead className="text-[11px] uppercase text-muted-foreground">Provider</TableHead>
+            <TableHead className="text-[11px] uppercase text-muted-foreground">Tier</TableHead>
+            <TableHead className="text-[11px] uppercase text-muted-foreground">Credits</TableHead>
+            <TableHead className="text-[11px] uppercase text-muted-foreground">Cost ($)</TableHead>
+            <TableHead className="text-[11px] uppercase text-muted-foreground">Revenue ($)</TableHead>
+            <TableHead className="text-[11px] uppercase text-muted-foreground">Margin</TableHead>
+            <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
+            <TableHead className="text-[11px] uppercase text-muted-foreground w-20"></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {allProviders.map(p => {
+            const isEditing = editingId === p.id;
+            const cr = isEditing ? editCredits : p.credit_cost;
+            const revenue = cr * CREDIT_VALUE_USD;
+            const margin = revenue - p.internal_cost_usd;
+            const marginPct = revenue > 0 ? (margin / revenue * 100) : 0;
+            const marginColor = marginPct > 70 ? 'text-emerald-400' : marginPct > 40 ? 'text-yellow-400' : 'text-red-400';
+            return (
+              <TableRow key={p.id} className={`border-border/20 ${!p.is_active && !isEditing ? 'opacity-40' : ''}`}>
+                <TableCell className="text-[13px] font-medium">{p.display_name}</TableCell>
+                <TableCell className="text-[12px] text-muted-foreground font-mono">{p.provider_endpoint}</TableCell>
+                <TableCell><Badge variant="outline" className="text-[10px] capitalize">{p.tier}</Badge></TableCell>
+                <TableCell>
+                  {isEditing ? (
+                    <Input type="number" min={1} max={999} className="w-16 h-7 text-xs" value={editCredits} onChange={e => setEditCredits(Math.max(1, Number(e.target.value)))} />
+                  ) : (
+                    <span className="font-semibold text-[13px]">{p.credit_cost}</span>
+                  )}
+                </TableCell>
+                <TableCell className="text-[13px]">${p.internal_cost_usd.toFixed(4)}</TableCell>
+                <TableCell className="text-[13px]">${revenue.toFixed(4)}</TableCell>
+                <TableCell className={`text-[13px] font-medium ${marginColor}`}>{marginPct.toFixed(0)}%</TableCell>
+                <TableCell>
+                  {isEditing ? (
+                    <Switch checked={editActive} onCheckedChange={setEditActive} />
+                  ) : (
+                    <Badge variant={p.is_active ? 'default' : 'secondary'} className="text-[10px]">
+                      {p.is_active ? 'Active' : 'Disabled'}
+                    </Badge>
+                  )}
+                </TableCell>
+                <TableCell>
+                  {isEditing ? (
+                    <div className="flex gap-1">
+                      <Button size="sm" variant="ghost" onClick={saveEdit} className="h-7 text-xs gap-1"><Save size={12} />Save</Button>
+                      <Button size="sm" variant="ghost" onClick={() => setEditingId(null)} className="h-7 text-xs"><X size={12} /></Button>
+                    </div>
+                  ) : (
+                    <button onClick={() => startEdit(p)} className="p-1.5 rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-muted/20 transition-all"><Pencil size={12} /></button>
+                  )}
+                </TableCell>
+              </TableRow>
+            );
+          })}
+          {allProviders.length === 0 && (
+            <TableRow><TableCell colSpan={9} className="text-center text-sm text-muted-foreground py-8">No providers configured</TableCell></TableRow>
+          )}
+        </TableBody>
+      </Table>
+    </Card>
+  );
+}
 
 function MetricCard({ label, value, sub, icon: Icon, color = 'primary' }: { label: string; value: string; sub?: string; icon: any; color?: string }) {
   const colorClasses: Record<string, string> = {
@@ -84,57 +184,7 @@ export default function AdminCommerce() {
         </TabsContent>
 
         <TabsContent value="providers" className="mt-4">
-          {/* Read-only banner */}
-          <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 flex items-center gap-3 mb-4">
-            <Info size={16} className="text-blue-400 flex-shrink-0" />
-            <span className="text-sm text-blue-300">This is a reporting view. Edit pricing in <strong>Studio Config → Tools → Providers</strong>.</span>
-          </div>
-          <Card className="border-border/40 bg-card/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Tool Provider Pricing (Read-Only)</CardTitle>
-            </CardHeader>
-            <Table>
-              <TableHeader>
-                <TableRow className="border-border/40">
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Tool</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Provider</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Tier</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Credits</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Cost ($)</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Revenue ($)</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Margin</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {providers.map(p => {
-                  const revenue = p.credit_cost * 0.016;
-                  const margin = revenue - p.internal_cost_usd;
-                  const marginPct = revenue > 0 ? (margin / revenue * 100) : 0;
-                  const marginColor = marginPct > 70 ? 'text-emerald-400' : marginPct > 40 ? 'text-yellow-400' : 'text-red-400';
-                  return (
-                    <TableRow key={p.id} className={`border-border/20 ${!p.is_active ? 'opacity-40' : ''}`}>
-                      <TableCell className="text-[13px] font-medium">{p.display_name}</TableCell>
-                      <TableCell className="text-[12px] text-muted-foreground font-mono">{p.provider_endpoint}</TableCell>
-                      <TableCell><Badge variant="outline" className="text-[10px] capitalize">{p.tier}</Badge></TableCell>
-                      <TableCell className="text-[13px]">{p.credit_cost}</TableCell>
-                      <TableCell className="text-[13px]">${p.internal_cost_usd.toFixed(4)}</TableCell>
-                      <TableCell className="text-[13px]">${revenue.toFixed(4)}</TableCell>
-                      <TableCell className={`text-[13px] font-medium ${marginColor}`}>{marginPct.toFixed(0)}%</TableCell>
-                      <TableCell>
-                        <Badge variant={p.is_active ? 'default' : 'secondary'} className="text-[10px]">
-                          {p.is_active ? 'Active' : 'Disabled'}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-                {providers.length === 0 && (
-                  <TableRow><TableCell colSpan={8} className="text-center text-sm text-muted-foreground py-8">No providers configured</TableCell></TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </Card>
+          <ToolProviderMarginsEditable providers={providers} />
         </TabsContent>
       </Tabs>
     </div>
