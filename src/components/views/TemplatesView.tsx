@@ -16,14 +16,14 @@ export function TemplatesView() {
   const { t, isRTL } = useLanguage();
   const navigate = useNavigate();
   const { templates, categories, categoryNames, loading } = useTemplates();
-  const [activeCategory, setActiveCategory] = useState<string>(t.templatesView.all);
+  const [activeCategory, setActiveCategory] = useState('All');
 
   const handleUse = (tpl: FrontendTemplate) => {
     navigate(`/templates/${tpl.id}`);
   };
 
   // Map displayed category name back to English name_en for DB filtering
-  const activeCategoryEn = activeCategory === t.templatesView.all
+  const activeCategoryEn = activeCategory === 'All'
     ? 'All'
     : categories.find(c => c.name === activeCategory)?.name_en || activeCategory;
 
@@ -50,7 +50,7 @@ export function TemplatesView() {
                 activeCategory === cat ? 'active' : ''
               }`}
             >
-              {cat}
+              {cat === 'All' ? t.templatesView.all : cat}
             </button>
           ))}
         </div>
