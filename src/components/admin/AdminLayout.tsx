@@ -15,6 +15,7 @@ const NAV_ITEMS = [
   { label: 'Models', icon: Palette, path: '/admin/models' },
   { label: 'Tools', icon: Layers, path: '/admin/tools' },
   { label: 'Templates', icon: Layers, path: '/admin/templates' },
+  { label: 'Community', icon: Users, path: '/admin/community' },
   { label: 'Content', icon: Layers, path: '/admin/content' },
   { label: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
   { label: 'Settings', icon: Settings, path: '/admin/settings' },

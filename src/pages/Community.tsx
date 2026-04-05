@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -35,14 +35,15 @@ export default function Community() {
   const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  // Fetch community posts from real data
+  // Fetch APPROVED community posts from the new community_posts table
   useEffect(() => {
     (async () => {
       setLoading(true);
+
       const { data, error } = await supabase
-        .from('generation_logs')
-        .select('id, image_url, prompt, ratio, quality_tier, resolution, model_id, public_id, created_at, user_id')
-        .eq('is_shared_to_community', true)
+        .from('community_posts')
+        .select('*')
+        .eq('status', 'approved')
         .not('image_url', 'is', null)
         .order('created_at', { ascending: false })
         .limit(100);
@@ -53,40 +54,21 @@ export default function Community() {
         return;
       }
 
-      // Fetch model names and creator profiles in parallel
-      const modelIds = [...new Set(data.map(d => d.model_id).filter(Boolean))];
-      const userIds = [...new Set(data.map(d => d.user_id).filter(Boolean))];
-
-      const [modelsRes, profilesRes] = await Promise.all([
-        modelIds.length > 0
-          ? supabase.from('models').select('id, model_name').in('id', modelIds)
-          : Promise.resolve({ data: [] }),
-        userIds.length > 0
-          ? supabase.from('profiles').select('user_id, full_name, first_name, avatar_url').in('user_id', userIds)
-          : Promise.resolve({ data: [] }),
-      ]);
-
-      const modelMap = new Map((modelsRes.data || []).map(m => [m.id, m.model_name]));
-      const profileMap = new Map((profilesRes.data || []).map(p => [p.user_id, p]));
-
-      const mapped: CommunityPost[] = data
-        .filter(d => d.image_url && d.image_url.length > 5)
-        .map(d => {
-          const profile = profileMap.get(d.user_id);
-          return {
-            id: d.id,
-            image_url: d.image_url!,
-            prompt: d.prompt,
-            ratio: d.ratio,
-            quality_tier: d.quality_tier,
-            resolution: d.resolution,
-            model_name: d.model_id ? modelMap.get(d.model_id) || null : null,
-            creator_name: profile?.first_name || profile?.full_name || null,
-            creator_avatar: profile?.avatar_url || null,
-            public_id: d.public_id,
-            created_at: d.created_at,
-          };
-        });
+      const mapped: CommunityPost[] = (data as any[])
+        .filter((d: any) => d.image_url && d.image_url.length > 5)
+        .map((d: any) => ({
+          id: d.id,
+          image_url: d.image_url,
+          prompt: d.prompt || null,
+          ratio: d.ratio || null,
+          quality_tier: d.quality_or_resolution || null,
+          resolution: d.quality_or_resolution || null,
+          model_name: d.model || null,
+          creator_name: d.username || null,
+          creator_avatar: d.avatar_url || null,
+          public_id: d.id, // use community post id as public ref
+          created_at: d.created_at,
+        }));
 
       setPosts(mapped);
       setLoading(false);
@@ -120,14 +102,9 @@ export default function Community() {
   }, [setPrompt, navigate]);
 
   const handleShare = useCallback(async (post: CommunityPost) => {
-    const url = post.public_id
-      ? `${window.location.origin}/share/${post.public_id}`
-      : `${window.location.origin}/community?post=${post.id}`;
-
+    const url = `${window.location.origin}/community?post=${post.id}`;
     if (navigator.share) {
-      try {
-        await navigator.share({ title: 'Takhayal.ai', url });
-      } catch { /* user cancelled */ }
+      try { await navigator.share({ title: 'Takhayal.ai', url }); } catch { /* cancelled */ }
     } else {
       await navigator.clipboard.writeText(url);
       const { toast } = await import('sonner');
@@ -135,7 +112,6 @@ export default function Community() {
     }
   }, [isAr]);
 
-  // Navigation between posts
   const selectedIndex = selectedPost ? posts.findIndex(p => p.id === selectedPost.id) : -1;
   const handlePrev = useCallback(() => {
     if (selectedIndex > 0) {
@@ -168,7 +144,6 @@ export default function Community() {
         dir={isAr ? 'rtl' : 'ltr'}
         style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}
       >
-        {/* Hero */}
         <section className="text-center px-5 pt-10 pb-6">
           <h1 className="typo-heading-page">
             {isAr ? 'إلهام المجتمع' : 'Community Inspiration'}
@@ -178,7 +153,6 @@ export default function Community() {
           </p>
         </section>
 
-        {/* Feed */}
         <div className="max-w-7xl mx-auto px-3 md:px-6">
           {posts.length === 0 ? (
             <div className="py-24 text-center">
@@ -201,12 +175,7 @@ export default function Community() {
             <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3 [column-fill:_balance]">
               {posts.map(post => (
                 <div key={post.id} className="mb-3 break-inside-avoid">
-                  <CommunityCard
-                    post={post}
-                    isAr={isAr}
-                    isMobile={isMobile}
-                    onTap={handleOpenPost}
-                  />
+                  <CommunityCard post={post} isAr={isAr} isMobile={isMobile} onTap={handleOpenPost} />
                 </div>
               ))}
             </div>
@@ -214,7 +183,6 @@ export default function Community() {
         </div>
       </div>
 
-      {/* Detail Modal */}
       <CommunityDetailModal
         post={selectedPost}
         open={!!selectedPost}

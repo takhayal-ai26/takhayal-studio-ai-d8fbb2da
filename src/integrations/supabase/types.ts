@@ -47,6 +47,75 @@ export type Database = {
         }
         Relationships: []
       }
+      community_posts: {
+        Row: {
+          approved_at: string | null
+          approved_by: string | null
+          avatar_url: string | null
+          created_at: string
+          id: string
+          image_url: string
+          is_featured: boolean
+          model: string | null
+          prompt: string | null
+          quality_or_resolution: string | null
+          ratio: string | null
+          rejected_at: string | null
+          rejected_by: string | null
+          rejection_reason: string | null
+          source_generation_id: string | null
+          source_type: string
+          status: string
+          updated_at: string
+          user_id: string | null
+          username: string
+        }
+        Insert: {
+          approved_at?: string | null
+          approved_by?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          image_url: string
+          is_featured?: boolean
+          model?: string | null
+          prompt?: string | null
+          quality_or_resolution?: string | null
+          ratio?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          source_generation_id?: string | null
+          source_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          username?: string
+        }
+        Update: {
+          approved_at?: string | null
+          approved_by?: string | null
+          avatar_url?: string | null
+          created_at?: string
+          id?: string
+          image_url?: string
+          is_featured?: boolean
+          model?: string | null
+          prompt?: string | null
+          quality_or_resolution?: string | null
+          ratio?: string | null
+          rejected_at?: string | null
+          rejected_by?: string | null
+          rejection_reason?: string | null
+          source_generation_id?: string | null
+          source_type?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+          username?: string
+        }
+        Relationships: []
+      }
       contact_messages: {
         Row: {
           created_at: string
