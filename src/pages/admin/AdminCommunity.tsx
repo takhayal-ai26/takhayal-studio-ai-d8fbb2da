@@ -176,6 +176,14 @@ export default function AdminCommunity() {
     }
   };
 
+  const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setAvatarFile(file);
+      setAvatarPreview(URL.createObjectURL(file));
+    }
+  };
+
   const handleSubmitTest = async () => {
     if (!testFile && !testForm.image_url) { toast.error('Please provide an image'); return; }
     setSubmitting(true);
