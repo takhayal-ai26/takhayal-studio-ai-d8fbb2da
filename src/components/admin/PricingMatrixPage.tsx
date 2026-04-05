@@ -372,7 +372,12 @@ export default function PricingMatrixPage() {
                                   <th className="text-left py-1.5 text-[10px] text-muted-foreground">Resolution</th>
                                   <th className="text-left py-1.5 text-[10px] text-muted-foreground">API Cost ($)</th>
                                   <th className="text-left py-1.5 text-[10px] text-muted-foreground">Credits</th>
+                                  <th className="text-left py-1.5 text-[10px] text-muted-foreground">Resolution</th>
+                                  <th className="text-left py-1.5 text-[10px] text-muted-foreground">API Cost ($)</th>
+                                  <th className="text-left py-1.5 text-[10px] text-muted-foreground">Credits</th>
+                                  <th className="text-left py-1.5 text-[10px] text-muted-foreground">Revenue</th>
                                   <th className="text-left py-1.5 text-[10px] text-muted-foreground">Margin</th>
+                                  <th className="text-center py-1.5 text-[10px] text-muted-foreground">Active</th>
                                   <th className="text-center py-1.5 text-[10px] text-muted-foreground">Available</th>
                                 </tr>
                               </thead>
@@ -381,17 +386,18 @@ export default function PricingMatrixPage() {
                                   const tier = tiers.find(t => t.model_id === editingModelId && t.quality_level === q);
                                   if (!tier) return (
                                     <tr key={q} className="opacity-30">
-                                      <td className="py-2">{q}</td>
-                                      <td colSpan={4} className="py-2 text-muted-foreground">No tier configured</td>
+                                      <td className="py-2">{tier?.resolution_label || q}</td>
+                                      <td colSpan={6} className="py-2 text-muted-foreground">No tier configured</td>
                                     </tr>
                                   );
                                   const val = editValues[q] || { cost: tier.cost_per_run, credits: tier.credits_charged };
                                   const margin = calcMargin(val.cost, val.credits);
+                                  const revenue = val.credits * CREDIT_VALUE;
                                   const isLow = margin < 30;
-                                  const isLosing = val.credits * CREDIT_VALUE < val.cost;
+                                  const isLosing = revenue < val.cost;
                                   return (
                                     <tr key={q} className="border-b border-border/5">
-                                      <td className="py-2 font-semibold">{q}</td>
+                                      <td className="py-2 font-semibold">{tier.resolution_label || q}</td>
                                       <td className="py-2">
                                         <Input
                                           type="number"
@@ -404,11 +410,14 @@ export default function PricingMatrixPage() {
                                       <td className="py-2">
                                         <Input
                                           type="number"
+                                          min={1}
+                                          max={999}
                                           className="h-7 w-16 text-[11px]"
                                           value={val.credits}
-                                          onChange={e => setEditValues(p => ({ ...p, [q]: { ...p[q], credits: Number(e.target.value) } }))}
+                                          onChange={e => setEditValues(p => ({ ...p, [q]: { ...p[q], credits: Math.max(1, Math.min(999, Number(e.target.value))) } }))}
                                         />
                                       </td>
+                                      <td className="py-2 text-[11px] text-emerald-400">${revenue.toFixed(4)}</td>
                                       <td className="py-2">
                                         <span className={`text-[12px] font-semibold ${marginColor(margin)}`}>{margin.toFixed(0)}%</span>
                                         {isLow && <span className="ml-1.5 text-red-400 text-[10px]">⚠ Low</span>}
@@ -418,6 +427,13 @@ export default function PricingMatrixPage() {
                                         <Switch
                                           checked={editActive[q] !== false}
                                           onCheckedChange={v => setEditActive(p => ({ ...p, [q]: v }))}
+                                          className="scale-75"
+                                        />
+                                      </td>
+                                      <td className="py-2 text-center">
+                                        <Switch
+                                          checked={editAvailable[q] !== false}
+                                          onCheckedChange={v => setEditAvailable(p => ({ ...p, [q]: v }))}
                                           className="scale-75"
                                         />
                                       </td>
