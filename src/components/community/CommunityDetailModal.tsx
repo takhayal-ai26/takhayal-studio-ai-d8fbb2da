@@ -199,13 +199,13 @@ export function CommunityDetailModal({
 
       {/* Image area — fills remaining space */}
       <div
-        className="flex-1 min-w-0 flex items-center justify-center overflow-hidden"
+        className="flex-1 min-w-0 flex items-center justify-center overflow-hidden p-8"
         onClick={onClose}
       >
         <img
           src={post.image_url}
           alt={promptText}
-          className="max-w-full max-h-screen object-contain animate-in zoom-in-95 duration-300"
+          className="max-w-[85%] max-h-[85vh] object-contain rounded-lg animate-in zoom-in-95 duration-300"
           onClick={e => e.stopPropagation()}
         />
       </div>
