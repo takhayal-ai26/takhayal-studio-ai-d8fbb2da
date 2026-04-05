@@ -89,10 +89,10 @@ export function CommunityDetailModal({
     return (
       <div className="fixed inset-0 z-[70] flex flex-col animate-in fade-in duration-200 overflow-hidden" dir={isAr ? 'rtl' : 'ltr'}>
         {/* Immersive blurred background */}
-        <div className="absolute inset-0 -m-8">
-          <img src={post.image_url} alt="" className="w-full h-full object-cover scale-110 blur-[60px] saturate-[0.7]" />
+        <div className="absolute inset-0 -m-8 overflow-hidden">
+          <img src={post.image_url} alt="" className="w-full h-full object-cover scale-[1.15] blur-[40px] opacity-70 dark:opacity-60" />
         </div>
-        <div className="absolute inset-0 bg-background/80 dark:bg-background/75" />
+        <div className="absolute inset-0 bg-white/40 dark:bg-black/65" />
         {/* Top bar */}
         <div className="relative z-[1] flex items-center justify-between px-4 py-3 shrink-0">
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center text-foreground">
@@ -185,10 +185,10 @@ export function CommunityDetailModal({
       dir={isAr ? 'rtl' : 'ltr'}
     >
       {/* Immersive blurred background */}
-      <div className="absolute inset-0 -m-12 pointer-events-none">
-        <img src={post.image_url} alt="" className="w-full h-full object-cover scale-125 blur-[80px] saturate-[0.6] opacity-60 dark:opacity-40 transition-opacity duration-500" />
+      <div className="absolute inset-0 -m-12 pointer-events-none overflow-hidden">
+        <img src={post.image_url} alt="" className="w-full h-full object-cover scale-[1.1] blur-[40px] opacity-75 dark:opacity-55 transition-opacity duration-500" />
       </div>
-      <div className="absolute inset-0 bg-background/60 dark:bg-background/70 pointer-events-none" />
+      <div className="absolute inset-0 bg-white/40 dark:bg-black/65 pointer-events-none" />
       {/* Nav arrows */}
       {hasPrev && (
         <button
