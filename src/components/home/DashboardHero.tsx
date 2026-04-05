@@ -65,10 +65,14 @@ export function DashboardHero() {
   const navigate = useNavigate();
   const { prompt, setPrompt, setAspectRatio, aspectRatio, credits, requireAuth } = useApp();
   const { isRTL, lang } = useLanguage();
+  const { user, profile } = useAuth();
   const { activeModels, defaultModel } = useModels();
   const { getCreditsForModel } = usePricing();
   const { getCreditsForModelQuality } = usePricingTiers();
   const { submitJob } = useGenerationJobs();
+  const isLoggedIn = !!user;
+  const isAr = lang === 'ar';
+  const firstName = profile?.first_name || profile?.full_name?.split(' ')[0] || '';
 
   const [expanded, setExpanded] = useState(false);
   const [localModelId, setLocalModelId] = useState('');
