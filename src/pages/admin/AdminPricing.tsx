@@ -499,24 +499,12 @@ export default function AdminPricing() {
 
         {/* ── PRICING MATRIX ── */}
         <TabsContent value="matrix" className="mt-4 space-y-4">
-          <div className="flex items-center justify-between">
-            <p className="text-sm text-muted-foreground">Quality & resolution-based pricing per model. Revenue/margin auto-calculated from credit value (${creditVal}/credit).</p>
-          </div>
-          {[...models].sort((a, b) => (b.is_active ? 1 : 0) - (a.is_active ? 1 : 0)).map(m => (
-            <PricingMatrixCard
-              key={m.id}
-              modelId={m.id}
-              modelName={m.model_name}
-              tiers={allTiers[m.id] || []}
-              creditValueUsd={creditVal}
-              onAdd={addTier}
-              onUpdate={updateTier}
-              onDelete={deleteTier}
-            />
-          ))}
-          {models.length === 0 && (
-            <p className="text-center text-muted-foreground py-8">No models found. Add models in Models & Providers.</p>
-          )}
+          <PricingMatrixPage />
+        </TabsContent>
+
+        {/* ── TOOL PROVIDER MARGINS ── */}
+        <TabsContent value="tool_providers" className="mt-4 space-y-4">
+          <ToolProviderMarginsTab creditVal={creditVal} />
         </TabsContent>
 
         {/* ── TOOLS ── */}
