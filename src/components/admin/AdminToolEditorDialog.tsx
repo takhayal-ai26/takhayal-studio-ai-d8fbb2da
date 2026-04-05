@@ -307,6 +307,7 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { updateTool, addTool } = useToolsDB();
   const { providers, updateProvider, deleteProvider, setDefault } = useToolProviders(tool?.id);
+  const { activeModels } = useModels();
   const isEdit = !!tool;
 
   useEffect(() => {
