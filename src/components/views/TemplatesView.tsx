@@ -16,14 +16,14 @@ export function TemplatesView() {
   const { t, isRTL } = useLanguage();
   const navigate = useNavigate();
   const { templates, categories, categoryNames, loading } = useTemplates();
-  const [activeCategory, setActiveCategory] = useState('All');
+  const [activeCategory, setActiveCategory] = useState(t.templatesView.all);
 
   const handleUse = (tpl: FrontendTemplate) => {
     navigate(`/templates/${tpl.id}`);
   };
 
   // Map displayed category name back to English name_en for DB filtering
-  const activeCategoryEn = activeCategory === 'All'
+  const activeCategoryEn = activeCategory === t.templatesView.all
     ? 'All'
     : categories.find(c => c.name === activeCategory)?.name_en || activeCategory;
 
