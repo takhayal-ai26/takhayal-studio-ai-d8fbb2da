@@ -16,9 +16,12 @@ interface TierRow {
   cost_per_run: number;
   credits_charged: number;
   is_active: boolean;
+  is_available: boolean;
   is_default: boolean;
   tier_label: string;
   pricing_mode: string;
+  resolution_label: string | null;
+  actual_pixels: number | null;
 }
 
 interface ModelRow {
@@ -64,13 +67,14 @@ export default function PricingMatrixPage() {
   const [editStep, setEditStep] = useState<'edit' | 'review'>('edit');
   const [editValues, setEditValues] = useState<Record<string, { cost: number; credits: number }>>({});
   const [editActive, setEditActive] = useState<Record<string, boolean>>({});
+  const [editAvailable, setEditAvailable] = useState<Record<string, boolean>>({});
   const [originalValues, setOriginalValues] = useState<Record<string, { cost: number; credits: number }>>({});
 
   const load = useCallback(async () => {
     setLoading(true);
     const [mRes, tRes] = await Promise.all([
       supabase.from('models').select('id, model_name, endpoint_id, provider_name, is_active, pricing_mode'),
-      supabase.from('model_pricing_tiers').select('id, model_id, quality_level, cost_per_run, credits_charged, is_active, is_default, tier_label, pricing_mode'),
+      supabase.from('model_pricing_tiers').select('id, model_id, quality_level, cost_per_run, credits_charged, is_active, is_available, is_default, tier_label, pricing_mode, resolution_label, actual_pixels'),
     ]);
     setModels((mRes.data as any[]) || []);
     setTiers((tRes.data as any[]) || []);
@@ -118,15 +122,18 @@ export default function PricingMatrixPage() {
     const vals: Record<string, { cost: number; credits: number }> = {};
     const orig: Record<string, { cost: number; credits: number }> = {};
     const active: Record<string, boolean> = {};
+    const avail: Record<string, boolean> = {};
     for (const t of mTiers) {
       const key = t.quality_level || t.id;
       vals[key] = { cost: t.cost_per_run, credits: t.credits_charged };
       orig[key] = { cost: t.cost_per_run, credits: t.credits_charged };
       active[key] = t.is_active;
+      avail[key] = t.is_available !== false;
     }
     setEditValues(vals);
     setOriginalValues(orig);
     setEditActive(active);
+    setEditAvailable(avail);
     setEditingModelId(modelId);
     setEditStep('edit');
   };
@@ -166,11 +173,13 @@ export default function PricingMatrixPage() {
         const val = editValues[key];
         if (!val) continue;
         const act = editActive[key];
-        if (val.cost !== t.cost_per_run || val.credits !== t.credits_charged || act !== t.is_active) {
+        const avail = editAvailable[key];
+        if (val.cost !== t.cost_per_run || val.credits !== t.credits_charged || act !== t.is_active || avail !== (t.is_available !== false)) {
           await supabase.from('model_pricing_tiers').update({
             cost_per_run: val.cost,
             credits_charged: val.credits,
             is_active: act,
+            is_available: avail,
             updated_at: new Date().toISOString(),
           } as any).eq('id', t.id);
           // Audit log
@@ -178,8 +187,8 @@ export default function PricingMatrixPage() {
             action: 'pricing_update',
             entity_type: 'model_pricing_tier',
             entity_id: t.id,
-            old_value: { cost: t.cost_per_run, credits: t.credits_charged, is_active: t.is_active },
-            new_value: { cost: val.cost, credits: val.credits, is_active: act },
+            old_value: { cost: t.cost_per_run, credits: t.credits_charged, is_active: t.is_active, is_available: t.is_available },
+            new_value: { cost: val.cost, credits: val.credits, is_active: act, is_available: avail },
           } as any);
         }
       }
@@ -363,7 +372,12 @@ export default function PricingMatrixPage() {
                                   <th className="text-left py-1.5 text-[10px] text-muted-foreground">Resolution</th>
                                   <th className="text-left py-1.5 text-[10px] text-muted-foreground">API Cost ($)</th>
                                   <th className="text-left py-1.5 text-[10px] text-muted-foreground">Credits</th>
+                                  <th className="text-left py-1.5 text-[10px] text-muted-foreground">Resolution</th>
+                                  <th className="text-left py-1.5 text-[10px] text-muted-foreground">API Cost ($)</th>
+                                  <th className="text-left py-1.5 text-[10px] text-muted-foreground">Credits</th>
+                                  <th className="text-left py-1.5 text-[10px] text-muted-foreground">Revenue</th>
                                   <th className="text-left py-1.5 text-[10px] text-muted-foreground">Margin</th>
+                                  <th className="text-center py-1.5 text-[10px] text-muted-foreground">Active</th>
                                   <th className="text-center py-1.5 text-[10px] text-muted-foreground">Available</th>
                                 </tr>
                               </thead>
@@ -372,17 +386,18 @@ export default function PricingMatrixPage() {
                                   const tier = tiers.find(t => t.model_id === editingModelId && t.quality_level === q);
                                   if (!tier) return (
                                     <tr key={q} className="opacity-30">
-                                      <td className="py-2">{q}</td>
-                                      <td colSpan={4} className="py-2 text-muted-foreground">No tier configured</td>
+                                      <td className="py-2">{tier?.resolution_label || q}</td>
+                                      <td colSpan={6} className="py-2 text-muted-foreground">No tier configured</td>
                                     </tr>
                                   );
                                   const val = editValues[q] || { cost: tier.cost_per_run, credits: tier.credits_charged };
                                   const margin = calcMargin(val.cost, val.credits);
+                                  const revenue = val.credits * CREDIT_VALUE;
                                   const isLow = margin < 30;
-                                  const isLosing = val.credits * CREDIT_VALUE < val.cost;
+                                  const isLosing = revenue < val.cost;
                                   return (
                                     <tr key={q} className="border-b border-border/5">
-                                      <td className="py-2 font-semibold">{q}</td>
+                                      <td className="py-2 font-semibold">{tier.resolution_label || q}</td>
                                       <td className="py-2">
                                         <Input
                                           type="number"
@@ -395,11 +410,14 @@ export default function PricingMatrixPage() {
                                       <td className="py-2">
                                         <Input
                                           type="number"
+                                          min={1}
+                                          max={999}
                                           className="h-7 w-16 text-[11px]"
                                           value={val.credits}
-                                          onChange={e => setEditValues(p => ({ ...p, [q]: { ...p[q], credits: Number(e.target.value) } }))}
+                                          onChange={e => setEditValues(p => ({ ...p, [q]: { ...p[q], credits: Math.max(1, Math.min(999, Number(e.target.value))) } }))}
                                         />
                                       </td>
+                                      <td className="py-2 text-[11px] text-emerald-400">${revenue.toFixed(4)}</td>
                                       <td className="py-2">
                                         <span className={`text-[12px] font-semibold ${marginColor(margin)}`}>{margin.toFixed(0)}%</span>
                                         {isLow && <span className="ml-1.5 text-red-400 text-[10px]">⚠ Low</span>}
@@ -409,6 +427,13 @@ export default function PricingMatrixPage() {
                                         <Switch
                                           checked={editActive[q] !== false}
                                           onCheckedChange={v => setEditActive(p => ({ ...p, [q]: v }))}
+                                          className="scale-75"
+                                        />
+                                      </td>
+                                      <td className="py-2 text-center">
+                                        <Switch
+                                          checked={editAvailable[q] !== false}
+                                          onCheckedChange={v => setEditAvailable(p => ({ ...p, [q]: v }))}
                                           className="scale-75"
                                         />
                                       </td>

@@ -41,6 +41,8 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
       tier_label: newTier.label || `${newTier.quality} Native`,
       quality_level: newTier.quality || null,
       resolution_key: newTier.resolution || null,
+      resolution_label: newTier.quality || null,
+      actual_pixels: newTier.quality === '1K' ? 1024 : newTier.quality === '2K' ? 2048 : newTier.quality === '4K' ? 4096 : null,
       aspect_ratio: null,
       width: null, height: null, megapixels: null,
       cost_per_run: newTier.cost,
@@ -48,6 +50,7 @@ export function PricingMatrixCard({ modelId, modelName, tiers, creditValueUsd, o
       pricing_mode: newTier.pricingMode,
       is_default: tiers.length === 0,
       is_active: true,
+      is_available: true,
       notes: null,
     });
     setAdding(false);

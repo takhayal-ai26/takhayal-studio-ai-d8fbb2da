@@ -367,6 +367,7 @@ export type Database = {
       }
       model_pricing_tiers: {
         Row: {
+          actual_pixels: number | null
           aspect_ratio: string | null
           cost_per_run: number
           created_at: string
@@ -374,6 +375,7 @@ export type Database = {
           height: number | null
           id: string
           is_active: boolean
+          is_available: boolean
           is_default: boolean
           megapixels: number | null
           model_id: string
@@ -381,11 +383,13 @@ export type Database = {
           pricing_mode: string
           quality_level: string | null
           resolution_key: string | null
+          resolution_label: string | null
           tier_label: string
           updated_at: string
           width: number | null
         }
         Insert: {
+          actual_pixels?: number | null
           aspect_ratio?: string | null
           cost_per_run?: number
           created_at?: string
@@ -393,6 +397,7 @@ export type Database = {
           height?: number | null
           id?: string
           is_active?: boolean
+          is_available?: boolean
           is_default?: boolean
           megapixels?: number | null
           model_id: string
@@ -400,11 +405,13 @@ export type Database = {
           pricing_mode?: string
           quality_level?: string | null
           resolution_key?: string | null
+          resolution_label?: string | null
           tier_label?: string
           updated_at?: string
           width?: number | null
         }
         Update: {
+          actual_pixels?: number | null
           aspect_ratio?: string | null
           cost_per_run?: number
           created_at?: string
@@ -412,6 +419,7 @@ export type Database = {
           height?: number | null
           id?: string
           is_active?: boolean
+          is_available?: boolean
           is_default?: boolean
           megapixels?: number | null
           model_id?: string
@@ -419,6 +427,7 @@ export type Database = {
           pricing_mode?: string
           quality_level?: string | null
           resolution_key?: string | null
+          resolution_label?: string | null
           tier_label?: string
           updated_at?: string
           width?: number | null
@@ -432,6 +441,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      model_test_log: {
+        Row: {
+          actual_pixels_returned: number | null
+          error_message: string | null
+          expected_pixels: number
+          id: string
+          model_id: string
+          passed: boolean
+          resolution_label: string
+          tested_at: string
+          tested_by: string | null
+        }
+        Insert: {
+          actual_pixels_returned?: number | null
+          error_message?: string | null
+          expected_pixels: number
+          id?: string
+          model_id: string
+          passed?: boolean
+          resolution_label: string
+          tested_at?: string
+          tested_by?: string | null
+        }
+        Update: {
+          actual_pixels_returned?: number | null
+          error_message?: string | null
+          expected_pixels?: number
+          id?: string
+          model_id?: string
+          passed?: boolean
+          resolution_label?: string
+          tested_at?: string
+          tested_by?: string | null
+        }
+        Relationships: []
       }
       models: {
         Row: {
@@ -1486,12 +1531,26 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      deduct_credits: {
+        Args: {
+          p_amount: number
+          p_model_id?: string
+          p_resolution?: string
+          p_tool_id?: string
+          p_user_id: string
+        }
+        Returns: Json
+      }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]
           _user_id: string
         }
         Returns: boolean
+      }
+      refund_credits: {
+        Args: { p_amount: number; p_user_id: string }
+        Returns: Json
       }
     }
     Enums: {

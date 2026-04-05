@@ -203,18 +203,20 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [selectedModelId, selectedModel]);
 
-  // Fetch tier credits when model changes
+  // Fetch tier credits when model changes — only available tiers
   useEffect(() => {
     if (!selectedModelId) return;
     const fetchTierCredits = async () => {
       const { data } = await supabase
         .from('model_pricing_tiers')
-        .select('quality_level, credits_charged')
+        .select('quality_level, credits_charged, is_available, is_active, resolution_label, actual_pixels')
         .eq('model_id', selectedModelId);
       if (data) {
         const map: Record<string, number> = {};
         for (const t of data as any[]) {
-          if (t.quality_level) map[t.quality_level] = t.credits_charged;
+          if (t.quality_level && t.is_active && t.is_available !== false) {
+            map[t.quality_level] = t.credits_charged;
+          }
         }
         setTierCreditsMap(map);
       }

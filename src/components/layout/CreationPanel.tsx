@@ -45,14 +45,11 @@ export function CreationPanel() {
 
   const modelQualityTiers = (() => {
     if (!currentModel) return ['1K'];
-    const dbTiers = currentModel.supported_quality_tiers || ['1K'];
-    if (currentModel.pricing_mode === 'size_locked') return dbTiers;
     const activePricingTiers = (allTiers[currentModel.id] || [])
-      .filter((t: any) => t.is_active && t.quality_level)
+      .filter((t: any) => t.is_active && t.is_available !== false && t.quality_level)
       .map((t: any) => t.quality_level as string);
-    if (activePricingTiers.length > 0) {
-      return dbTiers.filter((q: string) => activePricingTiers.includes(q));
-    }
+    if (activePricingTiers.length > 0) return activePricingTiers;
+    const dbTiers = currentModel.supported_quality_tiers || ['1K'];
     return dbTiers;
   })();
 
