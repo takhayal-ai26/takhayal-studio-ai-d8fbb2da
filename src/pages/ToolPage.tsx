@@ -173,7 +173,7 @@ export default function ToolPage() {
           className={`flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition-colors mb-6 cursor-pointer ${isRTL ? 'flex-row-reverse' : ''}`}
         >
           <ArrowLeft size={14} className={isRTL ? 'rotate-180' : ''} />
-          {t.toolPage.backToHome || 'All Tools'}
+          {t.toolPage.allTools}
         </button>
 
         {/* ══════ 2-Column Desktop / Stacked Mobile ══════ */}
@@ -270,11 +270,11 @@ export default function ToolPage() {
                 {submitting ? (
                   <span className="flex items-center gap-2">
                     <Loader2 size={16} className="animate-spin" />
-                    {isRTL ? 'جاري الإرسال…' : 'Submitting…'}
+                    {t.toolPage.submitting}
                   </span>
                 ) : (
                   <>
-                    <span>{isUpload ? (tool.slug === 'upscale' ? 'Enhance' : t.toolPage.uploadProcess) : t.toolPage.generate}</span>
+                    <span>{isUpload ? (tool.slug === 'upscale' ? t.toolPage.enhance : t.toolPage.uploadProcess) : t.toolPage.generate}</span>
                     <span className="flex items-center gap-1 text-primary-foreground/70 text-[12px]">
                       <Coins size={12} /> {creditCost} {t.toolPage.credits}
                     </span>
