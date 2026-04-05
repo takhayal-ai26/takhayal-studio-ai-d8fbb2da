@@ -54,13 +54,20 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
     const body = await req.json();
-    const { tool_slug, prompt, image_url, options } = body;
+    const { tool_slug, prompt, image_url, options, job_id } = body;
 
     if (!tool_slug) {
       return new Response(JSON.stringify({ error: "tool_slug is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // If a job_id is provided, update generation_logs status to 'generating'
+    if (job_id) {
+      await supabase.from("generation_logs").update({
+        status: "generating",
+      }).eq("id", job_id);
     }
 
     // Load tool config from DB
@@ -72,6 +79,9 @@ serve(async (req) => {
       .single();
 
     if (toolErr || !tool) {
+      if (job_id) {
+        await supabase.from("generation_logs").update({ status: "failed" }).eq("id", job_id);
+      }
       return new Response(JSON.stringify({ error: "Tool not found or inactive" }), {
         status: 404,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -84,7 +94,6 @@ serve(async (req) => {
     };
 
     // ── RESOLVE PROVIDER ──
-    // Frontend may pass options.provider_endpoint to select a specific provider
     let endpoint = tool.provider_endpoint;
     let creditCost = tool.default_credit_cost;
     let actualCost = Number(tool.internal_provider_cost_estimate);
@@ -93,7 +102,6 @@ serve(async (req) => {
     const requestedEndpoint = options?.provider_endpoint;
 
     if (requestedEndpoint) {
-      // Look up the provider in tool_providers to get correct costs
       const { data: provider } = await supabase
         .from("tool_providers")
         .select("*")
@@ -111,7 +119,6 @@ serve(async (req) => {
         console.warn(`[run-tool] Requested endpoint ${requestedEndpoint} not found in tool_providers, using tool default`);
       }
     } else {
-      // No endpoint specified — use the default provider from tool_providers
       const { data: defaultProvider } = await supabase
         .from("tool_providers")
         .select("*")
@@ -173,12 +180,10 @@ serve(async (req) => {
         outputUrl = outputImages[0]?.url || null;
 
       } else if (tool_slug === "upscale" || tool_slug === "enhance") {
-        // ===== UNIFIED UPSCALE/ENHANCE: Uses provider endpoint from DB =====
         if (!image_url) throw new Error("image_url is required");
 
         let payload: Record<string, unknown> = { image_url };
 
-        // Build payload based on endpoint type
         if (endpoint.includes("clarity-upscaler")) {
           payload = {
             image_url,
@@ -205,7 +210,6 @@ serve(async (req) => {
         } else if (endpoint.includes("creative-upscaler")) {
           payload = { image_url, scale: 2, creativity: 0.5 };
         } else {
-          // Generic fallback
           payload = { image_url, scale_factor: 2 };
         }
 
@@ -224,7 +228,6 @@ serve(async (req) => {
           style: "digital_illustration",
         };
 
-        // Ideogram uses slightly different params
         if (endpoint.includes("ideogram")) {
           payload.prompt = `Logo: ${prompt}. ${options?.style || 'minimal'} style. Clean professional design.`;
           delete payload.style;
@@ -253,7 +256,7 @@ serve(async (req) => {
       const revenue = creditCost * creditValueUsd;
       const margin = revenue - actualCost;
 
-      // Update run as completed
+      // Update tool_run as completed
       if (runId) {
         await supabase.from("tool_runs").update({
           status: "completed",
@@ -268,12 +271,28 @@ serve(async (req) => {
         }).eq("id", runId);
       }
 
+      // Update generation_logs if job_id was provided
+      if (job_id && outputUrl) {
+        await supabase.from("generation_logs").update({
+          status: "completed",
+          image_url: outputUrl,
+          credits_used: creditCost,
+          provider_cost: actualCost,
+          revenue: revenue,
+          revenue_usd: revenue,
+          margin: margin,
+          profit_usd: margin,
+          actual_api_cost: actualCost,
+        }).eq("id", job_id);
+      }
+
       console.log(`[run-tool] ${tool_slug} completed via ${endpoint}. output=${outputUrl} cost=$${actualCost} revenue=$${revenue}`);
 
       return new Response(JSON.stringify({
         success: true,
         tool_slug,
         run_id: runId,
+        job_id: job_id || null,
         output_url: outputUrl,
         output_images: outputImages,
         credits_charged: creditCost,
@@ -283,18 +302,28 @@ serve(async (req) => {
       });
 
     } catch (toolError) {
+      const errorMsg = toolError instanceof Error ? toolError.message : "Unknown error";
+
       if (runId) {
         await supabase.from("tool_runs").update({
           status: "failed",
-          error_message: toolError instanceof Error ? toolError.message : "Unknown error",
+          error_message: errorMsg,
           failed_at: new Date().toISOString(),
           credits_charged: 0,
         }).eq("id", runId);
       }
 
+      // Update generation_logs if job_id was provided
+      if (job_id) {
+        await supabase.from("generation_logs").update({
+          status: "failed",
+          credits_used: 0,
+        }).eq("id", job_id);
+      }
+
       console.error(`[run-tool] ${tool_slug} failed:`, toolError);
       return new Response(JSON.stringify({
-        error: toolError instanceof Error ? toolError.message : "Tool execution failed",
+        error: errorMsg,
       }), {
         status: 502,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
