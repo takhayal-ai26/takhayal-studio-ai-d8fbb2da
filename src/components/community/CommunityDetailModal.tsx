@@ -175,7 +175,7 @@ export function CommunityDetailModal({
   // ── DESKTOP LAYOUT ──
   return (
     <div
-      className="fixed inset-0 z-[70] bg-black flex animate-in fade-in duration-200"
+      className="fixed inset-0 z-[70] bg-neutral-100 dark:bg-black flex animate-in fade-in duration-200"
       onClick={onClose}
       dir={isAr ? 'rtl' : 'ltr'}
     >
@@ -199,20 +199,20 @@ export function CommunityDetailModal({
 
       {/* Image area — fills remaining space */}
       <div
-        className="flex-1 min-w-0 flex items-center justify-center overflow-hidden"
+        className="flex-1 min-w-0 flex items-center justify-center overflow-hidden p-8"
         onClick={onClose}
       >
         <img
           src={post.image_url}
           alt={promptText}
-          className="max-w-full max-h-screen object-contain animate-in zoom-in-95 duration-300"
+          className="max-w-[85%] max-h-[85vh] object-contain rounded-lg animate-in zoom-in-95 duration-300"
           onClick={e => e.stopPropagation()}
         />
       </div>
 
-      {/* Info panel — right side, always dark */}
+      {/* Info panel — right side, theme-aware */}
       <div
-        className="w-[360px] shrink-0 flex flex-col bg-[#111111] overflow-y-auto h-screen"
+        className="w-[360px] shrink-0 flex flex-col bg-white dark:bg-[#111111] overflow-y-auto h-screen"
         onClick={e => e.stopPropagation()}
       >
         {/* Top: creator + close */}
@@ -221,22 +221,22 @@ export function CommunityDetailModal({
             {post.creator_avatar ? (
               <img src={post.creator_avatar} className="w-8 h-8 rounded-full object-cover" alt="" />
             ) : (
-              <span className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-xs font-bold text-white/60">
+              <span className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center text-xs font-bold text-muted-foreground">
                 {creatorInitial}
               </span>
             )}
             <div>
-              <span className="text-sm text-white font-medium block">
+              <span className="text-sm text-foreground font-medium block">
                 {post.creator_name || (isAr ? 'مبدع' : 'Creator')}
               </span>
-              <span className="text-[10px] text-white/30">
+              <span className="text-[10px] text-muted-foreground/50">
                 {formatDate(post.created_at, isAr)}
               </span>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center text-white/50 hover:text-white hover:bg-white/20 transition-colors"
+            className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
           >
             <X size={14} />
           </button>
@@ -246,18 +246,18 @@ export function CommunityDetailModal({
         {promptText && (
           <div className="px-5 py-3">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="text-[11px] uppercase tracking-widest text-white/30 font-medium">
+              <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground/50 font-medium">
                 {isAr ? 'الأمر' : 'Prompt'}
               </h3>
               <button
                 onClick={handleCopyPrompt}
-                className="text-[11px] text-white/40 hover:text-white font-medium flex items-center gap-1 px-2 py-1 rounded-md hover:bg-white/10 transition-colors"
+                className="text-[11px] text-muted-foreground hover:text-foreground font-medium flex items-center gap-1 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors"
               >
-                {copied ? <Check size={11} className="text-green-400" /> : <Copy size={11} />}
+                {copied ? <Check size={11} className="text-green-500" /> : <Copy size={11} />}
                 {copied ? (isAr ? 'تم' : 'Copied') : (isAr ? 'نسخ' : 'Copy')}
               </button>
             </div>
-            <p className="text-[13px] text-white/70 leading-relaxed whitespace-pre-wrap">
+            <p className="text-[13px] text-foreground/80 leading-relaxed whitespace-pre-wrap">
               {displayPrompt}
             </p>
             {isLongPrompt && (
@@ -272,14 +272,14 @@ export function CommunityDetailModal({
         {/* Metadata */}
         {meta.length > 0 && (
           <div className="px-5 py-3">
-            <h3 className="text-[11px] uppercase tracking-widest text-white/30 font-medium mb-2">
+            <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground/50 font-medium mb-2">
               {isAr ? 'التفاصيل' : 'Information'}
             </h3>
             <div className="space-y-2">
               {meta.map(m => (
                 <div key={m.label} className="flex items-center justify-between text-[12px]">
-                  <span className="text-white/40">{m.label}</span>
-                  <span className="text-white/80 font-medium">{m.value}</span>
+                  <span className="text-muted-foreground/60">{m.label}</span>
+                  <span className="text-foreground/80 font-medium">{m.value}</span>
                 </div>
               ))}
             </div>
@@ -300,14 +300,14 @@ export function CommunityDetailModal({
           <div className="flex gap-2">
             <button
               onClick={() => onShare(post)}
-              className="flex-1 h-9 rounded-xl bg-white/[0.06] text-[12px] font-medium text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center gap-1.5 transition-colors"
+              className="flex-1 h-9 rounded-xl bg-muted/30 text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 flex items-center justify-center gap-1.5 transition-colors"
             >
               <Share2 size={12} />
               {isAr ? 'مشاركة' : 'Share'}
             </button>
             <button
               onClick={handleDownload}
-              className="flex-1 h-9 rounded-xl bg-white/[0.06] text-[12px] font-medium text-white/50 hover:text-white hover:bg-white/10 flex items-center justify-center gap-1.5 transition-colors"
+              className="flex-1 h-9 rounded-xl bg-muted/30 text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 flex items-center justify-center gap-1.5 transition-colors"
             >
               <Download size={12} />
               {isAr ? 'تحميل' : 'Download'}
