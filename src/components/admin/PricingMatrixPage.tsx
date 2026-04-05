@@ -67,6 +67,7 @@ export default function PricingMatrixPage() {
   const [editStep, setEditStep] = useState<'edit' | 'review'>('edit');
   const [editValues, setEditValues] = useState<Record<string, { cost: number; credits: number }>>({});
   const [editActive, setEditActive] = useState<Record<string, boolean>>({});
+  const [editAvailable, setEditAvailable] = useState<Record<string, boolean>>({});
   const [originalValues, setOriginalValues] = useState<Record<string, { cost: number; credits: number }>>({});
 
   const load = useCallback(async () => {
@@ -121,15 +122,18 @@ export default function PricingMatrixPage() {
     const vals: Record<string, { cost: number; credits: number }> = {};
     const orig: Record<string, { cost: number; credits: number }> = {};
     const active: Record<string, boolean> = {};
+    const avail: Record<string, boolean> = {};
     for (const t of mTiers) {
       const key = t.quality_level || t.id;
       vals[key] = { cost: t.cost_per_run, credits: t.credits_charged };
       orig[key] = { cost: t.cost_per_run, credits: t.credits_charged };
       active[key] = t.is_active;
+      avail[key] = t.is_available !== false;
     }
     setEditValues(vals);
     setOriginalValues(orig);
     setEditActive(active);
+    setEditAvailable(avail);
     setEditingModelId(modelId);
     setEditStep('edit');
   };
