@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/context/AppContext';
+import { useModels } from '@/hooks/useModels';
 import { toast } from 'sonner';
 import {
   Search, Check, X, Eye, RotateCcw, Upload,
