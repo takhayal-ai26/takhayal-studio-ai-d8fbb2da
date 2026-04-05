@@ -1,13 +1,13 @@
 import { useNavigate } from 'react-router-dom';
-
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { useToolsDB } from '@/hooks/useToolsDB';
+import { cn } from '@/lib/utils';
 
 export default function ToolsDirectory() {
   const navigate = useNavigate();
-  const { t } = useLanguage();
+  const { t, isRTL } = useLanguage();
   const { tools } = useToolsDB();
   const [search, setSearch] = useState('');
 
@@ -25,13 +25,16 @@ export default function ToolsDirectory() {
             </h1>
           </div>
           <div className="relative w-full md:w-80">
-            <Search size={15} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/40" />
+            <Search size={15} className={cn("absolute top-1/2 -translate-y-1/2 text-muted-foreground/40", isRTL ? "right-3.5" : "left-3.5")} />
             <input
               type="text"
               value={search}
               onChange={e => setSearch(e.target.value)}
               placeholder={t.toolsDir.searchPlaceholder}
-              className="w-full h-11 bg-card/50 border border-border/30 rounded-2xl pl-10 pr-4 text-[13px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/10 transition-all"
+              className={cn(
+                "w-full h-11 bg-card/50 border border-border/30 rounded-2xl pr-4 text-[13px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/10 transition-all",
+                isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
+              )}
             />
           </div>
         </div>
@@ -50,7 +53,10 @@ export default function ToolsDirectory() {
                 <button
                   key={tool.id}
                   onClick={() => navigate(tool.slug === 'generate' ? '/studio' : `/tools/${tool.slug}`)}
-                  className="group relative rounded-2xl overflow-hidden text-left transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/10 focus:outline-none"
+                  className={cn(
+                    "group relative rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/10 focus:outline-none",
+                    isRTL ? "text-right" : "text-left"
+                  )}
                 >
                   <div className="aspect-[4/3] relative">
                     {hasImage ? (
@@ -67,14 +73,9 @@ export default function ToolsDirectory() {
                     )}
                   </div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <div className="absolute top-4 left-4">
-                    <div className="w-9 h-9 rounded-xl bg-black/30 backdrop-blur-md border border-white/8 flex items-center justify-center">
-                      <Icon size={16} className="text-primary" />
-                    </div>
-                  </div>
                   <div className="absolute bottom-0 left-0 right-0 p-5">
-                    <h3 className="text-lg font-semibold text-white">{tool.name}</h3>
-                    <p className="text-[13px] text-white/50 mt-1">{tool.shortDesc}</p>
+                    <h3 className="text-xl font-bold text-white">{tool.name}</h3>
+                    <p className="text-[15px] text-white/50 mt-1">{tool.shortDesc}</p>
                   </div>
                   <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/[0.04] group-hover:ring-primary/20 transition-all duration-300 pointer-events-none" />
                 </button>
