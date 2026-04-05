@@ -106,7 +106,7 @@ export default function PortalHome() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                         <div className="absolute inset-0 bg-primary/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                         <div className="absolute bottom-0 left-0 right-0 p-4">
-                          <span className="text-[14px] font-medium text-white block">{tool.name}</span>
+                          <span className="text-white block font-extrabold text-xl">{tool.name}</span>
                           <span className="text-[11px] text-white/50 mt-0.5 block">{tool.shortDesc}</span>
                           <ArrowRight size={13} className={`text-primary mt-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 ${isRTL ? 'rotate-180' : ''}`} />
                         </div>
