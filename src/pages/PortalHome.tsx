@@ -87,7 +87,7 @@ export default function PortalHome() {
                   <div className="absolute inset-0 opacity-[0.06]" style={{ background: 'radial-gradient(ellipse at 30% 50%, hsl(var(--primary)), transparent 70%)' }} />
                   <div className="relative">
                     <Sparkles size={18} className="text-primary mb-4 opacity-70" />
-                    <h2 className="typo-heading-section">
+                    <h2 className="typo-heading-section font-extrabold text-5xl">
                       {t.portal.whatWillYouCreate}<br />
                       <span className="text-primary font-light">{t.portal.createToday}</span>
                     </h2>
@@ -125,7 +125,7 @@ export default function PortalHome() {
         <section className="mb-12">
           <div className="flex items-end justify-between mb-6">
             <div>
-              <h2 className="typo-heading-section">{t.portal.startFromPowerful}</h2>
+              <h2 className="typo-heading-section font-extrabold text-4xl">{t.portal.startFromPowerful}</h2>
               <p className="text-[13px] text-muted-foreground mt-1.5">{t.portal.readyMadePrompts}</p>
             </div>
             <button onClick={() => navigate('/templates')} className="hidden md:flex items-center gap-1.5 text-[12px] text-primary font-medium hover:underline group">
@@ -147,7 +147,7 @@ export default function PortalHome() {
                 <div className="relative overflow-hidden" style={{ aspectRatio: ratioToNumber(tpl.ratio) }}>
                   <img src={tpl.image} alt={tpl.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                  <h3 className="absolute bottom-2.5 left-3 right-3 text-sm font-semibold text-white leading-tight drop-shadow-md">{tpl.name}</h3>
+                  <h3 className="absolute bottom-2.5 left-3 right-3 font-semibold text-white leading-tight drop-shadow-md text-lg">{tpl.name}</h3>
                   <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
                     <span className="h-7 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium flex items-center gap-1 shadow-lg">{t.portal.use}</span>
                   </div>
@@ -176,7 +176,7 @@ export default function PortalHome() {
         <section className="mt-6 mb-14">
           <div className="flex items-end justify-between mb-5">
             <div>
-              <h2 className="typo-heading-section">{t.portal.communityWorks}</h2>
+              <h2 className="typo-heading-section text-4xl">{t.portal.communityWorks}</h2>
               <p className="text-[13px] text-muted-foreground mt-1">{t.portal.seeWhatCreators}</p>
             </div>
             <button onClick={() => navigate('/community')} className="text-[12px] text-primary font-medium hover:underline flex items-center gap-1 group">
