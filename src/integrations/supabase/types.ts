@@ -1258,7 +1258,9 @@ export type Database = {
           created_at: string
           credit_cost: number
           description: string
+          description_ar: string
           display_name: string
+          display_name_ar: string
           id: string
           internal_cost_usd: number
           is_active: boolean
@@ -1273,7 +1275,9 @@ export type Database = {
           created_at?: string
           credit_cost?: number
           description?: string
+          description_ar?: string
           display_name?: string
+          display_name_ar?: string
           id?: string
           internal_cost_usd?: number
           is_active?: boolean
@@ -1288,7 +1292,9 @@ export type Database = {
           created_at?: string
           credit_cost?: number
           description?: string
+          description_ar?: string
           display_name?: string
+          display_name_ar?: string
           id?: string
           internal_cost_usd?: number
           is_active?: boolean

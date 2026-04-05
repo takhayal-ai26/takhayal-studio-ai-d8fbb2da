@@ -8,7 +8,9 @@ export interface ToolProvider {
   provider_name: string;
   provider_endpoint: string;
   display_name: string;
+  display_name_ar: string;
   description: string;
+  description_ar: string;
   credit_cost: number;
   internal_cost_usd: number;
   is_active: boolean;

@@ -1,6 +1,7 @@
 import { Sparkles, Wand2, Zap, Crown } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ToolProvider } from '@/hooks/useToolProviders';
+import { useLanguage } from '@/i18n/LanguageContext';
 
 interface ToolProviderSelectorProps {
   providers: ToolProvider[];
@@ -16,12 +17,13 @@ const tierIcons: Record<string, any> = {
 };
 
 export function ToolProviderSelector({ providers, selected, onSelect }: ToolProviderSelectorProps) {
+  const { isRTL, t } = useLanguage();
   if (providers.length <= 1) return null;
 
   return (
     <div className="space-y-2">
       <label className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider block">
-        Processing Mode
+        {t.toolPage.processingMode}
       </label>
       <div className="grid grid-cols-2 gap-2.5">
         {providers.map(p => {
@@ -42,7 +44,7 @@ export function ToolProviderSelector({ providers, selected, onSelect }: ToolProv
             >
               {isAdvanced && (
                 <div className="absolute -top-2 right-3 px-2 py-0.5 rounded-md bg-primary text-primary-foreground text-[9px] font-bold tracking-wide">
-                  BEST
+                  {t.toolPage.best}
                 </div>
               )}
 
@@ -58,12 +60,14 @@ export function ToolProviderSelector({ providers, selected, onSelect }: ToolProv
                     'text-[13px] font-semibold block leading-tight',
                     isSelected ? 'text-foreground' : 'text-foreground/80'
                   )}>
-                    {p.display_name}
+                    {isRTL && p.display_name_ar ? p.display_name_ar : p.display_name}
                   </span>
                 </div>
               </div>
 
-              <p className="text-[11px] text-muted-foreground leading-relaxed mb-2.5">{p.description}</p>
+              <p className="text-[11px] text-muted-foreground leading-relaxed mb-2.5">
+                {isRTL && p.description_ar ? p.description_ar : p.description}
+              </p>
 
               <div className={cn(
                 'inline-flex items-center gap-1 px-2.5 py-1 rounded-lg text-[11px] font-semibold',
@@ -71,7 +75,7 @@ export function ToolProviderSelector({ providers, selected, onSelect }: ToolProv
                   ? 'bg-primary/10 text-primary'
                   : 'bg-muted/20 text-muted-foreground'
               )}>
-                {p.credit_cost} credits
+                {p.credit_cost} {t.toolPage.credits}
               </div>
             </button>
           );
