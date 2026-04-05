@@ -155,6 +155,11 @@ export const translations = {
       startCreatingNow: 'Start creating now',
       noSetupRequired: 'No setup required. Jump in and create.',
       tryTool: 'Try',
+      processingMode: 'Processing Mode',
+      enhance: 'Enhance',
+      submitting: 'Submitting…',
+      best: 'BEST',
+      allTools: 'All Tools',
     },
     // Studio / Creation Panel
     studio: {
@@ -504,6 +509,11 @@ export const translations = {
       startCreatingNow: 'ابدأ الإبداع الآن',
       noSetupRequired: 'لا حاجة لإعداد. ابدأ مباشرة.',
       tryTool: 'جرّب',
+      processingMode: 'وضع المعالجة',
+      enhance: 'تحسين',
+      submitting: 'جاري الإرسال…',
+      best: 'الأفضل',
+      allTools: 'جميع الأدوات',
     },
     studio: {
       prompt: 'الأمر',
