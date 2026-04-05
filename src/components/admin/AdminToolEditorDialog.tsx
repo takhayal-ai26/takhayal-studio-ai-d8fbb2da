@@ -115,7 +115,8 @@ function ProviderCard({ provider, onUpdate, onDelete, onSetDefault }: {
 function AddProviderForm({ toolId, onDone }: { toolId: string; onDone: () => void }) {
   const { addProvider } = useToolProviders(toolId);
   const [form, setForm] = useState({
-    display_name: '', provider_endpoint: '', tier: 'standard', description: '',
+    display_name: '', display_name_ar: '', provider_endpoint: '', tier: 'standard',
+    description: '', description_ar: '',
     credit_cost: 5, internal_cost_usd: 0.03, is_active: true, is_default: false,
   });
   const [saving, setSaving] = useState(false);
@@ -147,9 +148,15 @@ function AddProviderForm({ toolId, onDone }: { toolId: string; onDone: () => voi
       <p className="text-xs font-semibold text-primary">Add New Provider</p>
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
-          <Label className="text-[10px]">Display Name</Label>
+          <Label className="text-[10px]">Display Name (EN)</Label>
           <Input value={form.display_name} onChange={e => setForm(p => ({ ...p, display_name: e.target.value }))} className="h-8 text-xs bg-muted/30 border-border/40" placeholder="e.g. Clarity Upscaler" />
         </div>
+        <div className="space-y-1">
+          <Label className="text-[10px]">Display Name (AR)</Label>
+          <Input dir="rtl" value={form.display_name_ar} onChange={e => setForm(p => ({ ...p, display_name_ar: e.target.value }))} className="h-8 text-xs bg-muted/30 border-border/40 text-right" placeholder="مثال: تحسين الدقة" />
+        </div>
+      </div>
+      <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1">
           <Label className="text-[10px]">Endpoint</Label>
           <Input value={form.provider_endpoint} onChange={e => setForm(p => ({ ...p, provider_endpoint: e.target.value }))} className="h-8 text-xs bg-muted/30 border-border/40 font-mono" placeholder="fal-ai/..." />
@@ -177,9 +184,15 @@ function AddProviderForm({ toolId, onDone }: { toolId: string; onDone: () => voi
           <Input type="number" step="0.001" value={form.internal_cost_usd} onChange={e => setForm(p => ({ ...p, internal_cost_usd: parseFloat(e.target.value) || 0 }))} className="h-8 text-xs bg-muted/30 border-border/40" />
         </div>
       </div>
-      <div className="space-y-1">
-        <Label className="text-[10px]">Description</Label>
-        <Textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} className="min-h-[50px] text-xs bg-muted/30 border-border/40" />
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1">
+          <Label className="text-[10px]">Description (EN)</Label>
+          <Textarea value={form.description} onChange={e => setForm(p => ({ ...p, description: e.target.value }))} className="min-h-[50px] text-xs bg-muted/30 border-border/40" placeholder="English description" />
+        </div>
+        <div className="space-y-1">
+          <Label className="text-[10px]">Description (AR)</Label>
+          <Textarea dir="rtl" value={form.description_ar} onChange={e => setForm(p => ({ ...p, description_ar: e.target.value }))} className="min-h-[50px] text-xs bg-muted/30 border-border/40 text-right" placeholder="الوصف بالعربية" />
+        </div>
       </div>
       <div className="rounded-lg bg-muted/20 p-2 text-[10px] text-muted-foreground">
         Revenue: ${rev.toFixed(3)} — Cost: ${form.internal_cost_usd.toFixed(3)} →{' '}
