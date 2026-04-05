@@ -113,7 +113,7 @@ function TemplateCard({
         <h3 className="absolute bottom-3 left-3 right-3 font-semibold text-white leading-tight drop-shadow-lg text-lg">
           {tpl.name}
         </h3>
-        <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-1 group-hover:translate-y-0">
+        <div className={`absolute top-2.5 ${isRTL ? 'left-2.5' : 'right-2.5'} opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-1 group-hover:translate-y-0`}>
           <span className="h-7 px-3 rounded-full bg-primary text-primary-foreground text-[11px] font-semibold flex items-center gap-1 shadow-lg">
             {useLabel}
           </span>
