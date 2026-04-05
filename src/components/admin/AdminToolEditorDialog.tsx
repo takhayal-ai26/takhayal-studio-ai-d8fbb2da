@@ -417,9 +417,10 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
 
         <ScrollArea className="max-h-[60vh] px-6">
           <Tabs defaultValue="content" className="w-full">
-            <TabsList className="bg-muted/30 mb-4">
+            <TabsList className="bg-muted/30 mb-4 flex-wrap">
               <TabsTrigger value="content" className="text-xs">Content</TabsTrigger>
               <TabsTrigger value="hero" className="text-xs">Hero & CTA</TabsTrigger>
+              <TabsTrigger value="guided" className="text-xs">Guided Mode</TabsTrigger>
               <TabsTrigger value="settings" className="text-xs">Settings</TabsTrigger>
               <TabsTrigger value="provider" className="text-xs">Providers ({providers.length})</TabsTrigger>
               {isEdit && <TabsTrigger value="analytics" className="text-xs">Analytics</TabsTrigger>}
