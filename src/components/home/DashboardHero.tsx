@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { Sparkles, Image as ImageIcon, ChevronDown, Check } from 'lucide-react';
 import { useApp, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { useAuth } from '@/context/AuthContext';
 import { useModels } from '@/hooks/useModels';
 import { usePricing } from '@/hooks/usePricing';
 import { usePricingTiers } from '@/hooks/usePricingTiers';
