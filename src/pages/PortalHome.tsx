@@ -73,10 +73,7 @@ export default function PortalHome() {
 
         {/* ═══ LOGGED-IN: Product Mode ═══ */}
         {isLoggedIn && (
-          <>
-            <WelcomeBack />
-            <ContinueWhereLeftOff />
-          </>
+          <WelcomeBack />
         )}
 
         {/* ═══ Tools Section (both modes) ═══ */}
