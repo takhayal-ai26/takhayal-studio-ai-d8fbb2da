@@ -14,6 +14,7 @@ import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTemplateInfo, isTemplateJob, getTemplateTitle } from '@/hooks/useTemplateInfo';
 import { formatDate } from '@/lib/utils';
+import { isToolJob, getToolRoute } from '@/hooks/useToolInfo';
 import { DeleteConfirmDialog } from '@/components/gallery/DeleteConfirmDialog';
 
 type FilterKey = 'all' | 'today' | 'yesterday' | 'edited';
@@ -270,7 +271,16 @@ export default function Gallery() {
 
   const groups = useMemo(() => groupByDate(filteredJobs), [filteredJobs]);
 
-  const handleReuse = useCallback((prompt: string) => {
+  const handleReuse = useCallback((prompt: string, job?: GenerationJob) => {
+    // Tool-generated items → navigate to the same tool
+    if (job && isToolJob(job.tool_id)) {
+      const toolRoute = getToolRoute(job.tool_id);
+      if (toolRoute) {
+        navigate(toolRoute);
+        return;
+      }
+    }
+    // Normal prompt generation → Studio
     setPrompt(prompt);
     navigate('/studio');
   }, [navigate, setPrompt]);
