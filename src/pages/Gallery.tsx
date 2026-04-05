@@ -111,51 +111,19 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
         onClick={() => onTap(job)}
         className={shellClassName}
       >
-        <div className="relative overflow-hidden bg-gradient-to-br from-primary/10 via-muted/20 to-background" style={{ aspectRatio: cssRatio }}>
-          <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_top,hsl(var(--primary)/0.14),transparent_60%)]" />
-          <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 p-4 text-center">
-            <div className="flex h-12 w-12 items-center justify-center rounded-full bg-background/80 text-primary shadow-sm">
-              <Loader2 size={22} className="animate-spin" />
+        <div className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-muted/10 to-background" style={{ aspectRatio: cssRatio }}>
+          <div className="absolute inset-0 animate-pulse bg-[radial-gradient(circle_at_50%_40%,hsl(var(--primary)/0.08),transparent_70%)]" />
+          <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 p-6 text-center">
+            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-background/60 backdrop-blur-sm text-primary">
+              <Loader2 size={24} className="animate-spin" />
             </div>
-            <span className="inline-flex items-center rounded-full bg-primary/10 px-3 py-1 text-[11px] font-semibold text-primary">
-              {isQueued ? (isAr ? 'في الانتظار' : 'Queued') : (isAr ? 'جاري التوليد' : 'Generating')}
+            <span className="text-sm font-bold text-foreground">
+              {isAr ? 'جاري التوليد' : 'Generating'}
             </span>
-            <p className="text-[11px] text-muted-foreground max-w-[220px]">
-              {isQueued
-                ? (isAr ? 'نجهز طلبك الآن…' : 'Preparing your generation…')
-                : (isAr ? 'سيظهر الناتج هنا فور اكتماله' : 'Your result will appear here as soon as it is ready')}
+            <p className="text-xs text-muted-foreground/60 max-w-[200px]">
+              {isAr ? 'سيتم عرض النتيجة هنا فور اكتمالها' : 'Your result will appear here shortly'}
             </p>
           </div>
-        </div>
-        <div className="p-3 space-y-2.5">
-          <p className="text-[12px] font-medium text-foreground line-clamp-2">
-            {templateTitle || job.prompt}
-          </p>
-          {templateTitle ? (
-            <div className="flex items-center gap-1.5 text-[11px] text-primary/70">
-              <LayoutTemplate size={11} />
-              <span>{isAr ? 'من قالب' : 'From Template'}</span>
-            </div>
-          ) : (
-            <div className="grid grid-cols-2 gap-2 text-[11px]">
-              <div className="rounded-xl bg-muted/35 px-2.5 py-2">
-                <span className="text-muted-foreground/70">{isAr ? 'النموذج' : 'Model'}</span>
-                <span className="mt-0.5 block text-foreground/85 line-clamp-1">{modelName}</span>
-              </div>
-              <div className="rounded-xl bg-muted/35 px-2.5 py-2">
-                <span className="text-muted-foreground/70">{isAr ? 'الدقة' : 'Resolution'}</span>
-                <span className="mt-0.5 block text-foreground/85">{resolution}</span>
-              </div>
-              <div className="rounded-xl bg-muted/35 px-2.5 py-2">
-                <span className="text-muted-foreground/70">{isAr ? 'النسبة' : 'Ratio'}</span>
-                <span className="mt-0.5 block text-foreground/85">{job.ratio || '1:1'}</span>
-              </div>
-              <div className="rounded-xl bg-muted/35 px-2.5 py-2">
-                <span className="text-muted-foreground/70">{isAr ? 'بدأ في' : 'Started'}</span>
-                <span className="mt-0.5 block text-foreground/85">{startedTime}</span>
-              </div>
-            </div>
-          )}
         </div>
       </button>
     );
@@ -167,37 +135,20 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
         onClick={() => onTap(job)}
         className={shellClassName}
       >
-        <div className="flex flex-col items-center justify-center gap-3 p-4 text-center" style={{ aspectRatio: cssRatio }}>
-          <AlertCircle size={28} className="text-destructive/60" />
-          <span className="text-xs font-medium text-destructive">
-            {isAr ? 'فشل التوليد' : 'Failed'}
+        <div className="flex flex-col items-center justify-center gap-4 p-6 text-center" style={{ aspectRatio: cssRatio }}>
+          <div className="flex h-14 w-14 items-center justify-center rounded-full bg-destructive/10 text-destructive/60">
+            <AlertCircle size={24} />
+          </div>
+          <span className="text-sm font-bold text-foreground">
+            {isAr ? 'فشل التوليد' : 'Generation failed'}
           </span>
-          <p className="max-w-[220px] text-[11px] text-muted-foreground">
-            {isAr ? 'فشل التوليد. يرجى المحاولة مرة أخرى.' : 'Generation failed. Please try again.'}
-          </p>
           <span
             onClick={handleRetry}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-primary/10 text-primary text-xs font-medium hover:bg-primary/20 transition-colors"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors"
           >
-            <RotateCcw size={12} />
+            <RotateCcw size={13} />
             {isAr ? 'إعادة المحاولة' : 'Retry'}
           </span>
-        </div>
-        <div className="p-3 space-y-2">
-          <p className="text-[12px] font-medium text-foreground line-clamp-2">
-            {templateTitle || job.prompt}
-          </p>
-          {templateTitle ? (
-            <div className="flex items-center gap-1.5 text-[11px] text-primary/70">
-              <LayoutTemplate size={11} />
-              <span>{isAr ? 'من قالب' : 'From Template'}</span>
-            </div>
-          ) : (
-            <div className="flex items-center justify-between text-[11px] text-muted-foreground">
-              <span>{modelName}</span>
-              <span>{resolution}</span>
-            </div>
-          )}
         </div>
       </button>
     );
