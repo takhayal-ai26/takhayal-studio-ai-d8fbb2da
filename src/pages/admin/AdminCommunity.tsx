@@ -69,6 +69,8 @@ export default function AdminCommunity() {
   });
   const [testFile, setTestFile] = useState<File | null>(null);
   const [testPreview, setTestPreview] = useState('');
+  const [avatarFile, setAvatarFile] = useState<File | null>(null);
+  const [avatarPreview, setAvatarPreview] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const fetchPosts = useCallback(async () => {
