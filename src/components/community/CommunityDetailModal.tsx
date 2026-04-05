@@ -209,20 +209,20 @@ export function CommunityDetailModal({
 
       {/* Image area — fills remaining space */}
       <div
-        className="flex-1 min-w-0 flex items-center justify-center overflow-hidden p-8"
+        className="relative z-[1] flex-1 min-w-0 flex items-center justify-center overflow-hidden p-8"
         onClick={onClose}
       >
         <img
           src={post.image_url}
           alt={promptText}
-          className="max-w-[85%] max-h-[85vh] object-contain rounded-lg animate-in zoom-in-95 duration-300"
+          className="max-w-[85%] max-h-[85vh] object-contain rounded-lg animate-in zoom-in-95 duration-300 drop-shadow-2xl"
           onClick={e => e.stopPropagation()}
         />
       </div>
 
-      {/* Info panel — right side, theme-aware */}
+      {/* Info panel — right side, frosted glass */}
       <div
-        className="w-[360px] shrink-0 flex flex-col bg-card overflow-y-auto h-screen"
+        className="relative z-[2] w-[360px] shrink-0 flex flex-col bg-card/80 dark:bg-card/85 backdrop-blur-xl overflow-y-auto h-screen border-s border-border/10"
         onClick={e => e.stopPropagation()}
       >
         {/* Top: creator + close */}
