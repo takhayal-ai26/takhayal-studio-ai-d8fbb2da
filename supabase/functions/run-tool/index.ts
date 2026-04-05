@@ -200,10 +200,15 @@ serve(async (req) => {
             } : {}),
           };
         } else if (endpoint.includes("topaz")) {
+          // Use High Fidelity V2 for upscale (preserves detail), Standard V2 for enhance (more generative)
+          const topazModel = tool_slug === "enhance" ? "Standard V2" : "High Fidelity V2";
           payload = {
             image_url,
-            model: "Standard V2",
+            model: topazModel,
             upscale_factor: 2,
+            output_format: "png",
+            face_enhancement: true,
+            face_enhancement_strength: 0.8,
           };
         } else if (endpoint.includes("esrgan")) {
           payload = { image_url, scale: 2 };
