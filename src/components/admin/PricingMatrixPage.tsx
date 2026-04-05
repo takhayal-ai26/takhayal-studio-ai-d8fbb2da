@@ -16,9 +16,12 @@ interface TierRow {
   cost_per_run: number;
   credits_charged: number;
   is_active: boolean;
+  is_available: boolean;
   is_default: boolean;
   tier_label: string;
   pricing_mode: string;
+  resolution_label: string | null;
+  actual_pixels: number | null;
 }
 
 interface ModelRow {
@@ -70,7 +73,7 @@ export default function PricingMatrixPage() {
     setLoading(true);
     const [mRes, tRes] = await Promise.all([
       supabase.from('models').select('id, model_name, endpoint_id, provider_name, is_active, pricing_mode'),
-      supabase.from('model_pricing_tiers').select('id, model_id, quality_level, cost_per_run, credits_charged, is_active, is_default, tier_label, pricing_mode'),
+      supabase.from('model_pricing_tiers').select('id, model_id, quality_level, cost_per_run, credits_charged, is_active, is_available, is_default, tier_label, pricing_mode, resolution_label, actual_pixels'),
     ]);
     setModels((mRes.data as any[]) || []);
     setTiers((tRes.data as any[]) || []);
