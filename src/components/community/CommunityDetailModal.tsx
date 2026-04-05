@@ -183,7 +183,7 @@ export function CommunityDetailModal({
       {hasPrev && (
         <button
           onClick={(e) => { e.stopPropagation(); onPrev(); }}
-          className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'right-4' : 'left-4'} w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-all z-10`}
+          className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'right-4' : 'left-4'} w-10 h-10 rounded-full bg-muted/60 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all z-10`}
         >
           {isRTL ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </button>
@@ -191,7 +191,7 @@ export function CommunityDetailModal({
       {hasNext && (
         <button
           onClick={(e) => { e.stopPropagation(); onNext(); }}
-          className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-4' : 'right-4'} w-10 h-10 rounded-full bg-white/10 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white hover:bg-white/20 transition-all z-10`}
+          className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-4' : 'right-4'} w-10 h-10 rounded-full bg-muted/60 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all z-10`}
         >
           {isRTL ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
         </button>
