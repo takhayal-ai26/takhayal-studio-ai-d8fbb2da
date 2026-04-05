@@ -123,7 +123,7 @@ export function DashboardHero() {
   const heroFocalPoint = mergedHeroConfig.dashboard_home_hero_focal_point;
   const overlayStrength = mergedHeroConfig.dashboard_home_overlay_strength;
 
-  const isAr = lang === 'ar';
+  
   const title = isAr ? (mergedHeroConfig.dashboard_home_title_ar || '') : (mergedHeroConfig.dashboard_home_title_en || '');
   const subtitleText = isAr ? (mergedHeroConfig.dashboard_home_subtitle_ar || '') : (mergedHeroConfig.dashboard_home_subtitle_en || '');
   const placeholder = isAr
