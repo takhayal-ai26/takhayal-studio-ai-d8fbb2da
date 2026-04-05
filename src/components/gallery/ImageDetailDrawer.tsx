@@ -4,6 +4,7 @@ import { GenerationJob } from '@/hooks/useGenerationJobs';
 import { useModels } from '@/hooks/useModels';
 import { Drawer, DrawerContent, DrawerClose } from '@/components/ui/drawer';
 import { Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw, Calendar, Cpu, Ratio, Sparkles, Share2, Trash2, Copy, Check, LayoutTemplate, ChevronDown } from 'lucide-react';
+import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
 
 interface Props {
@@ -91,10 +92,7 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
     window.setTimeout(() => { onShare(job); }, 0);
   };
 
-  const dateStr = new Date(job.created_at).toLocaleDateString(
-    isAr ? 'ar-SA' : 'en-US',
-    { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit' }
-  );
+  const dateStr = formatDate(job.created_at, isAr);
 
   return (
     <Drawer open={open} onOpenChange={(v) => !v && onClose()}>
