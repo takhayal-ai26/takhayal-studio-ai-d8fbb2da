@@ -853,6 +853,9 @@ export type Database = {
       profiles: {
         Row: {
           avatar_url: string | null
+          banned_at: string | null
+          banned_reason: string | null
+          country: string | null
           created_at: string
           credits: number
           email: string
@@ -862,13 +865,20 @@ export type Database = {
           id: string
           language: string
           last_name: string
+          last_sign_in_at: string | null
           plan: string
+          status: string
+          suspended_reason: string | null
+          suspended_until: string | null
           theme_preference: string
           updated_at: string
           user_id: string
         }
         Insert: {
           avatar_url?: string | null
+          banned_at?: string | null
+          banned_reason?: string | null
+          country?: string | null
           created_at?: string
           credits?: number
           email?: string
@@ -878,13 +888,20 @@ export type Database = {
           id?: string
           language?: string
           last_name?: string
+          last_sign_in_at?: string | null
           plan?: string
+          status?: string
+          suspended_reason?: string | null
+          suspended_until?: string | null
           theme_preference?: string
           updated_at?: string
           user_id: string
         }
         Update: {
           avatar_url?: string | null
+          banned_at?: string | null
+          banned_reason?: string | null
+          country?: string | null
           created_at?: string
           credits?: number
           email?: string
@@ -894,7 +911,11 @@ export type Database = {
           id?: string
           language?: string
           last_name?: string
+          last_sign_in_at?: string | null
           plan?: string
+          status?: string
+          suspended_reason?: string | null
+          suspended_until?: string | null
           theme_preference?: string
           updated_at?: string
           user_id?: string
