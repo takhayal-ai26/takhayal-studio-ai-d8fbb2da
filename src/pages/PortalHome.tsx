@@ -10,6 +10,7 @@ import { DashboardHero } from '@/components/home/DashboardHero';
 import { WhyTakhayal } from '@/components/home/WhyTakhayal';
 import { FinalCTA } from '@/components/home/FinalCTA';
 import { ContinueWhereLeftOff } from '@/components/home/ContinueWhereLeftOff';
+import { WelcomeBack } from '@/components/home/WelcomeBack';
 import { QuickActions } from '@/components/home/QuickActions';
 import { Footer } from '@/components/layout/Footer';
 
@@ -73,7 +74,7 @@ export default function PortalHome() {
         {/* ═══ LOGGED-IN: Product Mode ═══ */}
         {isLoggedIn && (
           <>
-            {/* Continue where you left off */}
+            <WelcomeBack />
             <ContinueWhereLeftOff />
           </>
         )}
