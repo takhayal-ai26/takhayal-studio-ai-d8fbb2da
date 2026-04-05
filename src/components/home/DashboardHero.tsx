@@ -3,7 +3,6 @@ import { useNavigate } from 'react-router-dom';
 import { Sparkles, Image as ImageIcon, ChevronDown, Check } from 'lucide-react';
 import { useApp, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { useAuth } from '@/context/AuthContext';
 import { useModels } from '@/hooks/useModels';
 import { usePricing } from '@/hooks/usePricing';
 import { usePricingTiers } from '@/hooks/usePricingTiers';
@@ -65,14 +64,10 @@ export function DashboardHero() {
   const navigate = useNavigate();
   const { prompt, setPrompt, setAspectRatio, aspectRatio, credits, requireAuth } = useApp();
   const { isRTL, lang } = useLanguage();
-  const { user, profile } = useAuth();
   const { activeModels, defaultModel } = useModels();
   const { getCreditsForModel } = usePricing();
   const { getCreditsForModelQuality } = usePricingTiers();
   const { submitJob } = useGenerationJobs();
-  const isLoggedIn = !!user;
-  const isAr = lang === 'ar';
-  const firstName = profile?.first_name || profile?.full_name?.split(' ')[0] || '';
 
   const [expanded, setExpanded] = useState(false);
   const [localModelId, setLocalModelId] = useState('');
@@ -123,7 +118,7 @@ export function DashboardHero() {
   const heroFocalPoint = mergedHeroConfig.dashboard_home_hero_focal_point;
   const overlayStrength = mergedHeroConfig.dashboard_home_overlay_strength;
 
-  
+  const isAr = lang === 'ar';
   const title = isAr ? (mergedHeroConfig.dashboard_home_title_ar || '') : (mergedHeroConfig.dashboard_home_title_en || '');
   const subtitleText = isAr ? (mergedHeroConfig.dashboard_home_subtitle_ar || '') : (mergedHeroConfig.dashboard_home_subtitle_en || '');
   const placeholder = isAr
@@ -256,92 +251,47 @@ export function DashboardHero() {
       </div>
 
       <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6 h-full pb-10 md:pb-[72px] pt-14 md:pt-20">
+        {/* Premium badge */}
+        <div
+          className="animate-enter"
+          style={{
+            background: 'linear-gradient(135deg, rgba(255,102,51,0.15), rgba(255,255,255,0.05))',
+            backdropFilter: 'blur(14px)',
+            WebkitBackdropFilter: 'blur(14px)',
+            border: '1px solid rgba(255,255,255,0.12)',
+            boxShadow: '0 2px 12px rgba(255,102,51,0.15)',
+            color: '#FFFFFF',
+            fontSize: 12,
+            fontWeight: 500,
+            padding: '6px 16px',
+            borderRadius: 999,
+            marginBottom: 20,
+          }}
+        >
+          {isAr ? 'منصة للمبدعين العرب' : 'Built for Arab creators'}
+        </div>
 
-        {isLoggedIn ? (
-          <>
-            {/* Logged-in: personalized welcome */}
-            <div
-              className="animate-enter"
-              style={{
-                background: 'linear-gradient(135deg, rgba(255,102,51,0.15), rgba(255,255,255,0.05))',
-                backdropFilter: 'blur(14px)',
-                WebkitBackdropFilter: 'blur(14px)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                boxShadow: '0 2px 12px rgba(255,102,51,0.15)',
-                color: '#FFFFFF',
-                fontSize: 13,
-                fontWeight: 500,
-                padding: '6px 18px',
-                borderRadius: 999,
-                marginBottom: 20,
-              }}
-            >
-              {isAr ? 'حياك الله' : 'Good to see you'}
-            </div>
-
-            <h1
-              className="text-white text-center font-extrabold drop-shadow-lg"
-              style={{
-                fontSize: 'clamp(24px, 4.5vw, 52px)',
-                letterSpacing: isAr ? 0 : -1.5,
-                lineHeight: isAr ? 1.3 : 1.1,
-                marginBottom: 24,
-                fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
-                textShadow: '0 2px 20px rgba(0,0,0,0.4)',
-              }}
-            >
-              {isAr
-                ? (firstName ? `حياك الله يا ${firstName}، شنو ودك نسوي اليوم؟` : 'حياك الله، شنو ودك نسوي اليوم؟')
-                : (firstName ? `Welcome back, ${firstName}! What shall we create today?` : 'Welcome back! What shall we create today?')
-              }
-            </h1>
-          </>
-        ) : (
-          <>
-            {/* Logged-out: marketing hero */}
-            <div
-              className="animate-enter"
-              style={{
-                background: 'linear-gradient(135deg, rgba(255,102,51,0.15), rgba(255,255,255,0.05))',
-                backdropFilter: 'blur(14px)',
-                WebkitBackdropFilter: 'blur(14px)',
-                border: '1px solid rgba(255,255,255,0.12)',
-                boxShadow: '0 2px 12px rgba(255,102,51,0.15)',
-                color: '#FFFFFF',
-                fontSize: 12,
-                fontWeight: 500,
-                padding: '6px 16px',
-                borderRadius: 999,
-                marginBottom: 20,
-              }}
-            >
-              {isAr ? 'منصة للمبدعين العرب' : 'Built for Arab creators'}
-            </div>
-
-            {title && (
-              <h1
-                className="text-white text-center font-extrabold drop-shadow-lg"
-                style={{
-                  fontSize: 'clamp(26px, 5vw, 64px)',
-                  letterSpacing: -2,
-                  lineHeight: 1.05,
-                  marginBottom: subtitleText ? 12 : 24,
-                  fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
-                  textShadow: '0 2px 20px rgba(0,0,0,0.4)',
-                }}
-              >
-                {title}
-              </h1>
-            )}
-
-            {subtitleText && (
-              <p className="text-center hidden md:block" style={{ fontSize: 13, color: 'rgba(255,255,255,0.50)', marginBottom: 32, maxWidth: 680, lineHeight: 1.6 }}>
-                {subtitleText}
-              </p>
-            )}
-          </>
+        {title && (
+          <h1
+            className="text-white text-center font-extrabold drop-shadow-lg"
+            style={{
+              fontSize: 'clamp(26px, 5vw, 64px)',
+              letterSpacing: -2,
+              lineHeight: 1.05,
+              marginBottom: subtitleText ? 12 : 24,
+              fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
+              textShadow: '0 2px 20px rgba(0,0,0,0.4)',
+            }}
+          >
+            {title}
+          </h1>
         )}
 
+        {subtitleText && (
+          <p className="text-center hidden md:block" style={{ fontSize: 13, color: 'rgba(255,255,255,0.50)', marginBottom: 32, maxWidth: 680, lineHeight: 1.6 }}>
+            {subtitleText}
+          </p>
+        )}
 
         {/* Prompt bar */}
         <div ref={containerRef} style={{ width: '100%', maxWidth: 680 }}>
