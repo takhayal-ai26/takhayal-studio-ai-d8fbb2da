@@ -1,165 +1,234 @@
-import { useApp } from '@/context/AppContext';
-
+import { useEffect, useState, useCallback, useMemo, useRef } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { useNavigate } from 'react-router-dom';
-import { useState, useCallback, useEffect } from 'react';
-import { Heart, Repeat2, Copy, X, ArrowRight, Sparkles } from 'lucide-react';
+import { useApp } from '@/context/AppContext';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Loader2, Sparkles, ArrowRight } from 'lucide-react';
+import { CommunityDetailModal } from '@/components/community/CommunityDetailModal';
+import { CommunityCard } from '@/components/community/CommunityCard';
 
-interface CommunityImage {
-  id: string; image: string; prompt: string; creator: string; likes: number; category: string; liked?: boolean;
+export interface CommunityPost {
+  id: string;
+  image_url: string;
+  prompt: string | null;
+  ratio: string | null;
+  quality_tier: string | null;
+  resolution: string | null;
+  model_name: string | null;
+  creator_name: string | null;
+  creator_avatar: string | null;
+  public_id: string | null;
+  created_at: string;
 }
-
-const generateMockImages = (count: number, offset = 0): CommunityImage[] =>
-  Array.from({ length: count }, (_, i) => {
-    const idx = offset + i;
-    const cats = ['Ads', 'Products', 'Fashion', 'Portraits', 'Ads', 'Products'];
-    const heights = [400, 500, 350, 600, 450, 520, 380, 550, 420, 480];
-    const prompts = [
-      'Luxury perfume ad, dramatic studio lighting, dark background, elegant glass bottle',
-      'Trendy streetwear fashion shoot, urban backdrop, bold neon colors',
-      'Golden hour restaurant scene, appetizing table spread, warm ambiance',
-      'Minimalist tech product floating, clean gradient background, 3D render',
-      'Cinematic Ramadan greeting, lanterns and crescent moon, cinematic depth of field',
-      'High-end fashion editorial, flowing silk, studio lighting, editorial quality',
-      'Modern villa exterior, blue sky, lush garden, architectural photography',
-      'Instagram story design, bold typography, vibrant gradient, social media',
-      'Haute couture portrait, dramatic shadows, high contrast, premium feel',
-      'Artisan coffee flat lay, latte art, warm morning light, overhead shot',
-    ];
-    const creators = ['Sarah M.', 'Ahmed K.', 'Noor R.', 'Khalid S.', 'Fatima A.', 'Omar Z.'];
-    return {
-      id: `img-${idx}`, image: `https://picsum.photos/seed/community-${idx}/400/${heights[idx % heights.length]}`,
-      prompt: prompts[idx % prompts.length], creator: creators[idx % creators.length],
-      likes: Math.floor(Math.random() * 500) + 10, category: cats[idx % cats.length],
-    };
-  });
 
 export default function Community() {
   const navigate = useNavigate();
-  const { setPrompt, setActivePage, requireAuth } = useApp();
-  const { t, isRTL } = useLanguage();
-  const [activeFilter, setActiveFilter] = useState('All');
-  const [images, setImages] = useState<CommunityImage[]>(() => generateMockImages(18));
-  const [selectedImage, setSelectedImage] = useState<CommunityImage | null>(null);
-  const [loading, setLoading] = useState(false);
+  const [searchParams, setSearchParams] = useSearchParams();
+  const { t, isRTL, lang } = useLanguage();
+  const { setPrompt, requireAuth } = useApp();
+  const isMobile = useIsMobile();
+  const isAr = lang === 'ar';
 
-  const FILTERS_LOCALIZED = [
-    { key: 'All', label: t.portal.all },
-    { key: 'Trending', label: t.community.trending },
-    { key: 'New', label: t.community.new },
-    { key: 'Ads', label: t.portal.ads },
-    { key: 'Products', label: t.portal.products },
-    { key: 'Fashion', label: t.portal.fashion },
-    { key: 'Portraits', label: t.community.portraits },
-  ];
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selectedPost, setSelectedPost] = useState<CommunityPost | null>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
 
-  const filtered = images;
-
-  const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
-    const el = e.currentTarget;
-    if (el.scrollHeight - el.scrollTop - el.clientHeight < 300 && !loading) {
-      setLoading(true);
-      setTimeout(() => { setImages(prev => [...prev, ...generateMockImages(9, prev.length)]); setLoading(false); }, 800);
-    }
-  }, [loading]);
-
-  const handleUsePrompt = (prompt: string) => {
-    setPrompt(prompt); setActivePage('canvas'); setSelectedImage(null); navigate('/studio');
-  };
-
-  const handleLike = (id: string) => {
-    requireAuth(() => {
-      setImages(prev => prev.map(img => img.id === id ? { ...img, liked: !img.liked, likes: img.liked ? img.likes - 1 : img.likes + 1 } : img));
-    });
-  };
-
-  const copyPrompt = (prompt: string) => navigator.clipboard.writeText(prompt);
-
+  // Fetch community posts from real data
   useEffect(() => {
-    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setSelectedImage(null); };
-    window.addEventListener('keydown', handler);
-    return () => window.removeEventListener('keydown', handler);
+    (async () => {
+      setLoading(true);
+      const { data, error } = await supabase
+        .from('generation_logs')
+        .select('id, image_url, prompt, ratio, quality_tier, resolution, model_id, public_id, created_at, user_id')
+        .eq('is_shared_to_community', true)
+        .not('image_url', 'is', null)
+        .order('created_at', { ascending: false })
+        .limit(100);
+
+      if (error || !data) {
+        console.error('Community fetch error:', error);
+        setLoading(false);
+        return;
+      }
+
+      // Fetch model names and creator profiles in parallel
+      const modelIds = [...new Set(data.map(d => d.model_id).filter(Boolean))];
+      const userIds = [...new Set(data.map(d => d.user_id).filter(Boolean))];
+
+      const [modelsRes, profilesRes] = await Promise.all([
+        modelIds.length > 0
+          ? supabase.from('models').select('id, model_name').in('id', modelIds)
+          : Promise.resolve({ data: [] }),
+        userIds.length > 0
+          ? supabase.from('profiles').select('user_id, full_name, first_name, avatar_url').in('user_id', userIds)
+          : Promise.resolve({ data: [] }),
+      ]);
+
+      const modelMap = new Map((modelsRes.data || []).map(m => [m.id, m.model_name]));
+      const profileMap = new Map((profilesRes.data || []).map(p => [p.user_id, p]));
+
+      const mapped: CommunityPost[] = data
+        .filter(d => d.image_url && d.image_url.length > 5)
+        .map(d => {
+          const profile = profileMap.get(d.user_id);
+          return {
+            id: d.id,
+            image_url: d.image_url!,
+            prompt: d.prompt,
+            ratio: d.ratio,
+            quality_tier: d.quality_tier,
+            resolution: d.resolution,
+            model_name: d.model_id ? modelMap.get(d.model_id) || null : null,
+            creator_name: profile?.first_name || profile?.full_name || null,
+            creator_avatar: profile?.avatar_url || null,
+            public_id: d.public_id,
+            created_at: d.created_at,
+          };
+        });
+
+      setPosts(mapped);
+      setLoading(false);
+    })();
   }, []);
 
+  // Open post from URL param
+  useEffect(() => {
+    const postId = searchParams.get('post');
+    if (postId && posts.length > 0) {
+      const found = posts.find(p => p.id === postId);
+      if (found) setSelectedPost(found);
+    }
+  }, [searchParams, posts]);
+
+  const handleOpenPost = useCallback((post: CommunityPost) => {
+    setSelectedPost(post);
+    setSearchParams({ post: post.id }, { replace: true });
+  }, [setSearchParams]);
+
+  const handleClosePost = useCallback(() => {
+    setSelectedPost(null);
+    const next = new URLSearchParams(searchParams);
+    next.delete('post');
+    setSearchParams(next, { replace: true });
+  }, [searchParams, setSearchParams]);
+
+  const handleUsePrompt = useCallback((prompt: string) => {
+    setPrompt(prompt);
+    navigate('/studio');
+  }, [setPrompt, navigate]);
+
+  const handleShare = useCallback(async (post: CommunityPost) => {
+    const url = post.public_id
+      ? `${window.location.origin}/share/${post.public_id}`
+      : `${window.location.origin}/community?post=${post.id}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Takhayal.ai', url });
+      } catch { /* user cancelled */ }
+    } else {
+      await navigator.clipboard.writeText(url);
+      const { toast } = await import('sonner');
+      toast.success(isAr ? 'تم نسخ الرابط' : 'Link copied!');
+    }
+  }, [isAr]);
+
+  // Navigation between posts
+  const selectedIndex = selectedPost ? posts.findIndex(p => p.id === selectedPost.id) : -1;
+  const handlePrev = useCallback(() => {
+    if (selectedIndex > 0) {
+      const prev = posts[selectedIndex - 1];
+      setSelectedPost(prev);
+      setSearchParams({ post: prev.id }, { replace: true });
+    }
+  }, [selectedIndex, posts, setSearchParams]);
+  const handleNext = useCallback(() => {
+    if (selectedIndex < posts.length - 1) {
+      const next = posts[selectedIndex + 1];
+      setSelectedPost(next);
+      setSearchParams({ post: next.id }, { replace: true });
+    }
+  }, [selectedIndex, posts, setSearchParams]);
+
+  if (loading) {
+    return (
+      <div className="flex-1 flex items-center justify-center min-h-[60vh]" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
+        <Loader2 size={32} className="text-primary animate-spin" />
+      </div>
+    );
+  }
+
   return (
-    <div className="flex-1 overflow-y-auto" style={{ paddingTop: 'calc(4rem + var(--banner-h, 0px))' }} onScroll={handleScroll}>
-      <div className="flex-1 overflow-y-auto" style={{ paddingTop: 'calc(4rem + var(--banner-h, 0px))' }} onScroll={handleScroll}>
-        <section className="text-center px-5 pt-12 pb-8 animate-fade-in">
-          <span className="text-[11px] uppercase tracking-[0.2em] text-primary font-medium">{t.community.label}</span>
-          <h1 className="typo-heading-page mt-3">{t.community.title}</h1>
-          <p className="text-base font-light mt-2"><span className="text-primary">{t.community.poweredBy}</span></p>
-          <button onClick={() => requireAuth(() => navigate('/studio'))} className="mt-6 h-11 px-6 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium hover:opacity-90 transition-opacity">
-            {t.community.shareCreations}
-          </button>
+    <>
+      <div
+        ref={scrollRef}
+        className="flex-1 overflow-y-auto pb-24 md:pb-6 animate-page-enter"
+        dir={isAr ? 'rtl' : 'ltr'}
+        style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}
+      >
+        {/* Hero */}
+        <section className="text-center px-5 pt-10 pb-6">
+          <h1 className="typo-heading-page">
+            {isAr ? 'إلهام المجتمع' : 'Community Inspiration'}
+          </h1>
+          <p className="text-sm text-muted-foreground/60 mt-2 max-w-md mx-auto">
+            {isAr ? 'اكتشف أعمال المبدعين واستلهم من أوامرهم' : 'Discover what creators are making and get inspired by their prompts'}
+          </p>
         </section>
 
-
-        <section className="max-w-7xl mx-auto px-4 md:px-6 py-6">
-          {filtered.length === 0 ? (
-            <div className="py-24 text-center animate-fade-in">
-              <Sparkles size={24} className="text-primary mx-auto mb-3" />
-              <p className="text-foreground font-light text-lg">{t.community.noCreationsYet}</p>
-              <p className="text-muted-foreground text-[13px] mt-1">{t.community.beFirst}</p>
-              <button onClick={() => navigate('/studio')} className="mt-5 h-10 px-5 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium hover:opacity-90 transition-opacity">
-                {t.community.startCreating}
+        {/* Feed */}
+        <div className="max-w-7xl mx-auto px-3 md:px-6">
+          {posts.length === 0 ? (
+            <div className="py-24 text-center">
+              <Sparkles size={28} className="text-primary mx-auto mb-3 opacity-40" />
+              <p className="text-foreground text-sm font-medium">
+                {isAr ? 'لا توجد أعمال بعد' : 'No creations yet'}
+              </p>
+              <p className="text-muted-foreground/50 text-xs mt-1">
+                {isAr ? 'كن أول من يشارك' : 'Be the first to share'}
+              </p>
+              <button
+                onClick={() => requireAuth(() => navigate('/studio'))}
+                className="mt-5 h-10 px-6 rounded-full bg-primary text-primary-foreground text-[13px] font-semibold inline-flex items-center gap-2 hover:brightness-110 transition-all"
+              >
+                {isAr ? 'ابدأ الإبداع' : 'Start Creating'}
+                <ArrowRight size={14} className={isRTL ? 'rotate-180' : ''} />
               </button>
             </div>
           ) : (
-            <div className="columns-1 sm:columns-2 lg:columns-3 gap-4 space-y-4">
-              {filtered.map((img) => (
-                <div key={img.id} className="group relative break-inside-avoid rounded-2xl overflow-hidden cursor-pointer" onClick={() => setSelectedImage(img)}>
-                  <img src={img.image} alt={img.prompt} className="w-full object-cover transition-transform duration-300 group-hover:scale-[1.03]" loading="lazy" />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-1 group-hover:translate-y-0">
-                    <p className="text-[11px] text-white/80 line-clamp-1 mb-2">{img.prompt}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-white/50">{img.creator}</span>
-                      <div className="flex items-center gap-2">
-                        <button onClick={e => { e.stopPropagation(); handleLike(img.id); }} className={`flex items-center gap-1 text-[10px] transition-colors ${img.liked ? 'text-primary' : 'text-white/60 hover:text-white'}`}>
-                          <Heart size={12} fill={img.liked ? 'currentColor' : 'none'} />{img.likes}
-                        </button>
-                        <button onClick={e => { e.stopPropagation(); handleUsePrompt(img.prompt); }} className="text-white/60 hover:text-primary transition-colors" title={t.community.remix}><Repeat2 size={12} /></button>
-                        <button onClick={e => { e.stopPropagation(); copyPrompt(img.prompt); }} className="text-white/60 hover:text-white transition-colors" title={t.community.copyPrompt}><Copy size={12} /></button>
-                      </div>
-                    </div>
-                  </div>
+            <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3 [column-fill:_balance]">
+              {posts.map(post => (
+                <div key={post.id} className="mb-3 break-inside-avoid">
+                  <CommunityCard
+                    post={post}
+                    isAr={isAr}
+                    isMobile={isMobile}
+                    onTap={handleOpenPost}
+                  />
                 </div>
               ))}
             </div>
           )}
-          {loading && (
-            <div className="flex justify-center py-8"><div className="w-6 h-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /></div>
-          )}
-        </section>
+        </div>
       </div>
 
-      {selectedImage && (
-        <div className="fixed inset-0 z-[60] bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 animate-fade-in" onClick={() => setSelectedImage(null)}>
-          <div className="relative bg-card border border-border rounded-2xl overflow-hidden max-w-3xl w-full max-h-[90vh] flex flex-col md:flex-row animate-scale-in" onClick={e => e.stopPropagation()}>
-            <button onClick={() => setSelectedImage(null)} className="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-black/50 backdrop-blur-sm flex items-center justify-center text-white/70 hover:text-white transition-colors"><X size={16} /></button>
-            <div className="flex-1 min-h-0 md:max-w-[55%]"><img src={selectedImage.image} alt={selectedImage.prompt} className="w-full h-full object-cover" /></div>
-            <div className="flex flex-col p-5 md:p-6 md:w-[45%] md:max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center gap-2 mb-4">
-                <div className="w-7 h-7 rounded-full bg-primary/[0.15] flex items-center justify-center text-[10px] font-medium text-primary">{selectedImage.creator.charAt(0)}</div>
-                <span className="text-[13px] text-foreground">{selectedImage.creator}</span>
-              </div>
-              <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground/60 font-medium mb-2">{t.community.promptLabel}</h3>
-              <p className="text-[13px] text-foreground/80 leading-relaxed">{selectedImage.prompt}</p>
-              <div className="flex items-center gap-3 mt-5">
-                <button onClick={() => handleLike(selectedImage.id)} className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[12px] font-medium transition-colors ${selectedImage.liked ? 'border-primary/30 text-primary bg-primary/[0.08]' : 'border-border text-muted-foreground hover:text-foreground'}`}>
-                  <Heart size={13} fill={selectedImage.liked ? 'currentColor' : 'none'} />{selectedImage.likes}
-                </button>
-                <button onClick={() => copyPrompt(selectedImage.prompt)} className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-border text-[12px] font-medium text-muted-foreground hover:text-foreground transition-colors"><Copy size={13} />{t.community.copy}</button>
-              </div>
-              <div className="mt-auto pt-5">
-                <button onClick={() => handleUsePrompt(selectedImage.prompt)} className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
-                  {t.community.useThisPrompt} <ArrowRight size={14} className={isRTL ? 'rotate-180' : ''} />
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      {/* Detail Modal */}
+      <CommunityDetailModal
+        post={selectedPost}
+        open={!!selectedPost}
+        onClose={handleClosePost}
+        onUsePrompt={handleUsePrompt}
+        onShare={handleShare}
+        isAr={isAr}
+        isRTL={isRTL}
+        isMobile={isMobile}
+        onPrev={handlePrev}
+        onNext={handleNext}
+        hasPrev={selectedIndex > 0}
+        hasNext={selectedIndex < posts.length - 1}
+      />
+    </>
   );
 }
