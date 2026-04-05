@@ -18,13 +18,6 @@ import { Footer } from '@/components/layout/Footer';
 const TestimonialsCarousel = lazy(() => import('@/components/home/TestimonialsCarousel').then(m => ({ default: m.TestimonialsCarousel })));
 const PricingPreview = lazy(() => import('@/components/home/PricingPreview').then(m => ({ default: m.PricingPreview })));
 
-import imgFashion from '@/assets/portal/feat-fashion.jpg';
-import imgCinema from '@/assets/portal/feat-cinema.jpg';
-import imgCoffee from '@/assets/portal/feat-coffee.jpg';
-import imgPortrait from '@/assets/portal/feat-portrait.jpg';
-import imgLogo from '@/assets/portal/feat-logo.jpg';
-import imgArchitecture from '@/assets/portal/feat-architecture.jpg';
-
 function ratioToNumber(ratio: string): number {
   const [w, h] = ratio.split(':').map(Number);
   if (!w || !h) return 1;
@@ -42,6 +35,21 @@ export default function PortalHome() {
   const { templates: dbTemplates, categories: dbCategories, loading: templatesLoading } = useTemplates();
   const [activeCategory, setActiveCategory] = useState('All');
   const isLoggedIn = !!user;
+
+  // Fetch real approved community posts
+  const [communityPosts, setCommunityPosts] = useState<{ image_url: string; prompt: string; ratio?: string }[]>([]);
+  useEffect(() => {
+    supabase
+      .from('community_posts')
+      .select('image_url, prompt, ratio')
+      .eq('status', 'approved')
+      .eq('is_featured', true)
+      .order('created_at', { ascending: false })
+      .limit(8)
+      .then(({ data }) => {
+        if (data && data.length > 0) setCommunityPosts(data);
+      });
+  }, []);
 
   useEffect(() => {
     const authParam = searchParams.get('auth');
