@@ -472,6 +472,65 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
               </div>
             </TabsContent>
 
+            {/* Guided Mode Tab */}
+            <TabsContent value="guided" className="space-y-4 pb-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Tool Mode</Label>
+                <Select value={form.tool_mode || 'standard'} onValueChange={v => set('tool_mode', v)}>
+                  <SelectTrigger className="h-9 text-xs bg-muted/30 border-border/40"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="standard">Standard (existing behavior)</SelectItem>
+                    <SelectItem value="guided_image">Guided Image (upload → generate)</SelectItem>
+                  </SelectContent>
+                </Select>
+                <p className="text-[10px] text-muted-foreground">Guided tools use a hidden prompt + admin-selected model</p>
+              </div>
+
+              {form.tool_mode === 'guided_image' && (
+                <>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">AI Model</Label>
+                    <Select value={form.selected_model_id || ''} onValueChange={v => set('selected_model_id', v || null)}>
+                      <SelectTrigger className="h-9 text-xs bg-muted/30 border-border/40"><SelectValue placeholder="Select active model..." /></SelectTrigger>
+                      <SelectContent>
+                        {activeModels.map(m => (
+                          <SelectItem key={m.id} value={m.id}>{m.model_name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[10px] text-muted-foreground">This model powers the guided generation</p>
+                  </div>
+
+                  <BiField label="Hidden Prompt" enKey="default_prompt_en" arKey="default_prompt_ar" textarea />
+                  <BiField label="CTA Button Label" enKey="cta_label_en" arKey="cta_label_ar" />
+                  <BiField label="Upload Label" enKey="upload_label_en" arKey="upload_label_ar" />
+                  <BiField label="Upload Helper Text" enKey="upload_helper_en" arKey="upload_helper_ar" />
+
+                  <div className="flex items-center justify-between py-2 border-t border-border/20">
+                    <div><Label className="text-xs">Requires Upload</Label><p className="text-[10px] text-muted-foreground">User must upload an image</p></div>
+                    <Switch checked={form.requires_upload ?? false} onCheckedChange={v => set('requires_upload', v)} />
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-t border-border/20">
+                    <div><Label className="text-xs">Auto Run</Label><p className="text-[10px] text-muted-foreground">Auto-generate after upload</p></div>
+                    <Switch checked={form.auto_run ?? false} onCheckedChange={v => set('auto_run', v)} />
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-t border-border/20">
+                    <div><Label className="text-xs">Hide Prompt</Label><p className="text-[10px] text-muted-foreground">Don't show prompt field to users</p></div>
+                    <Switch checked={form.prompt_hidden ?? false} onCheckedChange={v => set('prompt_hidden', v)} />
+                  </div>
+
+                  {/* Validation warnings */}
+                  {form.tool_mode === 'guided_image' && (
+                    <div className="space-y-1 pt-2">
+                      {!form.selected_model_id && <p className="text-[10px] text-yellow-500 flex items-center gap-1"><AlertTriangle size={10} /> No AI model selected</p>}
+                      {!form.default_prompt_en && <p className="text-[10px] text-yellow-500 flex items-center gap-1"><AlertTriangle size={10} /> Missing hidden prompt (EN)</p>}
+                      {!form.cover_image_url && <p className="text-[10px] text-yellow-500 flex items-center gap-1"><AlertTriangle size={10} /> Missing cover image</p>}
+                    </div>
+                  )}
+                </>
+              )}
+            </TabsContent>
+
             {/* Settings Tab */}
             <TabsContent value="settings" className="space-y-4 pb-4">
               <div className="grid grid-cols-2 gap-4">
