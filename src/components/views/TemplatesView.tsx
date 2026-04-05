@@ -50,7 +50,7 @@ export function TemplatesView() {
                 activeCategory === cat ? 'active' : ''
               }`}
             >
-              {cat}
+              {cat === 'All' ? t.templatesView.all : cat}
             </button>
           ))}
         </div>
