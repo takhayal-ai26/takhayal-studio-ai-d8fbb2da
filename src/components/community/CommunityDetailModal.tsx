@@ -83,16 +83,17 @@ export function CommunityDetailModal({
   if (post.ratio) meta.push({ label: isAr ? 'النسبة' : 'Ratio', value: post.ratio });
 
   const creatorInitial = post.creator_name?.charAt(0)?.toUpperCase() || '?';
+  const backgroundLayer = (
+    <div aria-hidden="true" className="community-detail-backdrop">
+      <img src={post.image_url} alt="" className="community-detail-backdrop-image" />
+    </div>
+  );
 
   // ── MOBILE LAYOUT ──
   if (isMobile) {
     return (
-      <div className="fixed inset-0 z-[70] flex flex-col animate-in fade-in duration-200 overflow-hidden" dir={isAr ? 'rtl' : 'ltr'}>
-        {/* Immersive blurred background */}
-        <div className="absolute inset-0 -m-8 overflow-hidden">
-          <img src={post.image_url} alt="" className="w-full h-full object-cover scale-[1.15] blur-[40px] opacity-70 dark:opacity-60" />
-        </div>
-        <div className="absolute inset-0 bg-white/40 dark:bg-black/65" />
+      <div className="fixed inset-0 z-[70] isolate flex flex-col animate-in fade-in duration-200 overflow-hidden bg-background" dir={isAr ? 'rtl' : 'ltr'}>
+        {backgroundLayer}
         {/* Top bar */}
         <div className="relative z-[1] flex items-center justify-between px-4 py-3 shrink-0">
           <button onClick={onClose} className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center text-foreground">
@@ -180,15 +181,11 @@ export function CommunityDetailModal({
   // ── DESKTOP LAYOUT ──
   return (
     <div
-      className="fixed inset-0 z-[70] flex animate-in fade-in duration-200 overflow-hidden"
+      className="fixed inset-0 z-[70] isolate flex animate-in fade-in duration-200 overflow-hidden bg-background"
       onClick={onClose}
       dir={isAr ? 'rtl' : 'ltr'}
     >
-      {/* Immersive blurred background */}
-      <div className="absolute inset-0 -m-12 pointer-events-none overflow-hidden">
-        <img src={post.image_url} alt="" className="w-full h-full object-cover scale-[1.1] blur-[40px] opacity-75 dark:opacity-55 transition-opacity duration-500" />
-      </div>
-      <div className="absolute inset-0 bg-white/40 dark:bg-black/65 pointer-events-none" />
+      {backgroundLayer}
       {/* Nav arrows */}
       {hasPrev && (
         <button
