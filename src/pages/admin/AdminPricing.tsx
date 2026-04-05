@@ -9,10 +9,12 @@ import { toast } from 'sonner';
 import { formatDate } from '@/lib/utils';
 import {
   DollarSign, TrendingUp, AlertTriangle, Percent, Coins,
-  Settings2, Save, RefreshCw, Cpu, Wrench, Zap, BarChart3, Clock, Loader2
+  Settings2, Save, RefreshCw, Cpu, Wrench, Zap, BarChart3, Clock, Loader2, Pencil, X
 } from 'lucide-react';
 import { usePricingTiers } from '@/hooks/usePricingTiers';
+import { useToolProviders } from '@/hooks/useToolProviders';
 import { PricingMatrixCard } from '@/components/admin/PricingMatrixCard';
+import PricingMatrixPage from '@/components/admin/PricingMatrixPage';
 
 /* ───── types ───── */
 interface CreditSettings {
@@ -247,6 +249,7 @@ export default function AdminPricing() {
           <TabsTrigger value="providers" className="gap-1.5"><Zap size={14} />Providers</TabsTrigger>
           <TabsTrigger value="models" className="gap-1.5"><Cpu size={14} />Models</TabsTrigger>
           <TabsTrigger value="matrix" className="gap-1.5"><BarChart3 size={14} />Pricing Matrix</TabsTrigger>
+          <TabsTrigger value="tool_providers" className="gap-1.5"><Wrench size={14} />Tool Provider Margins</TabsTrigger>
           <TabsTrigger value="tools" className="gap-1.5"><Wrench size={14} />Tools</TabsTrigger>
           <TabsTrigger value="sync" className="gap-1.5"><Clock size={14} />Sync Logs</TabsTrigger>
         </TabsList>
