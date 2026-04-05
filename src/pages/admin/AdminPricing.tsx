@@ -98,6 +98,101 @@ function MetricCard({ label, value, sub, icon: Icon, color = 'primary' }: { labe
   );
 }
 
+/* ───── Tool Provider Margins Tab ───── */
+function ToolProviderMarginsTab({ creditVal }: { creditVal: number }) {
+  const { providers, activeProviders, updateProvider, isLoading } = useToolProviders();
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editCredits, setEditCredits] = useState(0);
+  const [editActive, setEditActive] = useState(true);
+
+  const startEdit = (p: any) => {
+    setEditingId(p.id);
+    setEditCredits(p.credit_cost);
+    setEditActive(p.is_active);
+  };
+
+  const saveEdit = async () => {
+    if (!editingId) return;
+    try {
+      await updateProvider.mutateAsync({ id: editingId, updates: { credit_cost: editCredits, is_active: editActive } });
+      toast.success('Provider updated');
+      setEditingId(null);
+    } catch (e) { toast.error('Failed to save'); }
+  };
+
+  if (isLoading) return <div className="py-8 text-center text-muted-foreground text-sm">Loading tool providers…</div>;
+
+  return (
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">Edit credits and availability for each tool provider. Margin auto-calculates from credit value (${creditVal}/credit).</p>
+      <div className="rounded-2xl border border-border/10 overflow-hidden">
+        <table className="w-full text-sm">
+          <thead><tr className="border-b border-border/10 bg-muted/5">
+            <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Tool</th>
+            <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Provider</th>
+            <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Tier</th>
+            <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">API Cost</th>
+            <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Credits</th>
+            <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Revenue</th>
+            <th className="text-left px-4 py-3 text-xs text-muted-foreground font-medium">Margin %</th>
+            <th className="text-center px-4 py-3 text-xs text-muted-foreground font-medium">Active</th>
+            <th className="px-4 py-3"></th>
+          </tr></thead>
+          <tbody>
+            {providers.map(p => {
+              const isEditing = editingId === p.id;
+              const cr = isEditing ? editCredits : p.credit_cost;
+              const rev = cr * creditVal;
+              const margin = rev > 0 ? ((rev - p.internal_cost_usd) / rev * 100) : 0;
+              return (
+                <tr key={p.id} className={`border-b border-border/5 hover:bg-muted/5 ${!p.is_active ? 'opacity-40' : ''}`}>
+                  <td className="px-4 py-3 font-medium text-foreground">{p.display_name}</td>
+                  <td className="px-4 py-3 text-muted-foreground text-xs">{p.provider_name}</td>
+                  <td className="px-4 py-3"><Badge variant="outline" className="text-[10px]">{p.tier}</Badge></td>
+                  <td className="px-4 py-3 text-muted-foreground">${p.internal_cost_usd.toFixed(4)}</td>
+                  <td className="px-4 py-3">
+                    {isEditing ? (
+                      <Input type="number" min={1} max={999} className="w-16 h-8 text-xs" value={editCredits} onChange={e => setEditCredits(Math.max(1, Number(e.target.value)))} />
+                    ) : (
+                      <span className="font-semibold">{p.credit_cost}</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3 text-emerald-400">${rev.toFixed(4)}</td>
+                  <td className="px-4 py-3">
+                    <Badge variant={margin < 0 ? 'destructive' : margin < 20 ? 'secondary' : 'default'} className="text-[10px]">{margin.toFixed(1)}%</Badge>
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    {isEditing ? (
+                      <Switch checked={editActive} onCheckedChange={setEditActive} />
+                    ) : (
+                      <Badge variant={p.is_active ? 'default' : 'secondary'} className="text-[10px]">{p.is_active ? 'On' : 'Off'}</Badge>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    {isEditing ? (
+                      <div className="flex gap-1">
+                        <Button size="sm" variant="ghost" onClick={saveEdit} className="h-7 text-xs gap-1"><Save size={12} />Save</Button>
+                        <Button size="sm" variant="ghost" onClick={() => setEditingId(null)} className="h-7 text-xs"><X size={12} /></Button>
+                      </div>
+                    ) : (
+                      <button onClick={() => startEdit(p)} className="p-1.5 rounded-lg text-muted-foreground/50 hover:text-foreground hover:bg-muted/20 transition-all">
+                        <Pencil size={12} />
+                      </button>
+                    )}
+                  </td>
+                </tr>
+              );
+            })}
+            {providers.length === 0 && (
+              <tr><td colSpan={9} className="text-center py-8 text-muted-foreground text-sm">No tool providers configured.</td></tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 /* ═══════ MAIN ═══════ */
 export default function AdminPricing() {
   const [tab, setTab] = useState('overview');
