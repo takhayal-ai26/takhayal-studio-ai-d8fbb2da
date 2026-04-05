@@ -136,7 +136,7 @@ export function ShareModal({ job, open, onClose }: ShareModalProps) {
 
       const { error } = await supabase.from('community_posts').insert({
         user_id: user.id,
-        username: profile?.first_name || profile?.full_name || 'Creator',
+        username: (profile as any)?.username || profile?.first_name || profile?.full_name || 'Creator',
         avatar_url: profile?.avatar_url || '',
         image_url: job.image_url,
         prompt: job.prompt || '',
