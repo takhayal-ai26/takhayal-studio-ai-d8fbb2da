@@ -26,13 +26,6 @@ export default function ToolPage() {
   const isMobile = useIsMobile();
 
   const tool = tools.find(t => t.slug === toolId || t.id === toolId);
-
-  // If it's a guided_image tool, lazy-load the guided page
-  if (tool && tool.toolMode === 'guided_image') {
-    const GuidedToolPage = require('./GuidedToolPage').default;
-    return <GuidedToolPage />;
-  }
-
   const { activeProviders, defaultProvider } = useToolProviders(tool?.id);
 
   const [inputValue, setInputValue] = useState('');
