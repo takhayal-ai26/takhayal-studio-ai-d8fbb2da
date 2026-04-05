@@ -130,9 +130,9 @@ export default function AdminTools({ embedded }: { embedded?: boolean } = {}) {
           <TableHeader>
             <TableRow className="border-border/40 hover:bg-transparent">
               <TableHead className="text-[11px] uppercase text-muted-foreground">Tool</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Mode</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Arabic</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Credits</TableHead>
-              <TableHead className="text-[11px] uppercase text-muted-foreground">Provider</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Providers</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Default Model</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Runs</TableHead>
@@ -156,16 +156,14 @@ export default function AdminTools({ embedded }: { embedded?: boolean } = {}) {
                     </div>
                   </TableCell>
                   <TableCell>
+                    <Badge variant="outline" className={`text-[9px] ${tool.tool_mode === 'guided_image' ? 'border-primary/30 text-primary' : 'border-border/40 text-muted-foreground'}`}>
+                      {tool.tool_mode === 'guided_image' ? 'Guided' : 'Standard'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
                     <span dir="rtl" className="text-[13px]">{tool.title_ar || <span className="text-yellow-500 text-[11px]">Missing</span>}</span>
                   </TableCell>
                   <TableCell><Badge variant="outline" className="text-[10px]">{tool.default_credit_cost} credits</Badge></TableCell>
-                  <TableCell>
-                    <div>
-                      <p className="text-[12px] text-muted-foreground">{tool.provider_name}</p>
-                      <p className="text-[10px] text-muted-foreground/60 font-mono">{tool.provider_endpoint}</p>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-[13px]">{getToolRunCount(tool.slug)}</TableCell>
                   <TableCell>
                     <Badge variant="outline" className="text-[10px]">{getActiveProviderCount(tool.id)} active</Badge>
                   </TableCell>
