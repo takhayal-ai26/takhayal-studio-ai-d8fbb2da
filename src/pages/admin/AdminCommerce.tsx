@@ -84,57 +84,7 @@ export default function AdminCommerce() {
         </TabsContent>
 
         <TabsContent value="providers" className="mt-4">
-          {/* Read-only banner */}
-          <div className="rounded-xl border border-blue-500/20 bg-blue-500/5 p-4 flex items-center gap-3 mb-4">
-            <Info size={16} className="text-blue-400 flex-shrink-0" />
-            <span className="text-sm text-blue-300">This is a reporting view. Edit pricing in <strong>Studio Config → Tools → Providers</strong>.</span>
-          </div>
-          <Card className="border-border/40 bg-card/50">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-semibold">Tool Provider Pricing (Read-Only)</CardTitle>
-            </CardHeader>
-            <Table>
-              <TableHeader>
-                <TableRow className="border-border/40">
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Tool</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Provider</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Tier</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Credits</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Cost ($)</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Revenue ($)</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Margin</TableHead>
-                  <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {providers.map(p => {
-                  const revenue = p.credit_cost * 0.016;
-                  const margin = revenue - p.internal_cost_usd;
-                  const marginPct = revenue > 0 ? (margin / revenue * 100) : 0;
-                  const marginColor = marginPct > 70 ? 'text-emerald-400' : marginPct > 40 ? 'text-yellow-400' : 'text-red-400';
-                  return (
-                    <TableRow key={p.id} className={`border-border/20 ${!p.is_active ? 'opacity-40' : ''}`}>
-                      <TableCell className="text-[13px] font-medium">{p.display_name}</TableCell>
-                      <TableCell className="text-[12px] text-muted-foreground font-mono">{p.provider_endpoint}</TableCell>
-                      <TableCell><Badge variant="outline" className="text-[10px] capitalize">{p.tier}</Badge></TableCell>
-                      <TableCell className="text-[13px]">{p.credit_cost}</TableCell>
-                      <TableCell className="text-[13px]">${p.internal_cost_usd.toFixed(4)}</TableCell>
-                      <TableCell className="text-[13px]">${revenue.toFixed(4)}</TableCell>
-                      <TableCell className={`text-[13px] font-medium ${marginColor}`}>{marginPct.toFixed(0)}%</TableCell>
-                      <TableCell>
-                        <Badge variant={p.is_active ? 'default' : 'secondary'} className="text-[10px]">
-                          {p.is_active ? 'Active' : 'Disabled'}
-                        </Badge>
-                      </TableCell>
-                    </TableRow>
-                  );
-                })}
-                {providers.length === 0 && (
-                  <TableRow><TableCell colSpan={8} className="text-center text-sm text-muted-foreground py-8">No providers configured</TableCell></TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </Card>
+          <ToolProviderMarginsEditable providers={providers} />
         </TabsContent>
       </Tabs>
     </div>
