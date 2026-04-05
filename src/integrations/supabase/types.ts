@@ -924,6 +924,7 @@ export type Database = {
           avatar_url: string | null
           banned_at: string | null
           banned_reason: string | null
+          birthday: string | null
           country: string | null
           created_at: string
           credits: number
@@ -942,11 +943,13 @@ export type Database = {
           theme_preference: string
           updated_at: string
           user_id: string
+          username: string | null
         }
         Insert: {
           avatar_url?: string | null
           banned_at?: string | null
           banned_reason?: string | null
+          birthday?: string | null
           country?: string | null
           created_at?: string
           credits?: number
@@ -965,11 +968,13 @@ export type Database = {
           theme_preference?: string
           updated_at?: string
           user_id: string
+          username?: string | null
         }
         Update: {
           avatar_url?: string | null
           banned_at?: string | null
           banned_reason?: string | null
+          birthday?: string | null
           country?: string | null
           created_at?: string
           credits?: number
@@ -988,6 +993,7 @@ export type Database = {
           theme_preference?: string
           updated_at?: string
           user_id?: string
+          username?: string | null
         }
         Relationships: []
       }

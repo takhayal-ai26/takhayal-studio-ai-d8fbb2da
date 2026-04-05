@@ -59,6 +59,7 @@ export default function AdminCommunity() {
   const [testForm, setTestForm] = useState({
     image_url: '',
     username: 'Takhayal Team',
+    avatar_url: '',
     prompt: '',
     model: '',
     ratio: '1:1',
@@ -188,6 +189,7 @@ export default function AdminCommunity() {
     const { error } = await supabase.from('community_posts').insert({
       image_url: imageUrl,
       username: testForm.username,
+      avatar_url: testForm.avatar_url || null,
       prompt: testForm.prompt,
       model: testForm.model,
       ratio: testForm.ratio,
@@ -199,7 +201,7 @@ export default function AdminCommunity() {
     } as any);
     if (!error) {
       toast.success('Test post created successfully');
-      setTestForm({ image_url: '', username: 'Takhayal Team', prompt: '', model: '', ratio: '1:1', quality_or_resolution: '1K', status: 'approved', is_featured: false });
+      setTestForm({ image_url: '', username: 'Takhayal Team', avatar_url: '', prompt: '', model: '', ratio: '1:1', quality_or_resolution: '1K', status: 'approved', is_featured: false });
       setTestFile(null);
       setTestPreview('');
     } else toast.error('Failed to create post');
@@ -291,6 +293,7 @@ export default function AdminCommunity() {
               <Select value={testForm.model} onValueChange={v => setTestForm({ ...testForm, model: v })}><SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select model..." /></SelectTrigger><SelectContent>{activeModels.map(m => (<SelectItem key={m.id} value={m.model_name}>{m.model_name}</SelectItem>))}</SelectContent></Select>
             </div>
           </div>
+          <div className="space-y-1"><label className="text-sm font-medium text-foreground">Avatar URL <span className="text-muted-foreground text-xs">(optional)</span></label><Input value={testForm.avatar_url} onChange={e => setTestForm({ ...testForm, avatar_url: e.target.value })} placeholder="https://... profile picture URL" className="h-9 text-sm" /></div>
           <div className="space-y-1"><label className="text-sm font-medium text-foreground">Prompt</label><Textarea value={testForm.prompt} onChange={e => setTestForm({ ...testForm, prompt: e.target.value })} placeholder="Enter the generation prompt..." rows={4} className="text-sm" /></div>
           <div className="grid grid-cols-3 gap-4">
             <div className="space-y-1"><label className="text-sm font-medium text-foreground">Ratio</label>

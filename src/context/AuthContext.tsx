@@ -18,6 +18,9 @@ interface AuthState {
     plan: string;
     language: string;
     theme_preference: string;
+    username?: string;
+    birthday?: string | null;
+    country?: string | null;
   } | null;
   signOut: () => Promise<void>;
   refreshProfile: () => Promise<void>;
@@ -35,7 +38,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const fetchProfile = useCallback(async (userId: string) => {
     const { data } = await supabase
       .from('profiles')
-      .select('full_name, first_name, last_name, email, avatar_url, credits, plan, language, theme_preference')
+      .select('full_name, first_name, last_name, email, avatar_url, credits, plan, language, theme_preference, username, birthday, country')
       .eq('user_id', userId)
       .single();
     if (data) {

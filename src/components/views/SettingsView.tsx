@@ -6,14 +6,17 @@ import { useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useState, useEffect, useRef } from 'react';
 import { toast } from 'sonner';
-import { ArrowUpRight, Loader2, Sun, Moon, Monitor } from 'lucide-react';
+import { ArrowUpRight, Loader2, Sun, Moon } from 'lucide-react';
 
 const t_labels = {
   en: {
     title: 'Settings',
     profile: 'Profile',
     name: 'Name',
+    username: 'Username',
     email: 'Email',
+    birthday: 'Birthday',
+    country: 'Country',
     saveChanges: 'Save Changes',
     saving: 'Saving…',
     saved: 'Changes saved',
@@ -22,7 +25,6 @@ const t_labels = {
     theme: 'Theme',
     light: 'Light',
     dark: 'Dark',
-    system: 'System',
     billing: 'Billing',
     plan: 'Plan',
     credits: 'credits',
@@ -37,12 +39,16 @@ const t_labels = {
     freeForever: 'Free forever',
     renewsMonthly: 'Renews monthly',
     standardImages: 'standard images',
+    optional: 'Optional',
   },
   ar: {
     title: 'الإعدادات',
     profile: 'الملف الشخصي',
     name: 'الاسم',
+    username: 'اسم المستخدم',
     email: 'البريد الإلكتروني',
+    birthday: 'تاريخ الميلاد',
+    country: 'الدولة',
     saveChanges: 'حفظ التغييرات',
     saving: 'جارٍ الحفظ…',
     saved: 'تم حفظ التغييرات',
@@ -51,7 +57,6 @@ const t_labels = {
     theme: 'المظهر',
     light: 'فاتح',
     dark: 'داكن',
-    system: 'تلقائي',
     billing: 'الفوترة',
     plan: 'الخطة',
     credits: 'رصيد',
@@ -66,8 +71,34 @@ const t_labels = {
     freeForever: 'مجاني للأبد',
     renewsMonthly: 'يتجدد شهرياً',
     standardImages: 'صورة عادية',
+    optional: 'اختياري',
   },
 };
+
+// Moved OUTSIDE component to prevent remounting on re-render (fixes focus loss bug)
+function Section({ title, children, danger }: { title: string; children: React.ReactNode; danger?: boolean }) {
+  return (
+    <div className={`rounded-2xl p-5 md:p-6 ${danger ? 'bg-destructive/5 border border-destructive/10' : 'bg-card/60 backdrop-blur-sm'}`}>
+      <h2 className={`text-[13px] font-semibold uppercase tracking-wider mb-4 ${danger ? 'text-destructive/70' : 'text-muted-foreground/70'}`}>{title}</h2>
+      {children}
+    </div>
+  );
+}
+
+function Pill({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) {
+  return (
+    <button
+      onClick={onClick}
+      className={`h-9 px-4 rounded-full text-[13px] font-medium transition-all ${
+        active
+          ? 'bg-primary text-primary-foreground shadow-sm'
+          : 'bg-muted/40 text-muted-foreground hover:bg-muted/60 hover:text-foreground'
+      }`}
+    >
+      {children}
+    </button>
+  );
+}
 
 export function SettingsView() {
   const { user, profile, refreshProfile } = useAuth();
@@ -80,18 +111,26 @@ export function SettingsView() {
   const l = t_labels[isAr ? 'ar' : 'en'];
 
   const [displayName, setDisplayName] = useState('');
+  const [username, setUsername] = useState('');
+  const [birthday, setBirthday] = useState('');
+  const [country, setCountry] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
-  // Load profile data
+  // Load profile data ONCE
   useEffect(() => {
-    if (profile) {
+    if (profile && !profileLoaded) {
       setDisplayName(profile.full_name || '');
       setAvatarUrl(profile.avatar_url || null);
+      setUsername((profile as any).username || '');
+      setBirthday((profile as any).birthday || '');
+      setCountry((profile as any).country || '');
+      setProfileLoaded(true);
     }
-  }, [profile]);
+  }, [profile, profileLoaded]);
 
   const initials = (() => {
     const parts = displayName.trim().split(' ');
@@ -111,6 +150,9 @@ export function SettingsView() {
         .from('profiles')
         .update({
           full_name: displayName.trim(),
+          username: username.trim(),
+          birthday: birthday || null,
+          country: country.trim() || null,
         } as any)
         .eq('user_id', user.id);
       if (error) throw error;
@@ -164,25 +206,7 @@ export function SettingsView() {
     }
   };
 
-  const Section = ({ title, children, danger }: { title: string; children: React.ReactNode; danger?: boolean }) => (
-    <div className={`rounded-2xl p-5 md:p-6 ${danger ? 'bg-destructive/5 border border-destructive/10' : 'bg-card/60 backdrop-blur-sm'}`}>
-      <h2 className={`text-[13px] font-semibold uppercase tracking-wider mb-4 ${danger ? 'text-destructive/70' : 'text-muted-foreground/70'}`}>{title}</h2>
-      {children}
-    </div>
-  );
-
-  const Pill = ({ active, onClick, children }: { active: boolean; onClick: () => void; children: React.ReactNode }) => (
-    <button
-      onClick={onClick}
-      className={`h-9 px-4 rounded-full text-[13px] font-medium transition-all ${
-        active
-          ? 'bg-primary text-primary-foreground shadow-sm'
-          : 'bg-muted/40 text-muted-foreground hover:bg-muted/60 hover:text-foreground'
-      }`}
-    >
-      {children}
-    </button>
-  );
+  const inputClass = "w-full h-11 px-3 rounded-xl bg-muted/30 border-0 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all";
 
   return (
     <div className="flex-1 p-4 md:p-8 overflow-y-auto pb-24 md:pb-8">
@@ -222,15 +246,44 @@ export function SettingsView() {
                 <input
                   value={displayName}
                   onChange={(e) => setDisplayName(e.target.value)}
-                  className="w-full h-11 px-3 rounded-xl bg-muted/30 border-0 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+                  className={inputClass}
                   placeholder={l.name}
+                />
+              </div>
+              <div>
+                <label className="text-[12px] text-muted-foreground mb-1 block">{l.username} <span className="text-muted-foreground/40">({l.optional})</span></label>
+                <input
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
+                  className={inputClass}
+                  placeholder={isAr ? 'مثال: peter_parker' : 'e.g. peter_parker'}
                 />
               </div>
               <div>
                 <label className="text-[12px] text-muted-foreground mb-1 block">{l.email}</label>
                 <div className="w-full h-11 px-3 rounded-xl bg-muted/10 flex items-center text-sm text-muted-foreground/60 select-none">
-                    {profile?.email || user?.email || ''}
-                  </div>
+                  {profile?.email || user?.email || ''}
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-[12px] text-muted-foreground mb-1 block">{l.birthday} <span className="text-muted-foreground/40">({l.optional})</span></label>
+                  <input
+                    type="date"
+                    value={birthday}
+                    onChange={(e) => setBirthday(e.target.value)}
+                    className={inputClass}
+                  />
+                </div>
+                <div>
+                  <label className="text-[12px] text-muted-foreground mb-1 block">{l.country} <span className="text-muted-foreground/40">({l.optional})</span></label>
+                  <input
+                    value={country}
+                    onChange={(e) => setCountry(e.target.value)}
+                    className={inputClass}
+                    placeholder={isAr ? 'مثال: السعودية' : 'e.g. Saudi Arabia'}
+                  />
+                </div>
               </div>
               <button
                 onClick={handleSave}
