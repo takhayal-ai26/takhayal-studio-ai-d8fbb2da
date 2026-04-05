@@ -66,9 +66,9 @@ export function CreationPanel() {
   }, [defaultModel, activeModels, selectedModelId]);
 
   useEffect(() => {
-    if (currentModel && !currentModel.supported_quality_tiers.includes(selectedResolution))
-      setSelectedResolution(currentModel.supported_quality_tiers[0] || '1K');
-  }, [currentModel, selectedResolution]);
+    if (currentModel && !modelQualityTiers.includes(selectedResolution))
+      setSelectedResolution(modelQualityTiers[0] || '1K');
+  }, [currentModel, selectedResolution, modelQualityTiers]);
 
   const availableRatios = currentModel?.supported_ratios || ['1:1', '16:9', '9:16', '4:5'];
 
