@@ -52,7 +52,7 @@ export function ToolProviderSelector({ providers, selected, onSelect }: ToolProv
                   "absolute -top-2 px-2 py-0.5 rounded-md bg-primary text-primary-foreground text-[9px] font-bold tracking-wide",
                   isRTL ? "left-3" : "right-3"
                 )}>
-                  {t.toolPage.best}
+                  PRO
                 </div>
               )}
 
