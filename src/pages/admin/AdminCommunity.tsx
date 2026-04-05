@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/context/AppContext';
+import { useModels } from '@/hooks/useModels';
 import { toast } from 'sonner';
 import {
   Search, Check, X, Eye, RotateCcw, Upload,
@@ -45,6 +46,7 @@ const TABS: { id: Tab; label: string }[] = [
 
 export default function AdminCommunity() {
   const { userName } = useApp();
+  const { activeModels } = useModels();
   const [tab, setTab] = useState<Tab>('pending');
   const [posts, setPosts] = useState<CommunityPostRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -285,7 +287,9 @@ export default function AdminCommunity() {
           </div>
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1"><label className="text-sm font-medium text-foreground">Username</label><Input value={testForm.username} onChange={e => setTestForm({ ...testForm, username: e.target.value })} className="h-9 text-sm" /></div>
-            <div className="space-y-1"><label className="text-sm font-medium text-foreground">Model</label><Input value={testForm.model} onChange={e => setTestForm({ ...testForm, model: e.target.value })} placeholder="e.g. Seedream 4.5" className="h-9 text-sm" /></div>
+            <div className="space-y-1"><label className="text-sm font-medium text-foreground">Model</label>
+              <Select value={testForm.model} onValueChange={v => setTestForm({ ...testForm, model: v })}><SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select model..." /></SelectTrigger><SelectContent>{activeModels.map(m => (<SelectItem key={m.id} value={m.model_name}>{m.model_name}</SelectItem>))}</SelectContent></Select>
+            </div>
           </div>
           <div className="space-y-1"><label className="text-sm font-medium text-foreground">Prompt</label><Textarea value={testForm.prompt} onChange={e => setTestForm({ ...testForm, prompt: e.target.value })} placeholder="Enter the generation prompt..." rows={4} className="text-sm" /></div>
           <div className="grid grid-cols-3 gap-4">

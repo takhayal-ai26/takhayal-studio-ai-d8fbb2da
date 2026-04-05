@@ -3,7 +3,8 @@ import { TEMPLATE_PROMPTS, useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { ArrowRight, Sparkles } from 'lucide-react';
-import { useState, useEffect, lazy, Suspense } from 'react';
+import { useState, useEffect, lazy, Suspense, useMemo } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import { useTools } from '@/hooks/useTools';
 import { useTemplates } from '@/hooks/useTemplates';
 import { DashboardHero } from '@/components/home/DashboardHero';
@@ -16,13 +17,6 @@ import { Footer } from '@/components/layout/Footer';
 
 const TestimonialsCarousel = lazy(() => import('@/components/home/TestimonialsCarousel').then(m => ({ default: m.TestimonialsCarousel })));
 const PricingPreview = lazy(() => import('@/components/home/PricingPreview').then(m => ({ default: m.PricingPreview })));
-
-import imgFashion from '@/assets/portal/feat-fashion.jpg';
-import imgCinema from '@/assets/portal/feat-cinema.jpg';
-import imgCoffee from '@/assets/portal/feat-coffee.jpg';
-import imgPortrait from '@/assets/portal/feat-portrait.jpg';
-import imgLogo from '@/assets/portal/feat-logo.jpg';
-import imgArchitecture from '@/assets/portal/feat-architecture.jpg';
 
 function ratioToNumber(ratio: string): number {
   const [w, h] = ratio.split(':').map(Number);
@@ -41,6 +35,21 @@ export default function PortalHome() {
   const { templates: dbTemplates, categories: dbCategories, loading: templatesLoading } = useTemplates();
   const [activeCategory, setActiveCategory] = useState('All');
   const isLoggedIn = !!user;
+
+  // Fetch real approved community posts
+  const [communityPosts, setCommunityPosts] = useState<{ image_url: string; prompt: string; ratio?: string }[]>([]);
+  useEffect(() => {
+    supabase
+      .from('community_posts')
+      .select('image_url, prompt, ratio')
+      .eq('status', 'approved')
+      .eq('is_featured', true)
+      .order('created_at', { ascending: false })
+      .limit(8)
+      .then(({ data }) => {
+        if (data && data.length > 0) setCommunityPosts(data);
+      });
+  }, []);
 
   useEffect(() => {
     const authParam = searchParams.get('auth');
@@ -171,42 +180,37 @@ export default function PortalHome() {
         )}
 
         {/* ── Community (both, but optional for logged-in) ── */}
-        <section className="mt-6 mb-14">
-          <div className="flex items-end justify-between mb-5">
-            <div>
-              <h2 className="typo-heading-section text-4xl">{t.portal.communityWorks}</h2>
-              <p className="text-[13px] text-muted-foreground mt-1">{t.portal.seeWhatCreators}</p>
-            </div>
-            <button onClick={() => navigate('/community')} className="text-[12px] text-primary font-medium hover:underline flex items-center gap-1 group">
-              {t.portal.exploreCommunity} <ArrowRight size={12} className={`group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
-            </button>
-          </div>
-          <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
-            {[
-              { img: imgFashion, promptEn: 'High-end fashion editorial, modern modest style', promptAr: 'تصوير أزياء راقي، أسلوب محتشم عصري' },
-              { img: imgCinema, promptEn: 'Luxury perfume bottle, dramatic studio lighting', promptAr: 'زجاجة عطر فاخرة، إضاءة استوديو درامية' },
-              { img: imgCoffee, promptEn: 'Artisan coffee flat lay, warm morning light', promptAr: 'عرض قهوة حرفية، ضوء صباحي دافئ' },
-              { img: imgPortrait, promptEn: 'Cinematic portrait, volumetric fog, moody tones', promptAr: 'بورتريه سينمائي، ضباب حجمي، ألوان درامية' },
-              { img: imgLogo, promptEn: 'Premium 3D logo mockup, golden metallic finish', promptAr: 'نموذج شعار ثلاثي الأبعاد، لمسة معدنية ذهبية' },
-              { img: imgArchitecture, promptEn: 'Modern villa exterior, blue sky, lush garden', promptAr: 'واجهة فيلا عصرية، سماء زرقاء، حديقة خضراء' },
-            ].map((item, i) => (
-              <button key={i} onClick={() => navigate('/community')} className="group relative w-full rounded-2xl overflow-hidden break-inside-avoid block hover:shadow-lg hover:shadow-black/10 transition-shadow duration-300">
-                <img src={item.img} alt={isAr ? item.promptAr : item.promptEn} className="w-full object-cover" loading="lazy" decoding="async" width={400} height={500} />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                  <p className="text-[11px] text-white/80 line-clamp-1">{isAr ? item.promptAr : item.promptEn}</p>
-                </div>
+        {communityPosts.length > 0 && (
+          <section className="mt-6 mb-14">
+            <div className="flex items-end justify-between mb-5">
+              <div>
+                <h2 className="typo-heading-section text-4xl">{t.portal.communityWorks}</h2>
+                <p className="text-[13px] text-muted-foreground mt-1">{t.portal.seeWhatCreators}</p>
+              </div>
+              <button onClick={() => navigate('/community')} className="text-[12px] text-primary font-medium hover:underline flex items-center gap-1 group">
+                {t.portal.exploreCommunity} <ArrowRight size={12} className={`group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
               </button>
-            ))}
-          </div>
-          <div className="text-center mt-8">
-            <p className="text-[13px] text-muted-foreground mb-4">{t.portal.exploreMoreCommunity}</p>
-            <button onClick={() => navigate('/community')} className="h-10 px-6 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:brightness-110 transition-all group inline-flex items-center gap-2">
-              {t.portal.goToCommunity}
-              <ArrowRight size={14} className={`group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
-            </button>
-          </div>
-        </section>
+            </div>
+            <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
+              {communityPosts.map((item, i) => (
+                <button key={i} onClick={() => navigate('/community')} className="group relative w-full rounded-2xl overflow-hidden break-inside-avoid block hover:shadow-lg hover:shadow-black/10 transition-shadow duration-300">
+                  <img src={item.image_url} alt={item.prompt || ''} className="w-full object-cover" loading="lazy" decoding="async" width={400} height={500} />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                  <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                    <p className="text-[11px] text-white/80 line-clamp-1">{item.prompt}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <div className="text-center mt-8">
+              <p className="text-[13px] text-muted-foreground mb-4">{t.portal.exploreMoreCommunity}</p>
+              <button onClick={() => navigate('/community')} className="h-10 px-6 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:brightness-110 transition-all group inline-flex items-center gap-2">
+                {t.portal.goToCommunity}
+                <ArrowRight size={14} className={`group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
+              </button>
+            </div>
+          </section>
+        )}
 
         {/* ═══ LOGGED-OUT: Pricing Preview ═══ */}
         {!isLoggedIn && (
