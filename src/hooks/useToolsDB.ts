@@ -34,6 +34,20 @@ export interface ToolRecord {
   sort_order: number;
   created_at: string;
   updated_at: string;
+  // Guided image tool fields
+  tool_mode: string;
+  selected_model_id: string | null;
+  default_prompt_en: string;
+  default_prompt_ar: string;
+  cta_label_en: string;
+  cta_label_ar: string;
+  upload_label_en: string;
+  upload_label_ar: string;
+  upload_helper_en: string;
+  upload_helper_ar: string;
+  requires_upload: boolean;
+  auto_run: boolean;
+  prompt_hidden: boolean;
 }
 
 export interface ToolView {
@@ -54,6 +68,16 @@ export interface ToolView {
   internalCost: number;
   active: boolean;
   featured: boolean;
+  toolMode: string;
+  selectedModelId: string | null;
+  defaultPromptEn: string;
+  defaultPromptAr: string;
+  ctaLabel: string;
+  uploadLabel: string;
+  uploadHelper: string;
+  requiresUpload: boolean;
+  autoRun: boolean;
+  promptHidden: boolean;
 }
 
 export function useToolsDB() {
