@@ -175,7 +175,7 @@ export function CommunityDetailModal({
   // ── DESKTOP LAYOUT ──
   return (
     <div
-      className="fixed inset-0 z-[70] bg-black flex animate-in fade-in duration-200"
+      className="fixed inset-0 z-[70] bg-black dark:bg-black bg-white flex animate-in fade-in duration-200"
       onClick={onClose}
       dir={isAr ? 'rtl' : 'ltr'}
     >
