@@ -12,9 +12,9 @@ const navItemDefs: { id: string; labelKey: string; route: string; studioPage?: N
   { id: 'home', labelKey: 'home', route: '/home' },
   { id: 'studio', labelKey: 'studio', route: '/studio', studioPage: 'canvas' },
   { id: 'tools', labelKey: 'tools', route: '/tools' },
-  { id: 'community', labelKey: 'community', route: '/community' },
   { id: 'gallery', labelKey: 'gallery', route: '/gallery' },
   { id: 'templates', labelKey: 'templates', route: '/studio', studioPage: 'templates' },
+  { id: 'community', labelKey: 'community', route: '/community' },
   { id: 'pricing', labelKey: 'pricing', route: '/pricing' },
 ];
 
