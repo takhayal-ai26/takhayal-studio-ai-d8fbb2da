@@ -141,7 +141,7 @@ export default function PortalHome() {
 
           <div className="columns-2 md:columns-3 lg:columns-4 gap-1.5 [column-fill:_balance]">
             {filteredTemplates.map((tpl) => (
-              <button key={tpl.id} onClick={() => goToTemplateDetail(tpl.id)} className="group w-full rounded-2xl overflow-hidden break-inside-avoid mb-2 block text-left hover:shadow-lg hover:shadow-black/10 transition-shadow duration-300">
+              <button key={tpl.id} onClick={() => goToTemplateDetail(tpl.id)} dir={isRTL ? 'rtl' : 'ltr'} className="group w-full rounded-2xl overflow-hidden break-inside-avoid mb-2 block text-start hover:shadow-lg hover:shadow-black/10 transition-shadow duration-300">
                 <div className="relative overflow-hidden" style={{ aspectRatio: ratioToNumber(tpl.ratio) }}>
                   <img src={tpl.image} alt={tpl.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />

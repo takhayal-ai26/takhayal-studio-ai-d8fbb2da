@@ -99,7 +99,8 @@ function TemplateCard({
   return (
     <button
       onClick={() => onUse(tpl)}
-      className="group w-full rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-black/10 text-left block"
+      dir={isRTL ? 'rtl' : 'ltr'}
+      className="group w-full rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-xl hover:shadow-black/10 text-start block"
     >
       <div className="relative overflow-hidden" style={{ aspectRatio }}>
         <img
