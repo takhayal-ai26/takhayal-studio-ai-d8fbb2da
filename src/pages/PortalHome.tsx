@@ -87,7 +87,7 @@ export default function PortalHome() {
                   <div className="absolute inset-0 opacity-[0.06]" style={{ background: 'radial-gradient(ellipse at 30% 50%, hsl(var(--primary)), transparent 70%)' }} />
                   <div className="relative">
                     <Sparkles size={18} className="text-primary mb-4 opacity-70" />
-                    <h2 className="typo-heading-section font-extrabold text-5xl">
+                    <h2 className="typo-heading-section font-extrabold text-4xl">
                       {t.portal.whatWillYouCreate}<br />
                       <span className="text-primary font-light">{t.portal.createToday}</span>
                     </h2>
