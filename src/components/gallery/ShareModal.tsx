@@ -51,21 +51,26 @@ export function ShareModal({ job, open, onClose }: ShareModalProps) {
 
   if (!mounted || !open || !job) return null;
 
+  const PRODUCTION_ORIGIN = 'https://takhayal-studio-ai.lovable.app';
+
   const getShareUrl = async (): Promise<string> => {
+    const origin = window.location.hostname.includes('lovable') && !window.location.hostname.startsWith('takhayal')
+      ? PRODUCTION_ORIGIN
+      : window.location.origin;
     const { data: existing } = await supabase
       .from('generation_logs')
       .select('public_id, is_public')
       .eq('id', job.id)
       .single();
     if (existing?.public_id && existing?.is_public) {
-      return `${window.location.origin}/share/${existing.public_id}`;
+      return `${origin}/share/${existing.public_id}`;
     }
     const publicId = generatePublicId();
     await supabase
       .from('generation_logs')
       .update({ is_public: true, public_id: publicId, share_count: 1 } as any)
       .eq('id', job.id);
-    return `${window.location.origin}/share/${publicId}`;
+    return `${origin}/share/${publicId}`;
   };
 
   const handleCopyLink = async () => {
