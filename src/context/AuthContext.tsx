@@ -95,6 +95,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     };
   }, [fetchProfile]);
 
+  // Realtime subscription for credit balance updates
+  useEffect(() => {
+    if (!user) return;
+    const channel = supabase
+      .channel('profile-credits')
+      .on(
+        'postgres_changes',
+        { event: 'UPDATE', schema: 'public', table: 'profiles', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const updated = payload.new as any;
+          setProfile(prev => prev ? { ...prev, credits: updated.credits ?? prev.credits, plan: updated.plan ?? prev.plan } : prev);
+        }
+      )
+      .subscribe();
+    return () => { supabase.removeChannel(channel); };
+  }, [user]);
+
   return (
     <AuthContext.Provider value={{ user, session, loading, profile, signOut, refreshProfile }}>
       {children}
