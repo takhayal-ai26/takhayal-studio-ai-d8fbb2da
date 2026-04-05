@@ -7,6 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Save, FileText, Shield, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
+import { formatDate } from '@/lib/utils';
 
 interface Policy {
   id: string;
@@ -49,9 +50,7 @@ function PolicyEditor({ policy, onSaved }: { policy: Policy; onSaved: () => void
   };
 
   const meta = POLICY_META[policy.type];
-  const lastUp = new Date(policy.last_updated).toLocaleDateString('en-US', {
-    year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit',
-  });
+  const lastUp = formatDate(policy.last_updated);
 
   return (
     <Card className="border-border/40 bg-card/50">

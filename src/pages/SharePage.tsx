@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Sparkles, Download, ArrowRight } from 'lucide-react';
+import { formatDate } from '@/lib/utils';
 import { Logo } from '@/components/Logo';
 
 interface SharedImage {
@@ -105,7 +106,7 @@ export default function SharePage() {
             </span>
           )}
           <span className="px-3 py-1.5 rounded-full bg-muted/30 text-[12px] text-muted-foreground">
-            {new Date(image.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+            {formatDate(image.created_at)}
           </span>
         </div>
 

@@ -13,6 +13,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useTemplateInfo, isTemplateJob, getTemplateTitle } from '@/hooks/useTemplateInfo';
+import { formatDate } from '@/lib/utils';
 import { DeleteConfirmDialog } from '@/components/gallery/DeleteConfirmDialog';
 
 type FilterKey = 'all' | 'today' | 'yesterday' | 'edited';
@@ -57,10 +58,7 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
   const isQueued = job.status === 'queued';
   const isFailed = job.status === 'failed' && !hasValidImage;
   const resolution = job.resolution || job.quality_tier || '1K';
-  const startedTime = new Date(job.created_at).toLocaleTimeString(isAr ? 'ar' : 'en-US', {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  const startedTime = formatDate(job.created_at, isAr);
   // Compute CSS aspect-ratio from the stored ratio string (e.g. "9:16" → "9/16")
   const cssRatio = (() => {
     const r = job.ratio || '1:1';
@@ -235,7 +233,7 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
             </span>
           )}
           <span className="text-[11px] text-white/40 block">
-            {new Date(job.created_at).toLocaleDateString(isAr ? 'ar' : 'en-US', { month: 'short', day: 'numeric' })}
+            {formatDate(job.created_at, isAr)}
           </span>
         </div>
       </div>

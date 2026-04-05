@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Plus, Edit, Trash2, Megaphone } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatDate } from '@/lib/utils';
 
 interface PromoBanner {
   id: string;
@@ -137,7 +138,7 @@ export default function PromoBannerEditor() {
                 <TableCell><Badge variant="outline" className="text-[10px] capitalize">{b.audience.replace(/_/g, ' ')}</Badge></TableCell>
                 <TableCell><Switch checked={b.active} onCheckedChange={() => toggleActive(b)} className="scale-75" /></TableCell>
                 <TableCell className="text-[12px] text-muted-foreground">
-                  {b.start_date ? new Date(b.start_date).toLocaleDateString() : '—'} → {b.end_date ? new Date(b.end_date).toLocaleDateString() : '∞'}
+                  {b.start_date ? formatDate(b.start_date) : '—'} → {b.end_date ? formatDate(b.end_date) : '∞'}
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-1">
