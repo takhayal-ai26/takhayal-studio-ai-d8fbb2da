@@ -8,6 +8,7 @@ import {
   ChevronLeft, ChevronRight, Copy, Check, LayoutTemplate
 } from 'lucide-react';
 import { toast } from 'sonner';
+import { formatDate } from '@/lib/utils';
 
 interface Props {
   job: GenerationJob | null;
@@ -284,7 +285,7 @@ export function ImageLightbox({
                   <span className="text-[14px] font-semibold text-foreground">{templateTitle}</span>
                 </div>
                 <div className="space-y-3">
-                  <MetaRow icon={<Calendar size={14} />} label={isAr ? 'التاريخ' : 'Date'} value={`${dateStr} · ${timeStr}`} />
+                  <MetaRow icon={<Calendar size={14} />} label={isAr ? 'التاريخ' : 'Date'} value={dateStr} />
                 </div>
               </div>
             ) : (
@@ -314,7 +315,7 @@ export function ImageLightbox({
                     {isAr ? 'التفاصيل' : 'Details'}
                   </span>
                   <div className="space-y-3">
-                    <MetaRow icon={<Calendar size={14} />} label={isAr ? 'التاريخ' : 'Date'} value={`${dateStr} · ${timeStr}`} />
+                    <MetaRow icon={<Calendar size={14} />} label={isAr ? 'التاريخ' : 'Date'} value={dateStr} />
                     <MetaRow icon={<Cpu size={14} />} label={isAr ? 'النموذج' : 'Model'} value={modelName} />
                     <MetaRow icon={<Ratio size={14} />} label={isAr ? 'النسبة' : 'Ratio'} value={job.ratio || '1:1'} />
                     <MetaRow icon={<Sparkles size={14} />} label={isAr ? 'الجودة' : 'Quality'} value={job.quality_tier || '1K'} />
