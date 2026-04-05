@@ -46,7 +46,7 @@ export function TemplatesView() {
             <button
               key={cat}
               onClick={() => setActiveCategory(cat)}
-              className={`filter-pill flex-shrink-0 transition-all duration-200 ${
+              className={`filter-pill flex-shrink-0 transition-all duration-200 text-base ${
                 activeCategory === cat ? 'active' : ''
               }`}
             >
