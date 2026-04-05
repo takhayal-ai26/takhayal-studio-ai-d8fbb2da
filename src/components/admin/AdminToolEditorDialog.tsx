@@ -15,6 +15,7 @@ import { useToolsDB, ToolRecord } from '@/hooks/useToolsDB';
 import { useToolProviders, ToolProvider } from '@/hooks/useToolProviders';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { useModels } from '@/hooks/useModels';
 
 interface Props {
   open: boolean;
@@ -34,12 +35,18 @@ const TIER_COLORS: Record<string, string> = {
 
 function emptyTool(): Partial<ToolRecord> {
   return {
-    slug: '', route: '/tools/', input_type: 'prompt', icon_name: 'Sparkles',
+    slug: '', route: '/tools/', input_type: 'upload', icon_name: 'Sparkles',
     active: true, featured: false, title_en: '', title_ar: '',
     description_en: '', description_ar: '', short_desc_en: '', short_desc_ar: '',
     hero_title_en: '', hero_title_ar: '', hero_subtitle_en: '', hero_subtitle_ar: '',
     cover_image_url: '', provider_name: 'fal.ai', provider_endpoint: '',
     default_credit_cost: 2, internal_provider_cost_estimate: 0, result_type: 'image', sort_order: 0,
+    tool_mode: 'standard', selected_model_id: null,
+    default_prompt_en: '', default_prompt_ar: '',
+    cta_label_en: 'Generate', cta_label_ar: 'إنشاء',
+    upload_label_en: 'Upload Image', upload_label_ar: 'رفع صورة',
+    upload_helper_en: 'JPG, PNG up to 10MB', upload_helper_ar: 'JPG، PNG حتى 10 ميغابايت',
+    requires_upload: false, auto_run: false, prompt_hidden: false,
   };
 }
 
