@@ -109,7 +109,7 @@ function TemplateCard({
           loading="lazy"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-        <h3 className="absolute bottom-3 left-3 right-3 text-[13px] font-semibold text-white leading-tight drop-shadow-lg">
+        <h3 className="absolute bottom-3 left-3 right-3 font-semibold text-white leading-tight drop-shadow-lg text-xl">
           {tpl.name}
         </h3>
         <div className="absolute top-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-all duration-200 translate-y-1 group-hover:translate-y-0">
