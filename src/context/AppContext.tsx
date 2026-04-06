@@ -156,7 +156,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [authModalTab, setAuthModalTab] = useState<'login' | 'signup'>('signup');
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
-  // Model-aware state
+  // Close all modals on language switch to prevent glitched overlays
+  useEffect(() => {
+    const handler = () => {
+      setAuthModalOpen(false);
+      setUpgradeModalOpen(false);
+    };
+    window.addEventListener('takhayal-lang-change', handler);
+    return () => window.removeEventListener('takhayal-lang-change', handler);
+  }, []);
+
   const [availableModels, setAvailableModels] = useState<StudioModel[]>([]);
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
   const [tierCreditsMap, setTierCreditsMap] = useState<Record<string, number>>({});
