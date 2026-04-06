@@ -28,7 +28,6 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
   const initials = userName ? userName.slice(0, 2).toUpperCase() : 'U';
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const drawerDirRef = useRef<'rtl' | 'ltr'>('rtl');
   const desktopAvatarRef = useRef<HTMLDivElement>(null);
   const mobileAvatarRef = useRef<HTMLDivElement>(null);
 
@@ -357,7 +356,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
 
               {/* Menu icon */}
               <button
-                onClick={() => { drawerDirRef.current = isRTL ? 'rtl' : 'ltr'; setDrawerOpen(true); }}
+                onClick={() => setDrawerOpen(true)}
                 className="w-8 h-8 rounded-lg bg-foreground/[0.05] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Menu size={18} />
@@ -374,7 +373,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
             className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm animate-fade-in md:hidden"
             onClick={() => setDrawerOpen(false)}
           />
-          <div dir={drawerDirRef.current} className={`fixed ${drawerDirRef.current === 'rtl' ? 'left-0' : 'right-0'} top-0 bottom-0 z-[70] w-72 bg-background shadow-2xl flex flex-col animate-slide-in-right md:hidden`}>
+          <div dir={isRTL ? 'rtl' : 'ltr'} className={`fixed ${isRTL ? 'left-0' : 'right-0'} top-0 bottom-0 z-[70] w-72 bg-background shadow-2xl flex flex-col animate-slide-in-right md:hidden`}>
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-5 pb-3">
               <span className="text-[14px] font-semibold text-foreground">{isRTL ? 'القائمة' : 'Menu'}</span>
