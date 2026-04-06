@@ -111,6 +111,7 @@ interface AppState {
   closeAuthModal: () => void;
   openUpgradeModal: () => void;
   closeUpgradeModal: () => void;
+  closeAllModals: () => void;
   requireAuth: (action: () => void) => void;
   setActivePage: (page: NavPage) => void;
   setPrompt: (prompt: string) => void;
@@ -155,7 +156,16 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [authModalTab, setAuthModalTab] = useState<'login' | 'signup'>('signup');
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
-  // Model-aware state
+  // Close all modals on language switch to prevent glitched overlays
+  useEffect(() => {
+    const handler = () => {
+      setAuthModalOpen(false);
+      setUpgradeModalOpen(false);
+    };
+    window.addEventListener('takhayal-lang-change', handler);
+    return () => window.removeEventListener('takhayal-lang-change', handler);
+  }, []);
+
   const [availableModels, setAvailableModels] = useState<StudioModel[]>([]);
   const [selectedModelId, setSelectedModelId] = useState<string | null>(null);
   const [tierCreditsMap, setTierCreditsMap] = useState<Record<string, number>>({});
@@ -241,6 +251,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const closeAuthModal = useCallback(() => setAuthModalOpen(false), []);
   const openUpgradeModal = useCallback(() => setUpgradeModalOpen(true), []);
   const closeUpgradeModal = useCallback(() => setUpgradeModalOpen(false), []);
+  const closeAllModals = useCallback(() => {
+    setAuthModalOpen(false);
+    setUpgradeModalOpen(false);
+  }, []);
 
   const requireAuth = useCallback((action: () => void) => {
     if (isAuthenticated) {
@@ -345,7 +359,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
       generationCards, setGenerationCards, lastGenerationMeta,
       authModalOpen, authModalTab, upgradeModalOpen,
       availableModels, selectedModelId, selectedModel, availableQualityTiers, availableRatios, tierCreditsMap,
-      login, logout, openAuthModal, closeAuthModal, openUpgradeModal, closeUpgradeModal, requireAuth,
+      login, logout, openAuthModal, closeAuthModal, openUpgradeModal, closeUpgradeModal, closeAllModals, requireAuth,
       setActivePage, setPrompt, setSelectedTemplate,
       setSelectedStyle, setAspectRatio, setQuality, setSelectedQualityTier, setSelectedModelId,
       setEnhancePrompt,

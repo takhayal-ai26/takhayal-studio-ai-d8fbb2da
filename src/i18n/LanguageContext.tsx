@@ -49,6 +49,8 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   const overrides = useTranslationOverridesStore((s) => s.overrides);
 
   const setLang = useCallback((newLang: Language) => {
+    // Dispatch event BEFORE state change so consumers can close modals first
+    window.dispatchEvent(new CustomEvent('takhayal-lang-change'));
     setLangState(newLang);
     try {
       localStorage.setItem('takhayal-lang', newLang);
