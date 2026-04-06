@@ -7,7 +7,7 @@ const navItems = [
   { id: 'community', route: '/community', icon: Users, labelEn: 'Community', labelAr: 'المجتمع' },
   { id: 'create', route: '/create', icon: Sparkles, labelEn: 'Create', labelAr: 'إنشاء', primary: true },
   { id: 'gallery', route: '/gallery', icon: Image, labelEn: 'Gallery', labelAr: 'المعرض' },
-  { id: 'templates', route: '/templates', icon: LayoutGrid, labelEn: 'Library', labelAr: 'المكتبة' },
+  { id: 'templates', route: '/templates', icon: LayoutGrid, labelEn: 'Templates', labelAr: 'القوالب' },
 ];
 
 export function BottomNav() {
