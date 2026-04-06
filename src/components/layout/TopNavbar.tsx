@@ -357,7 +357,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
 
               {/* Menu icon */}
               <button
-                onClick={() => setDrawerOpen(true)}
+                onClick={() => { drawerDirRef.current = isRTL ? 'rtl' : 'ltr'; setDrawerOpen(true); }}
                 className="w-8 h-8 rounded-lg bg-foreground/[0.05] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Menu size={18} />
