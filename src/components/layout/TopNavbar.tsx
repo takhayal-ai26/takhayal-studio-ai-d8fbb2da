@@ -58,6 +58,21 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
     return () => document.removeEventListener('mousedown', handler);
   }, []);
 
+  useEffect(() => {
+    const closeTransientPanels = () => {
+      setAvatarOpen(false);
+      setDrawerOpen(false);
+    };
+
+    window.addEventListener('takhayal-lang-change', closeTransientPanels);
+    return () => window.removeEventListener('takhayal-lang-change', closeTransientPanels);
+  }, []);
+
+  useEffect(() => {
+    setAvatarOpen(false);
+    setDrawerOpen(false);
+  }, [lang]);
+
   const getAvatarMenuStyle = (triggerRef: React.RefObject<HTMLDivElement>) => {
     const rect = triggerRef.current?.getBoundingClientRect();
 
