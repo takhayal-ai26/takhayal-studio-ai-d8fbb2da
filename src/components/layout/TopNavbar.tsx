@@ -28,6 +28,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
   const initials = userName ? userName.slice(0, 2).toUpperCase() : 'U';
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const drawerDirRef = useRef<'rtl' | 'ltr'>('rtl');
   const desktopAvatarRef = useRef<HTMLDivElement>(null);
   const mobileAvatarRef = useRef<HTMLDivElement>(null);
 
