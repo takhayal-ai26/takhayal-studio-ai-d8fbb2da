@@ -356,8 +356,22 @@ export default function AdminCommunity() {
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Image *</label>
             <div className="flex items-start gap-4">
-              <label className="w-32 h-32 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/40 transition-colors overflow-hidden bg-muted/10">
-                {testPreview ? <img src={testPreview} className="w-full h-full object-cover" alt="" /> : <><Upload size={20} className="text-muted-foreground" /><span className="text-[10px] text-muted-foreground">Upload</span></>}
+              <label
+                ref={dropRef}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                className={`w-40 h-40 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-colors overflow-hidden bg-muted/10 ${isDragging ? 'border-primary bg-primary/5 scale-[1.02]' : 'border-border hover:border-primary/40'}`}
+              >
+                {testPreview ? (
+                  <img src={testPreview} className="w-full h-full object-cover" alt="" />
+                ) : (
+                  <>
+                    <Upload size={22} className="text-muted-foreground" />
+                    <span className="text-[11px] text-muted-foreground font-medium">Drop or click</span>
+                    <span className="text-[9px] text-muted-foreground/50">to upload image</span>
+                  </>
+                )}
                 <input type="file" accept="image/*" className="hidden" onChange={handleTestFileChange} />
               </label>
               <div className="flex-1 space-y-1">
@@ -380,7 +394,46 @@ export default function AdminCommunity() {
               <div className="flex-1 grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground">Username</label>
-                  <Input value={testForm.username} onChange={e => setTestForm({ ...testForm, username: e.target.value })} className="h-9 text-sm" />
+                  <Select
+                    value={testForm.username}
+                    onValueChange={v => {
+                      const creator = savedCreators.find(c => c.username === v);
+                      setTestForm(prev => ({
+                        ...prev,
+                        username: v,
+                        avatar_url: creator?.avatar_url || prev.avatar_url,
+                      }));
+                      if (creator?.avatar_url) {
+                        setAvatarPreview(creator.avatar_url);
+                        setAvatarFile(null);
+                      }
+                    }}
+                  >
+                    <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select creator..." /></SelectTrigger>
+                    <SelectContent>
+                      {savedCreators.map(c => (
+                        <SelectItem key={c.username} value={c.username}>
+                          <span className="flex items-center gap-2">
+                            {c.avatar_url ? (
+                              <img src={c.avatar_url} className="w-4 h-4 rounded-full object-cover" alt="" />
+                            ) : (
+                              <span className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center text-[8px] font-bold text-primary">{c.username.charAt(0).toUpperCase()}</span>
+                            )}
+                            {c.username}
+                          </span>
+                        </SelectItem>
+                      ))}
+                      <SelectItem value="__new__">+ New creator...</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  {testForm.username === '__new__' && (
+                    <Input
+                      autoFocus
+                      placeholder="Type new username..."
+                      className="h-8 text-sm mt-1"
+                      onChange={e => setTestForm(prev => ({ ...prev, username: e.target.value || '__new__' }))}
+                    />
+                  )}
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground">Avatar URL <span className="text-muted-foreground/60">(or upload)</span></label>
