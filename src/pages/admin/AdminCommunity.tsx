@@ -106,6 +106,24 @@ export default function AdminCommunity() {
     setLoading(false);
   }, [tab]);
 
+  // Fetch saved creators (unique usernames from previous posts)
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('community_posts')
+        .select('username, avatar_url')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (data) {
+        const map = new Map<string, string | null>();
+        (data as any[]).forEach(d => {
+          if (d.username && !map.has(d.username)) map.set(d.username, d.avatar_url);
+        });
+        setSavedCreators(Array.from(map, ([username, avatar_url]) => ({ username, avatar_url })));
+      }
+    })();
+  }, [tab]);
+
   useEffect(() => {
     if (tab !== 'add') fetchPosts();
   }, [tab, fetchPosts]);
