@@ -3,6 +3,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { useToolsDB } from '@/hooks/useToolsDB';
+import { useApp } from '@/context/AppContext';
 import { cn } from '@/lib/utils';
 
 export default function ToolsDirectory() {
