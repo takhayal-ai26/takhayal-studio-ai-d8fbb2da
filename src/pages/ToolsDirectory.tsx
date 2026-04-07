@@ -10,6 +10,7 @@ export default function ToolsDirectory() {
   const navigate = useNavigate();
   const { t, isRTL } = useLanguage();
   const { tools } = useToolsDB();
+  const { setActivePage } = useApp();
   const [search, setSearch] = useState('');
 
   const filtered = tools
