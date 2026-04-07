@@ -54,7 +54,14 @@ export default function ToolsDirectory() {
               return (
                 <button
                   key={tool.id}
-                  onClick={() => navigate(tool.slug === 'generate' ? '/studio' : `/tools/${tool.slug}`)}
+                  onClick={() => {
+                    if (tool.slug === 'generate') {
+                      setActivePage('canvas');
+                      navigate('/studio');
+                    } else {
+                      navigate(`/tools/${tool.slug}`);
+                    }
+                  }}
                   className={cn(
                     "group relative rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/10 focus:outline-none",
                     isRTL ? "text-right" : "text-left"
