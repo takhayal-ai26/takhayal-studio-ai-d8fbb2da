@@ -72,15 +72,18 @@ export function CommunityDetailModal({
 
   if (!open || !post) return null;
 
+  const isTemplate = !!post.template_id;
   const promptText = post.prompt || '';
   const isLongPrompt = promptText.length > 160;
   const displayPrompt = isLongPrompt && !expanded ? promptText.slice(0, 160) + '…' : promptText;
 
-  // Metadata items
+  // Metadata items — hidden for template posts
   const meta: { label: string; value: string }[] = [];
-  if (post.model_name) meta.push({ label: isAr ? 'النموذج' : 'Model', value: post.model_name });
-  if (post.quality_tier || post.resolution) meta.push({ label: isAr ? 'الجودة' : 'Quality', value: post.quality_tier || post.resolution || '' });
-  if (post.ratio) meta.push({ label: isAr ? 'النسبة' : 'Ratio', value: post.ratio });
+  if (!isTemplate) {
+    if (post.model_name) meta.push({ label: isAr ? 'النموذج' : 'Model', value: post.model_name });
+    if (post.quality_tier || post.resolution) meta.push({ label: isAr ? 'الجودة' : 'Quality', value: post.quality_tier || post.resolution || '' });
+    if (post.ratio) meta.push({ label: isAr ? 'النسبة' : 'Ratio', value: post.ratio });
+  }
 
   const creatorInitial = post.creator_name?.charAt(0)?.toUpperCase() || '?';
   const backgroundLayer = (
