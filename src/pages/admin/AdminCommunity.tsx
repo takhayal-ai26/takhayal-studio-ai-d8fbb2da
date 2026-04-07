@@ -396,45 +396,68 @@ export default function AdminCommunity() {
               <div className="flex-1 grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground">Username</label>
-                  <Select
-                    value={testForm.username}
-                    onValueChange={v => {
-                      const creator = savedCreators.find(c => c.username === v);
-                      setTestForm(prev => ({
-                        ...prev,
-                        username: v,
-                        avatar_url: creator?.avatar_url || prev.avatar_url,
-                      }));
-                      if (creator?.avatar_url) {
-                        setAvatarPreview(creator.avatar_url);
-                        setAvatarFile(null);
-                      }
-                    }}
-                  >
-                    <SelectTrigger className="h-9 text-sm"><SelectValue placeholder="Select creator..." /></SelectTrigger>
-                    <SelectContent>
-                      {savedCreators.map(c => (
-                        <SelectItem key={c.username} value={c.username}>
-                          <span className="flex items-center gap-2">
-                            {c.avatar_url ? (
-                              <img src={c.avatar_url} className="w-4 h-4 rounded-full object-cover" alt="" />
-                            ) : (
-                              <span className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center text-[8px] font-bold text-primary">{c.username.charAt(0).toUpperCase()}</span>
-                            )}
-                            {c.username}
-                          </span>
-                        </SelectItem>
-                      ))}
-                      <SelectItem value="__new__">+ New creator...</SelectItem>
-                    </SelectContent>
-                  </Select>
-                  {testForm.username === '__new__' && (
-                    <Input
-                      autoFocus
-                      placeholder="Type new username..."
-                      className="h-8 text-sm mt-1"
-                      onChange={e => setTestForm(prev => ({ ...prev, username: e.target.value || '__new__' }))}
-                    />
+                  {isNewCreator ? (
+                    <div className="flex gap-1.5">
+                      <Input
+                        autoFocus
+                        value={newCreatorName}
+                        onChange={e => setNewCreatorName(e.target.value)}
+                        placeholder="Type new username..."
+                        className="h-9 text-sm flex-1"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (newCreatorName.trim()) {
+                            setTestForm(prev => ({ ...prev, username: newCreatorName.trim() }));
+                          }
+                          setIsNewCreator(false);
+                          setNewCreatorName('');
+                        }}
+                        className="h-9 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium"
+                      >
+                        {newCreatorName.trim() ? 'Set' : 'Cancel'}
+                      </button>
+                    </div>
+                  ) : (
+                    <Select
+                      value={savedCreators.some(c => c.username === testForm.username) ? testForm.username : undefined}
+                      onValueChange={v => {
+                        if (v === '__new__') {
+                          setIsNewCreator(true);
+                          return;
+                        }
+                        const creator = savedCreators.find(c => c.username === v);
+                        setTestForm(prev => ({
+                          ...prev,
+                          username: v,
+                          avatar_url: creator?.avatar_url || prev.avatar_url,
+                        }));
+                        if (creator?.avatar_url) {
+                          setAvatarPreview(creator.avatar_url);
+                          setAvatarFile(null);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="h-9 text-sm">
+                        <SelectValue placeholder={testForm.username || 'Select creator...'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {savedCreators.map(c => (
+                          <SelectItem key={c.username} value={c.username}>
+                            <span className="flex items-center gap-2">
+                              {c.avatar_url ? (
+                                <img src={c.avatar_url} className="w-4 h-4 rounded-full object-cover" alt="" />
+                              ) : (
+                                <span className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center text-[8px] font-bold text-primary">{c.username.charAt(0).toUpperCase()}</span>
+                              )}
+                              {c.username}
+                            </span>
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="__new__">+ New creator...</SelectItem>
+                      </SelectContent>
+                    </Select>
                   )}
                 </div>
                 <div className="space-y-1">
