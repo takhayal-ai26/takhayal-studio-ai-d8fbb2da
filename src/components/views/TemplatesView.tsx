@@ -56,7 +56,7 @@ export function TemplatesView() {
         </div>
       </div>
 
-      <div className="px-4 md:px-6">
+      <div className="px-4 md:px-10">
         {loading ? (
           <div className="py-20 text-center">
             <p className="text-sm text-muted-foreground/50">Loading templates...</p>
