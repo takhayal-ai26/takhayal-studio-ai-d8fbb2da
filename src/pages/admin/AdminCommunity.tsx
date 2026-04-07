@@ -90,6 +90,8 @@ export default function AdminCommunity() {
   const [submitting, setSubmitting] = useState(false);
   const [savedCreators, setSavedCreators] = useState<SavedCreator[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [isNewCreator, setIsNewCreator] = useState(false);
+  const [newCreatorName, setNewCreatorName] = useState('');
   const dropRef = useRef<HTMLLabelElement>(null);
 
   const fetchPosts = useCallback(async () => {
