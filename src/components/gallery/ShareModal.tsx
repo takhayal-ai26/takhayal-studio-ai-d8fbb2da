@@ -139,6 +139,9 @@ export function ShareModal({ job, open, onClose }: ShareModalProps) {
       // Ensure public URL exists
       await getShareUrl();
 
+      // Detect template-based generation
+      const templateId = job.tool_id?.startsWith('template:') ? job.tool_id.replace('template:', '') : null;
+
       const { error } = await supabase.from('community_posts').insert({
         user_id: user.id,
         username: (profile as any)?.username || profile?.first_name || profile?.full_name || 'Creator',
@@ -151,6 +154,7 @@ export function ShareModal({ job, open, onClose }: ShareModalProps) {
         source_generation_id: job.id,
         source_type: job.tool_id ? 'tool' : 'generation',
         status: 'pending',
+        template_id: templateId,
       } as any);
 
       if (error) {

@@ -20,6 +20,8 @@ export interface CommunityPost {
   creator_avatar: string | null;
   public_id: string | null;
   created_at: string;
+  template_id: string | null;
+  template_title: string | null;
 }
 
 export default function Community() {
@@ -66,9 +68,29 @@ export default function Community() {
           model_name: d.model || null,
           creator_name: d.username || null,
           creator_avatar: d.avatar_url || null,
-          public_id: d.id, // use community post id as public ref
+          public_id: d.id,
           created_at: d.created_at,
+          template_id: d.template_id || null,
+          template_title: null,
         }));
+
+      // Fetch template titles for template-based posts
+      const templateIds = [...new Set(mapped.filter(p => p.template_id).map(p => p.template_id!))];
+      if (templateIds.length > 0) {
+        const { data: templates } = await supabase
+          .from('templates')
+          .select('id, title_en, title_ar')
+          .in('id', templateIds);
+        if (templates) {
+          const tMap = new Map(templates.map(t => [t.id, t]));
+          for (const post of mapped) {
+            if (post.template_id && tMap.has(post.template_id)) {
+              const t = tMap.get(post.template_id)!;
+              post.template_title = isAr ? (t.title_ar || t.title_en) : t.title_en;
+            }
+          }
+        }
+      }
 
       setPosts(mapped);
       setLoading(false);

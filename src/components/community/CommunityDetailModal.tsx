@@ -72,15 +72,18 @@ export function CommunityDetailModal({
 
   if (!open || !post) return null;
 
+  const isTemplate = !!post.template_id;
   const promptText = post.prompt || '';
   const isLongPrompt = promptText.length > 160;
   const displayPrompt = isLongPrompt && !expanded ? promptText.slice(0, 160) + '…' : promptText;
 
-  // Metadata items
+  // Metadata items — hidden for template posts
   const meta: { label: string; value: string }[] = [];
-  if (post.model_name) meta.push({ label: isAr ? 'النموذج' : 'Model', value: post.model_name });
-  if (post.quality_tier || post.resolution) meta.push({ label: isAr ? 'الجودة' : 'Quality', value: post.quality_tier || post.resolution || '' });
-  if (post.ratio) meta.push({ label: isAr ? 'النسبة' : 'Ratio', value: post.ratio });
+  if (!isTemplate) {
+    if (post.model_name) meta.push({ label: isAr ? 'النموذج' : 'Model', value: post.model_name });
+    if (post.quality_tier || post.resolution) meta.push({ label: isAr ? 'الجودة' : 'Quality', value: post.quality_tier || post.resolution || '' });
+    if (post.ratio) meta.push({ label: isAr ? 'النسبة' : 'Ratio', value: post.ratio });
+  }
 
   const creatorInitial = post.creator_name?.charAt(0)?.toUpperCase() || '?';
   const backgroundLayer = (
@@ -133,8 +136,15 @@ export function CommunityDetailModal({
             </span>
           </div>
 
-          {/* Prompt */}
-          {promptText && (
+          {/* Template badge or Prompt */}
+          {isTemplate ? (
+            <div className="bg-muted/30 rounded-xl p-3">
+              <p className="text-[11px] uppercase tracking-widest text-muted-foreground/50 font-medium mb-1">
+                {isAr ? 'القالب' : 'Template'}
+              </p>
+              <p className="text-sm text-foreground font-medium">{post.template_title || (isAr ? 'قالب' : 'Template')}</p>
+            </div>
+          ) : promptText ? (
             <div className="bg-muted/30 rounded-xl p-3">
               <p className="text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap">{displayPrompt}</p>
               <div className="flex items-center gap-2 mt-2">
@@ -150,7 +160,7 @@ export function CommunityDetailModal({
                 </button>
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Meta */}
           {meta.length > 0 && (
@@ -163,8 +173,8 @@ export function CommunityDetailModal({
             </div>
           )}
 
-          {/* Use prompt */}
-          {promptText && (
+          {/* Use prompt — only for non-template posts */}
+          {!isTemplate && promptText && (
             <button
               onClick={() => onUsePrompt(promptText)}
               className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-semibold flex items-center justify-center gap-2 hover:brightness-110 transition-all"
@@ -249,53 +259,66 @@ export function CommunityDetailModal({
           </button>
         </div>
 
-        {/* Prompt section */}
-        {promptText && (
-          <div className="px-5 py-3">
-            <div className="flex items-center justify-between mb-2">
-              <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground/50 font-medium">
-                {isAr ? 'الأمر' : 'Prompt'}
-              </h3>
-              <button
-                onClick={handleCopyPrompt}
-                className="text-[11px] text-muted-foreground hover:text-foreground font-medium flex items-center gap-1 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors"
-              >
-                {copied ? <Check size={11} className="text-green-500" /> : <Copy size={11} />}
-                {copied ? (isAr ? 'تم' : 'Copied') : (isAr ? 'نسخ' : 'Copy')}
-              </button>
-            </div>
-            <p className="text-[13px] text-foreground/80 leading-relaxed whitespace-pre-wrap">
-              {displayPrompt}
-            </p>
-            {isLongPrompt && (
-              <button onClick={() => setExpanded(!expanded)} className="text-[11px] text-primary font-medium flex items-center gap-0.5 mt-2 hover:underline">
-                {expanded ? (isAr ? 'أقل' : 'See less') : (isAr ? 'عرض الكل' : 'See all')}
-                {expanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
-              </button>
-            )}
-          </div>
-        )}
-
-        {/* Metadata */}
-        {meta.length > 0 && (
+        {/* Template info or Prompt section */}
+        {isTemplate ? (
           <div className="px-5 py-3">
             <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground/50 font-medium mb-2">
-              {isAr ? 'التفاصيل' : 'Information'}
+              {isAr ? 'القالب' : 'Template'}
             </h3>
-            <div className="space-y-2">
-              {meta.map(m => (
-                <div key={m.label} className="flex items-center justify-between text-[12px]">
-                  <span className="text-muted-foreground/60">{m.label}</span>
-                  <span className="text-foreground/80 font-medium">{m.value}</span>
-                </div>
-              ))}
-            </div>
+            <p className="text-[14px] text-foreground font-medium">
+              {post.template_title || (isAr ? 'قالب' : 'Template')}
+            </p>
           </div>
+        ) : (
+          <>
+            {promptText && (
+              <div className="px-5 py-3">
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground/50 font-medium">
+                    {isAr ? 'الأمر' : 'Prompt'}
+                  </h3>
+                  <button
+                    onClick={handleCopyPrompt}
+                    className="text-[11px] text-muted-foreground hover:text-foreground font-medium flex items-center gap-1 px-2 py-1 rounded-md hover:bg-muted/50 transition-colors"
+                  >
+                    {copied ? <Check size={11} className="text-green-500" /> : <Copy size={11} />}
+                    {copied ? (isAr ? 'تم' : 'Copied') : (isAr ? 'نسخ' : 'Copy')}
+                  </button>
+                </div>
+                <p className="text-[13px] text-foreground/80 leading-relaxed whitespace-pre-wrap">
+                  {displayPrompt}
+                </p>
+                {isLongPrompt && (
+                  <button onClick={() => setExpanded(!expanded)} className="text-[11px] text-primary font-medium flex items-center gap-0.5 mt-2 hover:underline">
+                    {expanded ? (isAr ? 'أقل' : 'See less') : (isAr ? 'عرض الكل' : 'See all')}
+                    {expanded ? <ChevronUp size={11} /> : <ChevronDown size={11} />}
+                  </button>
+                )}
+              </div>
+            )}
+
+            {/* Metadata */}
+            {meta.length > 0 && (
+              <div className="px-5 py-3">
+                <h3 className="text-[11px] uppercase tracking-widest text-muted-foreground/50 font-medium mb-2">
+                  {isAr ? 'التفاصيل' : 'Information'}
+                </h3>
+                <div className="space-y-2">
+                  {meta.map(m => (
+                    <div key={m.label} className="flex items-center justify-between text-[12px]">
+                      <span className="text-muted-foreground/60">{m.label}</span>
+                      <span className="text-foreground/80 font-medium">{m.value}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </>
         )}
 
         {/* Actions — pushed to bottom */}
         <div className="mt-auto px-5 pb-5 pt-4 space-y-2.5">
-          {promptText && (
+          {!isTemplate && promptText && (
             <button
               onClick={() => onUsePrompt(promptText)}
               className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-semibold flex items-center justify-center gap-2 hover:brightness-110 transition-all"
