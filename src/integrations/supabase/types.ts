@@ -66,6 +66,7 @@ export type Database = {
           source_generation_id: string | null
           source_type: string
           status: string
+          template_id: string | null
           updated_at: string
           user_id: string | null
           username: string
@@ -88,6 +89,7 @@ export type Database = {
           source_generation_id?: string | null
           source_type?: string
           status?: string
+          template_id?: string | null
           updated_at?: string
           user_id?: string | null
           username?: string
@@ -110,11 +112,20 @@ export type Database = {
           source_generation_id?: string | null
           source_type?: string
           status?: string
+          template_id?: string | null
           updated_at?: string
           user_id?: string | null
           username?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "community_posts_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "templates"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       contact_messages: {
         Row: {
