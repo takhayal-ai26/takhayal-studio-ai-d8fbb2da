@@ -136,8 +136,15 @@ export function CommunityDetailModal({
             </span>
           </div>
 
-          {/* Prompt */}
-          {promptText && (
+          {/* Template badge or Prompt */}
+          {isTemplate ? (
+            <div className="bg-muted/30 rounded-xl p-3">
+              <p className="text-[11px] uppercase tracking-widest text-muted-foreground/50 font-medium mb-1">
+                {isAr ? 'القالب' : 'Template'}
+              </p>
+              <p className="text-sm text-foreground font-medium">{post.template_title || (isAr ? 'قالب' : 'Template')}</p>
+            </div>
+          ) : promptText ? (
             <div className="bg-muted/30 rounded-xl p-3">
               <p className="text-xs text-foreground/80 leading-relaxed whitespace-pre-wrap">{displayPrompt}</p>
               <div className="flex items-center gap-2 mt-2">
@@ -153,7 +160,7 @@ export function CommunityDetailModal({
                 </button>
               </div>
             </div>
-          )}
+          ) : null}
 
           {/* Meta */}
           {meta.length > 0 && (
@@ -166,8 +173,8 @@ export function CommunityDetailModal({
             </div>
           )}
 
-          {/* Use prompt */}
-          {promptText && (
+          {/* Use prompt — only for non-template posts */}
+          {!isTemplate && promptText && (
             <button
               onClick={() => onUsePrompt(promptText)}
               className="w-full h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-semibold flex items-center justify-center gap-2 hover:brightness-110 transition-all"
