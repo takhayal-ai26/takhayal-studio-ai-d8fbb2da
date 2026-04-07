@@ -3,12 +3,14 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { useToolsDB } from '@/hooks/useToolsDB';
+import { useApp } from '@/context/AppContext';
 import { cn } from '@/lib/utils';
 
 export default function ToolsDirectory() {
   const navigate = useNavigate();
   const { t, isRTL } = useLanguage();
   const { tools } = useToolsDB();
+  const { setActivePage } = useApp();
   const [search, setSearch] = useState('');
 
   const filtered = tools
@@ -52,7 +54,14 @@ export default function ToolsDirectory() {
               return (
                 <button
                   key={tool.id}
-                  onClick={() => navigate(tool.slug === 'generate' ? '/studio' : `/tools/${tool.slug}`)}
+                  onClick={() => {
+                    if (tool.slug === 'generate') {
+                      setActivePage('canvas');
+                      navigate('/studio');
+                    } else {
+                      navigate(`/tools/${tool.slug}`);
+                    }
+                  }}
                   className={cn(
                     "group relative rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/10 focus:outline-none",
                     isRTL ? "text-right" : "text-left"
