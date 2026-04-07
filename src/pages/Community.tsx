@@ -20,6 +20,8 @@ export interface CommunityPost {
   creator_avatar: string | null;
   public_id: string | null;
   created_at: string;
+  template_id: string | null;
+  template_title: string | null;
 }
 
 export default function Community() {
