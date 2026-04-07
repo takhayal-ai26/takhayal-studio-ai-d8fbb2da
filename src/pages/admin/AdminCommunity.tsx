@@ -205,13 +205,33 @@ export default function AdminCommunity() {
     fetchPosts();
   };
 
+  const processImageFile = (file: File) => {
+    setTestFile(file);
+    const url = URL.createObjectURL(file);
+    setTestPreview(url);
+    // Auto-detect ratio
+    const img = new window.Image();
+    img.onload = () => {
+      const ratio = detectRatio(img.naturalWidth, img.naturalHeight);
+      setTestForm(prev => ({ ...prev, ratio }));
+    };
+    img.src = url;
+  };
+
   const handleTestFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setTestFile(file);
-      setTestPreview(URL.createObjectURL(file));
-    }
+    if (file) processImageFile(file);
   };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) processImageFile(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = () => setIsDragging(false);
 
   const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
