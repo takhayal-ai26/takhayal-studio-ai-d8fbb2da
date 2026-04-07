@@ -68,7 +68,7 @@ export function TemplatesView() {
                 <p className="text-sm text-muted-foreground/50">{t.templatesView.noTemplatesFound}</p>
               </div>
             ) : (
-              <div className="columns-2 sm:columns-3 md:columns-4 lg:columns-5 gap-2 [column-fill:_balance]">
+              <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-4 gap-3 [column-fill:_balance]">
                 {filtered.map(tpl => (
                   <div key={tpl.id} className="break-inside-avoid mb-2">
                     <TemplateCard tpl={tpl} onUse={handleUse} isRTL={isRTL} useLabel={t.portal?.use || 'Use'} />
