@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/context/AppContext';
 import { useModels } from '@/hooks/useModels';
@@ -35,6 +35,11 @@ interface CommunityPostRow {
   rejected_by: string | null;
 }
 
+interface SavedCreator {
+  username: string;
+  avatar_url: string | null;
+}
+
 type Tab = 'pending' | 'approved' | 'rejected' | 'add';
 
 const TABS: { id: Tab; label: string }[] = [
@@ -43,6 +48,17 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'rejected', label: 'Rejected' },
   { id: 'add', label: 'Add Test Post' },
 ];
+
+function detectRatio(w: number, h: number): string {
+  const r = w / h;
+  if (Math.abs(r - 1) < 0.08) return '1:1';
+  if (Math.abs(r - 16 / 9) < 0.15) return '16:9';
+  if (Math.abs(r - 9 / 16) < 0.08) return '9:16';
+  if (Math.abs(r - 4 / 3) < 0.1) return '4:3';
+  if (Math.abs(r - 3 / 4) < 0.08) return '3:4';
+  if (r > 1) return '16:9';
+  return '9:16';
+}
 
 export default function AdminCommunity() {
   const { userName } = useApp();
@@ -72,6 +88,11 @@ export default function AdminCommunity() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [savedCreators, setSavedCreators] = useState<SavedCreator[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const [isNewCreator, setIsNewCreator] = useState(false);
+  const [newCreatorName, setNewCreatorName] = useState('');
+  const dropRef = useRef<HTMLLabelElement>(null);
 
   const fetchPosts = useCallback(async () => {
     setLoading(true);
@@ -85,6 +106,24 @@ export default function AdminCommunity() {
 
     if (!error && data) setPosts(data as unknown as CommunityPostRow[]);
     setLoading(false);
+  }, [tab]);
+
+  // Fetch saved creators (unique usernames from previous posts)
+  useEffect(() => {
+    (async () => {
+      const { data } = await supabase
+        .from('community_posts')
+        .select('username, avatar_url')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (data) {
+        const map = new Map<string, string | null>();
+        (data as any[]).forEach(d => {
+          if (d.username && !map.has(d.username)) map.set(d.username, d.avatar_url);
+        });
+        setSavedCreators(Array.from(map, ([username, avatar_url]) => ({ username, avatar_url })));
+      }
+    })();
   }, [tab]);
 
   useEffect(() => {
@@ -168,13 +207,33 @@ export default function AdminCommunity() {
     fetchPosts();
   };
 
+  const processImageFile = (file: File) => {
+    setTestFile(file);
+    const url = URL.createObjectURL(file);
+    setTestPreview(url);
+    // Auto-detect ratio
+    const img = new window.Image();
+    img.onload = () => {
+      const ratio = detectRatio(img.naturalWidth, img.naturalHeight);
+      setTestForm(prev => ({ ...prev, ratio }));
+    };
+    img.src = url;
+  };
+
   const handleTestFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      setTestFile(file);
-      setTestPreview(URL.createObjectURL(file));
-    }
+    if (file) processImageFile(file);
   };
+
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file && file.type.startsWith('image/')) processImageFile(file);
+  };
+
+  const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true); };
+  const handleDragLeave = () => setIsDragging(false);
 
   const handleAvatarFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -299,8 +358,22 @@ export default function AdminCommunity() {
           <div className="space-y-2">
             <label className="text-sm font-medium text-foreground">Image *</label>
             <div className="flex items-start gap-4">
-              <label className="w-32 h-32 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center gap-1 cursor-pointer hover:border-primary/40 transition-colors overflow-hidden bg-muted/10">
-                {testPreview ? <img src={testPreview} className="w-full h-full object-cover" alt="" /> : <><Upload size={20} className="text-muted-foreground" /><span className="text-[10px] text-muted-foreground">Upload</span></>}
+              <label
+                ref={dropRef}
+                onDrop={handleDrop}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                className={`w-40 h-40 rounded-xl border-2 border-dashed flex flex-col items-center justify-center gap-1.5 cursor-pointer transition-colors overflow-hidden bg-muted/10 ${isDragging ? 'border-primary bg-primary/5 scale-[1.02]' : 'border-border hover:border-primary/40'}`}
+              >
+                {testPreview ? (
+                  <img src={testPreview} className="w-full h-full object-cover" alt="" />
+                ) : (
+                  <>
+                    <Upload size={22} className="text-muted-foreground" />
+                    <span className="text-[11px] text-muted-foreground font-medium">Drop or click</span>
+                    <span className="text-[9px] text-muted-foreground/50">to upload image</span>
+                  </>
+                )}
                 <input type="file" accept="image/*" className="hidden" onChange={handleTestFileChange} />
               </label>
               <div className="flex-1 space-y-1">
@@ -323,7 +396,69 @@ export default function AdminCommunity() {
               <div className="flex-1 grid grid-cols-2 gap-3">
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground">Username</label>
-                  <Input value={testForm.username} onChange={e => setTestForm({ ...testForm, username: e.target.value })} className="h-9 text-sm" />
+                  {isNewCreator ? (
+                    <div className="flex gap-1.5">
+                      <Input
+                        autoFocus
+                        value={newCreatorName}
+                        onChange={e => setNewCreatorName(e.target.value)}
+                        placeholder="Type new username..."
+                        className="h-9 text-sm flex-1"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => {
+                          if (newCreatorName.trim()) {
+                            setTestForm(prev => ({ ...prev, username: newCreatorName.trim() }));
+                          }
+                          setIsNewCreator(false);
+                          setNewCreatorName('');
+                        }}
+                        className="h-9 px-3 rounded-lg bg-primary text-primary-foreground text-xs font-medium"
+                      >
+                        {newCreatorName.trim() ? 'Set' : 'Cancel'}
+                      </button>
+                    </div>
+                  ) : (
+                    <Select
+                      value={savedCreators.some(c => c.username === testForm.username) ? testForm.username : undefined}
+                      onValueChange={v => {
+                        if (v === '__new__') {
+                          setIsNewCreator(true);
+                          return;
+                        }
+                        const creator = savedCreators.find(c => c.username === v);
+                        setTestForm(prev => ({
+                          ...prev,
+                          username: v,
+                          avatar_url: creator?.avatar_url || prev.avatar_url,
+                        }));
+                        if (creator?.avatar_url) {
+                          setAvatarPreview(creator.avatar_url);
+                          setAvatarFile(null);
+                        }
+                      }}
+                    >
+                      <SelectTrigger className="h-9 text-sm">
+                        <SelectValue placeholder={testForm.username || 'Select creator...'} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {savedCreators.map(c => (
+                          <SelectItem key={c.username} value={c.username}>
+                            <span className="flex items-center gap-2">
+                              {c.avatar_url ? (
+                                <img src={c.avatar_url} className="w-4 h-4 rounded-full object-cover" alt="" />
+                              ) : (
+                                <span className="w-4 h-4 rounded-full bg-primary/10 flex items-center justify-center text-[8px] font-bold text-primary">{c.username.charAt(0).toUpperCase()}</span>
+                              )}
+                              {c.username}
+                            </span>
+                          </SelectItem>
+                        ))}
+                        <SelectItem value="__new__">+ New creator...</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  )}
                 </div>
                 <div className="space-y-1">
                   <label className="text-xs text-muted-foreground">Avatar URL <span className="text-muted-foreground/60">(or upload)</span></label>
