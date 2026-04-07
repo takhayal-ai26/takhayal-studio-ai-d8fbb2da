@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useApp } from '@/context/AppContext';
 import { useModels } from '@/hooks/useModels';
@@ -35,6 +35,11 @@ interface CommunityPostRow {
   rejected_by: string | null;
 }
 
+interface SavedCreator {
+  username: string;
+  avatar_url: string | null;
+}
+
 type Tab = 'pending' | 'approved' | 'rejected' | 'add';
 
 const TABS: { id: Tab; label: string }[] = [
@@ -43,6 +48,17 @@ const TABS: { id: Tab; label: string }[] = [
   { id: 'rejected', label: 'Rejected' },
   { id: 'add', label: 'Add Test Post' },
 ];
+
+function detectRatio(w: number, h: number): string {
+  const r = w / h;
+  if (Math.abs(r - 1) < 0.08) return '1:1';
+  if (Math.abs(r - 16 / 9) < 0.15) return '16:9';
+  if (Math.abs(r - 9 / 16) < 0.08) return '9:16';
+  if (Math.abs(r - 4 / 3) < 0.1) return '4:3';
+  if (Math.abs(r - 3 / 4) < 0.08) return '3:4';
+  if (r > 1) return '16:9';
+  return '9:16';
+}
 
 export default function AdminCommunity() {
   const { userName } = useApp();
@@ -72,6 +88,9 @@ export default function AdminCommunity() {
   const [avatarFile, setAvatarFile] = useState<File | null>(null);
   const [avatarPreview, setAvatarPreview] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [savedCreators, setSavedCreators] = useState<SavedCreator[]>([]);
+  const [isDragging, setIsDragging] = useState(false);
+  const dropRef = useRef<HTMLLabelElement>(null);
 
   const fetchPosts = useCallback(async () => {
     setLoading(true);
