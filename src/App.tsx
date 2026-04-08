@@ -29,6 +29,7 @@ import ResetPassword from "./pages/ResetPassword";
 import Checkout from "./pages/Checkout";
 import CheckoutSuccess from "./pages/CheckoutSuccess";
 import SharePage from "./pages/SharePage";
+import ModelDetail from "./pages/ModelDetail";
 
 import { AdminProtectedRoute } from "./components/AdminProtectedRoute";
 import AdminLogin from "./pages/admin/AdminLogin";
@@ -64,6 +65,7 @@ const RoutedApp = () => {
           <Route path="/templates" element={<Templates />} />
           <Route path="/templates/:id" element={<TemplateDetail />} />
           <Route path="/about" element={<About />} />
+          <Route path="/models/:slug" element={<ModelDetail />} />
           <Route path="/contact" element={<Contact />} />
           <Route path="/terms" element={<LegalPage />} />
           <Route path="/privacy" element={<LegalPage />} />

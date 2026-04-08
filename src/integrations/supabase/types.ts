@@ -445,6 +445,104 @@ export type Database = {
         }
         Relationships: []
       }
+      model_guides: {
+        Row: {
+          active: boolean
+          best_for_items: Json
+          best_for_line_ar: string
+          best_for_line_en: string
+          comparison_enabled: boolean
+          comparison_images: Json
+          comparison_model_ids: Json
+          created_at: string
+          featured: boolean
+          id: string
+          linked_model_id: string | null
+          main_image_url: string
+          name_ar: string
+          name_en: string
+          quality: string
+          short_description_ar: string
+          short_description_en: string
+          slug: string
+          sort_order: number
+          speed: string
+          subtitle_ar: string
+          subtitle_en: string
+          tags_ar: Json
+          tags_en: Json
+          title_ar: string
+          title_en: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          best_for_items?: Json
+          best_for_line_ar?: string
+          best_for_line_en?: string
+          comparison_enabled?: boolean
+          comparison_images?: Json
+          comparison_model_ids?: Json
+          created_at?: string
+          featured?: boolean
+          id?: string
+          linked_model_id?: string | null
+          main_image_url?: string
+          name_ar?: string
+          name_en?: string
+          quality?: string
+          short_description_ar?: string
+          short_description_en?: string
+          slug: string
+          sort_order?: number
+          speed?: string
+          subtitle_ar?: string
+          subtitle_en?: string
+          tags_ar?: Json
+          tags_en?: Json
+          title_ar?: string
+          title_en?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          best_for_items?: Json
+          best_for_line_ar?: string
+          best_for_line_en?: string
+          comparison_enabled?: boolean
+          comparison_images?: Json
+          comparison_model_ids?: Json
+          created_at?: string
+          featured?: boolean
+          id?: string
+          linked_model_id?: string | null
+          main_image_url?: string
+          name_ar?: string
+          name_en?: string
+          quality?: string
+          short_description_ar?: string
+          short_description_en?: string
+          slug?: string
+          sort_order?: number
+          speed?: string
+          subtitle_ar?: string
+          subtitle_en?: string
+          tags_ar?: Json
+          tags_en?: Json
+          title_ar?: string
+          title_en?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "model_guides_linked_model_id_fkey"
+            columns: ["linked_model_id"]
+            isOneToOne: false
+            referencedRelation: "models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       model_pricing_tiers: {
         Row: {
           actual_pixels: number | null
