@@ -13,7 +13,7 @@ export default function ModelDetail() {
   const { lang, isRTL } = useLanguage();
   const isAr = lang === 'ar';
   const { activeGuides, loading } = useModelGuides();
-  const { setActivePage, setSelectedModel } = useApp();
+  const { setActivePage, setSelectedModelId } = useApp();
   const { models } = useModels();
 
   if (loading) {
