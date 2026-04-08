@@ -12,6 +12,7 @@ import { WhyTakhayal } from '@/components/home/WhyTakhayal';
 import { FinalCTA } from '@/components/home/FinalCTA';
 import { ContinueWhereLeftOff } from '@/components/home/ContinueWhereLeftOff';
 import { WelcomeBack } from '@/components/home/WelcomeBack';
+import { ExploreModels } from '@/components/home/ExploreModels';
 import { QuickActions } from '@/components/home/QuickActions';
 import { Footer } from '@/components/layout/Footer';
 
@@ -128,6 +129,9 @@ export default function PortalHome() {
 
         {/* ═══ LOGGED-OUT: Why Takhayal ═══ */}
         {!isLoggedIn && <WhyTakhayal />}
+
+        {/* ═══ Explore Models ═══ */}
+        <ExploreModels />
 
         {/* ── Templates (both modes) ── */}
         <section className="mb-12">
