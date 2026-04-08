@@ -51,13 +51,24 @@ const TABS: { id: Tab; label: string }[] = [
 
 function detectRatio(w: number, h: number): string {
   const r = w / h;
-  if (Math.abs(r - 1) < 0.08) return '1:1';
-  if (Math.abs(r - 16 / 9) < 0.15) return '16:9';
-  if (Math.abs(r - 9 / 16) < 0.08) return '9:16';
-  if (Math.abs(r - 4 / 3) < 0.1) return '4:3';
-  if (Math.abs(r - 3 / 4) < 0.08) return '3:4';
-  if (r > 1) return '16:9';
-  return '9:16';
+  const candidates: [number, string][] = [
+    [1,       '1:1'],
+    [16 / 9,  '16:9'],
+    [9 / 16,  '9:16'],
+    [4 / 3,   '4:3'],
+    [3 / 4,   '3:4'],
+    [4 / 5,   '4:5'],
+    [5 / 4,   '5:4'],
+    [2 / 3,   '2:3'],
+    [3 / 2,   '3:2'],
+  ];
+  let best = '1:1';
+  let bestDiff = Infinity;
+  for (const [target, label] of candidates) {
+    const diff = Math.abs(r - target);
+    if (diff < bestDiff) { bestDiff = diff; best = label; }
+  }
+  return best;
 }
 
 export default function AdminCommunity() {
