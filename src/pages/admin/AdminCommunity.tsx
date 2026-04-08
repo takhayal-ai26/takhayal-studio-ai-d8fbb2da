@@ -389,7 +389,19 @@ export default function AdminCommunity() {
               </label>
               <div className="flex-1 space-y-1">
                 <label className="text-xs text-muted-foreground">Or paste image URL</label>
-                <Input value={testForm.image_url} onChange={e => setTestForm({ ...testForm, image_url: e.target.value })} placeholder="https://..." className="h-9 text-sm" />
+                <Input value={testForm.image_url} onChange={e => {
+                  const url = e.target.value;
+                  setTestForm(prev => ({ ...prev, image_url: url }));
+                  if (url.match(/^https?:\/\/.+\.(jpg|jpeg|png|webp|gif)/i)) {
+                    const img = new window.Image();
+                    img.crossOrigin = 'anonymous';
+                    img.onload = () => {
+                      const ratio = detectRatio(img.naturalWidth, img.naturalHeight);
+                      setTestForm(prev => ({ ...prev, ratio }));
+                    };
+                    img.src = url;
+                  }
+                }} placeholder="https://..." className="h-9 text-sm" />
               </div>
             </div>
           </div>
