@@ -34,8 +34,7 @@ export default function ModelDetail() {
 
   const handleStartCreating = () => {
     if (guide.linked_model_id) {
-      const m = models.find(md => md.id === guide.linked_model_id);
-      if (m) setSelectedModel(m);
+      setSelectedModelId(guide.linked_model_id);
     }
     setActivePage('canvas');
     navigate('/studio');
