@@ -273,7 +273,7 @@ export default function Video() {
               onClick={() => fileInputRef.current?.click()}
               className={cn(
                 "relative rounded-xl border-2 border-dashed cursor-pointer flex flex-col items-center justify-center py-6 gap-2 transition-all",
-                isDragging ? "border-primary/50 bg-primary/5" : "border-border/50 bg-card hover:bg-accent/30",
+                isDragging ? "border-[#F03E1B]/50 bg-[#F03E1B]/5" : "border-zinc-700/40 bg-zinc-800 hover:bg-zinc-700/50",
                 uploadedImage && "border-0 p-0"
               )}
             >
@@ -307,7 +307,7 @@ export default function Video() {
               )}
             </div>
             {/* End frame (placeholder for future) */}
-            <div className="rounded-xl border-2 border-dashed border-border/50 bg-card flex flex-col items-center justify-center py-6 gap-2 opacity-50 cursor-not-allowed">
+            <div className="rounded-xl border-2 border-dashed border-zinc-700/40 bg-zinc-800 flex flex-col items-center justify-center py-6 gap-2 opacity-50 cursor-not-allowed">
               <span className="text-[10px] text-muted-foreground/50 font-medium absolute-ish">
                 {isAr ? 'اختياري' : 'Optional'}
               </span>
@@ -327,7 +327,7 @@ export default function Video() {
         )}
 
         {/* 3. Prompt area */}
-        <div className="rounded-xl bg-card border border-border/50 overflow-hidden">
+        <div className="rounded-xl bg-zinc-800 border border-zinc-700/40 overflow-hidden">
           <textarea
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
@@ -340,7 +340,7 @@ export default function Video() {
         {/* 4. Model info row */}
         <button
           onClick={() => setShowModelPicker(true)}
-          className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-card border border-border/50 hover:bg-accent/30 transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-zinc-800 border border-zinc-700/40 hover:bg-zinc-700/50 transition-colors"
         >
           <div>
             <p className="text-[11px] text-muted-foreground font-medium">{isAr ? 'النموذج' : 'Model'}</p>
