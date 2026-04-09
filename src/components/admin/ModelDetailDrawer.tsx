@@ -51,6 +51,20 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
     }
   }, [model]);
 
+  const handlePreviewUpload = useCallback(async (file: File) => {
+    setUploadingPreview(true);
+    const path = `model-previews/${model!.id}-${Date.now()}.${file.name.split('.').pop()}`;
+    const { error } = await supabase.storage.from('model-guide-images').upload(path, file, { upsert: true });
+    if (error) {
+      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+    } else {
+      const { data: { publicUrl } } = supabase.storage.from('model-guide-images').getPublicUrl(path);
+      setForm(f => ({ ...f, preview_image_url: publicUrl }));
+      toast({ title: 'Image uploaded' });
+    }
+    setUploadingPreview(false);
+  }, [model]);
+
   if (!model) return null;
 
   const handleSave = async () => {
