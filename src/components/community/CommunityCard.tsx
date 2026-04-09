@@ -21,6 +21,7 @@ export const CommunityCard = memo(function CommunityCard({ post, isAr, isMobile,
         alt={post.prompt || ''}
         className="w-full block transition-transform duration-500 group-hover:scale-[1.03]"
         loading="lazy"
+        decoding="async"
       />
 
       {/* Hover overlay — desktop only */}

@@ -152,8 +152,20 @@ export default function Community() {
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-[60vh]" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
-        <Loader2 size={32} className="text-primary animate-spin" />
+      <div className="flex-1 pb-24 md:pb-6" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
+        <section className="text-center px-5 pt-10 pb-6">
+          <div className="h-8 w-48 bg-muted animate-pulse rounded-lg mx-auto mb-2" />
+          <div className="h-4 w-72 bg-muted animate-pulse rounded mx-auto" />
+        </section>
+        <div className="max-w-7xl mx-auto px-3 md:px-6">
+          <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div key={i} className="mb-3 break-inside-avoid">
+                <div className="rounded-2xl bg-muted animate-pulse" style={{ aspectRatio: i % 3 === 0 ? '3/4' : i % 3 === 1 ? '1/1' : '4/3' }} />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
