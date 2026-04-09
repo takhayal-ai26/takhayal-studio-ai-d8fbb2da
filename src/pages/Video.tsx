@@ -216,7 +216,7 @@ export default function Video() {
           onClick={() => setOpen(!open)}
           className={cn(
             "flex items-center gap-2 px-3.5 py-2 rounded-xl text-[13px] font-semibold transition-all",
-            "bg-card hover:bg-accent/60 border border-border/60 text-foreground",
+            "bg-card hover:bg-accent/60 text-foreground",
             open && "ring-1 ring-primary/40"
           )}
         >
@@ -226,7 +226,7 @@ export default function Video() {
         </button>
 
         {open && (
-          <div className="absolute bottom-full left-0 mb-2 w-40 rounded-xl border border-border/60 bg-popover/98 backdrop-blur-xl shadow-lg shadow-black/10 dark:shadow-black/30 p-1 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
+          <div className="absolute bottom-full left-0 mb-2 w-40 rounded-xl bg-popover/98 backdrop-blur-xl shadow-xl shadow-black/10 dark:shadow-black/40 p-1 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
             <p className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
             {options.map(opt => (
               <button
@@ -341,7 +341,7 @@ export default function Video() {
         )}
 
         {/* 3. Prompt area */}
-        <div className="rounded-xl bg-card border border-border/60 overflow-hidden focus-within:ring-1 focus-within:ring-primary/30 transition-shadow">
+        <div className="rounded-xl bg-card overflow-hidden focus-within:ring-1 focus-within:ring-primary/30 transition-shadow">
           <textarea
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
@@ -355,7 +355,7 @@ export default function Video() {
         <button
           ref={modelRowRef}
           onClick={() => setShowModelPicker(true)}
-          className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-card border border-border/60 hover:bg-accent/40 transition-colors group"
+          className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-card hover:bg-accent/40 transition-colors group"
         >
           <div>
             <p className="text-[11px] text-muted-foreground font-medium">{isAr ? 'النموذج' : 'Model'}</p>
@@ -391,7 +391,7 @@ export default function Video() {
       </div>
 
       {/* 6. Generate button — sticky at bottom */}
-      <div className="p-5 pt-3 border-t border-border/40">
+      <div className="p-5 pt-4">
         <button
           onClick={handleGenerate}
           disabled={isGenerating || !prompt.trim() || isUploading}
@@ -428,7 +428,7 @@ export default function Video() {
         ].map(({ step, icon: Icon, title, desc }) => (
           <div
             key={step}
-            className="relative rounded-2xl bg-card/80 backdrop-blur border border-border/40 p-8 text-center transition-all hover:border-primary/30 group overflow-hidden hover:shadow-lg hover:shadow-primary/5"
+            className="relative rounded-2xl bg-card/80 backdrop-blur p-8 text-center transition-all group overflow-hidden hover:shadow-lg hover:shadow-primary/5"
           >
             <p className="absolute top-3 left-4 text-5xl font-black text-primary/10 select-none">{step}</p>
             <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 mt-4">
@@ -516,13 +516,13 @@ export default function Video() {
   return (
     <div className="flex-1 flex" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
       {/* LEFT PANEL */}
-      <aside className="w-[280px] flex-shrink-0 border-e border-border/40 bg-popover/95 backdrop-blur-xl h-[calc(100vh-3.5rem-var(--banner-h,0px))] sticky top-[calc(3.5rem+var(--banner-h,0px))] overflow-hidden flex flex-col">
+      <aside className="w-[280px] flex-shrink-0 bg-popover/95 backdrop-blur-xl h-[calc(100vh-3.5rem-var(--banner-h,0px))] sticky top-[calc(3.5rem+var(--banner-h,0px))] overflow-hidden flex flex-col shadow-[2px_0_16px_-4px_rgba(0,0,0,0.08)] dark:shadow-[2px_0_20px_-4px_rgba(0,0,0,0.25)]">
         <CreationControls />
       </aside>
 
       {/* CENTER PANEL */}
       <main className="flex-1 flex flex-col min-w-0 bg-background">
-        <div className="flex items-center justify-between px-6 py-3 border-b border-border/40">
+        <div className="flex items-center justify-between px-6 pt-4 pb-3">
           <div className="flex items-center gap-1">
             <button
               onClick={() => setActiveTab('history')}
@@ -633,7 +633,7 @@ function ModelPickerDropdown({ open, onOpenChange, models, selectedModelId, onSe
       <div
         ref={panelRef}
         onClick={e => e.stopPropagation()}
-        className="absolute left-[280px] top-[calc(3.5rem+var(--banner-h,0px)+8px)] w-[320px] max-h-[min(520px,calc(100vh-6rem))] rounded-xl border border-border/60 bg-popover/98 backdrop-blur-xl shadow-2xl shadow-black/15 dark:shadow-black/40 flex flex-col animate-in fade-in slide-in-from-left-2 duration-200"
+        className="absolute left-[280px] top-[calc(3.5rem+var(--banner-h,0px)+8px)] w-[320px] max-h-[min(520px,calc(100vh-6rem))] rounded-xl bg-popover/98 backdrop-blur-xl shadow-2xl shadow-black/15 dark:shadow-black/40 flex flex-col animate-in fade-in slide-in-from-left-2 duration-200"
         style={isAr ? { left: 'auto', right: '280px' } : undefined}
       >
         <PickerContent
@@ -662,8 +662,8 @@ const PickerContent = ({ ref, models, selectedModelId, onSelect, search, onSearc
 }) => (
   <>
     {/* Search */}
-    <div className="p-3 border-b border-border/40">
-      <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-card border border-border/50">
+    <div className="p-3 pb-2">
+      <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-card/80">
         <Search size={14} className="text-muted-foreground/50 flex-shrink-0" />
         <input
           ref={ref}
