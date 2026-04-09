@@ -1,0 +1,1 @@
+ALTER TABLE public.models ADD COLUMN IF NOT EXISTS preview_image_url text DEFAULT '';

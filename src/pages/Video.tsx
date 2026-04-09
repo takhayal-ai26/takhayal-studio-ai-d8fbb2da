@@ -29,6 +29,7 @@ interface VideoModel {
   best_for: string | null;
   best_for_ar: string | null;
   cost_per_run: number | null;
+  preview_image_url: string;
 }
 
 interface VideoTier {
@@ -65,6 +66,7 @@ export default function Video() {
       supports_image_to_video: m.supports_image_to_video || false,
       is_default: m.is_default, speed: m.speed, best_for: m.best_for,
       best_for_ar: m.best_for_ar, cost_per_run: m.cost_per_run ? Number(m.cost_per_run) : null,
+      preview_image_url: m.preview_image_url || '',
     }))
   , [models]);
 
@@ -81,6 +83,7 @@ export default function Video() {
   const [isDragging, setIsDragging] = useState(false);
   const [modelSearch, setModelSearch] = useState('');
   const [mobileCreateOpen, setMobileCreateOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'how' | 'history'>('how');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-select default model
@@ -205,12 +208,12 @@ export default function Video() {
   }) => (
     <Popover>
       <PopoverTrigger asChild>
-        <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-card hover:bg-accent/50 border border-border/50 transition-all text-[13px] font-semibold text-foreground">
+        <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700/80 border border-zinc-700/40 transition-all text-[13px] font-semibold text-foreground dark:text-white">
           <Icon size={14} className="text-muted-foreground" />
           {value}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-44 p-1.5 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-xl" align="start" sideOffset={6}>
+      <PopoverContent className="w-44 p-1.5 rounded-xl border border-zinc-700/40 bg-zinc-900/95 backdrop-blur-xl" align="start" sideOffset={6}>
         {options.map(opt => (
           <button
             key={opt}
@@ -218,12 +221,12 @@ export default function Video() {
             className={cn(
               "w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-[13px] font-medium transition-colors",
               opt === value
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                ? "bg-zinc-800 text-[#F03E1B]"
+                : "text-zinc-400 hover:bg-zinc-800/60 hover:text-foreground"
             )}
           >
             {opt}
-            {opt === value && <Check size={14} className="text-foreground" />}
+            {opt === value && <Check size={14} className="text-[#F03E1B]" />}
           </button>
         ))}
       </PopoverContent>
@@ -234,27 +237,28 @@ export default function Video() {
   const CreationControls = () => (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto space-y-5 p-5">
-        {/* 1. Model Selector Card */}
+        {/* 1. Model Selector Card — entire card clickable */}
         <div>
           <button
             onClick={() => setShowModelPicker(true)}
-            className="w-full rounded-xl overflow-hidden relative group"
+            className="w-full rounded-xl overflow-hidden relative group cursor-pointer transition-all hover:brightness-110"
+            style={{ boxShadow: 'none' }}
+            onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 0 0 1px rgba(240,62,27,0.4)')}
+            onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
           >
             {/* Thumbnail area */}
-            <div className="aspect-video bg-gradient-to-br from-primary/20 via-card to-card relative">
+            <div className="aspect-video relative overflow-hidden">
+              {currentModel?.preview_image_url ? (
+                <img src={currentModel.preview_image_url} alt={currentModel.model_name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
+                  <span className="text-[#F03E1B] font-bold text-lg">{currentModel?.model_name}</span>
+                </div>
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
               <div className="absolute bottom-3 left-3 right-3">
-                <p className="text-[11px] font-black uppercase tracking-widest text-primary">
-                  {isAr ? 'عام' : 'GENERAL'}
-                </p>
-                <p className="text-[14px] font-bold text-white mt-0.5">{currentModel?.model_name}</p>
+                <p className="text-[14px] font-bold text-white">{currentModel?.model_name}</p>
               </div>
-              <button
-                className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/15 backdrop-blur-md text-white text-[11px] font-semibold hover:bg-white/25 transition-colors"
-                onClick={(e) => { e.stopPropagation(); setShowModelPicker(true); }}
-              >
-                <Pencil size={11} /> {isAr ? 'تغيير' : 'Change'}
-              </button>
             </div>
           </button>
         </div>
@@ -270,7 +274,7 @@ export default function Video() {
               onClick={() => fileInputRef.current?.click()}
               className={cn(
                 "relative rounded-xl border-2 border-dashed cursor-pointer flex flex-col items-center justify-center py-6 gap-2 transition-all",
-                isDragging ? "border-primary/50 bg-primary/5" : "border-border/50 bg-card hover:bg-accent/30",
+                isDragging ? "border-[#F03E1B]/50 bg-[#F03E1B]/5" : "border-zinc-700/40 bg-zinc-800 hover:bg-zinc-700/50",
                 uploadedImage && "border-0 p-0"
               )}
             >
@@ -304,7 +308,7 @@ export default function Video() {
               )}
             </div>
             {/* End frame (placeholder for future) */}
-            <div className="rounded-xl border-2 border-dashed border-border/50 bg-card flex flex-col items-center justify-center py-6 gap-2 opacity-50 cursor-not-allowed">
+            <div className="rounded-xl border-2 border-dashed border-zinc-700/40 bg-zinc-800 flex flex-col items-center justify-center py-6 gap-2 opacity-50 cursor-not-allowed">
               <span className="text-[10px] text-muted-foreground/50 font-medium absolute-ish">
                 {isAr ? 'اختياري' : 'Optional'}
               </span>
@@ -324,7 +328,7 @@ export default function Video() {
         )}
 
         {/* 3. Prompt area */}
-        <div className="rounded-xl bg-card border border-border/50 overflow-hidden">
+        <div className="rounded-xl bg-zinc-800 border border-zinc-700/40 overflow-hidden">
           <textarea
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
@@ -337,7 +341,7 @@ export default function Video() {
         {/* 4. Model info row */}
         <button
           onClick={() => setShowModelPicker(true)}
-          className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-card border border-border/50 hover:bg-accent/30 transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-zinc-800 border border-zinc-700/40 hover:bg-zinc-700/50 transition-colors"
         >
           <div>
             <p className="text-[11px] text-muted-foreground font-medium">{isAr ? 'النموذج' : 'Model'}</p>
@@ -370,14 +374,22 @@ export default function Video() {
       </div>
 
       {/* 6. Generate button — sticky at bottom */}
-      <div className="p-5 pt-3 border-t border-border/30">
+      <div className="p-5 pt-3 border-t border-zinc-800">
         <button
           onClick={handleGenerate}
           disabled={isGenerating || !prompt.trim() || isUploading}
-          className="w-full h-13 rounded-xl bg-primary text-primary-foreground text-[15px] font-bold flex items-center justify-center gap-2.5 hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
+          className={cn(
+            "w-full rounded-xl text-[16px] font-bold flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]",
+            (!prompt.trim() || isUploading)
+              ? "h-[52px] bg-zinc-700 text-zinc-500 cursor-not-allowed"
+              : "h-[52px] bg-[#F03E1B] text-white hover:brightness-110"
+          )}
+          style={prompt.trim() && !isUploading ? { boxShadow: '0 0 20px rgba(240,62,27,0.15)' } : undefined}
+          onMouseEnter={e => { if (prompt.trim() && !isUploading) e.currentTarget.style.boxShadow = '0 0 20px rgba(240,62,27,0.3)'; }}
+          onMouseLeave={e => { if (prompt.trim() && !isUploading) e.currentTarget.style.boxShadow = '0 0 20px rgba(240,62,27,0.15)'; }}
         >
           {isGenerating ? (
-            <div className="w-5 h-5 border-2 border-primary-foreground/40 border-t-primary-foreground rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
           ) : (
             <>
               {isAr ? 'توليد' : 'Generate'}
@@ -391,8 +403,8 @@ export default function Video() {
     </div>
   );
 
-  /* ─── Empty State for Center ─── */
-  const EmptyState = () => (
+  /* ─── How It Works State ─── */
+  const HowItWorksState = () => (
     <div className="flex-1 flex flex-col items-center justify-center px-6 py-16">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-2xl w-full mb-10">
         {[
@@ -400,27 +412,36 @@ export default function Video() {
           { step: '02', icon: Sparkles, title: isAr ? 'صف رؤيتك' : 'Describe your vision', desc: isAr ? 'اكتب وصفاً للفيديو الذي تريده' : 'Write a prompt for your video' },
           { step: '03', icon: Download, title: isAr ? 'أنشئ وحمّل' : 'Generate & download', desc: isAr ? 'شاهد النتيجة وحمّلها' : 'Watch your result and save it' },
         ].map(({ step, icon: Icon, title, desc }) => (
-          <div key={step} className="rounded-xl bg-card/50 backdrop-blur border border-border/30 p-5 text-center">
-            <p className="text-2xl font-black text-primary/25 mb-3">{step}</p>
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-3">
-              <Icon size={18} className="text-primary/60" />
+          <div
+            key={step}
+            className="relative rounded-2xl bg-zinc-800/60 backdrop-blur border border-zinc-700/30 p-8 text-center transition-all hover:border-[#F03E1B]/30 group overflow-hidden"
+            style={{ boxShadow: 'none' }}
+            onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 0 20px rgba(240,62,27,0.08)')}
+            onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
+          >
+            <p className="absolute top-3 left-4 text-5xl font-black text-[#F03E1B]/10 select-none">{step}</p>
+            <div className="w-12 h-12 rounded-xl bg-[#F03E1B]/10 flex items-center justify-center mx-auto mb-4 mt-4">
+              <Icon size={22} className="text-[#F03E1B]" />
             </div>
-            <p className="text-[13px] font-bold text-foreground mb-1">{title}</p>
-            <p className="text-[11px] text-muted-foreground leading-relaxed">{desc}</p>
+            <p className="text-[14px] font-bold text-foreground mb-1.5">{title}</p>
+            <p className="text-[12px] text-zinc-400 leading-relaxed">{desc}</p>
           </div>
         ))}
       </div>
-      <p className="text-[12px] text-muted-foreground/40">
+      <p className="text-[12px] text-zinc-500">
         {isAr ? 'الفيديوهات التي تنشئها ستظهر هنا' : 'Your generated videos will appear here'}
       </p>
     </div>
   );
 
-  /* ─── Right Panel (metadata) ─── */
-  const RightPanel = () => (
-    <div className="flex flex-col items-center justify-center h-full px-5">
-      <p className="text-[13px] text-muted-foreground/40 text-center">
-        {isAr ? 'اختر فيديو لمشاهدة التفاصيل' : 'Select a video to see details'}
+  /* ─── Empty History State ─── */
+  const EmptyHistoryState = () => (
+    <div className="flex-1 flex flex-col items-center justify-center px-6 py-16">
+      <h2 className="text-4xl font-bold text-zinc-600 mb-2">
+        {isAr ? 'أنشئ أول فيديو' : 'Generate your first video'}
+      </h2>
+      <p className="text-zinc-500">
+        {isAr ? 'إبداعاتك ستظهر هنا' : 'Your creations will appear here'}
       </p>
     </div>
   );
@@ -444,7 +465,7 @@ export default function Video() {
               </button>
             </div>
           </div>
-          <EmptyState />
+          <HowItWorksState />
         </div>
 
         {/* Floating create button */}
@@ -484,43 +505,43 @@ export default function Video() {
   /* ════════════════════════════════════════════ */
   /* ─── DESKTOP LAYOUT ─── */
   /* ════════════════════════════════════════════ */
+
   return (
     <div className="flex-1 flex" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
       {/* LEFT PANEL */}
-      <aside className="w-[280px] flex-shrink-0 border-e border-border/30 bg-background/95 backdrop-blur-xl h-[calc(100vh-3.5rem-var(--banner-h,0px))] sticky top-[calc(3.5rem+var(--banner-h,0px))] overflow-hidden flex flex-col">
+      <aside className="w-[280px] flex-shrink-0 border-e border-zinc-800 bg-zinc-900/95 backdrop-blur-xl h-[calc(100vh-3.5rem-var(--banner-h,0px))] sticky top-[calc(3.5rem+var(--banner-h,0px))] overflow-hidden flex flex-col">
         <CreationControls />
       </aside>
 
-      {/* CENTER PANEL */}
+      {/* CENTER PANEL — full width, no right panel */}
       <main className="flex-1 flex flex-col min-w-0 bg-background">
         {/* Top bar */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-border/30">
+        <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800">
           <div className="flex items-center gap-1">
-            <button className="px-3.5 py-1.5 rounded-lg text-[13px] font-semibold bg-accent text-foreground">
+            <button
+              onClick={() => setActiveTab('history')}
+              className={cn(
+                "px-3.5 py-1.5 rounded-lg text-[13px] font-semibold transition-colors",
+                activeTab === 'history' ? "bg-zinc-800 text-foreground" : "text-zinc-500 hover:text-foreground"
+              )}
+            >
               {isAr ? 'السجل' : 'History'}
             </button>
-            <button className="px-3.5 py-1.5 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <button
+              onClick={() => setActiveTab('how')}
+              className={cn(
+                "px-3.5 py-1.5 rounded-lg text-[13px] font-semibold transition-colors",
+                activeTab === 'how' ? "bg-zinc-800 text-foreground" : "text-zinc-500 hover:text-foreground"
+              )}
+            >
               {isAr ? 'كيف يعمل' : 'How it works'}
-            </button>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <button className="p-2 rounded-lg hover:bg-accent transition-colors">
-              <LayoutGrid size={15} className="text-muted-foreground" />
-            </button>
-            <button className="p-2 rounded-lg hover:bg-accent transition-colors">
-              <List size={15} className="text-muted-foreground" />
             </button>
           </div>
         </div>
         <div className="flex-1 overflow-y-auto">
-          <EmptyState />
+          {activeTab === 'how' ? <HowItWorksState /> : <EmptyHistoryState />}
         </div>
       </main>
-
-      {/* RIGHT PANEL */}
-      <aside className="w-[260px] flex-shrink-0 border-s border-border/30 bg-background/95 backdrop-blur-xl h-[calc(100vh-3.5rem-var(--banner-h,0px))] sticky top-[calc(3.5rem+var(--banner-h,0px))]">
-        <RightPanel />
-      </aside>
 
       {/* Model Picker Sheet */}
       <ModelPickerSheet
@@ -550,10 +571,10 @@ function ModelPickerSheet({ open, onOpenChange, models, selectedModelId, onSelec
 }) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-[380px] max-w-full p-0 border-s border-border/30 bg-popover/95 backdrop-blur-xl">
+      <SheetContent side="right" className="w-[360px] max-w-full p-0 border-s border-zinc-800 bg-zinc-900/95 backdrop-blur-xl">
         {/* Search */}
-        <div className="p-4 border-b border-border/30">
-          <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-card border border-border/50">
+        <div className="p-4 border-b border-zinc-800">
+          <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-zinc-800 border border-zinc-700/40">
             <Search size={15} className="text-muted-foreground/50 flex-shrink-0" />
             <input
               type="text"
@@ -587,15 +608,19 @@ function ModelPickerSheet({ open, onOpenChange, models, selectedModelId, onSelec
                 className={cn(
                   "w-full flex items-center gap-3.5 px-3.5 py-3 rounded-xl transition-all text-start",
                   isSelected
-                    ? "bg-accent"
-                    : "hover:bg-accent/50"
+                    ? "bg-zinc-800"
+                    : "hover:bg-zinc-800/60"
                 )}
               >
                 <div className={cn(
-                  "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
-                  isSelected ? "bg-primary/15" : "bg-muted/50"
+                  "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden",
+                  isSelected ? "bg-[#F03E1B]/15" : "bg-zinc-800"
                 )}>
-                  <Film size={16} className={isSelected ? "text-primary" : "text-muted-foreground"} />
+                  {model.preview_image_url ? (
+                    <img src={model.preview_image_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <Film size={16} className={isSelected ? "text-[#F03E1B]" : "text-zinc-500"} />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -606,19 +631,19 @@ function ModelPickerSheet({ open, onOpenChange, models, selectedModelId, onSelec
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     {maxQ && (
-                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <span className="flex items-center gap-1 text-[10px] text-zinc-500">
                         <Diamond size={9} /> {maxQ}
                       </span>
                     )}
                     {durRange && (
-                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <span className="flex items-center gap-1 text-[10px] text-zinc-500">
                         <Clock size={9} /> {durRange}
                       </span>
                     )}
                   </div>
                 </div>
                 {isSelected && (
-                  <Check size={16} className="text-primary flex-shrink-0" />
+                  <Check size={16} className="text-[#F03E1B] flex-shrink-0" />
                 )}
               </button>
             );

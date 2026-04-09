@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from '@/components/ui/sheet';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -8,8 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Save, X, Clock, DollarSign, Layers, Maximize, Settings2, Sparkles } from 'lucide-react';
+import { Save, X, Clock, DollarSign, Layers, Maximize, Settings2, Sparkles, Upload, Image } from 'lucide-react';
 import { toast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 import type { ModelRecord } from '@/hooks/useModels';
 
 interface Props {
@@ -22,6 +23,8 @@ interface Props {
 export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) {
   const [form, setForm] = useState<Partial<ModelRecord>>({});
   const [saving, setSaving] = useState(false);
+  const [uploadingPreview, setUploadingPreview] = useState(false);
+  const previewInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (model) {
@@ -43,8 +46,23 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
         supported_quality_tiers: model.supported_quality_tiers,
         pricing_mode: model.pricing_mode,
         supports_native_high_res: model.supports_native_high_res,
+        preview_image_url: (model as any).preview_image_url || '',
       });
     }
+  }, [model]);
+
+  const handlePreviewUpload = useCallback(async (file: File) => {
+    setUploadingPreview(true);
+    const path = `model-previews/${model!.id}-${Date.now()}.${file.name.split('.').pop()}`;
+    const { error } = await supabase.storage.from('model-guide-images').upload(path, file, { upsert: true });
+    if (error) {
+      toast({ title: 'Upload failed', description: error.message, variant: 'destructive' });
+    } else {
+      const { data: { publicUrl } } = supabase.storage.from('model-guide-images').getPublicUrl(path);
+      setForm(f => ({ ...f, preview_image_url: publicUrl }));
+      toast({ title: 'Image uploaded' });
+    }
+    setUploadingPreview(false);
   }, [model]);
 
   if (!model) return null;
@@ -169,6 +187,46 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
               All resolutions are native — no upscaling pipeline. Cost scales with resolution based on the pricing type.
             </p>
           </section>
+
+          <Separator />
+
+          {/* Preview Image (for video models) */}
+          {model.media_type === 'video' && (
+            <>
+              <section className="space-y-3">
+                <h3 className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5"><Image size={12} /> Preview Image</h3>
+                <input ref={previewInputRef} type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handlePreviewUpload(e.target.files[0]); }} />
+                {(form as any).preview_image_url ? (
+                  <div className="relative rounded-xl overflow-hidden border border-border/30">
+                    <img src={(form as any).preview_image_url} alt="Preview" className="w-full aspect-video object-cover" />
+                    <button
+                      onClick={() => setForm(f => ({ ...f, preview_image_url: '' }))}
+                      className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-black/80"
+                    >
+                      <X size={12} />
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => previewInputRef.current?.click()}
+                    disabled={uploadingPreview}
+                    className="w-full aspect-video rounded-2xl border-2 border-dashed border-zinc-600/50 bg-zinc-800/50 hover:border-primary hover:bg-zinc-800 flex flex-col items-center justify-center gap-2 transition-all cursor-pointer"
+                  >
+                    {uploadingPreview ? (
+                      <div className="w-5 h-5 border-2 border-muted-foreground/40 border-t-muted-foreground rounded-full animate-spin" />
+                    ) : (
+                      <>
+                        <Upload size={20} className="text-muted-foreground/50" />
+                        <span className="text-[12px] text-muted-foreground/60 font-medium">Drag & drop or click to upload</span>
+                        <span className="text-[10px] text-muted-foreground/40">Recommended: 16:9, min 1280×720</span>
+                      </>
+                    )}
+                  </button>
+                )}
+              </section>
+              <Separator />
+            </>
+          )}
 
           <Separator />
 
