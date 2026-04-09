@@ -192,6 +192,11 @@ export default function ModelDetail() {
   const { setActivePage, setSelectedModelId } = useApp();
   const { tiers, allTiers } = usePricingTiers();
 
+  // Scroll to top when navigating between model pages
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+  }, [slug]);
+
   if (loading) {
     return (
       <div className="flex-1 flex items-center justify-center min-h-screen">
