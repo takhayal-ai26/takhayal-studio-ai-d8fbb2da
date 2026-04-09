@@ -402,8 +402,8 @@ export default function Video() {
     </div>
   );
 
-  /* ─── Empty State for Center ─── */
-  const EmptyState = () => (
+  /* ─── How It Works State ─── */
+  const HowItWorksState = () => (
     <div className="flex-1 flex flex-col items-center justify-center px-6 py-16">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-2xl w-full mb-10">
         {[
@@ -411,27 +411,36 @@ export default function Video() {
           { step: '02', icon: Sparkles, title: isAr ? 'صف رؤيتك' : 'Describe your vision', desc: isAr ? 'اكتب وصفاً للفيديو الذي تريده' : 'Write a prompt for your video' },
           { step: '03', icon: Download, title: isAr ? 'أنشئ وحمّل' : 'Generate & download', desc: isAr ? 'شاهد النتيجة وحمّلها' : 'Watch your result and save it' },
         ].map(({ step, icon: Icon, title, desc }) => (
-          <div key={step} className="rounded-xl bg-card/50 backdrop-blur border border-border/30 p-5 text-center">
-            <p className="text-2xl font-black text-primary/25 mb-3">{step}</p>
-            <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center mx-auto mb-3">
-              <Icon size={18} className="text-primary/60" />
+          <div
+            key={step}
+            className="relative rounded-2xl bg-zinc-800/60 backdrop-blur border border-zinc-700/30 p-8 text-center transition-all hover:border-[#F03E1B]/30 group overflow-hidden"
+            style={{ boxShadow: 'none' }}
+            onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 0 20px rgba(240,62,27,0.08)')}
+            onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
+          >
+            <p className="absolute top-3 left-4 text-5xl font-black text-[#F03E1B]/10 select-none">{step}</p>
+            <div className="w-12 h-12 rounded-xl bg-[#F03E1B]/10 flex items-center justify-center mx-auto mb-4 mt-4">
+              <Icon size={22} className="text-[#F03E1B]" />
             </div>
-            <p className="text-[13px] font-bold text-foreground mb-1">{title}</p>
-            <p className="text-[11px] text-muted-foreground leading-relaxed">{desc}</p>
+            <p className="text-[14px] font-bold text-foreground mb-1.5">{title}</p>
+            <p className="text-[12px] text-zinc-400 leading-relaxed">{desc}</p>
           </div>
         ))}
       </div>
-      <p className="text-[12px] text-muted-foreground/40">
+      <p className="text-[12px] text-zinc-500">
         {isAr ? 'الفيديوهات التي تنشئها ستظهر هنا' : 'Your generated videos will appear here'}
       </p>
     </div>
   );
 
-  /* ─── Right Panel (metadata) ─── */
-  const RightPanel = () => (
-    <div className="flex flex-col items-center justify-center h-full px-5">
-      <p className="text-[13px] text-muted-foreground/40 text-center">
-        {isAr ? 'اختر فيديو لمشاهدة التفاصيل' : 'Select a video to see details'}
+  /* ─── Empty History State ─── */
+  const EmptyHistoryState = () => (
+    <div className="flex-1 flex flex-col items-center justify-center px-6 py-16">
+      <h2 className="text-4xl font-bold text-zinc-600 mb-2">
+        {isAr ? 'أنشئ أول فيديو' : 'Generate your first video'}
+      </h2>
+      <p className="text-zinc-500">
+        {isAr ? 'إبداعاتك ستظهر هنا' : 'Your creations will appear here'}
       </p>
     </div>
   );
