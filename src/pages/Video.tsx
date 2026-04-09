@@ -29,6 +29,7 @@ interface VideoModel {
   best_for: string | null;
   best_for_ar: string | null;
   cost_per_run: number | null;
+  preview_image_url: string;
 }
 
 interface VideoTier {
