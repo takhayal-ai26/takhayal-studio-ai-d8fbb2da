@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, X, Coins, Play, Film, Clock, MonitorSmartphone, ChevronRight, Image, Sparkles, Pencil, Search, Check, Info, LayoutGrid, List, Download, Diamond, ImageIcon, ChevronDown } from 'lucide-react';
+import { X, Play, Film, Clock, MonitorSmartphone, ChevronRight, Image, Sparkles, Search, Check, Download, Diamond, ChevronDown } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useModels } from '@/hooks/useModels';
