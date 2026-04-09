@@ -31,7 +31,23 @@ export function ExploreModels() {
     scrollRef.current?.scrollBy({ left: dir * 280, behavior: 'smooth' });
   };
 
-  if (loading || featuredGuides.length === 0) return null;
+  if (!loading && featuredGuides.length === 0) return null;
+
+  if (loading) {
+    return (
+      <section className="my-8">
+        <div className="mb-5">
+          <div className="h-9 w-56 bg-muted animate-pulse rounded-lg mb-2" />
+          <div className="h-4 w-72 bg-muted animate-pulse rounded" />
+        </div>
+        <div className="flex gap-4 overflow-hidden -mx-5 px-5">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <div key={i} className="flex-shrink-0 w-[220px] md:w-[260px] aspect-square rounded-2xl bg-muted animate-pulse" />
+          ))}
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="my-8">

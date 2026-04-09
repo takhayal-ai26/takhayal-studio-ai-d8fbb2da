@@ -58,8 +58,12 @@ export function TemplatesView() {
 
       <div className="px-4 md:px-10">
         {loading ? (
-          <div className="py-20 text-center">
-            <p className="text-sm text-muted-foreground/50">Loading templates...</p>
+          <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-4 gap-3 [column-fill:_balance]">
+            {Array.from({ length: 8 }).map((_, i) => (
+              <div key={i} className="break-inside-avoid mb-2">
+                <div className="rounded-2xl overflow-hidden bg-muted animate-pulse" style={{ aspectRatio: i % 2 === 0 ? '3/4' : '1/1' }} />
+              </div>
+            ))}
           </div>
         ) : (
           <section className="pt-4 pb-10">
@@ -83,7 +87,9 @@ export function TemplatesView() {
   );
 }
 
-function TemplateCard({
+import { memo } from 'react';
+
+const TemplateCard = memo(function TemplateCard({
   tpl,
   onUse,
   isRTL,
@@ -106,8 +112,8 @@ function TemplateCard({
         <img
           src={tpl.image}
           alt={tpl.name}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
           loading="lazy"
+          decoding="async"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         <h3 className="absolute bottom-3 left-3 right-3 font-semibold text-white leading-tight drop-shadow-lg text-lg">
@@ -121,4 +127,4 @@ function TemplateCard({
       </div>
     </button>
   );
-}
+});
