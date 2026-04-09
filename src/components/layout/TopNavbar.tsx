@@ -94,12 +94,11 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
   };
 
   const isActive = (item: typeof navItemDefs[0]) => {
-    if (item.studioPage) return location.pathname === '/studio' && activePage === item.studioPage;
+    if (item.route === '/home') return location.pathname === '/' || location.pathname === '/home';
     return location.pathname === item.route || (item.route !== '/' && location.pathname.startsWith(item.route));
   };
 
   const handleNav = (item: typeof navItemDefs[0]) => {
-    if (item.studioPage) setActivePage(item.studioPage);
     navigate(item.route);
   };
 
