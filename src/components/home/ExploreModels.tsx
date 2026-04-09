@@ -103,12 +103,7 @@ export function ExploreModels() {
                     <div className="absolute inset-0 bg-[#F03E1B]/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
 
                     <div className="absolute bottom-0 left-0 right-0 p-4">
-                      {((isAr ? guide.tags_ar : guide.tags_en) || []).slice(0, 1).map((tag, i) => (
-                        <span key={i} className="inline-block text-[10px] font-medium text-[#F03E1B] bg-[#F03E1B]/10 border border-[#F03E1B]/20 rounded-full px-2.5 py-0.5 mb-2">
-                          {tag}
-                        </span>
-                      ))}
-                      <h3 className={`text-white font-bold leading-tight ${nameFontSize}`}>
+                      <h3 className="text-white font-extrabold leading-tight text-[22px] md:text-[26px] drop-shadow-md">
                         {name}
                       </h3>
                       <p className="text-white/60 text-[12px] mt-1 line-clamp-1">
