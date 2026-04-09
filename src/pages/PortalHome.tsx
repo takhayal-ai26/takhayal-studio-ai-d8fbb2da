@@ -130,8 +130,7 @@ export default function PortalHome() {
         {/* ═══ LOGGED-OUT: Why Takhayal ═══ */}
         {!isLoggedIn && <WhyTakhayal />}
 
-        {/* ═══ Explore Models ═══ */}
-        <ExploreModels />
+        {/* Explore Models moved below templates */}
 
         {/* ── Templates (both modes) ── */}
         <section className="mb-12">
@@ -176,6 +175,9 @@ export default function PortalHome() {
             </button>
           </div>
         </section>
+
+        {/* ═══ Explore Models — between templates and community ═══ */}
+        <ExploreModels />
 
         {/* ═══ LOGGED-OUT: Testimonials ═══ */}
         {!isLoggedIn && (
