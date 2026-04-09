@@ -207,12 +207,12 @@ export default function Video() {
   }) => (
     <Popover>
       <PopoverTrigger asChild>
-        <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-card hover:bg-accent/50 border border-border/50 transition-all text-[13px] font-semibold text-foreground">
+        <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700/80 border border-zinc-700/40 transition-all text-[13px] font-semibold text-foreground dark:text-white">
           <Icon size={14} className="text-muted-foreground" />
           {value}
         </button>
       </PopoverTrigger>
-      <PopoverContent className="w-44 p-1.5 rounded-xl border border-border/50 bg-popover/95 backdrop-blur-xl" align="start" sideOffset={6}>
+      <PopoverContent className="w-44 p-1.5 rounded-xl border border-zinc-700/40 bg-zinc-900/95 backdrop-blur-xl" align="start" sideOffset={6}>
         {options.map(opt => (
           <button
             key={opt}
@@ -220,12 +220,12 @@ export default function Video() {
             className={cn(
               "w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-[13px] font-medium transition-colors",
               opt === value
-                ? "bg-accent text-foreground"
-                : "text-muted-foreground hover:bg-accent/50 hover:text-foreground"
+                ? "bg-zinc-800 text-[#F03E1B]"
+                : "text-zinc-400 hover:bg-zinc-800/60 hover:text-foreground"
             )}
           >
             {opt}
-            {opt === value && <Check size={14} className="text-foreground" />}
+            {opt === value && <Check size={14} className="text-[#F03E1B]" />}
           </button>
         ))}
       </PopoverContent>
@@ -236,27 +236,28 @@ export default function Video() {
   const CreationControls = () => (
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-y-auto space-y-5 p-5">
-        {/* 1. Model Selector Card */}
+        {/* 1. Model Selector Card — entire card clickable */}
         <div>
           <button
             onClick={() => setShowModelPicker(true)}
-            className="w-full rounded-xl overflow-hidden relative group"
+            className="w-full rounded-xl overflow-hidden relative group cursor-pointer transition-all hover:brightness-110"
+            style={{ boxShadow: 'none' }}
+            onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 0 0 1px rgba(240,62,27,0.4)')}
+            onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
           >
             {/* Thumbnail area */}
-            <div className="aspect-video bg-gradient-to-br from-primary/20 via-card to-card relative">
+            <div className="aspect-video relative overflow-hidden">
+              {currentModel?.preview_image_url ? (
+                <img src={currentModel.preview_image_url} alt={currentModel.model_name} className="w-full h-full object-cover" />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
+                  <span className="text-[#F03E1B] font-bold text-lg">{currentModel?.model_name}</span>
+                </div>
+              )}
               <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
               <div className="absolute bottom-3 left-3 right-3">
-                <p className="text-[11px] font-black uppercase tracking-widest text-primary">
-                  {isAr ? 'عام' : 'GENERAL'}
-                </p>
-                <p className="text-[14px] font-bold text-white mt-0.5">{currentModel?.model_name}</p>
+                <p className="text-[14px] font-bold text-white">{currentModel?.model_name}</p>
               </div>
-              <button
-                className="absolute top-2.5 right-2.5 flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/15 backdrop-blur-md text-white text-[11px] font-semibold hover:bg-white/25 transition-colors"
-                onClick={(e) => { e.stopPropagation(); setShowModelPicker(true); }}
-              >
-                <Pencil size={11} /> {isAr ? 'تغيير' : 'Change'}
-              </button>
             </div>
           </button>
         </div>
