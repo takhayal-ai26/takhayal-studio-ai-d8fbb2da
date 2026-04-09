@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import type { CommunityPost } from '@/pages/Community';
 
 interface CommunityCardProps {
@@ -7,7 +8,7 @@ interface CommunityCardProps {
   onTap: (post: CommunityPost) => void;
 }
 
-export function CommunityCard({ post, isAr, isMobile, onTap }: CommunityCardProps) {
+export const CommunityCard = memo(function CommunityCard({ post, isAr, isMobile, onTap }: CommunityCardProps) {
   const creatorInitial = post.creator_name?.charAt(0)?.toUpperCase() || '?';
 
   return (
