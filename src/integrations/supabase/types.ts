@@ -697,6 +697,7 @@ export type Database = {
           media_type: string
           model_name: string
           notes: string | null
+          preview_image_url: string | null
           pricing_mode: string
           provider_id: string | null
           provider_name: string
@@ -735,6 +736,7 @@ export type Database = {
           media_type?: string
           model_name: string
           notes?: string | null
+          preview_image_url?: string | null
           pricing_mode?: string
           provider_id?: string | null
           provider_name?: string
@@ -773,6 +775,7 @@ export type Database = {
           media_type?: string
           model_name?: string
           notes?: string | null
+          preview_image_url?: string | null
           pricing_mode?: string
           provider_id?: string | null
           provider_name?: string
