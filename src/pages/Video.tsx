@@ -608,15 +608,19 @@ function ModelPickerSheet({ open, onOpenChange, models, selectedModelId, onSelec
                 className={cn(
                   "w-full flex items-center gap-3.5 px-3.5 py-3 rounded-xl transition-all text-start",
                   isSelected
-                    ? "bg-accent"
-                    : "hover:bg-accent/50"
+                    ? "bg-zinc-800"
+                    : "hover:bg-zinc-800/60"
                 )}
               >
                 <div className={cn(
-                  "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0",
-                  isSelected ? "bg-primary/15" : "bg-muted/50"
+                  "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden",
+                  isSelected ? "bg-[#F03E1B]/15" : "bg-zinc-800"
                 )}>
-                  <Film size={16} className={isSelected ? "text-primary" : "text-muted-foreground"} />
+                  {model.preview_image_url ? (
+                    <img src={model.preview_image_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <Film size={16} className={isSelected ? "text-[#F03E1B]" : "text-zinc-500"} />
+                  )}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -627,19 +631,19 @@ function ModelPickerSheet({ open, onOpenChange, models, selectedModelId, onSelec
                   </div>
                   <div className="flex items-center gap-2 mt-0.5">
                     {maxQ && (
-                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <span className="flex items-center gap-1 text-[10px] text-zinc-500">
                         <Diamond size={9} /> {maxQ}
                       </span>
                     )}
                     {durRange && (
-                      <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                      <span className="flex items-center gap-1 text-[10px] text-zinc-500">
                         <Clock size={9} /> {durRange}
                       </span>
                     )}
                   </div>
                 </div>
                 {isSelected && (
-                  <Check size={16} className="text-primary flex-shrink-0" />
+                  <Check size={16} className="text-[#F03E1B] flex-shrink-0" />
                 )}
               </button>
             );
