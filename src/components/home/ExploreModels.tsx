@@ -38,11 +38,7 @@ export function ExploreModels() {
       <div className="flex items-end justify-between mb-5">
         <div>
           <h2 className="typo-heading-section font-extrabold text-4xl">
-            {isAr ? (
-              <>استكشف <span className="border-b-2 border-[#F03E1B]/60">النماذج</span></>
-            ) : (
-              <>Explore our <span className="border-b-2 border-[#F03E1B]/60">models</span></>
-            )}
+            {isAr ? 'استكشف النماذج' : 'Explore our models'}
           </h2>
           <p className="text-[13px] text-muted-foreground mt-1.5">
             {isAr ? 'محركات الذكاء الاصطناعي التي تشغّل إبداعاتك' : 'Powerful AI engines behind your creations'}
