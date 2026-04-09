@@ -373,14 +373,22 @@ export default function Video() {
       </div>
 
       {/* 6. Generate button — sticky at bottom */}
-      <div className="p-5 pt-3 border-t border-border/30">
+      <div className="p-5 pt-3 border-t border-zinc-800">
         <button
           onClick={handleGenerate}
           disabled={isGenerating || !prompt.trim() || isUploading}
-          className="w-full h-13 rounded-xl bg-primary text-primary-foreground text-[15px] font-bold flex items-center justify-center gap-2.5 hover:brightness-110 transition-all disabled:opacity-40 disabled:cursor-not-allowed active:scale-[0.98]"
+          className={cn(
+            "w-full rounded-xl text-[16px] font-bold flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]",
+            (!prompt.trim() || isUploading)
+              ? "h-[52px] bg-zinc-700 text-zinc-500 cursor-not-allowed"
+              : "h-[52px] bg-[#F03E1B] text-white hover:brightness-110"
+          )}
+          style={prompt.trim() && !isUploading ? { boxShadow: '0 0 20px rgba(240,62,27,0.15)' } : undefined}
+          onMouseEnter={e => { if (prompt.trim() && !isUploading) e.currentTarget.style.boxShadow = '0 0 20px rgba(240,62,27,0.3)'; }}
+          onMouseLeave={e => { if (prompt.trim() && !isUploading) e.currentTarget.style.boxShadow = '0 0 20px rgba(240,62,27,0.15)'; }}
         >
           {isGenerating ? (
-            <div className="w-5 h-5 border-2 border-primary-foreground/40 border-t-primary-foreground rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
           ) : (
             <>
               {isAr ? 'توليد' : 'Generate'}
