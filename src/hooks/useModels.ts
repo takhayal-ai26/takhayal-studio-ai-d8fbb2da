@@ -39,6 +39,7 @@ export interface ModelRecord {
   text_to_video_endpoint: string | null;
   image_to_video_endpoint: string | null;
   supports_image_to_video: boolean;
+  preview_image_url: string;
 }
 
 function parseModel(row: any): ModelRecord {
