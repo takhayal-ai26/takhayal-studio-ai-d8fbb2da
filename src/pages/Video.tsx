@@ -464,7 +464,7 @@ export default function Video() {
               </button>
             </div>
           </div>
-          <EmptyState />
+          <HowItWorksState />
         </div>
 
         {/* Floating create button */}
@@ -504,43 +504,44 @@ export default function Video() {
   /* ════════════════════════════════════════════ */
   /* ─── DESKTOP LAYOUT ─── */
   /* ════════════════════════════════════════════ */
+  const [activeTab, setActiveTab] = useState<'how' | 'history'>('how');
+
   return (
     <div className="flex-1 flex" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
       {/* LEFT PANEL */}
-      <aside className="w-[280px] flex-shrink-0 border-e border-border/30 bg-background/95 backdrop-blur-xl h-[calc(100vh-3.5rem-var(--banner-h,0px))] sticky top-[calc(3.5rem+var(--banner-h,0px))] overflow-hidden flex flex-col">
+      <aside className="w-[280px] flex-shrink-0 border-e border-zinc-800 bg-zinc-900/95 backdrop-blur-xl h-[calc(100vh-3.5rem-var(--banner-h,0px))] sticky top-[calc(3.5rem+var(--banner-h,0px))] overflow-hidden flex flex-col">
         <CreationControls />
       </aside>
 
-      {/* CENTER PANEL */}
+      {/* CENTER PANEL — full width, no right panel */}
       <main className="flex-1 flex flex-col min-w-0 bg-background">
         {/* Top bar */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-border/30">
+        <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800">
           <div className="flex items-center gap-1">
-            <button className="px-3.5 py-1.5 rounded-lg text-[13px] font-semibold bg-accent text-foreground">
+            <button
+              onClick={() => setActiveTab('history')}
+              className={cn(
+                "px-3.5 py-1.5 rounded-lg text-[13px] font-semibold transition-colors",
+                activeTab === 'history' ? "bg-zinc-800 text-foreground" : "text-zinc-500 hover:text-foreground"
+              )}
+            >
               {isAr ? 'السجل' : 'History'}
             </button>
-            <button className="px-3.5 py-1.5 rounded-lg text-[13px] font-medium text-muted-foreground hover:text-foreground transition-colors">
+            <button
+              onClick={() => setActiveTab('how')}
+              className={cn(
+                "px-3.5 py-1.5 rounded-lg text-[13px] font-semibold transition-colors",
+                activeTab === 'how' ? "bg-zinc-800 text-foreground" : "text-zinc-500 hover:text-foreground"
+              )}
+            >
               {isAr ? 'كيف يعمل' : 'How it works'}
-            </button>
-          </div>
-          <div className="flex items-center gap-1.5">
-            <button className="p-2 rounded-lg hover:bg-accent transition-colors">
-              <LayoutGrid size={15} className="text-muted-foreground" />
-            </button>
-            <button className="p-2 rounded-lg hover:bg-accent transition-colors">
-              <List size={15} className="text-muted-foreground" />
             </button>
           </div>
         </div>
         <div className="flex-1 overflow-y-auto">
-          <EmptyState />
+          {activeTab === 'how' ? <HowItWorksState /> : <EmptyHistoryState />}
         </div>
       </main>
-
-      {/* RIGHT PANEL */}
-      <aside className="w-[260px] flex-shrink-0 border-s border-border/30 bg-background/95 backdrop-blur-xl h-[calc(100vh-3.5rem-var(--banner-h,0px))] sticky top-[calc(3.5rem+var(--banner-h,0px))]">
-        <RightPanel />
-      </aside>
 
       {/* Model Picker Sheet */}
       <ModelPickerSheet
