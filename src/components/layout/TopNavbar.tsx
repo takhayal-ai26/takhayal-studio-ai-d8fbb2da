@@ -10,10 +10,10 @@ import { useAppTheme } from '@/context/AppThemeContext';
 
 const navItemDefs: { id: string; labelKey: string; route: string; studioPage?: NavPage }[] = [
   { id: 'home', labelKey: 'home', route: '/home' },
-  { id: 'studio', labelKey: 'studio', route: '/studio', studioPage: 'canvas' },
-  { id: 'tools', labelKey: 'tools', route: '/tools' },
+  { id: 'image', labelKey: 'image', route: '/image' },
+  { id: 'video', labelKey: 'video', route: '/video' },
   { id: 'gallery', labelKey: 'gallery', route: '/gallery' },
-  { id: 'templates', labelKey: 'templates', route: '/studio', studioPage: 'templates' },
+  { id: 'templates', labelKey: 'templates', route: '/templates' },
   { id: 'community', labelKey: 'community', route: '/community' },
   { id: 'pricing', labelKey: 'pricing', route: '/pricing' },
 ];
@@ -35,8 +35,8 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
 
   const navLabels: Record<string, string> = {
     home: t.nav.home,
-    studio: t.nav.studio,
-    tools: t.nav.tools,
+    image: t.nav.image || 'Image',
+    video: t.nav.video || 'Video',
     community: t.nav.community,
     gallery: t.nav.gallery,
     templates: t.nav.templates,
@@ -94,12 +94,11 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
   };
 
   const isActive = (item: typeof navItemDefs[0]) => {
-    if (item.studioPage) return location.pathname === '/studio' && activePage === item.studioPage;
+    if (item.route === '/home') return location.pathname === '/' || location.pathname === '/home';
     return location.pathname === item.route || (item.route !== '/' && location.pathname.startsWith(item.route));
   };
 
   const handleNav = (item: typeof navItemDefs[0]) => {
-    if (item.studioPage) setActivePage(item.studioPage);
     navigate(item.route);
   };
 

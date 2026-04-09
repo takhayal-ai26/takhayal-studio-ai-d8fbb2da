@@ -16,9 +16,14 @@ export interface GenerationJob {
   credits_used: number;
   created_at: string;
   tool_id: string | null;
+  media_type?: string;
+  video_url?: string | null;
+  thumbnail_url?: string | null;
+  duration?: string | null;
+  source_mode?: string | null;
 }
 
-const JOB_COLUMNS = 'id, status, prompt, image_url, ratio, resolution, quality_tier, model_id, credits_used, created_at, tool_id';
+const JOB_COLUMNS = 'id, status, prompt, image_url, ratio, resolution, quality_tier, model_id, credits_used, created_at, tool_id, media_type, video_url, thumbnail_url, duration, source_mode';
 const IN_PROGRESS_STATUSES: JobStatus[] = ['queued', 'generating', 'processing'];
 
 function normalizeStatus(status: string | null | undefined): JobStatus {
@@ -364,5 +369,86 @@ export function useGenerationJobs() {
     });
   }, [jobs, startGeneration]);
 
-  return { jobs, loading, createJob, startGeneration, submitJob, retryJob, refetch: fetchJobs };
+  // Submit a video generation job
+  const submitVideoJob = useCallback(async (params: {
+    prompt: string;
+    ratio: string;
+    quality: string;
+    duration: string;
+    modelId: string;
+    creditCost: number;
+    imageUrl?: string;
+  }) => {
+    if (!user) return null;
+
+    const { data, error } = await supabase
+      .from('generation_logs')
+      .insert({
+        user_id: user.id,
+        status: 'queued' as string,
+        prompt: params.prompt.slice(0, 500),
+        ratio: params.ratio,
+        resolution: params.quality,
+        quality_tier: params.quality,
+        credits_used: params.creditCost,
+        model_id: params.modelId,
+        media_type: 'video',
+        duration: params.duration,
+        source_mode: params.imageUrl ? 'image-to-video' : 'text-to-video',
+      })
+      .select('id')
+      .single();
+
+    if (error || !data) {
+      console.error('Failed to create video job:', error);
+      return null;
+    }
+
+    const jobId = data.id;
+
+    setJobs(prev => [{
+      id: jobId,
+      status: 'queued' as JobStatus,
+      prompt: params.prompt,
+      image_url: null,
+      ratio: params.ratio,
+      resolution: params.quality,
+      quality_tier: params.quality,
+      model_id: params.modelId,
+      credits_used: params.creditCost,
+      created_at: new Date().toISOString(),
+      tool_id: null,
+      media_type: 'video',
+      video_url: null,
+      thumbnail_url: null,
+      duration: params.duration,
+      source_mode: params.imageUrl ? 'image-to-video' : 'text-to-video',
+    }, ...prev]);
+
+    // Fire generation
+    try {
+      const { error: invokeError } = await supabase.functions.invoke('generate-video', {
+        body: {
+          prompt: params.prompt,
+          aspect_ratio: params.ratio,
+          quality: params.quality,
+          duration: params.duration,
+          model_id: params.modelId,
+          job_id: jobId,
+          image_url: params.imageUrl,
+        },
+      });
+      if (invokeError) {
+        console.error('Video generation invoke error:', invokeError);
+        await markJobFailed(jobId);
+      }
+    } catch (err) {
+      console.error('Video generation call failed:', err);
+      await markJobFailed(jobId);
+    }
+
+    return jobId;
+  }, [user, markJobFailed]);
+
+  return { jobs, loading, createJob, startGeneration, submitJob, submitVideoJob, retryJob, refetch: fetchJobs };
 }

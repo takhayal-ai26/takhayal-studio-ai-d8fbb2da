@@ -305,6 +305,7 @@ export type Database = {
           actual_output_width: number | null
           created_at: string
           credits_used: number
+          duration: string | null
           generation_cost: number
           id: string
           image_url: string | null
@@ -312,6 +313,7 @@ export type Database = {
           is_shared_to_community: boolean
           margin: number
           margin_pct: number
+          media_type: string
           model_id: string | null
           profit_usd: number
           prompt: string | null
@@ -326,12 +328,15 @@ export type Database = {
           revenue: number
           revenue_usd: number
           share_count: number
+          source_mode: string | null
           status: string
+          thumbnail_url: string | null
           tool_id: string | null
           upscale_cost: number
           upscale_model: string | null
           used_upscale_pipeline: boolean
           user_id: string | null
+          video_url: string | null
           was_upscaled: boolean
         }
         Insert: {
@@ -340,6 +345,7 @@ export type Database = {
           actual_output_width?: number | null
           created_at?: string
           credits_used?: number
+          duration?: string | null
           generation_cost?: number
           id?: string
           image_url?: string | null
@@ -347,6 +353,7 @@ export type Database = {
           is_shared_to_community?: boolean
           margin?: number
           margin_pct?: number
+          media_type?: string
           model_id?: string | null
           profit_usd?: number
           prompt?: string | null
@@ -361,12 +368,15 @@ export type Database = {
           revenue?: number
           revenue_usd?: number
           share_count?: number
+          source_mode?: string | null
           status?: string
+          thumbnail_url?: string | null
           tool_id?: string | null
           upscale_cost?: number
           upscale_model?: string | null
           used_upscale_pipeline?: boolean
           user_id?: string | null
+          video_url?: string | null
           was_upscaled?: boolean
         }
         Update: {
@@ -375,6 +385,7 @@ export type Database = {
           actual_output_width?: number | null
           created_at?: string
           credits_used?: number
+          duration?: string | null
           generation_cost?: number
           id?: string
           image_url?: string | null
@@ -382,6 +393,7 @@ export type Database = {
           is_shared_to_community?: boolean
           margin?: number
           margin_pct?: number
+          media_type?: string
           model_id?: string | null
           profit_usd?: number
           prompt?: string | null
@@ -396,12 +408,15 @@ export type Database = {
           revenue?: number
           revenue_usd?: number
           share_count?: number
+          source_mode?: string | null
           status?: string
+          thumbnail_url?: string | null
           tool_id?: string | null
           upscale_cost?: number
           upscale_model?: string | null
           used_upscale_pipeline?: boolean
           user_id?: string | null
+          video_url?: string | null
           was_upscaled?: boolean
         }
         Relationships: [
@@ -550,6 +565,7 @@ export type Database = {
           cost_per_run: number
           created_at: string
           credits_charged: number
+          duration: string | null
           height: number | null
           id: string
           is_active: boolean
@@ -572,6 +588,7 @@ export type Database = {
           cost_per_run?: number
           created_at?: string
           credits_charged?: number
+          duration?: string | null
           height?: number | null
           id?: string
           is_active?: boolean
@@ -594,6 +611,7 @@ export type Database = {
           cost_per_run?: number
           created_at?: string
           credits_charged?: number
+          duration?: string | null
           height?: number | null
           id?: string
           is_active?: boolean
@@ -669,23 +687,29 @@ export type Database = {
           edit_endpoint_id: string | null
           endpoint_id: string
           id: string
+          image_to_video_endpoint: string | null
           input_type: string
           is_active: boolean
           is_default: boolean
           last_sync_at: string | null
           max_image_inputs: number
           max_resolution: string | null
+          media_type: string
           model_name: string
           notes: string | null
           pricing_mode: string
           provider_id: string | null
           provider_name: string
           speed: string | null
+          supported_durations: Json
+          supported_qualities: Json
           supported_quality_tiers: Json
           supported_ratios: Json
           supported_sizes: Json
           supports_image_input: boolean
+          supports_image_to_video: boolean
           supports_native_high_res: boolean
+          text_to_video_endpoint: string | null
           updated_at: string
           upscale_strategy: string
         }
@@ -701,23 +725,29 @@ export type Database = {
           edit_endpoint_id?: string | null
           endpoint_id: string
           id?: string
+          image_to_video_endpoint?: string | null
           input_type?: string
           is_active?: boolean
           is_default?: boolean
           last_sync_at?: string | null
           max_image_inputs?: number
           max_resolution?: string | null
+          media_type?: string
           model_name: string
           notes?: string | null
           pricing_mode?: string
           provider_id?: string | null
           provider_name?: string
           speed?: string | null
+          supported_durations?: Json
+          supported_qualities?: Json
           supported_quality_tiers?: Json
           supported_ratios?: Json
           supported_sizes?: Json
           supports_image_input?: boolean
+          supports_image_to_video?: boolean
           supports_native_high_res?: boolean
+          text_to_video_endpoint?: string | null
           updated_at?: string
           upscale_strategy?: string
         }
@@ -733,23 +763,29 @@ export type Database = {
           edit_endpoint_id?: string | null
           endpoint_id?: string
           id?: string
+          image_to_video_endpoint?: string | null
           input_type?: string
           is_active?: boolean
           is_default?: boolean
           last_sync_at?: string | null
           max_image_inputs?: number
           max_resolution?: string | null
+          media_type?: string
           model_name?: string
           notes?: string | null
           pricing_mode?: string
           provider_id?: string | null
           provider_name?: string
           speed?: string | null
+          supported_durations?: Json
+          supported_qualities?: Json
           supported_quality_tiers?: Json
           supported_ratios?: Json
           supported_sizes?: Json
           supports_image_input?: boolean
+          supports_image_to_video?: boolean
           supports_native_high_res?: boolean
+          text_to_video_endpoint?: string | null
           updated_at?: string
           upscale_strategy?: string
         }

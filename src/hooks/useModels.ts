@@ -32,6 +32,13 @@ export interface ModelRecord {
   max_image_inputs: number;
   created_at: string;
   updated_at: string;
+  // Video fields
+  media_type: string;
+  supported_durations: string[];
+  supported_qualities: string[];
+  text_to_video_endpoint: string | null;
+  image_to_video_endpoint: string | null;
+  supports_image_to_video: boolean;
 }
 
 function parseModel(row: any): ModelRecord {
@@ -50,6 +57,12 @@ function parseModel(row: any): ModelRecord {
     supports_image_input: row.supports_image_input ?? false,
     edit_endpoint_id: row.edit_endpoint_id ?? null,
     max_image_inputs: row.max_image_inputs ?? 1,
+    media_type: row.media_type || 'image',
+    supported_durations: Array.isArray(row.supported_durations) ? row.supported_durations : [],
+    supported_qualities: Array.isArray(row.supported_qualities) ? row.supported_qualities : [],
+    text_to_video_endpoint: row.text_to_video_endpoint ?? null,
+    image_to_video_endpoint: row.image_to_video_endpoint ?? null,
+    supports_image_to_video: row.supports_image_to_video ?? false,
   };
 }
 
@@ -108,8 +121,9 @@ export function useModels() {
     await fetchModels();
   }, [fetchModels, models]);
 
-  const activeModels = models.filter(m => m.is_active);
-  const defaultModel = models.find(m => m.is_default) || activeModels[0] || null;
+  const activeModels = models.filter(m => m.is_active && m.media_type === 'image');
+  const activeVideoModels = models.filter(m => m.is_active && m.media_type === 'video');
+  const defaultModel = activeModels.find(m => m.is_default) || activeModels[0] || null;
 
-  return { models, activeModels, defaultModel, loading, fetchModels, updateModel };
+  return { models, activeModels, activeVideoModels, defaultModel, loading, fetchModels, updateModel };
 }
