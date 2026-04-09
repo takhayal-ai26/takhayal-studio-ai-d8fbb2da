@@ -64,6 +64,7 @@ function parseModel(row: any): ModelRecord {
     text_to_video_endpoint: row.text_to_video_endpoint ?? null,
     image_to_video_endpoint: row.image_to_video_endpoint ?? null,
     supports_image_to_video: row.supports_image_to_video ?? false,
+    preview_image_url: row.preview_image_url ?? '',
   };
 }
 
