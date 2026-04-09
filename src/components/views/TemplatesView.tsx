@@ -127,4 +127,4 @@ const TemplateCard = memo(function TemplateCard({
       </div>
     </button>
   );
-}
+});
