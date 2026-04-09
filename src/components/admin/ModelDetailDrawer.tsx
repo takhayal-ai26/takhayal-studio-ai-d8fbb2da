@@ -113,6 +113,53 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
         </SheetHeader>
 
         <div className="space-y-6">
+          {/* Preview Image — top of drawer */}
+          <section className="space-y-3">
+            <h3 className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5"><Image size={12} /> Preview Image</h3>
+            <input ref={previewInputRef} type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handlePreviewUpload(e.target.files[0]); }} />
+            {(form as any).preview_image_url ? (
+              <div className="relative rounded-xl overflow-hidden border border-border/30">
+                <img src={(form as any).preview_image_url} alt="Preview" className="w-full aspect-video object-cover" />
+                <button
+                  onClick={() => setForm(f => ({ ...f, preview_image_url: '' }))}
+                  className="absolute top-2 right-2 w-7 h-7 rounded-full bg-black/60 flex items-center justify-center text-white hover:bg-black/80"
+                >
+                  <X size={12} />
+                </button>
+              </div>
+            ) : (
+              <button
+                onClick={() => previewInputRef.current?.click()}
+                disabled={uploadingPreview}
+                onDragOver={e => { e.preventDefault(); setIsDraggingPreview(true); }}
+                onDragLeave={() => setIsDraggingPreview(false)}
+                onDrop={e => {
+                  e.preventDefault();
+                  setIsDraggingPreview(false);
+                  const file = e.dataTransfer.files?.[0];
+                  if (file?.type.startsWith('image/')) handlePreviewUpload(file);
+                }}
+                className={`w-full aspect-video rounded-2xl border-2 border-dashed flex flex-col items-center justify-center gap-2 transition-all cursor-pointer ${
+                  isDraggingPreview
+                    ? 'border-primary bg-primary/5'
+                    : 'border-muted-foreground/20 bg-muted/10 hover:border-primary/50 hover:bg-muted/20'
+                }`}
+              >
+                {uploadingPreview ? (
+                  <div className="w-5 h-5 border-2 border-muted-foreground/40 border-t-muted-foreground rounded-full animate-spin" />
+                ) : (
+                  <>
+                    <Upload size={20} className="text-muted-foreground/50" />
+                    <span className="text-[12px] text-muted-foreground/60 font-medium">Drag & drop or click to upload</span>
+                    <span className="text-[10px] text-muted-foreground/40">Recommended: 16:9, min 1280×720</span>
+                  </>
+                )}
+              </button>
+            )}
+          </section>
+
+          <Separator />
+
           {/* Basic Info */}
           <section className="space-y-3">
             <h3 className="text-xs uppercase tracking-wider text-muted-foreground font-semibold flex items-center gap-1.5"><Sparkles size={12} /> Basic Info</h3>
