@@ -23,7 +23,7 @@ export interface GenerationJob {
   source_mode?: string | null;
 }
 
-const JOB_COLUMNS = 'id, status, prompt, image_url, ratio, resolution, quality_tier, model_id, credits_used, created_at, tool_id';
+const JOB_COLUMNS = 'id, status, prompt, image_url, ratio, resolution, quality_tier, model_id, credits_used, created_at, tool_id, media_type, video_url, thumbnail_url, duration, source_mode';
 const IN_PROGRESS_STATUSES: JobStatus[] = ['queued', 'generating', 'processing'];
 
 function normalizeStatus(status: string | null | undefined): JobStatus {
