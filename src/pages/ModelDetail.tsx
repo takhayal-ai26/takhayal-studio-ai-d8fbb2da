@@ -62,9 +62,9 @@ function ModelDetailHero({ guide, isAr, isRTL, minCredits, onStart }: any) {
 
             {/* Credit badge */}
             {minCredits !== null && (
-              <div className="mt-5 inline-flex items-center gap-1.5 text-[12px] font-semibold text-white rounded-full px-4 py-1.5 shadow-sm" style={{ background: 'linear-gradient(135deg, #F03E1B, #e8522e)' }}>
-                <Zap size={13} fill="currentColor" />
-                {isAr ? `${minCredits} رصيد للصورة` : `${minCredits} credit per image`}
+              <div className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-bold text-white rounded-full px-4 py-1.5" style={{ background: 'linear-gradient(135deg, #F03E1B, #e8522e)' }}>
+                <Zap size={14} fill="currentColor" />
+                {minCredits}
               </div>
             )}
 
