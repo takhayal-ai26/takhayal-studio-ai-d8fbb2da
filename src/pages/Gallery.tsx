@@ -360,9 +360,9 @@ export default function Gallery() {
       <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] animate-page-enter" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
         <ImageIcon size={56} className="text-muted-foreground/15 mb-4" />
         <h2 className="typo-heading-section">{g.noImagesYet || (isAr ? 'لا توجد صور بعد' : 'No images yet')}</h2>
-        <p className="text-sm text-muted-foreground/50 mt-2">{g.startCreatingStudio || (isAr ? 'ابدأ الإبداع في الاستوديو' : 'Start creating in the Studio')}</p>
-        <button onClick={() => navigate('/studio')} className="mt-6 h-10 px-6 bg-primary hover:brightness-110 text-primary-foreground rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all">
-          {g.goToStudio || (isAr ? 'الاستوديو' : 'Go to Studio')}
+        <p className="text-sm text-muted-foreground/50 mt-2">{g.startCreatingStudio || (isAr ? 'ابدأ الإبداع' : 'Start creating')}</p>
+        <button onClick={() => navigate('/image')} className="mt-6 h-10 px-6 bg-primary hover:brightness-110 text-primary-foreground rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all">
+          {g.goToStudio || (isAr ? 'صورة' : 'Go to Image')}
           <ArrowRight size={15} className={isRTL ? 'rotate-180' : ''} />
         </button>
       </div>
@@ -408,18 +408,23 @@ export default function Gallery() {
             </div>
           </div>
 
-          {/* ── Filter row (desktop) ── */}
+          {/* ── Media filter tabs ── */}
+          <div className="hidden md:flex gap-1.5 mb-4">
+            {([
+              { key: 'all' as MediaFilter, label: isAr ? 'الكل' : 'All' },
+              { key: 'images' as MediaFilter, label: isAr ? 'صور' : 'Images' },
+              { key: 'videos' as MediaFilter, label: isAr ? 'فيديو' : 'Videos' },
+            ]).map(f => (
+              <button key={f.key} onClick={() => setMediaFilter(f.key)} className={`px-4 py-2 rounded-full text-[12px] font-medium transition-all ${mediaFilter === f.key ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}>
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          {/* ── Date filter row (desktop) ── */}
           <div className="hidden md:flex gap-1.5 mb-6">
             {filters.map(f => (
-              <button
-                key={f.key}
-                onClick={() => setFilter(f.key)}
-                className={`px-4 py-2 rounded-full text-[12px] font-medium transition-all ${
-                  filter === f.key
-                    ? 'bg-primary text-primary-foreground shadow-sm'
-                    : 'bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground'
-                }`}
-              >
+              <button key={f.key} onClick={() => setFilter(f.key)} className={`px-4 py-2 rounded-full text-[12px] font-medium transition-all ${filter === f.key ? 'bg-foreground/10 text-foreground' : 'bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}>
                 {f.label}
               </button>
             ))}
