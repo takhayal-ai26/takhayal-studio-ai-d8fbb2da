@@ -62,7 +62,7 @@ const RoutedApp = () => {
             <Route path="/" element={<PortalHome />} />
             <Route path="/home" element={<Navigate to="/" replace />} />
             <Route path="/studio" element={<Suspense fallback={<StudioSkeleton />}><Canvas /></Suspense>} />
-            <Route path="/image" element={<Suspense fallback={<StudioSkeleton />}><Canvas /></Suspense>} />
+            <Route path="/image" element={<ToolsDirectory />} />
             <Route path="/video" element={<Suspense fallback={<StudioSkeleton />}><Video /></Suspense>} />
             <Route path="/generate/result" element={<GenerateResult />} />
             <Route path="/pricing" element={<Pricing />} />
