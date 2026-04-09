@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, X, Coins, Play, Film, Clock, MonitorSmartphone, ChevronRight, Image, Sparkles, Pencil, Search, Check, Info, LayoutGrid, List, Download, Diamond, ImageIcon } from 'lucide-react';
+import { X, Play, Film, Clock, MonitorSmartphone, ChevronRight, Image, Sparkles, Search, Check, Download, Diamond, ChevronDown } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useModels } from '@/hooks/useModels';
@@ -10,7 +10,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { Sheet, SheetContent } from '@/components/ui/sheet';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 
 /* ─── Types ─── */
@@ -85,6 +84,7 @@ export default function Video() {
   const [mobileCreateOpen, setMobileCreateOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'how' | 'history'>('how');
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const modelRowRef = useRef<HTMLButtonElement>(null);
 
   // Auto-select default model
   useEffect(() => {
@@ -194,70 +194,88 @@ export default function Video() {
     !modelSearch || m.model_name.toLowerCase().includes(modelSearch.toLowerCase())
   );
 
-  const durationRange = currentModel ? (
-    currentModel.supported_durations.length > 1
-      ? `${currentModel.supported_durations[0]}–${currentModel.supported_durations[currentModel.supported_durations.length - 1]}`
-      : currentModel.supported_durations[0] || ''
-  ) : '';
+  /* ─── Drop-up Selector Pill ─── */
+  const SelectorPill = ({ icon: Icon, label, value, options, onSelect }: {
+    icon: React.ElementType; label: string; value: string; options: string[]; onSelect: (v: string) => void;
+  }) => {
+    const [open, setOpen] = useState(false);
+    const ref = useRef<HTMLDivElement>(null);
 
-  const maxQuality = currentModel?.supported_qualities[currentModel.supported_qualities.length - 1] || '';
+    useEffect(() => {
+      if (!open) return;
+      const handler = (e: MouseEvent) => {
+        if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+      };
+      document.addEventListener('mousedown', handler);
+      return () => document.removeEventListener('mousedown', handler);
+    }, [open]);
 
-  /* ─── Selector Pill with Popover ─── */
-  const SelectorPill = ({ icon: Icon, value, options, onSelect }: {
-    icon: React.ElementType; value: string; options: string[]; onSelect: (v: string) => void;
-  }) => (
-    <Popover>
-      <PopoverTrigger asChild>
-        <button className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700/80 border border-zinc-700/40 transition-all text-[13px] font-semibold text-foreground dark:text-white">
-          <Icon size={14} className="text-muted-foreground" />
+    return (
+      <div ref={ref} className="relative">
+        <button
+          onClick={() => setOpen(!open)}
+          className={cn(
+            "flex items-center gap-2 px-3.5 py-2 rounded-xl text-[13px] font-semibold transition-all",
+            "bg-card hover:bg-accent/60 border border-border/60 text-foreground",
+            open && "ring-1 ring-primary/40"
+          )}
+        >
+          <Icon size={13} className="text-muted-foreground" />
           {value}
+          <ChevronDown size={12} className={cn("text-muted-foreground transition-transform", open && "rotate-180")} />
         </button>
-      </PopoverTrigger>
-      <PopoverContent className="w-44 p-1.5 rounded-xl border border-zinc-700/40 bg-zinc-900/95 backdrop-blur-xl" align="start" sideOffset={6}>
-        {options.map(opt => (
-          <button
-            key={opt}
-            onClick={() => onSelect(opt)}
-            className={cn(
-              "w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-[13px] font-medium transition-colors",
-              opt === value
-                ? "bg-zinc-800 text-[#F03E1B]"
-                : "text-zinc-400 hover:bg-zinc-800/60 hover:text-foreground"
-            )}
-          >
-            {opt}
-            {opt === value && <Check size={14} className="text-[#F03E1B]" />}
-          </button>
-        ))}
-      </PopoverContent>
-    </Popover>
-  );
+
+        {open && (
+          <div className="absolute bottom-full left-0 mb-2 w-40 rounded-xl border border-border/60 bg-popover/98 backdrop-blur-xl shadow-lg shadow-black/10 dark:shadow-black/30 p-1 z-50 animate-in fade-in slide-in-from-bottom-2 duration-150">
+            <p className="px-3 py-1.5 text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">{label}</p>
+            {options.map(opt => (
+              <button
+                key={opt}
+                onClick={() => { onSelect(opt); setOpen(false); }}
+                className={cn(
+                  "w-full flex items-center justify-between px-3 py-2 rounded-lg text-[13px] font-medium transition-colors",
+                  opt === value
+                    ? "bg-primary/10 text-primary"
+                    : "text-foreground/80 hover:bg-accent/60"
+                )}
+              >
+                {opt}
+                {opt === value && <Check size={13} className="text-primary" />}
+              </button>
+            ))}
+          </div>
+        )}
+      </div>
+    );
+  };
 
   /* ─── Creation Panel Content (shared between desktop left panel & mobile sheet) ─── */
   const CreationControls = () => (
     <div className="flex flex-col h-full">
-      <div className="flex-1 overflow-y-auto space-y-5 p-5">
+      <div className="flex-1 overflow-y-auto space-y-4 p-5">
         {/* 1. Model Selector Card — entire card clickable */}
         <div>
           <button
             onClick={() => setShowModelPicker(true)}
-            className="w-full rounded-xl overflow-hidden relative group cursor-pointer transition-all hover:brightness-110"
-            style={{ boxShadow: 'none' }}
-            onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 0 0 1px rgba(240,62,27,0.4)')}
-            onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
+            className={cn(
+              "w-full rounded-xl overflow-hidden relative group cursor-pointer transition-all",
+              "ring-1 ring-transparent hover:ring-primary/40"
+            )}
           >
-            {/* Thumbnail area */}
             <div className="aspect-video relative overflow-hidden">
               {currentModel?.preview_image_url ? (
-                <img src={currentModel.preview_image_url} alt={currentModel.model_name} className="w-full h-full object-cover" />
+                <img src={currentModel.preview_image_url} alt={currentModel.model_name} className="w-full h-full object-cover group-hover:scale-[1.02] transition-transform duration-300" />
               ) : (
-                <div className="w-full h-full bg-gradient-to-br from-zinc-800 to-zinc-900 flex items-center justify-center">
-                  <span className="text-[#F03E1B] font-bold text-lg">{currentModel?.model_name}</span>
+                <div className="w-full h-full bg-gradient-to-br from-muted to-card flex items-center justify-center">
+                  <Film size={28} className="text-primary/40" />
                 </div>
               )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-              <div className="absolute bottom-3 left-3 right-3">
-                <p className="text-[14px] font-bold text-white">{currentModel?.model_name}</p>
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
+              <div className="absolute bottom-3 left-3 right-3 flex items-end justify-between">
+                <p className="text-[14px] font-bold text-white drop-shadow-sm">{currentModel?.model_name}</p>
+                <span className="text-[10px] font-semibold text-white/70 bg-white/10 backdrop-blur-sm rounded-md px-2 py-0.5">
+                  {isAr ? 'تغيير' : 'Change'}
+                </span>
               </div>
             </div>
           </button>
@@ -266,7 +284,6 @@ export default function Video() {
         {/* 2. Start frame + End frame */}
         {currentModel?.supports_image_to_video && (
           <div className="grid grid-cols-2 gap-3">
-            {/* Start frame */}
             <div
               onDragOver={handleDragOver}
               onDragLeave={handleDragLeave}
@@ -274,7 +291,7 @@ export default function Video() {
               onClick={() => fileInputRef.current?.click()}
               className={cn(
                 "relative rounded-xl border-2 border-dashed cursor-pointer flex flex-col items-center justify-center py-6 gap-2 transition-all",
-                isDragging ? "border-[#F03E1B]/50 bg-[#F03E1B]/5" : "border-zinc-700/40 bg-zinc-800 hover:bg-zinc-700/50",
+                isDragging ? "border-primary/50 bg-primary/5" : "border-border/60 bg-card hover:bg-accent/40",
                 uploadedImage && "border-0 p-0"
               )}
             >
@@ -298,7 +315,7 @@ export default function Video() {
                   <span className="text-[10px] text-muted-foreground/50 font-medium absolute top-2 left-0 right-0 text-center">
                     {isAr ? 'اختياري' : 'Optional'}
                   </span>
-                  <div className="w-10 h-10 rounded-full bg-muted/60 flex items-center justify-center">
+                  <div className="w-10 h-10 rounded-full bg-muted/40 flex items-center justify-center">
                     <Image size={16} className="text-muted-foreground/40" />
                   </div>
                   <span className="text-[12px] text-muted-foreground/60 font-medium">
@@ -307,12 +324,8 @@ export default function Video() {
                 </>
               )}
             </div>
-            {/* End frame (placeholder for future) */}
-            <div className="rounded-xl border-2 border-dashed border-zinc-700/40 bg-zinc-800 flex flex-col items-center justify-center py-6 gap-2 opacity-50 cursor-not-allowed">
-              <span className="text-[10px] text-muted-foreground/50 font-medium absolute-ish">
-                {isAr ? 'اختياري' : 'Optional'}
-              </span>
-              <div className="w-10 h-10 rounded-full bg-muted/60 flex items-center justify-center">
+            <div className="rounded-xl border-2 border-dashed border-border/40 bg-card flex flex-col items-center justify-center py-6 gap-2 opacity-40 cursor-not-allowed">
+              <div className="w-10 h-10 rounded-full bg-muted/40 flex items-center justify-center">
                 <Image size={16} className="text-muted-foreground/40" />
               </div>
               <span className="text-[12px] text-muted-foreground/60 font-medium">
@@ -328,44 +341,48 @@ export default function Video() {
         )}
 
         {/* 3. Prompt area */}
-        <div className="rounded-xl bg-zinc-800 border border-zinc-700/40 overflow-hidden">
+        <div className="rounded-xl bg-card border border-border/60 overflow-hidden focus-within:ring-1 focus-within:ring-primary/30 transition-shadow">
           <textarea
             value={prompt}
             onChange={e => setPrompt(e.target.value)}
-            placeholder={isAr ? 'صف الفيديو الذي تريده، مثل "امرأة تمشي في مدينة مضاءة بالنيون"...' : 'Describe your video, like "A woman walking through a neon-lit city". Add elements using @'}
+            placeholder={isAr ? 'صف الفيديو الذي تريده، مثل "امرأة تمشي في مدينة مضاءة بالنيون"...' : 'Describe your video, like "A woman walking through a neon-lit city"...'}
             rows={4}
-            className="w-full bg-transparent p-4 text-[14px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none resize-none leading-relaxed"
+            className="w-full bg-transparent p-4 text-[14px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none resize-none leading-relaxed"
           />
         </div>
 
         {/* 4. Model info row */}
         <button
+          ref={modelRowRef}
           onClick={() => setShowModelPicker(true)}
-          className="w-full flex items-center justify-between px-4 py-3.5 rounded-xl bg-zinc-800 border border-zinc-700/40 hover:bg-zinc-700/50 transition-colors"
+          className="w-full flex items-center justify-between px-4 py-3 rounded-xl bg-card border border-border/60 hover:bg-accent/40 transition-colors group"
         >
           <div>
             <p className="text-[11px] text-muted-foreground font-medium">{isAr ? 'النموذج' : 'Model'}</p>
             <p className="text-[14px] font-bold text-foreground mt-0.5">{currentModel?.model_name}</p>
           </div>
-          <ChevronRight size={16} className="text-muted-foreground" />
+          <ChevronRight size={16} className="text-muted-foreground group-hover:text-foreground transition-colors" />
         </button>
 
-        {/* 5. Settings row — 3 pill selectors */}
+        {/* 5. Settings row — 3 drop-up pill selectors */}
         <div className="flex items-center gap-2 flex-wrap">
           <SelectorPill
             icon={Clock}
+            label={isAr ? 'المدة' : 'Duration'}
             value={selectedDuration}
             options={currentModel?.supported_durations || []}
             onSelect={setSelectedDuration}
           />
           <SelectorPill
             icon={MonitorSmartphone}
+            label={isAr ? 'النسبة' : 'Ratio'}
             value={selectedRatio}
             options={currentModel?.supported_ratios || []}
             onSelect={setSelectedRatio}
           />
           <SelectorPill
             icon={Diamond}
+            label={isAr ? 'الجودة' : 'Quality'}
             value={selectedQuality}
             options={currentModel?.supported_qualities || []}
             onSelect={setSelectedQuality}
@@ -374,26 +391,23 @@ export default function Video() {
       </div>
 
       {/* 6. Generate button — sticky at bottom */}
-      <div className="p-5 pt-3 border-t border-zinc-800">
+      <div className="p-5 pt-3 border-t border-border/40">
         <button
           onClick={handleGenerate}
           disabled={isGenerating || !prompt.trim() || isUploading}
           className={cn(
-            "w-full rounded-xl text-[16px] font-bold flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]",
+            "w-full h-[52px] rounded-xl text-[16px] font-bold flex items-center justify-center gap-2.5 transition-all active:scale-[0.98]",
             (!prompt.trim() || isUploading)
-              ? "h-[52px] bg-zinc-700 text-zinc-500 cursor-not-allowed"
-              : "h-[52px] bg-[#F03E1B] text-white hover:brightness-110"
+              ? "bg-muted text-muted-foreground cursor-not-allowed"
+              : "bg-primary text-primary-foreground hover:brightness-110 shadow-lg shadow-primary/20 hover:shadow-primary/30"
           )}
-          style={prompt.trim() && !isUploading ? { boxShadow: '0 0 20px rgba(240,62,27,0.15)' } : undefined}
-          onMouseEnter={e => { if (prompt.trim() && !isUploading) e.currentTarget.style.boxShadow = '0 0 20px rgba(240,62,27,0.3)'; }}
-          onMouseLeave={e => { if (prompt.trim() && !isUploading) e.currentTarget.style.boxShadow = '0 0 20px rgba(240,62,27,0.15)'; }}
         >
           {isGenerating ? (
-            <div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" />
+            <div className="w-5 h-5 border-2 border-primary-foreground/40 border-t-primary-foreground rounded-full animate-spin" />
           ) : (
             <>
               {isAr ? 'توليد' : 'Generate'}
-              <span className="flex items-center gap-1 text-[13px] font-semibold">
+              <span className="flex items-center gap-1 text-[13px] font-semibold opacity-90">
                 ✦ {creditCost}
               </span>
             </>
@@ -414,21 +428,18 @@ export default function Video() {
         ].map(({ step, icon: Icon, title, desc }) => (
           <div
             key={step}
-            className="relative rounded-2xl bg-zinc-800/60 backdrop-blur border border-zinc-700/30 p-8 text-center transition-all hover:border-[#F03E1B]/30 group overflow-hidden"
-            style={{ boxShadow: 'none' }}
-            onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 0 20px rgba(240,62,27,0.08)')}
-            onMouseLeave={e => (e.currentTarget.style.boxShadow = 'none')}
+            className="relative rounded-2xl bg-card/80 backdrop-blur border border-border/40 p-8 text-center transition-all hover:border-primary/30 group overflow-hidden hover:shadow-lg hover:shadow-primary/5"
           >
-            <p className="absolute top-3 left-4 text-5xl font-black text-[#F03E1B]/10 select-none">{step}</p>
-            <div className="w-12 h-12 rounded-xl bg-[#F03E1B]/10 flex items-center justify-center mx-auto mb-4 mt-4">
-              <Icon size={22} className="text-[#F03E1B]" />
+            <p className="absolute top-3 left-4 text-5xl font-black text-primary/10 select-none">{step}</p>
+            <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center mx-auto mb-4 mt-4">
+              <Icon size={22} className="text-primary" />
             </div>
             <p className="text-[14px] font-bold text-foreground mb-1.5">{title}</p>
-            <p className="text-[12px] text-zinc-400 leading-relaxed">{desc}</p>
+            <p className="text-[12px] text-muted-foreground leading-relaxed">{desc}</p>
           </div>
         ))}
       </div>
-      <p className="text-[12px] text-zinc-500">
+      <p className="text-[12px] text-muted-foreground/60">
         {isAr ? 'الفيديوهات التي تنشئها ستظهر هنا' : 'Your generated videos will appear here'}
       </p>
     </div>
@@ -437,10 +448,10 @@ export default function Video() {
   /* ─── Empty History State ─── */
   const EmptyHistoryState = () => (
     <div className="flex-1 flex flex-col items-center justify-center px-6 py-16">
-      <h2 className="text-4xl font-bold text-zinc-600 mb-2">
+      <h2 className="text-4xl font-bold text-muted-foreground/30 mb-2">
         {isAr ? 'أنشئ أول فيديو' : 'Generate your first video'}
       </h2>
-      <p className="text-zinc-500">
+      <p className="text-muted-foreground/50">
         {isAr ? 'إبداعاتك ستظهر هنا' : 'Your creations will appear here'}
       </p>
     </div>
@@ -452,9 +463,7 @@ export default function Video() {
   if (isMobile) {
     return (
       <div className="flex-1 flex flex-col" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
-        {/* Center content */}
         <div className="flex-1 overflow-y-auto">
-          {/* Top bar */}
           <div className="flex items-center justify-between px-4 py-3 border-b border-border/30">
             <div className="flex items-center gap-1">
               <button className="px-3 py-1.5 rounded-lg text-[13px] font-semibold bg-accent text-foreground">
@@ -468,7 +477,6 @@ export default function Video() {
           <HowItWorksState />
         </div>
 
-        {/* Floating create button */}
         <div className="fixed bottom-20 left-0 right-0 flex justify-center z-40 pointer-events-none">
           <button
             onClick={() => setMobileCreateOpen(true)}
@@ -479,7 +487,6 @@ export default function Video() {
           </button>
         </div>
 
-        {/* Mobile creation sheet */}
         <Sheet open={mobileCreateOpen} onOpenChange={setMobileCreateOpen}>
           <SheetContent side="bottom" className="h-[92vh] rounded-t-2xl p-0 border-t border-border/30">
             <div className="w-12 h-1.5 rounded-full bg-muted-foreground/20 mx-auto mt-3 mb-1" />
@@ -487,16 +494,17 @@ export default function Video() {
           </SheetContent>
         </Sheet>
 
-        {/* Model Picker Sheet */}
-        <ModelPickerSheet
+        <ModelPickerDropdown
           open={showModelPicker}
           onOpenChange={setShowModelPicker}
           models={filteredModels}
           selectedModelId={selectedModelId}
-          onSelect={(id) => { setSelectedModelId(id); setShowModelPicker(false); }}
+          onSelect={(id) => { setSelectedModelId(id); setShowModelPicker(false); setModelSearch(''); }}
           search={modelSearch}
           onSearchChange={setModelSearch}
           isAr={isAr}
+          anchorRef={modelRowRef}
+          isMobile
         />
       </div>
     );
@@ -505,24 +513,22 @@ export default function Video() {
   /* ════════════════════════════════════════════ */
   /* ─── DESKTOP LAYOUT ─── */
   /* ════════════════════════════════════════════ */
-
   return (
     <div className="flex-1 flex" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
       {/* LEFT PANEL */}
-      <aside className="w-[280px] flex-shrink-0 border-e border-zinc-800 bg-zinc-900/95 backdrop-blur-xl h-[calc(100vh-3.5rem-var(--banner-h,0px))] sticky top-[calc(3.5rem+var(--banner-h,0px))] overflow-hidden flex flex-col">
+      <aside className="w-[280px] flex-shrink-0 border-e border-border/40 bg-popover/95 backdrop-blur-xl h-[calc(100vh-3.5rem-var(--banner-h,0px))] sticky top-[calc(3.5rem+var(--banner-h,0px))] overflow-hidden flex flex-col">
         <CreationControls />
       </aside>
 
-      {/* CENTER PANEL — full width, no right panel */}
+      {/* CENTER PANEL */}
       <main className="flex-1 flex flex-col min-w-0 bg-background">
-        {/* Top bar */}
-        <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800">
+        <div className="flex items-center justify-between px-6 py-3 border-b border-border/40">
           <div className="flex items-center gap-1">
             <button
               onClick={() => setActiveTab('history')}
               className={cn(
                 "px-3.5 py-1.5 rounded-lg text-[13px] font-semibold transition-colors",
-                activeTab === 'history' ? "bg-zinc-800 text-foreground" : "text-zinc-500 hover:text-foreground"
+                activeTab === 'history' ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"
               )}
             >
               {isAr ? 'السجل' : 'History'}
@@ -531,7 +537,7 @@ export default function Video() {
               onClick={() => setActiveTab('how')}
               className={cn(
                 "px-3.5 py-1.5 rounded-lg text-[13px] font-semibold transition-colors",
-                activeTab === 'how' ? "bg-zinc-800 text-foreground" : "text-zinc-500 hover:text-foreground"
+                activeTab === 'how' ? "bg-accent text-foreground" : "text-muted-foreground hover:text-foreground"
               )}
             >
               {isAr ? 'كيف يعمل' : 'How it works'}
@@ -543,23 +549,24 @@ export default function Video() {
         </div>
       </main>
 
-      {/* Model Picker Sheet */}
-      <ModelPickerSheet
+      {/* Model Picker — floating dropdown */}
+      <ModelPickerDropdown
         open={showModelPicker}
         onOpenChange={setShowModelPicker}
         models={filteredModels}
         selectedModelId={selectedModelId}
-        onSelect={(id) => { setSelectedModelId(id); setShowModelPicker(false); }}
+        onSelect={(id) => { setSelectedModelId(id); setShowModelPicker(false); setModelSearch(''); }}
         search={modelSearch}
         onSearchChange={setModelSearch}
         isAr={isAr}
+        anchorRef={modelRowRef}
       />
     </div>
   );
 }
 
-/* ─── Model Picker Sheet ─── */
-function ModelPickerSheet({ open, onOpenChange, models, selectedModelId, onSelect, search, onSearchChange, isAr }: {
+/* ─── Model Picker Floating Dropdown ─── */
+function ModelPickerDropdown({ open, onOpenChange, models, selectedModelId, onSelect, search, onSearchChange, isAr, anchorRef, isMobile }: {
   open: boolean;
   onOpenChange: (v: boolean) => void;
   models: VideoModel[];
@@ -568,88 +575,175 @@ function ModelPickerSheet({ open, onOpenChange, models, selectedModelId, onSelec
   search: string;
   onSearchChange: (v: string) => void;
   isAr: boolean;
+  anchorRef: React.RefObject<HTMLButtonElement | null>;
+  isMobile?: boolean;
 }) {
+  const panelRef = useRef<HTMLDivElement>(null);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Close on outside click
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) onOpenChange(false);
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [open, onOpenChange]);
+
+  // Close on Escape
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') onOpenChange(false); };
+    document.addEventListener('keydown', handler);
+    return () => document.removeEventListener('keydown', handler);
+  }, [open, onOpenChange]);
+
+  // Autofocus search
+  useEffect(() => {
+    if (open) setTimeout(() => searchInputRef.current?.focus(), 50);
+  }, [open]);
+
+  if (!open) return null;
+
+  // For mobile, render as a sheet-like overlay
+  if (isMobile) {
+    return (
+      <div className="fixed inset-0 z-50">
+        <div className="absolute inset-0 bg-black/40" onClick={() => onOpenChange(false)} />
+        <div ref={panelRef} className="absolute bottom-0 left-0 right-0 max-h-[70vh] rounded-t-2xl bg-popover border-t border-border/40 flex flex-col animate-in slide-in-from-bottom duration-200">
+          <div className="w-12 h-1.5 rounded-full bg-muted-foreground/20 mx-auto mt-3 mb-2" />
+          <PickerContent
+            ref={searchInputRef}
+            models={models}
+            selectedModelId={selectedModelId}
+            onSelect={onSelect}
+            search={search}
+            onSearchChange={onSearchChange}
+            isAr={isAr}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Desktop — floating panel anchored right of left panel
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-[360px] max-w-full p-0 border-s border-zinc-800 bg-zinc-900/95 backdrop-blur-xl">
-        {/* Search */}
-        <div className="p-4 border-b border-zinc-800">
-          <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-zinc-800 border border-zinc-700/40">
-            <Search size={15} className="text-muted-foreground/50 flex-shrink-0" />
-            <input
-              type="text"
-              value={search}
-              onChange={e => onSearchChange(e.target.value)}
-              placeholder={isAr ? 'بحث...' : 'Search...'}
-              className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none"
-            />
-          </div>
-        </div>
-
-        {/* Featured models */}
-        <div className="px-4 pt-4 pb-2">
-          <p className="text-[11px] font-semibold text-muted-foreground/50 uppercase tracking-wider flex items-center gap-1.5">
-            <Sparkles size={11} /> {isAr ? 'نماذج مميزة' : 'Featured models'}
-          </p>
-        </div>
-
-        <div className="overflow-y-auto flex-1 px-3 pb-6 space-y-1">
-          {models.map(model => {
-            const isSelected = model.id === selectedModelId;
-            const maxQ = model.supported_qualities[model.supported_qualities.length - 1] || '';
-            const durRange = model.supported_durations.length > 1
-              ? `${model.supported_durations[0]}–${model.supported_durations[model.supported_durations.length - 1]}`
-              : model.supported_durations[0] || '';
-
-            return (
-              <button
-                key={model.id}
-                onClick={() => onSelect(model.id)}
-                className={cn(
-                  "w-full flex items-center gap-3.5 px-3.5 py-3 rounded-xl transition-all text-start",
-                  isSelected
-                    ? "bg-zinc-800"
-                    : "hover:bg-zinc-800/60"
-                )}
-              >
-                <div className={cn(
-                  "w-10 h-10 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden",
-                  isSelected ? "bg-[#F03E1B]/15" : "bg-zinc-800"
-                )}>
-                  {model.preview_image_url ? (
-                    <img src={model.preview_image_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <Film size={16} className={isSelected ? "text-[#F03E1B]" : "text-zinc-500"} />
-                  )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className="text-[13px] font-bold text-foreground truncate">{model.model_name}</span>
-                    {model.supports_image_to_video && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-[hsl(75,80%,50%)] text-black font-bold flex-shrink-0">I2V</span>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    {maxQ && (
-                      <span className="flex items-center gap-1 text-[10px] text-zinc-500">
-                        <Diamond size={9} /> {maxQ}
-                      </span>
-                    )}
-                    {durRange && (
-                      <span className="flex items-center gap-1 text-[10px] text-zinc-500">
-                        <Clock size={9} /> {durRange}
-                      </span>
-                    )}
-                  </div>
-                </div>
-                {isSelected && (
-                  <Check size={16} className="text-[#F03E1B] flex-shrink-0" />
-                )}
-              </button>
-            );
-          })}
-        </div>
-      </SheetContent>
-    </Sheet>
+    <div className="fixed inset-0 z-50" onClick={() => onOpenChange(false)}>
+      <div
+        ref={panelRef}
+        onClick={e => e.stopPropagation()}
+        className="absolute left-[280px] top-[calc(3.5rem+var(--banner-h,0px)+8px)] w-[320px] max-h-[min(520px,calc(100vh-6rem))] rounded-xl border border-border/60 bg-popover/98 backdrop-blur-xl shadow-2xl shadow-black/15 dark:shadow-black/40 flex flex-col animate-in fade-in slide-in-from-left-2 duration-200"
+        style={isAr ? { left: 'auto', right: '280px' } : undefined}
+      >
+        <PickerContent
+          ref={searchInputRef}
+          models={models}
+          selectedModelId={selectedModelId}
+          onSelect={onSelect}
+          search={search}
+          onSearchChange={onSearchChange}
+          isAr={isAr}
+        />
+      </div>
+    </div>
   );
 }
+
+/* ─── Shared picker content ─── */
+const PickerContent = ({ ref, models, selectedModelId, onSelect, search, onSearchChange, isAr }: {
+  ref: React.RefObject<HTMLInputElement | null>;
+  models: VideoModel[];
+  selectedModelId: string;
+  onSelect: (id: string) => void;
+  search: string;
+  onSearchChange: (v: string) => void;
+  isAr: boolean;
+}) => (
+  <>
+    {/* Search */}
+    <div className="p-3 border-b border-border/40">
+      <div className="flex items-center gap-2.5 px-3 py-2 rounded-lg bg-card border border-border/50">
+        <Search size={14} className="text-muted-foreground/50 flex-shrink-0" />
+        <input
+          ref={ref}
+          type="text"
+          value={search}
+          onChange={e => onSearchChange(e.target.value)}
+          placeholder={isAr ? 'بحث عن نموذج...' : 'Search models...'}
+          className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
+        />
+      </div>
+    </div>
+
+    {/* Header */}
+    <div className="px-4 pt-3 pb-1.5">
+      <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-wider flex items-center gap-1.5">
+        <Sparkles size={10} /> {isAr ? 'النماذج المتاحة' : 'Available models'}
+      </p>
+    </div>
+
+    {/* List */}
+    <div className="overflow-y-auto flex-1 px-2 pb-3 space-y-0.5">
+      {models.map(model => {
+        const isSelected = model.id === selectedModelId;
+        const maxQ = model.supported_qualities[model.supported_qualities.length - 1] || '';
+        const durRange = model.supported_durations.length > 1
+          ? `${model.supported_durations[0]}–${model.supported_durations[model.supported_durations.length - 1]}`
+          : model.supported_durations[0] || '';
+
+        return (
+          <button
+            key={model.id}
+            onClick={() => onSelect(model.id)}
+            className={cn(
+              "w-full flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all text-start",
+              isSelected
+                ? "bg-primary/10"
+                : "hover:bg-accent/60"
+            )}
+          >
+            <div className={cn(
+              "w-9 h-9 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden",
+              isSelected ? "bg-primary/15" : "bg-muted/50"
+            )}>
+              {model.preview_image_url ? (
+                <img src={model.preview_image_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <Film size={15} className={isSelected ? "text-primary" : "text-muted-foreground"} />
+              )}
+            </div>
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-[13px] font-bold text-foreground truncate">{model.model_name}</span>
+                {model.supports_image_to_video && (
+                  <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-500 dark:text-emerald-400 font-bold flex-shrink-0">I2V</span>
+                )}
+              </div>
+              <div className="flex items-center gap-2 mt-0.5">
+                {maxQ && (
+                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <Diamond size={9} /> {maxQ}
+                  </span>
+                )}
+                {durRange && (
+                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground">
+                    <Clock size={9} /> {durRange}
+                  </span>
+                )}
+              </div>
+            </div>
+            {isSelected && (
+              <Check size={15} className="text-primary flex-shrink-0" />
+            )}
+          </button>
+        );
+      })}
+      {models.length === 0 && (
+        <p className="text-center text-[12px] text-muted-foreground/50 py-6">
+          {isAr ? 'لا توجد نتائج' : 'No models found'}
+        </p>
+      )}
+    </div>
+  </>
+);
