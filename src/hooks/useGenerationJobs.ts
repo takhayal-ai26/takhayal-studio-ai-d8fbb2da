@@ -16,6 +16,11 @@ export interface GenerationJob {
   credits_used: number;
   created_at: string;
   tool_id: string | null;
+  media_type?: string;
+  video_url?: string | null;
+  thumbnail_url?: string | null;
+  duration?: string | null;
+  source_mode?: string | null;
 }
 
 const JOB_COLUMNS = 'id, status, prompt, image_url, ratio, resolution, quality_tier, model_id, credits_used, created_at, tool_id';
