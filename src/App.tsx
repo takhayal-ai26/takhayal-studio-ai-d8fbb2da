@@ -15,6 +15,7 @@ import { PageSkeleton, StudioSkeleton, AdminSkeleton } from "@/components/PageSk
 // Lazy-loaded pages
 const PortalHome = lazy(() => import("./pages/PortalHome"));
 const Canvas = lazy(() => import("./pages/Canvas"));
+const Video = lazy(() => import("./pages/Video"));
 const GenerateResult = lazy(() => import("./pages/GenerateResult"));
 const Pricing = lazy(() => import("./pages/Pricing"));
 const ToolPageRouter = lazy(() => import("./pages/ToolPageRouter"));
@@ -61,6 +62,8 @@ const RoutedApp = () => {
             <Route path="/" element={<PortalHome />} />
             <Route path="/home" element={<Navigate to="/" replace />} />
             <Route path="/studio" element={<Suspense fallback={<StudioSkeleton />}><Canvas /></Suspense>} />
+            <Route path="/image" element={<Suspense fallback={<StudioSkeleton />}><Canvas /></Suspense>} />
+            <Route path="/video" element={<Suspense fallback={<StudioSkeleton />}><Video /></Suspense>} />
             <Route path="/generate/result" element={<GenerateResult />} />
             <Route path="/pricing" element={<Pricing />} />
             <Route path="/tools" element={<ToolsDirectory />} />
