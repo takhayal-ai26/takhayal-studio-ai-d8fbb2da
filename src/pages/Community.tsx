@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useApp } from '@/context/AppContext';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { Loader2, Sparkles, ArrowRight } from 'lucide-react';
+import { Sparkles, ArrowRight } from 'lucide-react';
 import { CommunityDetailModal } from '@/components/community/CommunityDetailModal';
 import { CommunityCard } from '@/components/community/CommunityCard';
 
