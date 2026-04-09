@@ -66,6 +66,7 @@ export default function Video() {
       supports_image_to_video: m.supports_image_to_video || false,
       is_default: m.is_default, speed: m.speed, best_for: m.best_for,
       best_for_ar: m.best_for_ar, cost_per_run: m.cost_per_run ? Number(m.cost_per_run) : null,
+      preview_image_url: m.preview_image_url || '',
     }))
   , [models]);
 
