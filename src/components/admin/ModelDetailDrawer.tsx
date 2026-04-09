@@ -24,6 +24,7 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
   const [form, setForm] = useState<Partial<ModelRecord>>({});
   const [saving, setSaving] = useState(false);
   const [uploadingPreview, setUploadingPreview] = useState(false);
+  const [isDraggingPreview, setIsDraggingPreview] = useState(false);
   const previewInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
