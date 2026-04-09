@@ -83,6 +83,7 @@ export default function Video() {
   const [isDragging, setIsDragging] = useState(false);
   const [modelSearch, setModelSearch] = useState('');
   const [mobileCreateOpen, setMobileCreateOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState<'how' | 'history'>('how');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Auto-select default model
