@@ -505,7 +505,6 @@ export default function Video() {
   /* ════════════════════════════════════════════ */
   /* ─── DESKTOP LAYOUT ─── */
   /* ════════════════════════════════════════════ */
-  const [activeTab, setActiveTab] = useState<'how' | 'history'>('how');
 
   return (
     <div className="flex-1 flex" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
