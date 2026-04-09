@@ -176,6 +176,9 @@ export default function PortalHome() {
           </div>
         </section>
 
+        {/* ═══ Explore Models — between templates and community ═══ */}
+        <ExploreModels />
+
         {/* ═══ LOGGED-OUT: Testimonials ═══ */}
         {!isLoggedIn && (
           <Suspense fallback={null}>
