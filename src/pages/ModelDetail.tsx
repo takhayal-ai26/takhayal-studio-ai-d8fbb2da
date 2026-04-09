@@ -3,8 +3,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useModelGuides } from '@/hooks/useModelGuides';
 import { useApp } from '@/context/AppContext';
 import { usePricingTiers } from '@/hooks/usePricingTiers';
-import { ArrowLeft, ArrowRight, Zap, Star, Target, Gauge, Sparkles, Coins, ChevronLeft, ChevronRight } from 'lucide-react';
-import { Button } from '@/components/ui/button';
+import { ArrowLeft, ArrowRight, Zap, Star, Target, Gauge, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import { Footer } from '@/components/layout/Footer';
 import { useRef, useState, useEffect } from 'react';
 
@@ -15,76 +14,79 @@ function ModelDetailHero({ guide, isAr, isRTL, minCredits, onStart }: any) {
 
   return (
     <section className="relative overflow-hidden">
-      {/* radial bg glow */}
-      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 30% 40%, rgba(240,62,27,0.07), transparent 70%)' }} />
+      {/* Layered radial backgrounds for depth */}
+      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 20% 30%, rgba(240,62,27,0.06), transparent 60%)' }} />
+      <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 80% 70%, rgba(240,62,27,0.04), transparent 50%)' }} />
 
-      <div className="max-w-7xl mx-auto px-5 md:px-8 pt-6 pb-12 md:py-20">
+      <div className="max-w-7xl mx-auto px-5 md:px-8 pt-4 pb-12 md:pt-6 md:pb-20">
         {/* Back */}
         <button
-          onClick={() => navigate(-1)}
-          className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground mb-8 transition-colors group"
+          onClick={() => navigate('/')}
+          className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground/70 hover:text-foreground mb-10 transition-colors group"
         >
-          {isRTL ? <ArrowRight size={15} className="group-hover:translate-x-0.5 transition-transform" /> : <ArrowLeft size={15} className="group-hover:-translate-x-0.5 transition-transform" />}
-          {isAr ? 'رجوع للنماذج' : 'Back to Models'}
+          {isRTL ? <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" /> : <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />}
+          {isAr ? 'الرئيسية' : 'Back'}
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
           {/* Text column */}
           <div className={isRTL ? 'order-2 lg:order-1' : ''}>
-            {/* Tags */}
+
+            {/* Model Name — DOMINANT */}
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] font-black tracking-tight leading-[1.05] text-foreground">
+              {isAr ? guide.name_ar : guide.name_en}
+            </h1>
+
+            {/* Title — secondary headline */}
+            <p className="text-lg md:text-xl font-medium text-muted-foreground mt-3 leading-relaxed max-w-lg">
+              {isAr ? guide.title_ar || '' : guide.title_en || ''}
+            </p>
+
+            {/* Subtitle */}
+            {(isAr ? guide.subtitle_ar : guide.subtitle_en) && (
+              <p className="text-muted-foreground/70 text-[14px] md:text-[15px] mt-2 leading-relaxed max-w-md">
+                {isAr ? guide.subtitle_ar : guide.subtitle_en}
+              </p>
+            )}
+
+            {/* Tags — below subtitle */}
             {tags.length > 0 && (
-              <div className="flex flex-wrap gap-2 mb-4">
+              <div className="flex flex-wrap gap-2 mt-4">
                 {tags.map((tag: string, i: number) => (
-                  <span key={i} className="text-[11px] font-medium text-[#F03E1B] bg-[#F03E1B]/10 border border-[#F03E1B]/20 rounded-full px-3 py-1">
+                  <span key={i} className="text-[11px] font-medium text-[#F03E1B] bg-[#F03E1B]/8 border border-[#F03E1B]/15 rounded-full px-3 py-1">
                     {tag}
                   </span>
                 ))}
               </div>
             )}
 
-            {/* Provider / Model Name — ember pill */}
-            <span className="inline-block text-[11px] font-bold tracking-[0.08em] uppercase text-[#F03E1B] bg-[#F03E1B]/10 rounded-full px-3 py-1 mb-3">
-              {isAr ? guide.name_ar : guide.name_en}
-            </span>
-
-            {/* Title — dominant headline */}
-            <h1 className="text-2xl md:text-3xl lg:text-[2.5rem] font-extrabold tracking-tight leading-[1.15] text-foreground">
-              {isAr ? guide.title_ar || guide.name_ar : guide.title_en || guide.name_en}
-            </h1>
-
-            {/* Subtitle */}
-            {(isAr ? guide.subtitle_ar : guide.subtitle_en) && (
-              <p className="text-muted-foreground text-[15px] mt-3 leading-relaxed max-w-lg">
-                {isAr ? guide.subtitle_ar : guide.subtitle_en}
-              </p>
-            )}
-
-            {/* Credit badge — ember pill with lightning */}
+            {/* Credit badge */}
             {minCredits !== null && (
-              <div className="mt-5 inline-flex items-center gap-1.5 text-[12px] font-semibold text-white bg-[#F03E1B] rounded-full px-3.5 py-1.5 shadow-sm">
+              <div className="mt-5 inline-flex items-center gap-1.5 text-[12px] font-semibold text-white rounded-full px-4 py-1.5 shadow-sm" style={{ background: 'linear-gradient(135deg, #F03E1B, #e8522e)' }}>
                 <Zap size={13} fill="currentColor" />
                 {isAr ? `${minCredits} رصيد للصورة` : `${minCredits} credit per image`}
               </div>
             )}
 
-            {/* CTAs */}
-            <div className="flex flex-wrap gap-3 mt-7">
-              <Button onClick={onStart} size="lg" className="gap-2 rounded-xl text-[14px] font-semibold px-8">
-                <Sparkles size={16} />
+            {/* CTA — single gradient button */}
+            <div className="mt-8">
+              <button
+                onClick={onStart}
+                className="inline-flex items-center gap-2.5 text-[15px] font-semibold text-white rounded-full px-10 py-3.5 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+                style={{ background: 'linear-gradient(135deg, #F03E1B 0%, #d4341a 50%, #c42d15 100%)' }}
+              >
+                <Sparkles size={18} />
                 {isAr ? 'ابدأ الإبداع' : 'Start Creating'}
-              </Button>
-              <Button onClick={onStart} variant="outline" size="lg" className="gap-2 rounded-xl text-[14px] px-6">
-                {isAr ? 'افتح في الاستوديو' : 'Open in Studio'}
-              </Button>
+              </button>
             </div>
           </div>
 
           {/* Image column */}
           <div className={`relative ${isRTL ? 'order-1 lg:order-2' : ''}`}>
             <div
-              className="rounded-2xl overflow-hidden aspect-square"
+              className="rounded-3xl overflow-hidden aspect-square relative"
               style={{
-                boxShadow: '0 0 0 1px rgba(240,62,27,0.25), 0 20px 60px rgba(0,0,0,0.15)',
+                boxShadow: '0 0 0 1px rgba(240,62,27,0.15), 0 25px 80px -12px rgba(0,0,0,0.2), 0 0 40px rgba(240,62,27,0.08)',
               }}
             >
               {guide.main_image_url ? (
@@ -105,12 +107,12 @@ function ModelDetailHero({ guide, isAr, isRTL, minCredits, onStart }: any) {
 /* ─── Quick Info Card ─── */
 function QuickInfoCard({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-card/60 border border-border/30 p-5 shadow-sm hover:shadow-md transition-shadow">
-      <div className="p-2 rounded-xl bg-[#F03E1B]/10 w-fit mb-3">
+    <div className="rounded-2xl bg-card/80 backdrop-blur-sm border border-border/20 p-6 shadow-sm hover:shadow-md hover:border-[#F03E1B]/15 transition-all duration-300 group">
+      <div className="p-2.5 rounded-xl bg-[#F03E1B]/8 w-fit mb-3 group-hover:bg-[#F03E1B]/12 transition-colors">
         <Icon size={18} className="text-[#F03E1B]" />
       </div>
-      <p className="text-[11px] uppercase text-muted-foreground/60 tracking-wider font-medium">{label}</p>
-      <p className="text-sm font-semibold mt-0.5 capitalize text-foreground">{value}</p>
+      <p className="text-[11px] uppercase text-muted-foreground/50 tracking-wider font-medium">{label}</p>
+      <p className="text-[15px] font-semibold mt-1 capitalize text-foreground">{value}</p>
     </div>
   );
 }
@@ -136,33 +138,23 @@ function ModelCarousel({ guides, isAr, isRTL, navigate }: any) {
   }, [guides]);
 
   const scroll = (dir: number) => {
-    scrollRef.current?.scrollBy({ left: dir * 280, behavior: 'smooth' });
+    scrollRef.current?.scrollBy({ left: dir * 300, behavior: 'smooth' });
   };
 
   return (
     <div className="relative group/carousel">
-      {/* Arrows */}
       {canScrollLeft && (
-        <button
-          onClick={() => scroll(-1)}
-          className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-background/90 border border-border/40 shadow-md flex items-center justify-center hover:bg-background transition-colors -ml-4"
-        >
+        <button onClick={() => scroll(-1)} className="absolute left-0 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-background/90 border border-border/40 shadow-md flex items-center justify-center hover:bg-background transition-colors -ml-4">
           <ChevronLeft size={20} />
         </button>
       )}
       {canScrollRight && (
-        <button
-          onClick={() => scroll(1)}
-          className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-background/90 border border-border/40 shadow-md flex items-center justify-center hover:bg-background transition-colors -mr-4"
-        >
+        <button onClick={() => scroll(1)} className="absolute right-0 top-1/2 -translate-y-1/2 z-10 w-11 h-11 rounded-full bg-background/90 border border-border/40 shadow-md flex items-center justify-center hover:bg-background transition-colors -mr-4">
           <ChevronRight size={20} />
         </button>
       )}
 
-      <div
-        ref={scrollRef}
-        className="overflow-x-auto scrollbar-hide -mx-5 px-5 md:-mx-8 md:px-8"
-      >
+      <div ref={scrollRef} className="overflow-x-auto scrollbar-hide -mx-5 px-5 md:-mx-8 md:px-8">
         <div className="flex gap-4 min-w-max pb-2">
           {guides.map((g: any) => (
             <button
@@ -236,7 +228,7 @@ export default function ModelDetail() {
       <div className="max-w-7xl mx-auto px-5 md:px-8">
 
         {/* Quick Info */}
-        <section className="my-12">
+        <section className="my-14">
           <h2 className="typo-heading-section text-2xl font-bold mb-6">{isAr ? 'معلومات سريعة' : 'Quick Info'}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <QuickInfoCard icon={Gauge} label={isAr ? 'السرعة' : 'Speed'} value={guide.speed} />
@@ -247,10 +239,10 @@ export default function ModelDetail() {
 
         {/* About */}
         {(isAr ? guide.short_description_ar : guide.short_description_en) && (
-          <section className="my-12">
-            <h2 className="typo-heading-section text-2xl font-bold mb-4">{isAr ? 'عن النموذج' : 'About the model'}</h2>
-            <div className="rounded-2xl bg-[#F03E1B]/[0.03] border border-[#F03E1B]/10 p-6 md:p-8">
-              <p className="text-muted-foreground text-[15px] md:text-base leading-relaxed max-w-3xl">
+          <section className="my-14">
+            <h2 className="typo-heading-section text-2xl font-bold mb-5">{isAr ? 'عن النموذج' : 'About the model'}</h2>
+            <div className="rounded-2xl bg-card/60 backdrop-blur-sm border border-border/20 p-7 md:p-8 shadow-sm">
+              <p className="text-muted-foreground text-[15px] md:text-[16px] leading-[1.8] max-w-3xl">
                 {isAr ? guide.short_description_ar : guide.short_description_en}
               </p>
             </div>
@@ -259,11 +251,11 @@ export default function ModelDetail() {
 
         {/* Comparison */}
         {guide.comparison_enabled && guide.comparison_images.length > 0 && (
-          <section className="my-12">
+          <section className="my-14">
             <h2 className="typo-heading-section text-2xl font-bold mb-6">{isAr ? 'مقارنة النماذج' : 'Compare Models'}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {guide.comparison_images.slice(0, 2).map((ci: any, i: number) => (
-                <div key={i} className="rounded-2xl overflow-hidden bg-card/40 border border-border/20">
+                <div key={i} className="rounded-2xl overflow-hidden bg-card/60 border border-border/20">
                   <div className="aspect-square">
                     <img src={ci.url} alt={ci.model_name} className="w-full h-full object-cover" loading="lazy" />
                   </div>
@@ -273,7 +265,7 @@ export default function ModelDetail() {
                   </div>
                 </div>
               ))}
-              <div className="rounded-2xl overflow-hidden bg-card/40 border-2 border-[#F03E1B]/30 ring-2 ring-[#F03E1B]/10">
+              <div className="rounded-2xl overflow-hidden bg-card/60 border-2 border-[#F03E1B]/30 ring-2 ring-[#F03E1B]/10">
                 <div className="aspect-square">
                   <img src={guide.main_image_url} alt={isAr ? guide.name_ar : guide.name_en} className="w-full h-full object-cover" />
                 </div>
@@ -288,14 +280,14 @@ export default function ModelDetail() {
 
         {/* Best For */}
         {bestForItems.length > 0 && (
-          <section className="my-12">
+          <section className="my-14">
             <h2 className="typo-heading-section text-2xl font-bold mb-6">{isAr ? 'الأفضل في' : "What it's best for"}</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {bestForItems.slice(0, 3).map((item: any, i: number) => {
                 const Icon = bestForIcons[i % bestForIcons.length];
                 return (
-                  <div key={i} className="rounded-2xl bg-card/60 border border-border/30 p-6 hover:border-[#F03E1B]/20 transition-colors shadow-sm">
-                    <div className="p-2.5 rounded-xl bg-[#F03E1B]/10 w-fit mb-4">
+                  <div key={i} className="rounded-2xl bg-card/60 border border-border/20 p-6 hover:border-[#F03E1B]/15 transition-all shadow-sm group">
+                    <div className="p-2.5 rounded-xl bg-[#F03E1B]/8 w-fit mb-4 group-hover:bg-[#F03E1B]/12 transition-colors">
                       <Icon size={20} className="text-[#F03E1B]" />
                     </div>
                     <h3 className="font-semibold text-[15px]">{isAr ? item.title_ar : item.title_en}</h3>
@@ -309,21 +301,27 @@ export default function ModelDetail() {
 
         {/* Explore Other Models */}
         {otherGuides.length > 0 && (
-          <section className="my-12">
+          <section className="my-14">
             <h2 className="typo-heading-section text-2xl font-bold mb-6">{isAr ? 'استكشف نماذج أخرى' : 'Explore other models'}</h2>
             <ModelCarousel guides={otherGuides} isAr={isAr} isRTL={isRTL} navigate={navigate} />
           </section>
         )}
 
         {/* Final CTA */}
-        <section className="my-16 text-center">
+        <section className="my-20 text-center">
           <h2 className="text-2xl md:text-3xl font-extrabold">
             {isAr ? `جاهز للإبداع باستخدام ${guide.name_ar}؟` : `Ready to create with ${guide.name_en}?`}
           </h2>
-          <Button onClick={handleStartCreating} size="lg" className="mt-6 gap-2 rounded-xl text-[14px] font-semibold px-10">
-            <Sparkles size={16} />
-            {isAr ? 'ابدأ الآن' : 'Start Now'}
-          </Button>
+          <div className="mt-7">
+            <button
+              onClick={handleStartCreating}
+              className="inline-flex items-center gap-2.5 text-[15px] font-semibold text-white rounded-full px-10 py-3.5 shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all duration-200"
+              style={{ background: 'linear-gradient(135deg, #F03E1B 0%, #d4341a 50%, #c42d15 100%)' }}
+            >
+              <Sparkles size={18} />
+              {isAr ? 'ابدأ الآن' : 'Start Now'}
+            </button>
+          </div>
         </section>
       </div>
 
