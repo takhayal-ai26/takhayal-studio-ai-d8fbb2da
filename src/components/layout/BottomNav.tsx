@@ -1,13 +1,13 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Users, Sparkles, Image, LayoutGrid } from 'lucide-react';
+import { Home, Users, ImageIcon, Film, Image, LayoutGrid } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 const navItems = [
   { id: 'home', route: '/', icon: Home, labelEn: 'Home', labelAr: 'الرئيسية' },
-  { id: 'community', route: '/community', icon: Users, labelEn: 'Community', labelAr: 'المجتمع' },
-  { id: 'create', route: '/create', icon: Sparkles, labelEn: 'Create', labelAr: 'إنشاء', primary: true },
+  { id: 'image', route: '/image', icon: ImageIcon, labelEn: 'Image', labelAr: 'صورة' },
+  { id: 'video', route: '/video', icon: Film, labelEn: 'Video', labelAr: 'فيديو', primary: true },
   { id: 'gallery', route: '/gallery', icon: Image, labelEn: 'Gallery', labelAr: 'المعرض' },
-  { id: 'templates', route: '/templates', icon: LayoutGrid, labelEn: 'Templates', labelAr: 'القوالب' },
+  { id: 'community', route: '/community', icon: Users, labelEn: 'Community', labelAr: 'المجتمع' },
 ];
 
 export function BottomNav() {
@@ -17,9 +17,8 @@ export function BottomNav() {
   const isAr = lang === 'ar';
 
   const isActive = (item: typeof navItems[0]) => {
-    if (item.id === 'create') return location.pathname === '/create';
     if (item.route === '/') return location.pathname === '/' || location.pathname === '/home';
-    return location.pathname === item.route;
+    return location.pathname === item.route || location.pathname.startsWith(item.route + '/');
   };
 
   const handleTap = (item: typeof navItems[0]) => {
