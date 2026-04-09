@@ -46,6 +46,7 @@ export function ModelDetailDrawer({ model, open, onOpenChange, onSave }: Props) 
         supported_quality_tiers: model.supported_quality_tiers,
         pricing_mode: model.pricing_mode,
         supports_native_high_res: model.supports_native_high_res,
+        preview_image_url: (model as any).preview_image_url || '',
       });
     }
   }, [model]);
