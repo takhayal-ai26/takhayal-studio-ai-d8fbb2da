@@ -28,7 +28,12 @@ export function CreationPanel() {
   const { getCreditsForModel } = usePricing();
   const { getCreditsForModelQuality, getCostForModelQuality, allTiers } = usePricingTiers();
 
-  const [selectedModelId, setSelectedModelId] = useState<string>('');
+  // Use AppContext's selectedModelId to sync with model detail page navigation
+  const { selectedModelId: contextModelId, setSelectedModelId: setContextModelId } = useApp();
+  const [localModelId, setLocalModelId] = useState<string>('');
+  const selectedModelId = localModelId || contextModelId || '';
+  const setSelectedModelId = (id: string) => { setLocalModelId(id); setContextModelId(id); };
+
   const [selectedResolution, setSelectedResolution] = useState<string>('1K');
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
   const [uploadedImages, setUploadedImages] = useState<{ preview: string; url: string | null }[]>([]);
@@ -59,6 +64,13 @@ export function CreationPanel() {
     if (tierCredits !== null) return tierCredits;
     return getCreditsForModel(currentModel.id);
   })();
+
+  // Sync from context when navigating from model detail page
+  useEffect(() => {
+    if (contextModelId && activeModels.some(m => m.id === contextModelId)) {
+      setLocalModelId(contextModelId);
+    }
+  }, [contextModelId, activeModels]);
 
   useEffect(() => {
     if (defaultModel && !selectedModelId) setSelectedModelId(defaultModel.id);
