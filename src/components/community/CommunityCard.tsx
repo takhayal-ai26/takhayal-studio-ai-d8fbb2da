@@ -47,4 +47,4 @@ export const CommunityCard = memo(function CommunityCard({ post, isAr, isMobile,
       )}
     </button>
   );
-}
+});
