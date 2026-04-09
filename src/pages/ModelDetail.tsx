@@ -190,7 +190,7 @@ export default function ModelDetail() {
   const isAr = lang === 'ar';
   const { activeGuides, loading } = useModelGuides();
   const { setActivePage, setSelectedModelId } = useApp();
-  const { tiers } = usePricingTiers();
+  const { tiers, allTiers } = usePricingTiers();
 
   if (loading) {
     return (
@@ -208,8 +208,9 @@ export default function ModelDetail() {
   const bestForIcons = [Zap, Star, Target];
 
   let minCredits: number | null = null;
-  if (guide.linked_model_id && tiers.length > 0) {
-    const modelTiers = tiers.filter(t => t.model_id === guide.linked_model_id && t.is_active && t.is_available);
+  if (guide.linked_model_id) {
+    const modelTiers = (allTiers[guide.linked_model_id] || tiers.filter(t => t.model_id === guide.linked_model_id))
+      .filter(t => t.is_active && t.is_available);
     if (modelTiers.length > 0) {
       minCredits = Math.min(...modelTiers.map(t => t.credits_charged));
     }
