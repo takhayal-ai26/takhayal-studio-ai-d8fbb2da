@@ -18,6 +18,7 @@ import { isToolJob, getToolRoute } from '@/hooks/useToolInfo';
 import { DeleteConfirmDialog } from '@/components/gallery/DeleteConfirmDialog';
 
 type FilterKey = 'all' | 'today' | 'yesterday' | 'edited';
+type MediaFilter = 'all' | 'images' | 'videos';
 type SortKey = 'newest' | 'oldest';
 
 function groupByDate(jobs: GenerationJob[]): { label: string; labelAr: string; key: string; items: GenerationJob[] }[] {
@@ -219,6 +220,7 @@ export default function Gallery() {
   const [search, setSearch] = useState('');
   const [sort, setSort] = useState<SortKey>('newest');
   const [filter, setFilter] = useState<FilterKey>('all');
+  const [mediaFilter, setMediaFilter] = useState<MediaFilter>('all');
   const [highlightedJobId, setHighlightedJobId] = useState<string | null>(null);
   const scrollerRef = useRef<HTMLDivElement>(null);
 
@@ -250,6 +252,10 @@ export default function Gallery() {
   const filteredJobs = useMemo(() => {
     let result = [...jobs];
 
+    // Media filter
+    if (mediaFilter === 'images') result = result.filter(j => (j.media_type || 'image') === 'image');
+    else if (mediaFilter === 'videos') result = result.filter(j => j.media_type === 'video');
+
     // Search
     if (search.trim()) {
       const q = search.toLowerCase();
@@ -267,7 +273,7 @@ export default function Gallery() {
     if (sort === 'oldest') result.reverse();
 
     return result;
-  }, [jobs, search, sort, filter]);
+  }, [jobs, search, sort, filter, mediaFilter]);
 
   const groups = useMemo(() => groupByDate(filteredJobs), [filteredJobs]);
 
