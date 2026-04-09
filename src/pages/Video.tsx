@@ -571,10 +571,10 @@ function ModelPickerSheet({ open, onOpenChange, models, selectedModelId, onSelec
 }) {
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-[380px] max-w-full p-0 border-s border-border/30 bg-popover/95 backdrop-blur-xl">
+      <SheetContent side="right" className="w-[360px] max-w-full p-0 border-s border-zinc-800 bg-zinc-900/95 backdrop-blur-xl">
         {/* Search */}
-        <div className="p-4 border-b border-border/30">
-          <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-card border border-border/50">
+        <div className="p-4 border-b border-zinc-800">
+          <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-zinc-800 border border-zinc-700/40">
             <Search size={15} className="text-muted-foreground/50 flex-shrink-0" />
             <input
               type="text"
