@@ -190,7 +190,7 @@ export default function ModelDetail() {
   const isAr = lang === 'ar';
   const { activeGuides, loading } = useModelGuides();
   const { setActivePage, setSelectedModelId } = useApp();
-  const { tiers } = usePricingTiers();
+  const { tiers, allTiers } = usePricingTiers();
 
   if (loading) {
     return (
