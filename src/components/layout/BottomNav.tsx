@@ -5,7 +5,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 const navItems = [
   { id: 'home', route: '/', icon: Home, labelEn: 'Home', labelAr: 'الرئيسية' },
   { id: 'community', route: '/community', icon: Users, labelEn: 'Community', labelAr: 'المجتمع' },
-  { id: 'create', route: '/create', icon: PlusCircle, labelEn: 'Create', labelAr: 'إنشاء', primary: true },
+  { id: 'create', route: '/create', icon: Sparkles, labelEn: 'Create', labelAr: 'إنشاء', primary: true },
   { id: 'gallery', route: '/gallery', icon: Image, labelEn: 'Gallery', labelAr: 'المعرض' },
   { id: 'templates', route: '/templates', icon: LayoutGrid, labelEn: 'Templates', labelAr: 'القوالب' },
 ];
