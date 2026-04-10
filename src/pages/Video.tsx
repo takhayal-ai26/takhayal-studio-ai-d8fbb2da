@@ -374,20 +374,6 @@ export default function Video() {
           <div className="absolute bottom-0 left-0 right-0 max-h-[75vh] rounded-t-3xl bg-popover flex flex-col animate-in slide-in-from-bottom duration-200">
             <div className="w-12 h-1.5 rounded-full bg-muted-foreground/20 mx-auto mt-3 mb-2" />
 
-            {/* Search */}
-            <div className="px-4 pb-2">
-              <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-card/80">
-                <Search size={14} className="text-muted-foreground/50 flex-shrink-0" />
-                <input
-                  type="text"
-                  value={modelSearch}
-                  onChange={e => setModelSearch(e.target.value)}
-                  placeholder={isAr ? 'بحث عن نموذج...' : 'Search models...'}
-                  className="flex-1 bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground/40 focus:outline-none"
-                  autoFocus
-                />
-              </div>
-            </div>
 
             {/* Models List */}
             <div className="overflow-y-auto flex-1 px-3 pb-6 space-y-0.5">
