@@ -118,12 +118,13 @@ export function DashboardHero() {
       >
         {/* Headline */}
         <h1
-          className="font-extrabold tracking-tight drop-shadow-2xl"
+          className="tracking-tight drop-shadow-2xl"
           style={{
             fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
-            fontSize: isAr ? 'clamp(48px, 10vw, 96px)' : 'clamp(52px, 11vw, 110px)',
-            lineHeight: isAr ? 1.15 : 1.0,
-            letterSpacing: isAr ? 0 : '-0.03em',
+            fontSize: isAr ? 'clamp(52px, 12vw, 110px)' : 'clamp(56px, 13vw, 130px)',
+            lineHeight: isAr ? 1.1 : 0.95,
+            letterSpacing: isAr ? 0 : '-0.04em',
+            fontWeight: 900,
           }}
         >
           <span className="block text-white">{h1}</span>
