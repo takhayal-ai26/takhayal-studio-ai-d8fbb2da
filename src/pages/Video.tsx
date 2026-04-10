@@ -220,11 +220,20 @@ export default function Video() {
 
   if (videoModels.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-[60vh]" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
-        <div className="text-center">
-          <Film size={48} className="mx-auto text-muted-foreground/20 mb-4" />
-          <h2 className="text-lg font-bold text-foreground">{isAr ? 'قريباً' : 'Coming Soon'}</h2>
-          <p className="text-sm text-muted-foreground mt-1">{isAr ? 'نعمل على تجهيز توليد الفيديو' : 'Video generation is being prepared'}</p>
+      <div className="flex-1 flex flex-col" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
+        <div className="max-w-lg mx-auto px-4 pt-3 w-full space-y-4">
+          <div className="w-full rounded-2xl bg-muted/30 animate-pulse" style={{ aspectRatio: '2.8/1' }} />
+          <div className="grid grid-cols-2 gap-2.5">
+            <div className="rounded-2xl bg-muted/20 animate-pulse" style={{ aspectRatio: '4/3' }} />
+            <div className="rounded-2xl bg-muted/20 animate-pulse" style={{ aspectRatio: '4/3' }} />
+          </div>
+          <div className="rounded-2xl bg-muted/20 animate-pulse h-28" />
+          <div className="rounded-2xl bg-muted/20 animate-pulse h-14" />
+          <div className="flex gap-2">
+            <div className="flex-1 rounded-2xl bg-muted/20 animate-pulse h-14" />
+            <div className="flex-1 rounded-2xl bg-muted/20 animate-pulse h-14" />
+            <div className="flex-1 rounded-2xl bg-muted/20 animate-pulse h-14" />
+          </div>
         </div>
       </div>
     );
