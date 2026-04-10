@@ -1,13 +1,12 @@
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Home, Users, ImageIcon, Film, Image, LayoutGrid } from 'lucide-react';
-import { useLanguage } from '@/i18n/LanguageContext';
+import { Home, Users, PlusCircle, Image, LayoutGrid } from 'lucide-react';
 
 const navItems = [
   { id: 'home', route: '/', icon: Home, labelEn: 'Home', labelAr: 'الرئيسية' },
-  { id: 'image', route: '/image', icon: ImageIcon, labelEn: 'Image', labelAr: 'صورة' },
-  { id: 'video', route: '/video', icon: Film, labelEn: 'Video', labelAr: 'فيديو', primary: true },
-  { id: 'gallery', route: '/gallery', icon: Image, labelEn: 'Gallery', labelAr: 'المعرض' },
   { id: 'community', route: '/community', icon: Users, labelEn: 'Community', labelAr: 'المجتمع' },
+  { id: 'create', route: '/create', icon: PlusCircle, labelEn: 'Create', labelAr: 'إنشاء', primary: true },
+  { id: 'gallery', route: '/gallery', icon: Image, labelEn: 'Gallery', labelAr: 'المعرض' },
+  { id: 'templates', route: '/templates', icon: LayoutGrid, labelEn: 'Templates', labelAr: 'القوالب' },
 ];
 
 export function BottomNav() {
