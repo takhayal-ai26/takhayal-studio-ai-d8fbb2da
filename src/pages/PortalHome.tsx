@@ -75,9 +75,9 @@ export default function PortalHome() {
     : featuredTemplates.filter(tpl => tpl.category === activeCategory);
 
   return (
-    <div className="flex-1 overflow-y-auto animate-page-enter" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
+    <div className="flex-1 overflow-y-auto animate-page-enter">
 
-      {/* ── Hero (both modes, DashboardHero adapts) ── */}
+      {/* ── Cinematic Video Hero ── */}
       <DashboardHero />
 
       <div className="max-w-7xl mx-auto px-5 md:px-8">

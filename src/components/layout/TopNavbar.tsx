@@ -104,7 +104,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
 
   return (
     <>
-      <nav dir={isRTL ? 'rtl' : 'ltr'} className={`fixed left-0 right-0 z-50 h-14 bg-background/80 backdrop-blur-xl flex items-center px-5 md:px-6 transition-[top] duration-200 ${bannerOffset ? 'top-[40px]' : 'top-0'}`}>
+      <nav dir={isRTL ? 'rtl' : 'ltr'} className={`fixed left-0 right-0 z-50 h-14 flex items-center px-5 md:px-6 transition-[top,background] duration-300 ${bannerOffset ? 'top-[40px]' : 'top-0'} ${isHeroPage ? 'bg-transparent' : 'bg-background/80 backdrop-blur-xl'}`}>
         <div className="flex-shrink-0 whitespace-nowrap">
           <Logo />
         </div>

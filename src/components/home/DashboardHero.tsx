@@ -1,459 +1,170 @@
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Sparkles, Image as ImageIcon, ChevronDown, Check } from 'lucide-react';
-import { useApp, AspectRatio } from '@/context/AppContext';
+import { useEffect, useState } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { useModels } from '@/hooks/useModels';
-import { usePricing } from '@/hooks/usePricing';
-import { usePricingTiers } from '@/hooks/usePricingTiers';
-import { useGenerationJobs } from '@/hooks/useGenerationJobs';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 
-const RATIOS = ['1:1', '2:3', '3:2', '16:9', '4:3', '4:5', '9:16'];
-const FEATURED_MODEL_NAMES = ['Nano Banana Pro', 'SeeDream 4.5', 'FLUX 1.1 Pro', 'GPT Image 1.5'];
-const HERO_CONFIG_CACHE_KEY = 'dashboard_home_hero_config_cache';
-const DEFAULT_HERO_CONFIG: Record<string, string> = {
-  dashboard_home_hero_image: 'https://njenobbxlbhbzwpkylha.supabase.co/storage/v1/object/public/tool-covers/dashboard-hero-1775064030516.png',
-  dashboard_home_hero_focal_point: '63 16',
-  dashboard_home_overlay_strength: '0.30',
-  dashboard_home_title_en: 'Imagine',
-  dashboard_home_title_ar: 'تخيّل',
-  dashboard_home_subtitle_en: '',
-  dashboard_home_subtitle_ar: '',
-  dashboard_home_prompt_placeholder_en: 'Describe what you want to create...',
-  dashboard_home_prompt_placeholder_ar: 'صِف ما تريد إنشاءه...',
+const HERO_CONFIG_KEYS = [
+  'video_hero_video_url',
+  'video_hero_poster_url',
+  'video_hero_headline1_en',
+  'video_hero_headline2_en',
+  'video_hero_subtitle_en',
+  'video_hero_headline1_ar',
+  'video_hero_headline2_ar',
+  'video_hero_subtitle_ar',
+  'video_hero_overlay_intensity',
+  'video_hero_text_align',
+  'video_hero_enabled',
+  'video_hero_poster_enabled',
+] as const;
+
+const DEFAULTS: Record<string, string> = {
+  video_hero_video_url: 'https://njenobbxlbhbzwpkylha.supabase.co/storage/v1/object/public/tool-covers/hero-video.mp4',
+  video_hero_poster_url: '',
+  video_hero_headline1_en: 'Imagine',
+  video_hero_headline2_en: 'More',
+  video_hero_subtitle_en: 'Create striking images and cinematic videos with AI built for modern creators.',
+  video_hero_headline1_ar: 'تخيّل',
+  video_hero_headline2_ar: 'أكثر',
+  video_hero_subtitle_ar: 'أنشئ صوراً مدهشة وفيديوهات سينمائية بالذكاء الاصطناعي، مصممة للمبدعين العصريين.',
+  video_hero_overlay_intensity: '0.40',
+  video_hero_text_align: 'center',
+  video_hero_enabled: 'true',
+  video_hero_poster_enabled: 'false',
 };
 
-const readCachedHeroConfig = (): Record<string, string> => {
-  if (typeof window === 'undefined') return DEFAULT_HERO_CONFIG;
+const CACHE_KEY = 'video_hero_config_cache';
+
+function readCache(): Record<string, string> {
   try {
-    const raw = window.localStorage.getItem(HERO_CONFIG_CACHE_KEY);
-    if (!raw) return DEFAULT_HERO_CONFIG;
-    const parsed = JSON.parse(raw);
-    if (!parsed || typeof parsed !== 'object') return DEFAULT_HERO_CONFIG;
-    return { ...DEFAULT_HERO_CONFIG, ...(parsed as Record<string, string>) };
+    const raw = localStorage.getItem(CACHE_KEY);
+    if (!raw) return DEFAULTS;
+    return { ...DEFAULTS, ...JSON.parse(raw) };
   } catch {
-    return DEFAULT_HERO_CONFIG;
+    return DEFAULTS;
   }
-};
-
-function RatioIcon({ ratio, size = 12 }: { ratio: string; size?: number }) {
-  const [w, h] = ratio.split(':').map(Number);
-  const aspect = w / h;
-  let rw: number;
-  let rh: number;
-  if (aspect >= 1) {
-    rw = size;
-    rh = size / aspect;
-  } else {
-    rh = size;
-    rw = size * aspect;
-  }
-
-  return (
-    <div className="flex items-center justify-center" style={{ width: size + 2, height: size + 2 }}>
-      <div style={{ width: rw, height: rh, border: '1.5px solid currentColor', borderRadius: 2, opacity: 0.5 }} />
-    </div>
-  );
 }
 
-type DropdownType = 'ratio' | 'quality' | 'model' | null;
-
 export function DashboardHero() {
-  const navigate = useNavigate();
-  const { prompt, setPrompt, setAspectRatio, aspectRatio, credits, requireAuth } = useApp();
-  const { isRTL, lang } = useLanguage();
-  const { activeModels, defaultModel } = useModels();
-  const { getCreditsForModel } = usePricing();
-  const { getCreditsForModelQuality } = usePricingTiers();
-  const { submitJob } = useGenerationJobs();
+  const { lang } = useLanguage();
+  const isAr = lang === 'ar';
+  const [initial] = useState(() => readCache());
 
-  const [expanded, setExpanded] = useState(false);
-  const [localModelId, setLocalModelId] = useState('');
-  const [localResolution, setLocalResolution] = useState('1K');
-  const [localGenerating, setLocalGenerating] = useState(false);
-  const [openDrop, setOpenDrop] = useState<DropdownType>(null);
-  const [initialHeroConfig] = useState<Record<string, string>>(() => readCachedHeroConfig());
-  const containerRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const { data: heroConfig } = useQuery({
-    queryKey: ['dashboard-hero-config'],
+  const { data: config } = useQuery({
+    queryKey: ['video-hero-config'],
     queryFn: async () => {
-      const keys = [
-        'dashboard_home_hero_image',
-        'dashboard_home_hero_focal_point',
-        'dashboard_home_title_en',
-        'dashboard_home_title_ar',
-        'dashboard_home_subtitle_en',
-        'dashboard_home_subtitle_ar',
-        'dashboard_home_prompt_placeholder_en',
-        'dashboard_home_prompt_placeholder_ar',
-        'dashboard_home_enabled',
-        'dashboard_home_overlay_strength',
-      ];
-      const { data } = await supabase.from('platform_config').select('config_key, config_value').in('config_key', keys);
+      const { data } = await supabase
+        .from('platform_config')
+        .select('config_key, config_value')
+        .in('config_key', [...HERO_CONFIG_KEYS]);
       const map: Record<string, string> = {};
-      (data || []).forEach((r: any) => {
-        map[r.config_key] = r.config_value;
-      });
+      (data || []).forEach((r: any) => { map[r.config_key] = r.config_value; });
       return map;
     },
-    placeholderData: initialHeroConfig,
+    placeholderData: initial,
     staleTime: 30000,
   });
 
   useEffect(() => {
-    if (!heroConfig || typeof window === 'undefined') return;
-    try {
-      window.localStorage.setItem(HERO_CONFIG_CACHE_KEY, JSON.stringify(heroConfig));
-    } catch {
-      // ignore storage failures
+    if (config) {
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify(config)); } catch {}
     }
-  }, [heroConfig]);
+  }, [config]);
 
-  const mergedHeroConfig = { ...DEFAULT_HERO_CONFIG, ...(heroConfig || {}) };
-  const heroImage = mergedHeroConfig.dashboard_home_hero_image;
-  const heroFocalPoint = mergedHeroConfig.dashboard_home_hero_focal_point;
-  const overlayStrength = mergedHeroConfig.dashboard_home_overlay_strength;
+  const c = { ...DEFAULTS, ...(config || {}) };
+  const videoUrl = c.video_hero_video_url;
+  const posterUrl = c.video_hero_poster_url;
+  const posterEnabled = c.video_hero_poster_enabled === 'true';
+  const overlay = parseFloat(c.video_hero_overlay_intensity) || 0.4;
+  const align = c.video_hero_text_align || 'center';
 
-  const isAr = lang === 'ar';
-  const title = isAr ? (mergedHeroConfig.dashboard_home_title_ar || '') : (mergedHeroConfig.dashboard_home_title_en || '');
-  const subtitleText = isAr ? (mergedHeroConfig.dashboard_home_subtitle_ar || '') : (mergedHeroConfig.dashboard_home_subtitle_en || '');
-  const placeholder = isAr
-    ? (mergedHeroConfig.dashboard_home_prompt_placeholder_ar || DEFAULT_HERO_CONFIG.dashboard_home_prompt_placeholder_ar)
-    : (mergedHeroConfig.dashboard_home_prompt_placeholder_en || DEFAULT_HERO_CONFIG.dashboard_home_prompt_placeholder_en);
-
-  const currentModel = activeModels.find((m) => m.id === localModelId) || defaultModel || activeModels[0];
-
-  useEffect(() => {
-    if (defaultModel && !localModelId) setLocalModelId(defaultModel.id);
-    else if (activeModels.length > 0 && !localModelId) setLocalModelId(activeModels[0].id);
-  }, [defaultModel, activeModels, localModelId]);
-
-  const availableRatios = currentModel?.supported_ratios || ['1:1', '16:9', '9:16', '4:5'];
-  const qualityTiers = currentModel?.supported_quality_tiers || ['1K'];
-
-  useEffect(() => {
-    if (currentModel && !qualityTiers.includes(localResolution)) {
-      setLocalResolution(qualityTiers[0] || '1K');
-    }
-  }, [currentModel, localResolution, qualityTiers]);
-
-  const cost = (() => {
-    if (!currentModel) return 2;
-    const tierCredits = getCreditsForModelQuality(currentModel.id, localResolution);
-    if (tierCredits !== null) return tierCredits;
-    return getCreditsForModel(currentModel.id);
-  })();
-
-  const hasText = prompt.trim().length > 0;
-
-  const handleExpand = useCallback(() => {
-    if (!expanded) {
-      setExpanded(true);
-      setTimeout(() => inputRef.current?.focus(), 50);
-    }
-  }, [expanded]);
-
-  useEffect(() => {
-    const handler = (e: MouseEvent) => {
-      if (expanded && !hasText && containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setExpanded(false);
-        setOpenDrop(null);
-      }
-      if (openDrop && containerRef.current && !containerRef.current.contains(e.target as Node)) {
-        setOpenDrop(null);
-      }
-    };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
-  }, [expanded, hasText, openDrop]);
-
-  const handleGenerate = () => {
-    if (!prompt.trim() || !currentModel || localGenerating) return;
-
-    requireAuth(async () => {
-      setLocalGenerating(true);
-
-      const jobId = await submitJob({
-        prompt: prompt.trim(),
-        ratio: aspectRatio,
-        qualityTier: localResolution,
-        modelId: currentModel.id,
-        creditCost: cost,
-        sourceTag: 'home_hero',
-      });
-
-      if (!jobId) {
-        setLocalGenerating(false);
-        return;
-      }
-
-      navigate(`/gallery?highlight=${jobId}`);
-    });
-  };
-
-  const canGenerate = hasText && !localGenerating && credits >= cost && !!currentModel;
-  const modelDisplayName = currentModel?.model_name || 'Auto';
-
-  const pillBase = 'flex items-center gap-1.5 px-3 h-8 rounded-full text-[12px] font-medium transition-all duration-150 whitespace-nowrap cursor-pointer';
-  const pillInactive = `${pillBase} bg-white/[0.06] border border-white/[0.08] text-white/60 hover:bg-white/[0.10] hover:text-white/80`;
-  const pillActive = `${pillBase} bg-white/[0.14] border border-white/[0.20] text-white`;
-
-  const dropMenuStyle: React.CSSProperties = {
-    position: 'absolute',
-    top: '100%',
-    left: 0,
-    marginTop: 6,
-    background: 'rgba(16,16,16,0.96)',
-    border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: 14,
-    backdropFilter: 'blur(24px)',
-    WebkitBackdropFilter: 'blur(24px)',
-    padding: '4px',
-    minWidth: 130,
-    boxShadow: '0 16px 48px rgba(0,0,0,0.5)',
-    zIndex: 100,
-  };
-
-  const dropItemStyle = (active: boolean): React.CSSProperties => ({
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    width: '100%',
-    padding: '7px 12px',
-    fontSize: 13,
-    color: active ? '#FFFFFF' : 'rgba(255,255,255,0.6)',
-    background: active ? 'rgba(255,255,255,0.08)' : 'transparent',
-    border: 'none',
-    cursor: 'pointer',
-    whiteSpace: 'nowrap',
-    gap: 10,
-    borderRadius: 10,
-    transition: 'background 0.15s',
-  });
+  const h1 = isAr ? c.video_hero_headline1_ar : c.video_hero_headline1_en;
+  const h2 = isAr ? c.video_hero_headline2_ar : c.video_hero_headline2_en;
+  const subtitle = isAr ? c.video_hero_subtitle_ar : c.video_hero_subtitle_en;
 
   return (
-    <section className="relative w-full h-[48vh] md:h-[540px]">
-      <div className="absolute inset-0 overflow-hidden" style={{ borderRadius: '0 0 36px 36px' }}>
-        <div
-          className="absolute inset-0"
-          style={{
-            backgroundImage: `url(${heroImage})`,
-            backgroundSize: 'cover',
-            backgroundPosition: heroFocalPoint.split(' ').map((v: string) => `${v}%`).join(' '),
-            backgroundRepeat: 'no-repeat',
-          }}
-        />
-        <div className="absolute inset-0" style={{ background: `linear-gradient(180deg, rgba(0,0,0,${Number(overlayStrength) * 0.7}) 0%, rgba(0,0,0,${overlayStrength}) 60%, rgba(0,0,0,${Number(overlayStrength) * 1.1}) 100%)` }} />
-      </div>
+    <section
+      className="relative w-full overflow-hidden"
+      style={{ height: '100vh', minHeight: 520, marginTop: 'calc(-3.5rem - var(--banner-h, 0px))' }}
+    >
+      {/* Video */}
+      <video
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+        {...(posterEnabled && posterUrl ? { poster: posterUrl } : {})}
+        className="absolute inset-0 w-full h-full object-cover"
+        style={{ zIndex: 0 }}
+      >
+        <source src={videoUrl} type="video/mp4" />
+      </video>
 
-      <div className="relative z-10 flex flex-col items-center justify-center px-5 md:px-6 h-full pb-10 md:pb-[72px] pt-14 md:pt-20">
-        {/* Premium badge */}
-        <div
-          className="animate-enter"
+      {/* Overlay */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: `linear-gradient(180deg, rgba(0,0,0,${overlay * 0.6}) 0%, rgba(0,0,0,${overlay}) 50%, rgba(0,0,0,${overlay * 1.2}) 100%)`,
+          zIndex: 1,
+        }}
+      />
+
+      {/* Content */}
+      <div
+        className="relative z-10 flex flex-col items-center justify-center h-full px-6"
+        style={{ textAlign: align as any }}
+        dir={isAr ? 'rtl' : 'ltr'}
+      >
+        {/* Headline */}
+        <h1
+          className="font-extrabold tracking-tight drop-shadow-2xl"
           style={{
-            background: 'linear-gradient(135deg, rgba(255,102,51,0.15), rgba(255,255,255,0.05))',
-            backdropFilter: 'blur(14px)',
-            WebkitBackdropFilter: 'blur(14px)',
-            border: '1px solid rgba(255,255,255,0.12)',
-            boxShadow: '0 2px 12px rgba(255,102,51,0.15)',
-            color: '#FFFFFF',
-            fontSize: 12,
-            fontWeight: 500,
-            padding: '6px 16px',
-            borderRadius: 999,
-            marginBottom: 20,
+            fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
+            fontSize: isAr ? 'clamp(48px, 10vw, 96px)' : 'clamp(52px, 11vw, 110px)',
+            lineHeight: isAr ? 1.15 : 1.0,
+            letterSpacing: isAr ? 0 : '-0.03em',
           }}
         >
-          {isAr ? 'منصة للمبدعين العرب' : 'Built for Arab creators'}
-        </div>
-
-        {title && (
-          <h1
-            className="text-white text-center font-extrabold drop-shadow-lg"
+          <span className="block text-white">{h1}</span>
+          <span
+            className="block"
             style={{
-              fontSize: 'clamp(26px, 5vw, 64px)',
-              letterSpacing: -2,
-              lineHeight: 1.05,
-              marginBottom: subtitleText ? 12 : 24,
-              fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
-              textShadow: '0 2px 20px rgba(0,0,0,0.4)',
+              background: 'linear-gradient(135deg, #F03E1B 0%, #FF6B35 40%, #FFB347 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
             }}
           >
-            {title}
-          </h1>
-        )}
+            {h2}
+          </span>
+        </h1>
 
-        {subtitleText && (
-          <p className="text-center hidden md:block" style={{ fontSize: 13, color: 'rgba(255,255,255,0.50)', marginBottom: 32, maxWidth: 680, lineHeight: 1.6 }}>
-            {subtitleText}
+        {/* Subtitle */}
+        {subtitle && (
+          <p
+            className="mt-5 md:mt-7 max-w-[560px] mx-auto drop-shadow-lg"
+            style={{
+              fontSize: isAr ? 'clamp(15px, 2vw, 19px)' : 'clamp(14px, 1.8vw, 18px)',
+              lineHeight: isAr ? 1.8 : 1.7,
+              color: 'rgba(255,255,255,0.7)',
+              fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
+              fontWeight: 400,
+            }}
+          >
+            {subtitle}
           </p>
         )}
-
-        {/* Prompt bar */}
-        <div ref={containerRef} style={{ width: '100%', maxWidth: 680 }}>
-          {!expanded ? (
-            <div
-              onClick={handleExpand}
-              className="cursor-text flex items-center gap-3 group"
-              style={{
-                height: 48,
-                background: 'rgba(0,0,0,0.45)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 999,
-                backdropFilter: 'blur(24px)',
-                WebkitBackdropFilter: 'blur(24px)',
-                padding: '0 6px 0 20px',
-                transition: 'all 0.2s ease',
-              }}
-            >
-              <ImageIcon size={17} style={{ color: 'rgba(255,255,255,0.35)', flexShrink: 0 }} />
-              <span className="flex-1" style={{ fontSize: 14, color: 'rgba(255,255,255,0.35)' }}>
-                {placeholder}
-              </span>
-              <div className="flex-shrink-0 flex items-center gap-2 px-4 h-9 rounded-full bg-white/[0.08] group-hover:bg-white/[0.12] transition-colors">
-                <Sparkles size={14} style={{ color: 'rgba(255,255,255,0.5)' }} />
-                <span style={{ fontSize: 13, color: 'rgba(255,255,255,0.5)', fontWeight: 500 }}>Generate</span>
-              </div>
-            </div>
-          ) : (
-            <div
-              style={{
-                background: 'rgba(0,0,0,0.45)',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: 18,
-                backdropFilter: 'blur(24px)',
-                WebkitBackdropFilter: 'blur(24px)',
-                overflow: 'visible',
-                position: 'relative',
-              }}
-            >
-              {/* Input row */}
-              <div className="flex items-center" style={{ height: 48, padding: '0 16px' }}>
-                <ImageIcon size={17} style={{ color: 'rgba(255,255,255,0.35)', flexShrink: 0, marginRight: isRTL ? 0 : 12, marginLeft: isRTL ? 12 : 0 }} />
-                <input
-                  ref={inputRef}
-                  type="text"
-                  data-hero-input
-                  value={prompt}
-                  onChange={(e) => setPrompt(e.target.value)}
-                  placeholder={placeholder}
-                  className="flex-1 outline-none placeholder:text-white/30 focus:outline-none focus:ring-0 focus:border-none"
-                  style={{ fontSize: 14, color: '#FFFFFF', border: 'none', background: 'transparent', direction: isRTL ? 'rtl' : 'ltr', boxShadow: 'none', outline: 'none' }}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' && canGenerate) {
-                      e.preventDefault();
-                      handleGenerate();
-                    }
-                  }}
-                />
-              </div>
-
-              {/* Divider */}
-              <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '0 14px' }} />
-
-              {/* Bottom options row */}
-              <div className="flex flex-wrap items-center animate-fade-in" style={{ padding: '6px 10px', gap: 5 }}>
-                {/* Ratio */}
-                <div style={{ position: 'relative' }}>
-                  <button onClick={() => setOpenDrop(openDrop === 'ratio' ? null : 'ratio')} className={openDrop === 'ratio' ? pillActive : pillInactive}>
-                    <RatioIcon ratio={aspectRatio} size={10} />
-                    {aspectRatio}
-                    <ChevronDown size={10} style={{ opacity: 0.4 }} />
-                  </button>
-                  {openDrop === 'ratio' && (
-                    <div style={dropMenuStyle} className="animate-fade-in">
-                      {(availableRatios as string[])
-                        .filter((r) => RATIOS.includes(r))
-                        .map((r) => (
-                          <button key={r} onClick={() => { setAspectRatio(r as AspectRatio); setOpenDrop(null); }} style={dropItemStyle(r === aspectRatio)}>
-                            <span className="flex items-center gap-2"><RatioIcon ratio={r} size={10} /> {r}</span>
-                            {r === aspectRatio && <Check size={13} />}
-                          </button>
-                        ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Quality */}
-                <div style={{ position: 'relative' }}>
-                  <button onClick={() => setOpenDrop(openDrop === 'quality' ? null : 'quality')} className={openDrop === 'quality' ? pillActive : pillInactive}>
-                    <Sparkles size={11} style={{ opacity: 0.5 }} />
-                    {localResolution}
-                    <ChevronDown size={10} style={{ opacity: 0.4 }} />
-                  </button>
-                  {openDrop === 'quality' && (
-                    <div style={dropMenuStyle} className="animate-fade-in">
-                      {(qualityTiers as string[]).map((q) => (
-                        <button key={q} onClick={() => { setLocalResolution(q); setOpenDrop(null); }} style={dropItemStyle(q === localResolution)}>
-                          <span>{q}</span>
-                          {q === localResolution && <Check size={13} />}
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Model */}
-                <div style={{ position: 'relative' }}>
-                  <button onClick={() => setOpenDrop(openDrop === 'model' ? null : 'model')} className={openDrop === 'model' ? pillActive : pillInactive}>
-                    {modelDisplayName}
-                    <ChevronDown size={10} style={{ opacity: 0.4 }} />
-                  </button>
-                  {openDrop === 'model' && (
-                    <div style={{ ...dropMenuStyle, minWidth: 190 }} className="animate-fade-in">
-                      {activeModels
-                        .filter((m) => FEATURED_MODEL_NAMES.some((n) => m.model_name.toLowerCase().includes(n.toLowerCase())))
-                        .map((m) => (
-                          <button key={m.id} onClick={() => { setLocalModelId(m.id); setOpenDrop(null); }} style={dropItemStyle(m.id === localModelId)}>
-                            <span>{m.model_name}</span>
-                            {m.id === localModelId && <Check size={13} />}
-                          </button>
-                        ))}
-                      <div style={{ height: 1, background: 'rgba(255,255,255,0.06)', margin: '2px 0' }} />
-                      <button onClick={() => { setOpenDrop(null); navigate('/studio'); }} style={{ ...dropItemStyle(false), color: 'rgba(255,255,255,0.35)', fontSize: 12 }}>
-                        See all models →
-                      </button>
-                    </div>
-                  )}
-                </div>
-
-                {/* Generate button - full width on mobile */}
-                <button
-                  onClick={handleGenerate}
-                  disabled={!canGenerate}
-                  className="transition-all duration-200 w-full sm:w-auto sm:ml-auto"
-                  style={{
-                    background: canGenerate ? 'hsl(var(--primary))' : 'rgba(255,255,255,0.06)',
-                    borderRadius: 999,
-                    padding: '0 18px',
-                    height: 34,
-                    fontSize: 13,
-                    fontWeight: 600,
-                    color: canGenerate ? '#FFFFFF' : 'rgba(255,255,255,0.3)',
-                    cursor: canGenerate ? 'pointer' : 'default',
-                    border: 'none',
-                    whiteSpace: 'nowrap',
-                    marginTop: 2,
-                  }}
-                >
-                  {localGenerating ? (
-                    <span className="flex items-center gap-2">
-                      <span className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                      {isAr ? 'جاري التوليد...' : 'Generating...'}
-                    </span>
-                  ) : (
-                    <>Generate · {cost} cr</>
-                  )}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
       </div>
+
+      {/* Bottom fade to page bg */}
+      <div
+        className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
+        style={{
+          background: 'linear-gradient(to bottom, transparent, hsl(var(--background)))',
+          zIndex: 2,
+        }}
+      />
     </section>
   );
 }
