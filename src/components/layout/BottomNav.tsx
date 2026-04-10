@@ -30,7 +30,7 @@ export function BottomNav() {
       {/* Glass background */}
       <div className="absolute inset-0 bg-background/80 backdrop-blur-xl" />
       {/* Safe-area padding for iOS */}
-      <div className="relative flex items-end justify-around px-2 pt-1.5 pb-[max(0.5rem,env(safe-area-inset-bottom))]">
+      <div className="relative flex items-end justify-around px-2 pt-1 pb-[max(0.25rem,env(safe-area-inset-bottom))]">
         {navItems.map(item => {
           const active = isActive(item);
           const Icon = item.icon;
@@ -40,12 +40,12 @@ export function BottomNav() {
               <button
                 key={item.id}
                 onClick={() => handleTap(item)}
-                className="relative flex flex-col items-center gap-0.5 -mt-3"
+                className="relative flex flex-col items-center gap-0 -mt-2.5"
               >
-                <span className="w-12 h-12 rounded-2xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/30 transition-transform active:scale-95">
-                  <Icon size={22} strokeWidth={2.2} />
+                <span className="w-10 h-10 rounded-xl bg-primary text-primary-foreground flex items-center justify-center shadow-lg shadow-primary/30 transition-transform active:scale-95">
+                  <Icon size={18} strokeWidth={2.2} />
                 </span>
-                <span className="text-[10px] font-semibold text-primary">
+                <span className="text-[9px] font-semibold text-primary mt-0.5">
                   {isAr ? item.labelAr : item.labelEn}
                 </span>
               </button>
@@ -56,14 +56,14 @@ export function BottomNav() {
             <button
               key={item.id}
               onClick={() => handleTap(item)}
-              className="flex flex-col items-center gap-0.5 py-1 px-2 min-w-[56px] transition-colors"
+              className="flex flex-col items-center gap-0 py-0.5 px-2 min-w-[48px] transition-colors"
             >
               <Icon
-                size={22}
+                size={18}
                 strokeWidth={active ? 2.2 : 1.6}
                 className={`transition-colors ${active ? 'text-primary' : 'text-muted-foreground'}`}
               />
-              <span className={`text-[10px] font-medium transition-colors ${active ? 'text-primary' : 'text-muted-foreground'}`}>
+              <span className={`text-[9px] font-medium transition-colors mt-0.5 ${active ? 'text-primary' : 'text-muted-foreground'}`}>
                 {isAr ? item.labelAr : item.labelEn}
               </span>
             </button>
