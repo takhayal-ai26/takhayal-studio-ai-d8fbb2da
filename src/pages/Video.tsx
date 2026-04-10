@@ -290,13 +290,13 @@ export default function Video() {
       dir={isAr ? 'rtl' : 'ltr'}
       style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}
     >
-      <div className="flex-1 overflow-y-auto pb-32">
-        <div className="max-w-lg mx-auto px-4 pt-3 space-y-0">
+      <div className="flex-1 overflow-y-auto pb-44 md:pb-32">
+        <div className="max-w-lg mx-auto px-4 pt-4 space-y-3">
 
           {/* 1. Model Hero */}
           <button
             onClick={() => setShowModelPicker(true)}
-            className="w-full rounded-2xl overflow-hidden relative group active:scale-[0.98] transition-transform mb-3"
+            className="w-full rounded-2xl overflow-hidden relative group active:scale-[0.98] transition-transform"
           >
             <div className="aspect-[2.8/1] relative">
               {currentModel?.preview_image_url ? (
@@ -314,7 +314,7 @@ export default function Video() {
 
           {/* 2. Frame Upload */}
           {currentModel?.supports_image_to_video && (
-            <div className="grid grid-cols-2 gap-2.5 mb-4">
+            <div className="grid grid-cols-2 gap-2.5">
               <FrameCard
                 type="start"
                 image={uploadedImage}
@@ -333,22 +333,20 @@ export default function Video() {
           )}
 
           {/* 3. Prompt */}
-          <div className="mb-4">
-            <div className="rounded-2xl bg-card/50 overflow-hidden focus-within:ring-1 focus-within:ring-primary/20 transition-shadow">
-              <textarea
-                value={prompt}
-                onChange={e => setPrompt(e.target.value)}
-                placeholder={isAr ? 'صف الفيديو الذي تريده...' : 'Describe your video...'}
-                rows={4}
-                className="w-full bg-transparent px-4 py-3.5 text-[15px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none resize-none leading-relaxed"
-              />
-            </div>
+          <div className="rounded-2xl bg-card/50 overflow-hidden focus-within:ring-1 focus-within:ring-primary/20 transition-shadow">
+            <textarea
+              value={prompt}
+              onChange={e => setPrompt(e.target.value)}
+              placeholder={isAr ? 'صف الفيديو الذي تريده...' : 'Describe your video...'}
+              rows={4}
+              className="w-full bg-transparent px-4 py-3.5 text-[15px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none resize-none leading-relaxed"
+            />
           </div>
 
           {/* 4. Model Selector Row */}
           <button
             onClick={() => setShowModelPicker(true)}
-            className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-card/50 transition-colors group active:scale-[0.98] mb-3"
+            className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-card/50 transition-colors group active:scale-[0.98]"
           >
             <div className="flex items-center gap-3">
               <div className="w-8 h-8 rounded-xl overflow-hidden bg-muted/20 flex items-center justify-center flex-shrink-0">
@@ -393,7 +391,7 @@ export default function Video() {
       </div>
 
       {/* 6. Sticky Generate Button */}
-      <div className="fixed bottom-16 md:bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-6 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none">
+      <div className="fixed bottom-20 md:bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-6 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
         <div className="max-w-lg mx-auto pointer-events-auto">
           <button
             onClick={handleGenerate}
