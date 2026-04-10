@@ -25,6 +25,16 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
   const { isAdmin, mode, toggleMode } = useAppTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const isHeroPage = location.pathname === '/' || location.pathname === '/home';
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    if (!isHeroPage) { setScrolled(false); return; }
+    const onScroll = () => setScrolled(window.scrollY > 80);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [isHeroPage]);
   const initials = userName ? userName.slice(0, 2).toUpperCase() : 'U';
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
