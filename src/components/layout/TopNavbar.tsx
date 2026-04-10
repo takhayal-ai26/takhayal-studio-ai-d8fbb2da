@@ -7,7 +7,7 @@ import { useState, useRef, useEffect } from 'react';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAppTheme } from '@/context/AppThemeContext';
-import { useIsMobile } from '@/hooks/use-mobile';
+
 
 const navItemDefs: { id: string; labelKey: string; route: string; studioPage?: NavPage }[] = [
   { id: 'home', labelKey: 'home', route: '/home' },
@@ -19,7 +19,7 @@ const navItemDefs: { id: string; labelKey: string; route: string; studioPage?: N
   { id: 'pricing', labelKey: 'pricing', route: '/pricing' },
 ];
 
-export function TopNavbar({ bannerOffset = false, navHidden = false }: { bannerOffset?: boolean; navHidden?: boolean }) {
+export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) {
   const { activePage, setActivePage, credits, userName, userAvatarUrl, isAuthenticated, plan, openAuthModal, logout } = useApp();
   const { t, isRTL } = useLanguage();
   const { lang, setLang } = useLanguage();
@@ -28,7 +28,6 @@ export function TopNavbar({ bannerOffset = false, navHidden = false }: { bannerO
   const location = useLocation();
   const isHeroPage = location.pathname === '/' || location.pathname === '/home';
   const [scrolled, setScrolled] = useState(false);
-  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!isHeroPage) { setScrolled(false); return; }
@@ -116,7 +115,7 @@ export function TopNavbar({ bannerOffset = false, navHidden = false }: { bannerO
 
   return (
     <>
-      <nav dir={isRTL ? 'rtl' : 'ltr'} className={`fixed left-0 right-0 z-50 h-14 flex items-center px-5 md:px-6 transition-[top,background,backdrop-filter,transform,opacity] duration-300 ${bannerOffset ? 'top-[40px]' : 'top-0'} ${isHeroPage && !scrolled ? 'bg-transparent' : 'bg-background/80 backdrop-blur-xl'}`} style={navHidden && isMobile ? { transform: 'translateY(-100%)', opacity: 0, pointerEvents: 'none' } : undefined}>
+      <nav dir={isRTL ? 'rtl' : 'ltr'} className={`fixed left-0 right-0 z-50 h-14 flex items-center px-5 md:px-6 transition-[top,background,backdrop-filter] duration-300 ${bannerOffset ? 'top-[40px]' : 'top-0'} ${isHeroPage && !scrolled ? 'bg-transparent' : 'bg-background/80 backdrop-blur-xl'}`}>
         <div className="flex-shrink-0 whitespace-nowrap">
           <Logo />
         </div>

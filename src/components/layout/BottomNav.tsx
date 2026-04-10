@@ -10,7 +10,7 @@ const navItems = [
   { id: 'templates', route: '/templates', icon: LayoutGrid, labelEn: 'Templates', labelAr: 'القوالب' },
 ];
 
-export function BottomNav({ navHidden = false }: { navHidden?: boolean }) {
+export function BottomNav() {
   const navigate = useNavigate();
   const location = useLocation();
   const { lang } = useLanguage();
@@ -26,7 +26,7 @@ export function BottomNav({ navHidden = false }: { navHidden?: boolean }) {
   };
 
   return (
-    <nav className={`fixed bottom-0 left-0 right-0 z-50 md:hidden transition-[transform,opacity] duration-300 ${navHidden ? 'translate-y-full opacity-0 pointer-events-none' : 'translate-y-0 opacity-100'}`} dir={isAr ? 'rtl' : 'ltr'}>
+    <nav className="fixed bottom-0 left-0 right-0 z-50 md:hidden" dir={isAr ? 'rtl' : 'ltr'}>
       {/* Glass background */}
       <div className="absolute inset-0 bg-background/80 backdrop-blur-xl" />
       {/* Safe-area padding for iOS */}
