@@ -7,6 +7,7 @@ import { useState, useRef, useEffect } from 'react';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAppTheme } from '@/context/AppThemeContext';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const navItemDefs: { id: string; labelKey: string; route: string; studioPage?: NavPage }[] = [
   { id: 'home', labelKey: 'home', route: '/home' },
@@ -27,6 +28,7 @@ export function TopNavbar({ bannerOffset = false, navHidden = false }: { bannerO
   const location = useLocation();
   const isHeroPage = location.pathname === '/' || location.pathname === '/home';
   const [scrolled, setScrolled] = useState(false);
+  const isMobile = useIsMobile();
 
   useEffect(() => {
     if (!isHeroPage) { setScrolled(false); return; }
