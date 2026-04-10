@@ -25,6 +25,16 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
   const { isAdmin, mode, toggleMode } = useAppTheme();
   const navigate = useNavigate();
   const location = useLocation();
+  const isHeroPage = location.pathname === '/' || location.pathname === '/home';
+  const [scrolled, setScrolled] = useState(false);
+
+  useEffect(() => {
+    if (!isHeroPage) { setScrolled(false); return; }
+    const onScroll = () => setScrolled(window.scrollY > 80);
+    window.addEventListener('scroll', onScroll, { passive: true });
+    onScroll();
+    return () => window.removeEventListener('scroll', onScroll);
+  }, [isHeroPage]);
   const initials = userName ? userName.slice(0, 2).toUpperCase() : 'U';
   const [avatarOpen, setAvatarOpen] = useState(false);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -104,7 +114,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
 
   return (
     <>
-      <nav dir={isRTL ? 'rtl' : 'ltr'} className={`fixed left-0 right-0 z-50 h-14 bg-background/80 backdrop-blur-xl flex items-center px-5 md:px-6 transition-[top] duration-200 ${bannerOffset ? 'top-[40px]' : 'top-0'}`}>
+      <nav dir={isRTL ? 'rtl' : 'ltr'} className={`fixed left-0 right-0 z-50 h-14 flex items-center px-5 md:px-6 transition-[top,background,backdrop-filter] duration-300 ${bannerOffset ? 'top-[40px]' : 'top-0'} ${isHeroPage && !scrolled ? 'bg-transparent' : 'bg-background/80 backdrop-blur-xl'}`}>
         <div className="flex-shrink-0 whitespace-nowrap">
           <Logo />
         </div>
