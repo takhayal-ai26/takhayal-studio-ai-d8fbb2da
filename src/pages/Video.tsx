@@ -77,7 +77,7 @@ function DropUpSelector({ label, options, value, onSelect, icon }: {
       </button>
 
       {open && (
-        <div className="absolute bottom-full left-0 right-0 mb-2 z-50 rounded-2xl bg-popover/95 backdrop-blur-xl shadow-[0_-8px_30px_rgba(0,0,0,0.25)] border border-border/10 overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150">
+        <div className="absolute bottom-full left-0 right-0 mb-2 z-50 rounded-2xl bg-popover/95 backdrop-blur-xl shadow-[0_-8px_30px_rgba(0,0,0,0.25)] overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150">
           <div className="p-1.5 space-y-0.5">
             {options.map(opt => (
               <button
@@ -422,7 +422,7 @@ export default function Video() {
         <div className="fixed inset-0 z-50" onClick={() => setShowModelPicker(false)}>
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-150" />
           <div
-            className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-popover flex flex-col animate-in slide-in-from-bottom duration-200"
+            className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-popover flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.3)] animate-in slide-in-from-bottom duration-200"
             style={{ maxHeight: '80vh' }}
             onClick={e => e.stopPropagation()}
           >
