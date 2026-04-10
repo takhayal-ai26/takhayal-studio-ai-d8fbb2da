@@ -18,7 +18,7 @@ const navItemDefs: { id: string; labelKey: string; route: string; studioPage?: N
   { id: 'pricing', labelKey: 'pricing', route: '/pricing' },
 ];
 
-export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) {
+export function TopNavbar({ bannerOffset = false, navHidden = false }: { bannerOffset?: boolean; navHidden?: boolean }) {
   const { activePage, setActivePage, credits, userName, userAvatarUrl, isAuthenticated, plan, openAuthModal, logout } = useApp();
   const { t, isRTL } = useLanguage();
   const { lang, setLang } = useLanguage();
@@ -114,7 +114,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
 
   return (
     <>
-      <nav dir={isRTL ? 'rtl' : 'ltr'} className={`fixed left-0 right-0 z-50 h-14 flex items-center px-5 md:px-6 transition-[top,background,backdrop-filter] duration-300 ${bannerOffset ? 'top-[40px]' : 'top-0'} ${isHeroPage && !scrolled ? 'bg-transparent' : 'bg-background/80 backdrop-blur-xl'}`}>
+      <nav dir={isRTL ? 'rtl' : 'ltr'} className={`fixed left-0 right-0 z-50 h-14 flex items-center px-5 md:px-6 transition-[top,background,backdrop-filter,transform,opacity] duration-300 ${bannerOffset ? 'top-[40px]' : 'top-0'} ${isHeroPage && !scrolled ? 'bg-transparent' : 'bg-background/80 backdrop-blur-xl'} ${navHidden ? 'md:translate-y-0 -translate-y-full opacity-0 pointer-events-none md:opacity-100 md:pointer-events-auto' : 'translate-y-0 opacity-100'}`}>
         <div className="flex-shrink-0 whitespace-nowrap">
           <Logo />
         </div>

@@ -5,11 +5,13 @@ import { AuthModal } from '@/components/AuthModal';
 import { PromoBannerStrip, usePromoBannerVisible } from '@/components/PromoBanner';
 import { useAdminMediaStore } from '@/stores/adminMediaStore';
 import { useEffect } from 'react';
+import { useScrollDirection } from '@/hooks/useScrollDirection';
 
 // Preload brand assets from media store to prevent flicker
 export function AppLayout() {
   const assets = useAdminMediaStore(s => s.assets);
   const bannerVisible = usePromoBannerVisible();
+  const navHidden = useScrollDirection();
 
   useEffect(() => {
     const brandAssets = assets.filter(a => a.type === 'Brand');
@@ -25,12 +27,12 @@ export function AppLayout() {
       style={{ '--banner-h': bannerVisible ? '40px' : '0px' } as React.CSSProperties}
     >
       <PromoBannerStrip />
-      <TopNavbar bannerOffset={bannerVisible} />
+      <TopNavbar bannerOffset={bannerVisible} navHidden={navHidden} />
       <AuthModal />
       <div className="flex-1 min-h-0 pb-[72px] md:pb-0">
         <Outlet />
       </div>
-      <BottomNav />
+      <BottomNav navHidden={navHidden} />
     </div>
   );
 }
