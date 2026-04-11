@@ -3,6 +3,7 @@ import { TEMPLATE_PROMPTS, useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { ArrowRight, Sparkles } from 'lucide-react';
+import videoCoverImg from '@/assets/tools/video-cover.jpg';
 import { useState, useEffect, lazy, Suspense, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTools } from '@/hooks/useTools';
@@ -121,6 +122,17 @@ export default function PortalHome() {
                         </div>
                       </button>
                     ))}
+                    {/* Generate Video card */}
+                    <button onClick={() => navigate('/video')} className="group relative flex-shrink-0 w-[220px] md:w-[260px] aspect-[3/4] rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-black/20 transition-shadow duration-400">
+                      <img src={videoCoverImg} alt={isAr ? 'إنشاء فيديو' : 'Generate Video'} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" width={260} height={347} />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
+                      <div className="absolute inset-0 bg-primary/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      <div className="absolute bottom-0 left-0 right-0 p-4">
+                        <span className="text-white block font-extrabold text-xl">{isAr ? 'إنشاء فيديو' : 'Generate Video'}</span>
+                        <span className="text-[11px] text-white/50 mt-0.5 block">{isAr ? 'أنشئ فيديوهات من نص أو صورة' : 'Generate videos from text or image'}</span>
+                        <ArrowRight size={13} className={`text-primary mt-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 ${isRTL ? 'rotate-180' : ''}`} />
+                      </div>
+                    </button>
                   </div>
                 </div>
               </div>
