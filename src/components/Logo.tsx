@@ -10,9 +10,9 @@ export function Logo({ size = 'default' }: { size?: 'small' | 'default' | 'large
   const { getUrlByName } = useMedia();
   const logoMark = getUrlByName('logo-mark.svg');
 
-  const imgSize = size === 'small' ? 24 : size === 'large' ? 40 : 28;
-  const textSize = size === 'small' ? 'text-sm' : size === 'large' ? 'text-xl' : 'text-lg';
-  const arHeight = size === 'small' ? 45 : size === 'large' ? 70 : 51;
+  const imgSize = size === 'small' ? 24 : size === 'large' ? 40 : 24;
+  const textSize = size === 'small' ? 'text-sm' : size === 'large' ? 'text-xl' : 'text-[15px]';
+  const arHeight = size === 'small' ? 45 : size === 'large' ? 70 : 44;
 
   if (lang === 'ar') {
     const logoSrc = mode === 'dark' ? logoArDark : logoArLight;
