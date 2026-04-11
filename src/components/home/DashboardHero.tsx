@@ -90,6 +90,7 @@ export function DashboardHero() {
     <section
       className="relative w-full overflow-hidden mt-[calc(-3.5rem-var(--banner-h,0px))] md:mt-[calc(-2.75rem-var(--banner-h,0px))]"
       style={{ height: '100vh', minHeight: 520 }}
+      data-desktop-hero
     >
       {/* Video */}
       <video
