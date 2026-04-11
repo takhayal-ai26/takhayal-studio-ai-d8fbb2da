@@ -627,3 +627,10 @@
 [data-theme="dark"] .hover-lift:hover {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
 }
+
+/* Desktop cinematic hero – taller than viewport */
+@media (min-width: 768px) {
+  [data-desktop-hero] {
+    height: 115vh !important;
+  }
+}
