@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Film, Clock, ChevronRight, ChevronDown, Image, Check, Diamond } from 'lucide-react';
+import { X, Film, Clock, ChevronRight, ChevronDown, Image, Check, Diamond, Pencil, Play } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useModels } from '@/hooks/useModels';
@@ -9,6 +9,10 @@ import { useGenerationJobs } from '@/hooks/useGenerationJobs';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { cn } from '@/lib/utils';
+import { useIsMobile } from '@/hooks/use-mobile';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import VideoHistoryPanel from '@/components/video/VideoHistoryPanel';
+import VideoHowItWorks from '@/components/video/VideoHowItWorks';
 
 /* ─── Types ─── */
 interface VideoModel {
@@ -41,8 +45,8 @@ interface VideoTier {
   tier_label: string;
 }
 
-/* ─── Drop-up Selector ─── */
-function DropUpSelector({ label, options, value, onSelect, icon }: {
+/* ─── Drop-up Selector (mobile) / Dropdown (desktop) ─── */
+function SettingSelector({ label, options, value, onSelect, icon }: {
   label: string; options: string[]; value: string; onSelect: (v: string) => void; icon?: React.ReactNode;
 }) {
   const [open, setOpen] = useState(false);
@@ -64,7 +68,7 @@ function DropUpSelector({ label, options, value, onSelect, icon }: {
     <div ref={ref} className="relative flex-1">
       <button
         onClick={() => setOpen(o => !o)}
-        className="w-full flex items-center justify-between gap-2 px-3.5 py-3 rounded-2xl bg-card/60 active:scale-[0.97] transition-all"
+        className="w-full flex items-center justify-between gap-2 px-3.5 py-3 rounded-2xl bg-card/60 dark:bg-card/40 active:scale-[0.97] transition-all"
       >
         <div className="flex items-center gap-2 min-w-0">
           {icon}
@@ -77,7 +81,7 @@ function DropUpSelector({ label, options, value, onSelect, icon }: {
       </button>
 
       {open && (
-        <div className="absolute bottom-full left-0 right-0 mb-2 z-50 rounded-2xl bg-popover/95 backdrop-blur-xl shadow-[0_-8px_30px_rgba(0,0,0,0.25)] overflow-hidden animate-in fade-in slide-in-from-bottom-2 duration-150">
+        <div className="absolute bottom-full md:bottom-auto md:top-full left-0 right-0 mb-2 md:mb-0 md:mt-2 z-50 rounded-2xl bg-popover/95 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] overflow-hidden animate-in fade-in slide-in-from-bottom-2 md:slide-in-from-top-2 duration-150">
           <div className="p-1.5 space-y-0.5">
             {options.map(opt => (
               <button
@@ -110,6 +114,7 @@ export default function Video() {
   const { models } = useModels();
   const { submitVideoJob } = useGenerationJobs();
   const isAr = lang === 'ar';
+  const isMobile = useIsMobile();
 
   const videoModels = useMemo(() =>
     models.filter((m: any) => m.media_type === 'video' && m.is_active).map((m: any): VideoModel => ({
@@ -218,10 +223,11 @@ export default function Video() {
     setIsGenerating(false);
   };
 
+  /* ─── Loading skeleton ─── */
   if (videoModels.length === 0) {
     return (
       <div className="flex-1 flex flex-col" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
-        <div className="max-w-lg mx-auto px-4 pt-3 w-full space-y-4">
+        <div className="max-w-lg mx-auto px-4 pt-3 w-full space-y-4 md:hidden">
           <div className="w-full rounded-2xl bg-muted/30 animate-pulse" style={{ aspectRatio: '2.8/1' }} />
           <div className="grid grid-cols-2 gap-2.5">
             <div className="rounded-2xl bg-muted/20 animate-pulse" style={{ aspectRatio: '4/3' }} />
@@ -234,6 +240,15 @@ export default function Video() {
             <div className="flex-1 rounded-2xl bg-muted/20 animate-pulse h-14" />
             <div className="flex-1 rounded-2xl bg-muted/20 animate-pulse h-14" />
           </div>
+        </div>
+        {/* Desktop skeleton */}
+        <div className="hidden md:flex max-w-7xl mx-auto w-full px-8 pt-6 gap-8">
+          <div className="w-[420px] flex-shrink-0 space-y-4">
+            <div className="rounded-2xl bg-muted/20 animate-pulse h-48" />
+            <div className="rounded-2xl bg-muted/20 animate-pulse h-32" />
+            <div className="rounded-2xl bg-muted/20 animate-pulse h-14" />
+          </div>
+          <div className="flex-1 rounded-2xl bg-muted/10 animate-pulse h-96" />
         </div>
       </div>
     );
@@ -250,7 +265,9 @@ export default function Video() {
       onClick={onUpload}
       className={cn(
         "relative rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all overflow-hidden aspect-[4/3]",
-        image ? "p-0" : "border border-dashed border-border/30 bg-card/40 hover:bg-card/60 active:scale-[0.97]"
+        image
+          ? "p-0"
+          : "border border-dashed border-border/20 dark:border-border/10 bg-card/40 dark:bg-card/20 hover:bg-card/60 dark:hover:bg-card/30 active:scale-[0.97]"
       )}
     >
       {image ? (
@@ -270,7 +287,7 @@ export default function Video() {
         </>
       ) : (
         <>
-          <div className="w-9 h-9 rounded-full bg-muted/20 flex items-center justify-center">
+          <div className="w-9 h-9 rounded-full bg-muted/20 dark:bg-muted/10 flex items-center justify-center">
             <Image size={16} className="text-muted-foreground/30" />
           </div>
           <span className="text-[11px] text-muted-foreground/50 font-medium">
@@ -284,215 +301,314 @@ export default function Video() {
     </button>
   );
 
+  /* ─── Creation Panel (shared between mobile & desktop) ─── */
+  const CreationPanel = ({ isDesktop = false }: { isDesktop?: boolean }) => (
+    <div className={cn("space-y-3", isDesktop && "space-y-4")}>
+      {/* Hero Model Card */}
+      <button
+        onClick={() => setShowModelPicker(true)}
+        className={cn(
+          "w-full rounded-2xl overflow-hidden relative group active:scale-[0.98] transition-transform",
+          isDesktop && "rounded-2xl shadow-sm hover:shadow-md transition-shadow"
+        )}
+      >
+        <div className={cn("relative", isDesktop ? "aspect-[2.2/1]" : "aspect-[2.8/1]")}>
+          {currentModel?.preview_image_url ? (
+            <img src={currentModel.preview_image_url} alt="" className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-muted/30 to-muted/10" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        </div>
+        <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between">
+          <div>
+            <p className="text-[18px] font-black text-white tracking-tight leading-tight">{currentModel?.model_name}</p>
+            {currentModel?.supports_image_to_video && (
+              <p className="text-[11px] text-white/60 font-medium mt-0.5">
+                {isAr ? 'صورة إلى فيديو' : 'Image to Video'}
+              </p>
+            )}
+          </div>
+          <div className="flex items-center gap-1.5 text-white/70 text-[11px] font-semibold bg-white/10 backdrop-blur-sm px-2.5 py-1.5 rounded-lg">
+            <Pencil size={10} />
+            {isAr ? 'تغيير' : 'Change'}
+          </div>
+        </div>
+      </button>
+
+      {/* Frame Upload */}
+      {currentModel?.supports_image_to_video && (
+        <div className="grid grid-cols-2 gap-2.5">
+          <FrameCard
+            type="start"
+            image={uploadedImage}
+            onRemove={() => setUploadedImage(null)}
+            onUpload={() => startFrameRef.current?.click()}
+          />
+          <FrameCard
+            type="end"
+            image={endFrameImage}
+            onRemove={() => setEndFrameImage(null)}
+            onUpload={() => endFrameRef.current?.click()}
+          />
+          <input ref={startFrameRef} type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], 'start'); }} />
+          <input ref={endFrameRef} type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], 'end'); }} />
+        </div>
+      )}
+
+      {/* Prompt */}
+      <div className="rounded-2xl bg-card/50 dark:bg-card/30 overflow-hidden focus-within:ring-1 focus-within:ring-primary/20 transition-shadow shadow-sm">
+        <textarea
+          value={prompt}
+          onChange={e => setPrompt(e.target.value)}
+          placeholder={isAr ? 'صف الفيديو الذي تريده... مثلاً: مشهد سينمائي صحراوي مع حركة كاميرا بطيئة' : 'Describe your video... e.g. A cinematic desert scene with slow camera movement'}
+          rows={isDesktop ? 4 : 4}
+          className="w-full bg-transparent px-4 py-3.5 text-[14px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none resize-none leading-relaxed"
+        />
+      </div>
+
+      {/* Settings Row */}
+      <div className="flex items-stretch gap-2">
+        <SettingSelector
+          label={isAr ? 'المدة' : 'Duration'}
+          options={currentModel?.supported_durations || []}
+          value={selectedDuration}
+          onSelect={setSelectedDuration}
+          icon={<Clock size={13} className="text-muted-foreground/40 flex-shrink-0" />}
+        />
+        <SettingSelector
+          label={isAr ? 'النسبة' : 'Ratio'}
+          options={currentModel?.supported_ratios || []}
+          value={selectedRatio}
+          onSelect={setSelectedRatio}
+        />
+        <SettingSelector
+          label={isAr ? 'الجودة' : 'Quality'}
+          options={currentModel?.supported_qualities || []}
+          value={selectedQuality}
+          onSelect={setSelectedQuality}
+          icon={<Diamond size={12} className="text-muted-foreground/40 flex-shrink-0" />}
+        />
+      </div>
+
+      {/* Model Selector Row (mobile only shows this, desktop has it inline) */}
+      {!isDesktop && (
+        <button
+          onClick={() => setShowModelPicker(true)}
+          className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-card/50 transition-colors group active:scale-[0.98]"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-8 h-8 rounded-xl overflow-hidden bg-muted/20 flex items-center justify-center flex-shrink-0">
+              {currentModel?.preview_image_url ? (
+                <img src={currentModel.preview_image_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <Film size={14} className="text-muted-foreground/30" />
+              )}
+            </div>
+            <div className="text-start">
+              <p className="text-[10px] text-muted-foreground/60 font-medium leading-none mb-0.5">{isAr ? 'النموذج' : 'Model'}</p>
+              <p className="text-[13px] font-bold text-foreground">{currentModel?.model_name}</p>
+            </div>
+          </div>
+          <ChevronRight size={14} className="text-muted-foreground/40" />
+        </button>
+      )}
+
+      {/* Generate Button */}
+      {isDesktop && (
+        <button
+          onClick={handleGenerate}
+          disabled={isGenerating || !prompt.trim() || isUploading}
+          className={cn(
+            "w-full h-[52px] rounded-2xl text-[15px] font-bold flex items-center justify-center gap-2.5 transition-all active:scale-[0.97]",
+            (!prompt.trim() || isUploading)
+              ? "bg-muted text-muted-foreground cursor-not-allowed"
+              : "bg-primary text-primary-foreground shadow-[0_0_30px_rgba(var(--primary-rgb,240,62,27),0.3)] hover:shadow-[0_0_40px_rgba(var(--primary-rgb,240,62,27),0.4)] hover:brightness-110"
+          )}
+        >
+          {isGenerating ? (
+            <div className="w-5 h-5 border-2 border-primary-foreground/40 border-t-primary-foreground rounded-full animate-spin" />
+          ) : (
+            <>
+              {isAr ? 'توليد الفيديو' : 'Generate Video'}
+              <span className="text-[13px] font-semibold opacity-90">✨ {creditCost}</span>
+            </>
+          )}
+        </button>
+      )}
+    </div>
+  );
+
+  /* ─── MOBILE LAYOUT ─── */
+  if (isMobile) {
+    return (
+      <div
+        className="flex-1 flex flex-col"
+        dir={isAr ? 'rtl' : 'ltr'}
+        style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}
+      >
+        <div className="flex-1 overflow-y-auto pb-44">
+          <div className="max-w-lg mx-auto px-4 pt-4 space-y-3">
+            <CreationPanel />
+          </div>
+        </div>
+
+        {/* Sticky Generate Button (mobile) */}
+        <div className="fixed bottom-20 left-0 right-0 z-40 px-4 pb-4 pt-6 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
+          <div className="max-w-lg mx-auto pointer-events-auto">
+            <button
+              onClick={handleGenerate}
+              disabled={isGenerating || !prompt.trim() || isUploading}
+              className={cn(
+                "w-full h-[52px] rounded-2xl text-[16px] font-bold flex items-center justify-center gap-2.5 transition-all active:scale-[0.97]",
+                (!prompt.trim() || isUploading)
+                  ? "bg-muted text-muted-foreground cursor-not-allowed"
+                  : "bg-primary text-primary-foreground shadow-[0_0_30px_rgba(var(--primary-rgb,240,62,27),0.3)] hover:shadow-[0_0_40px_rgba(var(--primary-rgb,240,62,27),0.4)] hover:brightness-110"
+              )}
+            >
+              {isGenerating ? (
+                <div className="w-5 h-5 border-2 border-primary-foreground/40 border-t-primary-foreground rounded-full animate-spin" />
+              ) : (
+                <>
+                  {isAr ? 'توليد' : 'Generate'}
+                  <span className="text-[13px] font-semibold opacity-90">✨ {creditCost}</span>
+                </>
+              )}
+            </button>
+          </div>
+        </div>
+
+        {/* Model Picker (shared) */}
+        {showModelPicker && <ModelPickerSheet videoModels={videoModels} selectedModelId={selectedModelId} onSelect={id => { setSelectedModelId(id); setShowModelPicker(false); }} onClose={() => setShowModelPicker(false)} isAr={isAr} />}
+      </div>
+    );
+  }
+
+  /* ─── DESKTOP LAYOUT ─── */
   return (
     <div
       className="flex-1 flex flex-col"
       dir={isAr ? 'rtl' : 'ltr'}
       style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}
     >
-      <div className="flex-1 overflow-y-auto pb-44 md:pb-32">
-        <div className="max-w-lg mx-auto px-4 pt-4 space-y-3">
-
-          {/* 1. Model Hero */}
-          <button
-            onClick={() => setShowModelPicker(true)}
-            className="w-full rounded-2xl overflow-hidden relative group active:scale-[0.98] transition-transform"
-          >
-            <div className="aspect-[2.8/1] relative">
-              {currentModel?.preview_image_url ? (
-                <img src={currentModel.preview_image_url} alt="" className="w-full h-full object-cover" />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-muted/30 to-muted/10" />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+      <div className="flex-1 overflow-y-auto">
+        <div className="max-w-7xl mx-auto w-full px-8 pt-6 pb-12 flex gap-8">
+          {/* Left Panel — Sticky Creation */}
+          <div className="w-[420px] flex-shrink-0">
+            <div className="sticky" style={{ top: 'calc(4.5rem + var(--banner-h, 0px))' }}>
+              <CreationPanel isDesktop />
             </div>
-            <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between">
-              <p className="text-[18px] font-black text-white tracking-tight">{currentModel?.model_name}</p>
-              <ChevronRight size={16} className="text-white/50" />
-            </div>
-          </button>
-
-          {/* 2. Frame Upload */}
-          {currentModel?.supports_image_to_video && (
-            <div className="grid grid-cols-2 gap-2.5">
-              <FrameCard
-                type="start"
-                image={uploadedImage}
-                onRemove={() => setUploadedImage(null)}
-                onUpload={() => startFrameRef.current?.click()}
-              />
-              <FrameCard
-                type="end"
-                image={endFrameImage}
-                onRemove={() => setEndFrameImage(null)}
-                onUpload={() => endFrameRef.current?.click()}
-              />
-              <input ref={startFrameRef} type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], 'start'); }} />
-              <input ref={endFrameRef} type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], 'end'); }} />
-            </div>
-          )}
-
-          {/* 3. Prompt */}
-          <div className="rounded-2xl bg-card/50 overflow-hidden focus-within:ring-1 focus-within:ring-primary/20 transition-shadow">
-            <textarea
-              value={prompt}
-              onChange={e => setPrompt(e.target.value)}
-              placeholder={isAr ? 'صف الفيديو الذي تريده...' : 'Describe your video...'}
-              rows={4}
-              className="w-full bg-transparent px-4 py-3.5 text-[15px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none resize-none leading-relaxed"
-            />
           </div>
 
-          {/* 4. Model Selector Row */}
-          <button
-            onClick={() => setShowModelPicker(true)}
-            className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-card/50 transition-colors group active:scale-[0.98]"
-          >
-            <div className="flex items-center gap-3">
-              <div className="w-8 h-8 rounded-xl overflow-hidden bg-muted/20 flex items-center justify-center flex-shrink-0">
-                {currentModel?.preview_image_url ? (
-                  <img src={currentModel.preview_image_url} alt="" className="w-full h-full object-cover" />
-                ) : (
-                  <Film size={14} className="text-muted-foreground/30" />
+          {/* Right Panel — Tabs */}
+          <div className="flex-1 min-w-0">
+            <Tabs defaultValue="history" className="w-full">
+              <TabsList className="bg-card/50 dark:bg-card/30 rounded-2xl p-1 mb-6 w-auto inline-flex">
+                <TabsTrigger
+                  value="history"
+                  className="rounded-xl px-5 py-2 text-[13px] font-semibold data-[state=active]:bg-background dark:data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all"
+                >
+                  <Film size={14} className="mr-2" />
+                  {isAr ? 'السجل' : 'History'}
+                </TabsTrigger>
+                <TabsTrigger
+                  value="howItWorks"
+                  className="rounded-xl px-5 py-2 text-[13px] font-semibold data-[state=active]:bg-background dark:data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all"
+                >
+                  <Play size={14} className="mr-2" />
+                  {isAr ? 'كيف يعمل' : 'How it works'}
+                </TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="history" className="mt-0">
+                <VideoHistoryPanel />
+              </TabsContent>
+
+              <TabsContent value="howItWorks" className="mt-0">
+                <VideoHowItWorks />
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      </div>
+
+      {/* Model Picker */}
+      {showModelPicker && <ModelPickerSheet videoModels={videoModels} selectedModelId={selectedModelId} onSelect={id => { setSelectedModelId(id); setShowModelPicker(false); }} onClose={() => setShowModelPicker(false)} isAr={isAr} />}
+    </div>
+  );
+}
+
+/* ─── Model Picker Bottom Sheet / Overlay ─── */
+function ModelPickerSheet({ videoModels, selectedModelId, onSelect, onClose, isAr }: {
+  videoModels: VideoModel[];
+  selectedModelId: string;
+  onSelect: (id: string) => void;
+  onClose: () => void;
+  isAr: boolean;
+}) {
+  return (
+    <div className="fixed inset-0 z-50" onClick={onClose}>
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-150" />
+      <div
+        className="absolute bottom-0 left-0 right-0 md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-lg md:w-full md:rounded-2xl rounded-t-3xl bg-popover flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.3)] md:shadow-[0_20px_60px_rgba(0,0,0,0.3)] animate-in slide-in-from-bottom md:slide-in-from-bottom-4 md:fade-in duration-200"
+        style={{ maxHeight: '80vh' }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Handle (mobile only) */}
+        <div className="flex-shrink-0 pt-3 pb-2 md:hidden">
+          <div className="w-10 h-1 rounded-full bg-muted-foreground/20 mx-auto" />
+        </div>
+
+        {/* Title */}
+        <div className="flex-shrink-0 px-5 pb-3 pt-1 md:pt-5">
+          <h3 className="text-[15px] font-bold text-foreground">{isAr ? 'اختر النموذج' : 'Choose Model'}</h3>
+        </div>
+
+        {/* Models List */}
+        <div
+          className="flex-1 overflow-y-auto overscroll-contain px-3 space-y-0.5"
+          style={{ WebkitOverflowScrolling: 'touch', paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
+        >
+          {videoModels.map(model => {
+            const isSelected = model.id === selectedModelId;
+            const bestFor = isAr ? model.best_for_ar : model.best_for;
+
+            return (
+              <button
+                key={model.id}
+                onClick={() => onSelect(model.id)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-start active:scale-[0.98]",
+                  isSelected ? "bg-primary/10" : "hover:bg-accent/40"
                 )}
-              </div>
-              <div className="text-start">
-                <p className="text-[10px] text-muted-foreground/60 font-medium leading-none mb-0.5">{isAr ? 'النموذج' : 'Model'}</p>
-                <p className="text-[13px] font-bold text-foreground">{currentModel?.model_name}</p>
-              </div>
-            </div>
-            <ChevronRight size={14} className="text-muted-foreground/40" />
-          </button>
-
-          {/* 5. Settings — Drop-up selectors */}
-          <div className="flex items-stretch gap-2">
-            <DropUpSelector
-              label={isAr ? 'المدة' : 'Duration'}
-              options={currentModel?.supported_durations || []}
-              value={selectedDuration}
-              onSelect={setSelectedDuration}
-              icon={<Clock size={13} className="text-muted-foreground/40 flex-shrink-0" />}
-            />
-            <DropUpSelector
-              label={isAr ? 'النسبة' : 'Ratio'}
-              options={currentModel?.supported_ratios || []}
-              value={selectedRatio}
-              onSelect={setSelectedRatio}
-            />
-            <DropUpSelector
-              label={isAr ? 'الجودة' : 'Quality'}
-              options={currentModel?.supported_qualities || []}
-              value={selectedQuality}
-              onSelect={setSelectedQuality}
-              icon={<Diamond size={12} className="text-muted-foreground/40 flex-shrink-0" />}
-            />
-          </div>
-        </div>
-      </div>
-
-      {/* 6. Sticky Generate Button */}
-      <div className="fixed bottom-20 md:bottom-0 left-0 right-0 z-40 px-4 pb-4 pt-6 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
-        <div className="max-w-lg mx-auto pointer-events-auto">
-          <button
-            onClick={handleGenerate}
-            disabled={isGenerating || !prompt.trim() || isUploading}
-            className={cn(
-              "w-full h-[52px] rounded-2xl text-[16px] font-bold flex items-center justify-center gap-2.5 transition-all active:scale-[0.97]",
-              (!prompt.trim() || isUploading)
-                ? "bg-muted text-muted-foreground cursor-not-allowed"
-                : "bg-primary text-primary-foreground shadow-[0_0_30px_rgba(var(--primary-rgb,240,62,27),0.3)] hover:shadow-[0_0_40px_rgba(var(--primary-rgb,240,62,27),0.4)] hover:brightness-110"
-            )}
-          >
-            {isGenerating ? (
-              <div className="w-5 h-5 border-2 border-primary-foreground/40 border-t-primary-foreground rounded-full animate-spin" />
-            ) : (
-              <>
-                {isAr ? 'توليد' : 'Generate'}
-                <span className="text-[13px] font-semibold opacity-90">✨ {creditCost}</span>
-              </>
-            )}
-          </button>
-        </div>
-      </div>
-
-      {/* Model Picker Bottom Sheet */}
-      {showModelPicker && (
-        <div className="fixed inset-0 z-50" onClick={() => setShowModelPicker(false)}>
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-150" />
-          <div
-            className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-popover flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.3)] animate-in slide-in-from-bottom duration-200"
-            style={{ maxHeight: '80vh' }}
-            onClick={e => e.stopPropagation()}
-          >
-            {/* Handle */}
-            <div className="flex-shrink-0 pt-3 pb-2">
-              <div className="w-10 h-1 rounded-full bg-muted-foreground/20 mx-auto" />
-            </div>
-
-            {/* Title */}
-            <div className="flex-shrink-0 px-5 pb-3">
-              <h3 className="text-[15px] font-bold text-foreground">{isAr ? 'اختر النموذج' : 'Choose Model'}</h3>
-            </div>
-
-            {/* Models List — scrollable */}
-            <div
-              className="flex-1 overflow-y-auto overscroll-contain px-3 space-y-0.5"
-              style={{ WebkitOverflowScrolling: 'touch', paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
-            >
-              {videoModels.map(model => {
-                const isSelected = model.id === selectedModelId;
-                const maxQ = model.supported_qualities[model.supported_qualities.length - 1] || '';
-                const durRange = model.supported_durations.length > 1
-                  ? `${model.supported_durations[0]}–${model.supported_durations[model.supported_durations.length - 1]}`
-                  : model.supported_durations[0] || '';
-
-                return (
-                  <button
-                    key={model.id}
-                    onClick={() => { setSelectedModelId(model.id); setShowModelPicker(false); }}
-                    className={cn(
-                      "w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-start active:scale-[0.98]",
-                      isSelected ? "bg-primary/10" : "hover:bg-accent/40"
+              >
+                <div className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden",
+                  isSelected ? "ring-2 ring-primary/30" : "bg-muted/30 dark:bg-muted/10"
+                )}>
+                  {model.preview_image_url ? (
+                    <img src={model.preview_image_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <Film size={16} className={isSelected ? "text-primary" : "text-muted-foreground/40"} />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className="text-[13px] font-bold text-foreground truncate">{model.model_name}</span>
+                    {model.supports_image_to_video && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-500 dark:text-emerald-400 font-bold flex-shrink-0">I2V</span>
                     )}
-                  >
-                    <div className={cn(
-                      "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden",
-                      isSelected ? "ring-2 ring-primary/30" : "bg-muted/30"
-                    )}>
-                      {model.preview_image_url ? (
-                        <img src={model.preview_image_url} alt="" className="w-full h-full object-cover" />
-                      ) : (
-                        <Film size={16} className={isSelected ? "text-primary" : "text-muted-foreground/40"} />
-                      )}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-[13px] font-bold text-foreground truncate">{model.model_name}</span>
-                        {model.supports_image_to_video && (
-                          <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-500 dark:text-emerald-400 font-bold flex-shrink-0">I2V</span>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2 mt-0.5">
-                        {maxQ && (
-                          <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
-                            <Diamond size={9} /> {maxQ}
-                          </span>
-                        )}
-                        {durRange && (
-                          <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
-                            <Clock size={9} /> {durRange}
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                    {isSelected && <Check size={15} className="text-primary flex-shrink-0" />}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
+                  </div>
+                  {bestFor && (
+                    <p className="text-[11px] text-muted-foreground/50 mt-0.5 truncate">{bestFor}</p>
+                  )}
+                </div>
+                {isSelected && <Check size={15} className="text-primary flex-shrink-0" />}
+              </button>
+            );
+          })}
         </div>
-      )}
+      </div>
     </div>
   );
 }
