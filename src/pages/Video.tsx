@@ -597,19 +597,23 @@ export default function Video() {
   if (isMobile) {
     return (
       <div
-        className="flex-1 flex flex-col"
+        className="flex-1 flex flex-col min-h-0"
         dir={isAr ? 'rtl' : 'ltr'}
         style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}
       >
-        <div className="flex-1 overflow-y-auto pb-44">
+        {/* Scrollable content area — bottom padding accounts for sticky CTA + bottom nav + safe area */}
+        <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(4.5rem + 4rem + env(safe-area-inset-bottom, 0px))' }}>
           <div className="max-w-lg mx-auto px-4 pt-4 space-y-3">
             <CreationPanel />
           </div>
         </div>
 
-        {/* Sticky Generate Button (mobile) */}
-        <div className="fixed bottom-20 left-0 right-0 z-40 px-4 pb-4 pt-6 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
-          <div className="max-w-lg mx-auto pointer-events-auto">
+        {/* Sticky Generate Bar — sits above the bottom nav (bottom-nav is ~4rem tall) */}
+        <div
+          className="fixed left-0 right-0 z-40 px-4 py-3 bg-background/95 backdrop-blur-md"
+          style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}
+        >
+          <div className="max-w-lg mx-auto">
             <button
               onClick={handleGenerate}
               disabled={isGenerating || !prompt.trim() || isUploading}
@@ -617,7 +621,7 @@ export default function Video() {
                 "w-full h-[52px] rounded-2xl text-[16px] font-bold flex items-center justify-center gap-2.5 transition-all active:scale-[0.97]",
                 (!prompt.trim() || isUploading)
                   ? "bg-muted text-muted-foreground cursor-not-allowed"
-                  : "bg-primary text-primary-foreground shadow-[0_0_30px_rgba(var(--primary-rgb,240,62,27),0.3)] hover:shadow-[0_0_40px_rgba(var(--primary-rgb,240,62,27),0.4)] hover:brightness-110"
+                  : "bg-primary text-primary-foreground shadow-[0_0_30px_rgba(var(--primary-rgb,240,62,27),0.3)]"
               )}
             >
               {isGenerating ? (
