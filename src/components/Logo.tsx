@@ -11,7 +11,7 @@ export function Logo({ size = 'default' }: { size?: 'small' | 'default' | 'large
   const logoMark = getUrlByName('logo-mark.svg');
 
   const imgSize = size === 'small' ? 24 : size === 'large' ? 40 : 26;
-  const textSize = size === 'small' ? 'text-sm' : size === 'large' ? 'text-xl' : 'text-[17px]';
+  const textSize = size === 'small' ? 'text-sm' : size === 'large' ? 'text-xl' : 'text-lg';
   const arHeight = size === 'small' ? 45 : size === 'large' ? 70 : 48;
 
   if (lang === 'ar') {
