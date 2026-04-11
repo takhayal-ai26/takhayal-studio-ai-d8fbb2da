@@ -50,6 +50,7 @@ export function DashboardHero() {
   const { lang } = useLanguage();
   const { mode } = useAppTheme();
   const isLight = mode === 'light';
+  const isAr = lang === 'ar';
   const [initial] = useState(() => readCache());
 
   const { data: config } = useQuery({
