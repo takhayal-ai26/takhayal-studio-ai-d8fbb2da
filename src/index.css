@@ -95,6 +95,18 @@
   }
 }
 
+/* ── Light-mode hero readability ── */
+[data-theme="light"] nav[data-hero-transparent="true"] {
+  background: rgba(255, 255, 255, 0.55) !important;
+  backdrop-filter: blur(16px) saturate(1.4) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(1.4) !important;
+}
+
+[data-theme="light"] nav[data-hero-transparent="true"] button,
+[data-theme="light"] nav[data-hero-transparent="true"] a {
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+}
+
 .community-detail-backdrop {
   position: fixed;
   inset: 0;

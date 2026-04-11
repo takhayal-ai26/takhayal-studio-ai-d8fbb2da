@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { useAppTheme } from '@/context/AppThemeContext';
 
 const HERO_CONFIG_KEYS = [
   'video_hero_video_url',
