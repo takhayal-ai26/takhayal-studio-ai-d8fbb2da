@@ -105,6 +105,106 @@ function SettingSelector({ label, options, value, onSelect, icon }: {
   );
 }
 
+/* ─── Desktop Model Side Panel ─── */
+function DesktopModelPanel({ videoModels, selectedModelId, onSelect, onClose, isAr }: {
+  videoModels: VideoModel[];
+  selectedModelId: string;
+  onSelect: (id: string) => void;
+  onClose: () => void;
+  isAr: boolean;
+}) {
+  const panelRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose();
+    };
+    document.addEventListener('mousedown', handler);
+    return () => document.removeEventListener('mousedown', handler);
+  }, [onClose]);
+
+  return (
+    <div
+      ref={panelRef}
+      className={cn(
+        "absolute top-0 z-50 w-[340px] animate-in fade-in duration-200",
+        isAr
+          ? "right-full mr-3 slide-in-from-right-2"
+          : "left-full ml-3 slide-in-from-left-2"
+      )}
+    >
+      <div className="rounded-2xl overflow-hidden bg-popover/95 backdrop-blur-xl shadow-[0_12px_48px_-8px_rgba(0,0,0,0.25)] dark:shadow-[0_12px_48px_-8px_rgba(0,0,0,0.5)]"
+        style={{ maxHeight: 'calc(100vh - 8rem)' }}
+      >
+        {/* Header */}
+        <div className="sticky top-0 z-[1] px-5 py-3.5 border-b border-border/30 bg-popover/95 backdrop-blur-xl">
+          <p className="text-[11px] uppercase tracking-[2px] font-medium text-muted-foreground/60">
+            {isAr ? 'اختر النموذج' : 'Select Model'}
+          </p>
+        </div>
+
+        {/* List */}
+        <div className="overflow-y-auto py-1.5" style={{ maxHeight: 'calc(100vh - 12rem)' }}>
+          {videoModels.map(model => {
+            const isSelected = model.id === selectedModelId;
+            const bestFor = isAr ? model.best_for_ar : model.best_for;
+
+            return (
+              <button
+                key={model.id}
+                onClick={() => onSelect(model.id)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-5 py-3.5 transition-all text-start",
+                  isSelected ? "bg-primary/[0.07]" : "hover:bg-muted/50"
+                )}
+              >
+                <div className={cn(
+                  "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden",
+                  isSelected ? "ring-2 ring-primary/30" : "bg-muted/20 dark:bg-muted/10"
+                )}>
+                  {model.preview_image_url ? (
+                    <img src={model.preview_image_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <Film size={16} className={isSelected ? "text-primary" : "text-muted-foreground/40"} />
+                  )}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className={cn("text-[14px] font-semibold truncate", isSelected ? "text-primary" : "text-foreground")}>
+                      {model.model_name}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                    {model.supports_image_to_video && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">I2V</span>
+                    )}
+                    {model.supported_qualities.map(q => (
+                      <span key={q} className="text-[9px] px-1.5 py-0.5 rounded-md bg-muted/30 dark:bg-muted/15 text-muted-foreground/70 font-medium">{q}</span>
+                    ))}
+                    {model.supported_durations.length > 0 && (
+                      <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-muted/30 dark:bg-muted/15 text-muted-foreground/70 font-medium">
+                        {model.supported_durations[0]}–{model.supported_durations[model.supported_durations.length - 1]}
+                      </span>
+                    )}
+                  </div>
+                  {bestFor && (
+                    <p className="text-[11px] text-muted-foreground/50 mt-1 truncate">{bestFor}</p>
+                  )}
+                </div>
+                {isSelected && (
+                  <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                    <Check size={12} className="text-primary-foreground" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 /* ─── Component ─── */
 export default function Video() {
   const navigate = useNavigate();
@@ -241,7 +341,6 @@ export default function Video() {
             <div className="flex-1 rounded-2xl bg-muted/20 animate-pulse h-14" />
           </div>
         </div>
-        {/* Desktop skeleton */}
         <div className="hidden md:flex max-w-7xl mx-auto w-full px-8 pt-6 gap-8">
           <div className="w-[420px] flex-shrink-0 space-y-4">
             <div className="rounded-2xl bg-muted/20 animate-pulse h-48" />
@@ -304,24 +403,18 @@ export default function Video() {
   /* ─── Creation Panel (shared between mobile & desktop) ─── */
   const CreationPanel = ({ isDesktop = false }: { isDesktop?: boolean }) => (
     <div className={cn("space-y-3", isDesktop && "space-y-4")}>
-      {/* Hero Model Card */}
-      <button
-        onClick={() => setShowModelPicker(true)}
-        className={cn(
-          "w-full rounded-2xl overflow-hidden relative group active:scale-[0.98] transition-transform",
-          isDesktop && "rounded-2xl shadow-sm hover:shadow-md transition-shadow"
-        )}
-      >
-        <div className={cn("relative", isDesktop ? "aspect-[2.2/1]" : "aspect-[2.8/1]")}>
-          {currentModel?.preview_image_url ? (
-            <img src={currentModel.preview_image_url} alt="" className="w-full h-full object-cover" />
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-muted/30 to-muted/10" />
-          )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-        </div>
-        <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between">
-          <div>
+      {/* Hero Model Card — display only on desktop, clickable on mobile */}
+      {isDesktop ? (
+        <div className="w-full rounded-2xl overflow-hidden relative shadow-sm">
+          <div className="aspect-[2.2/1] relative">
+            {currentModel?.preview_image_url ? (
+              <img src={currentModel.preview_image_url} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-muted/30 to-muted/10" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 p-4">
             <p className="text-[18px] font-black text-white tracking-tight leading-tight">{currentModel?.model_name}</p>
             {currentModel?.supports_image_to_video && (
               <p className="text-[11px] text-white/60 font-medium mt-0.5">
@@ -329,12 +422,36 @@ export default function Video() {
               </p>
             )}
           </div>
-          <div className="flex items-center gap-1.5 text-white/70 text-[11px] font-semibold bg-white/10 backdrop-blur-sm px-2.5 py-1.5 rounded-lg">
-            <Pencil size={10} />
-            {isAr ? 'تغيير' : 'Change'}
-          </div>
         </div>
-      </button>
+      ) : (
+        <button
+          onClick={() => setShowModelPicker(true)}
+          className="w-full rounded-2xl overflow-hidden relative group active:scale-[0.98] transition-transform"
+        >
+          <div className="aspect-[2.8/1] relative">
+            {currentModel?.preview_image_url ? (
+              <img src={currentModel.preview_image_url} alt="" className="w-full h-full object-cover" />
+            ) : (
+              <div className="w-full h-full bg-gradient-to-br from-muted/30 to-muted/10" />
+            )}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+          </div>
+          <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between">
+            <div>
+              <p className="text-[18px] font-black text-white tracking-tight leading-tight">{currentModel?.model_name}</p>
+              {currentModel?.supports_image_to_video && (
+                <p className="text-[11px] text-white/60 font-medium mt-0.5">
+                  {isAr ? 'صورة إلى فيديو' : 'Image to Video'}
+                </p>
+              )}
+            </div>
+            <div className="flex items-center gap-1.5 text-white/70 text-[11px] font-semibold bg-white/10 backdrop-blur-sm px-2.5 py-1.5 rounded-lg">
+              <Pencil size={10} />
+              {isAr ? 'تغيير' : 'Change'}
+            </div>
+          </div>
+        </button>
+      )}
 
       {/* Frame Upload */}
       {currentModel?.supports_image_to_video && (
@@ -367,6 +484,32 @@ export default function Video() {
         />
       </div>
 
+      {/* Desktop Model Selector — below prompt */}
+      {isDesktop && (
+        <button
+          onClick={() => setShowModelPicker(p => !p)}
+          className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-card/50 dark:bg-card/30 hover:bg-card/70 dark:hover:bg-card/40 transition-colors group active:scale-[0.98] shadow-sm"
+        >
+          <div className="flex items-center gap-3">
+            <div className="w-9 h-9 rounded-xl overflow-hidden bg-muted/20 dark:bg-muted/10 flex items-center justify-center flex-shrink-0">
+              {currentModel?.preview_image_url ? (
+                <img src={currentModel.preview_image_url} alt="" className="w-full h-full object-cover" />
+              ) : (
+                <Film size={14} className="text-muted-foreground/30" />
+              )}
+            </div>
+            <div className="text-start">
+              <p className="text-[10px] text-muted-foreground/60 font-medium leading-none mb-0.5">{isAr ? 'النموذج' : 'Model'}</p>
+              <p className="text-[14px] font-bold text-foreground">{currentModel?.model_name}</p>
+            </div>
+          </div>
+          <ChevronRight size={14} className={cn(
+            "text-muted-foreground/40 transition-transform",
+            isAr ? "rotate-180" : ""
+          )} />
+        </button>
+      )}
+
       {/* Settings Row */}
       <div className="flex items-stretch gap-2">
         <SettingSelector
@@ -391,7 +534,7 @@ export default function Video() {
         />
       </div>
 
-      {/* Model Selector Row (mobile only shows this, desktop has it inline) */}
+      {/* Mobile model selector */}
       {!isDesktop && (
         <button
           onClick={() => setShowModelPicker(true)}
@@ -414,7 +557,7 @@ export default function Video() {
         </button>
       )}
 
-      {/* Generate Button */}
+      {/* Generate Button (desktop) */}
       {isDesktop && (
         <button
           onClick={handleGenerate}
@@ -478,7 +621,7 @@ export default function Video() {
           </div>
         </div>
 
-        {/* Model Picker (shared) */}
+        {/* Model Picker (mobile) */}
         {showModelPicker && <ModelPickerSheet videoModels={videoModels} selectedModelId={selectedModelId} onSelect={id => { setSelectedModelId(id); setShowModelPicker(false); }} onClose={() => setShowModelPicker(false)} isAr={isAr} />}
       </div>
     );
@@ -493,14 +636,27 @@ export default function Video() {
     >
       <div className="flex-1 overflow-y-auto">
         <div className="max-w-7xl mx-auto w-full px-8 pt-6 pb-12 flex gap-8">
-          {/* Left Panel — Sticky Creation */}
-          <div className="w-[420px] flex-shrink-0">
+          {/* Creation Panel — anchored start (left in LTR, right in RTL via dir) */}
+          <div className="w-[420px] flex-shrink-0 relative">
             <div className="sticky" style={{ top: 'calc(4.5rem + var(--banner-h, 0px))' }}>
               <CreationPanel isDesktop />
             </div>
+
+            {/* Desktop Model Panel — opens beside creation panel */}
+            {showModelPicker && (
+              <div className="sticky" style={{ top: 'calc(4.5rem + var(--banner-h, 0px))' }}>
+                <DesktopModelPanel
+                  videoModels={videoModels}
+                  selectedModelId={selectedModelId}
+                  onSelect={id => { setSelectedModelId(id); setShowModelPicker(false); }}
+                  onClose={() => setShowModelPicker(false)}
+                  isAr={isAr}
+                />
+              </div>
+            )}
           </div>
 
-          {/* Right Panel — Tabs */}
+          {/* Content Panel — end side */}
           <div className="flex-1 min-w-0">
             <Tabs defaultValue="history" className="w-full">
               <TabsList className="bg-card/50 dark:bg-card/30 rounded-2xl p-1 mb-6 w-auto inline-flex">
@@ -508,14 +664,14 @@ export default function Video() {
                   value="history"
                   className="rounded-xl px-5 py-2 text-[13px] font-semibold data-[state=active]:bg-background dark:data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all"
                 >
-                  <Film size={14} className="mr-2" />
+                  <Film size={14} className={cn(isAr ? "ml-2" : "mr-2")} />
                   {isAr ? 'السجل' : 'History'}
                 </TabsTrigger>
                 <TabsTrigger
                   value="howItWorks"
                   className="rounded-xl px-5 py-2 text-[13px] font-semibold data-[state=active]:bg-background dark:data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all"
                 >
-                  <Play size={14} className="mr-2" />
+                  <Play size={14} className={cn(isAr ? "ml-2" : "mr-2")} />
                   {isAr ? 'كيف يعمل' : 'How it works'}
                 </TabsTrigger>
               </TabsList>
@@ -531,14 +687,11 @@ export default function Video() {
           </div>
         </div>
       </div>
-
-      {/* Model Picker */}
-      {showModelPicker && <ModelPickerSheet videoModels={videoModels} selectedModelId={selectedModelId} onSelect={id => { setSelectedModelId(id); setShowModelPicker(false); }} onClose={() => setShowModelPicker(false)} isAr={isAr} />}
     </div>
   );
 }
 
-/* ─── Model Picker Bottom Sheet / Overlay ─── */
+/* ─── Model Picker Bottom Sheet (mobile only) ─── */
 function ModelPickerSheet({ videoModels, selectedModelId, onSelect, onClose, isAr }: {
   videoModels: VideoModel[];
   selectedModelId: string;
@@ -550,21 +703,16 @@ function ModelPickerSheet({ videoModels, selectedModelId, onSelect, onClose, isA
     <div className="fixed inset-0 z-50" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-150" />
       <div
-        className="absolute bottom-0 left-0 right-0 md:bottom-auto md:top-1/2 md:left-1/2 md:-translate-x-1/2 md:-translate-y-1/2 md:max-w-lg md:w-full md:rounded-2xl rounded-t-3xl bg-popover flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.3)] md:shadow-[0_20px_60px_rgba(0,0,0,0.3)] animate-in slide-in-from-bottom md:slide-in-from-bottom-4 md:fade-in duration-200"
+        className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-popover flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.3)] animate-in slide-in-from-bottom duration-200"
         style={{ maxHeight: '80vh' }}
         onClick={e => e.stopPropagation()}
       >
-        {/* Handle (mobile only) */}
-        <div className="flex-shrink-0 pt-3 pb-2 md:hidden">
+        <div className="flex-shrink-0 pt-3 pb-2">
           <div className="w-10 h-1 rounded-full bg-muted-foreground/20 mx-auto" />
         </div>
-
-        {/* Title */}
-        <div className="flex-shrink-0 px-5 pb-3 pt-1 md:pt-5">
+        <div className="flex-shrink-0 px-5 pb-3 pt-1">
           <h3 className="text-[15px] font-bold text-foreground">{isAr ? 'اختر النموذج' : 'Choose Model'}</h3>
         </div>
-
-        {/* Models List */}
         <div
           className="flex-1 overflow-y-auto overscroll-contain px-3 space-y-0.5"
           style={{ WebkitOverflowScrolling: 'touch', paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
@@ -572,7 +720,6 @@ function ModelPickerSheet({ videoModels, selectedModelId, onSelect, onClose, isA
           {videoModels.map(model => {
             const isSelected = model.id === selectedModelId;
             const bestFor = isAr ? model.best_for_ar : model.best_for;
-
             return (
               <button
                 key={model.id}
