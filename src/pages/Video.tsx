@@ -730,23 +730,32 @@ function ModelPickerSheet({ videoModels, selectedModelId, onSelect, onClose, isA
   onClose: () => void;
   isAr: boolean;
 }) {
+  // Lock body scroll while sheet is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
   return (
-    <div className="fixed inset-0 z-50" onClick={onClose}>
+    <div className="fixed inset-0 z-[60]" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-150" />
       <div
         className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-popover flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.3)] animate-in slide-in-from-bottom duration-200"
-        style={{ maxHeight: '80vh' }}
+        style={{ maxHeight: '70vh' }}
         onClick={e => e.stopPropagation()}
       >
+        {/* Drag handle */}
         <div className="flex-shrink-0 pt-3 pb-2">
           <div className="w-10 h-1 rounded-full bg-muted-foreground/20 mx-auto" />
         </div>
+        {/* Title */}
         <div className="flex-shrink-0 px-5 pb-3 pt-1">
           <h3 className="text-[15px] font-bold text-foreground">{isAr ? 'اختر النموذج' : 'Choose Model'}</h3>
         </div>
+        {/* Scrollable model list */}
         <div
           className="flex-1 overflow-y-auto overscroll-contain px-3 space-y-0.5"
-          style={{ WebkitOverflowScrolling: 'touch', paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
+          style={{ WebkitOverflowScrolling: 'touch' }}
         >
           {videoModels.map(model => {
             const isSelected = model.id === selectedModelId;
@@ -781,6 +790,21 @@ function ModelPickerSheet({ videoModels, selectedModelId, onSelect, onClose, isA
                     <p className="text-[11px] text-muted-foreground/50 mt-0.5 truncate">{bestFor}</p>
                   )}
                 </div>
+                {isSelected && (
+                  <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                    <Check size={11} className="text-primary-foreground" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
+          {/* Bottom spacer so last item is always reachable above safe area */}
+          <div style={{ height: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }} />
+        </div>
+      </div>
+    </div>
+  );
+}
                 {isSelected && <Check size={15} className="text-primary flex-shrink-0" />}
               </button>
             );
