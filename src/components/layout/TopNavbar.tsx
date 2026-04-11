@@ -279,7 +279,11 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
               <button
                 onClick={() => { setActivePage('credits'); navigate('/studio'); }}
                 className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-medium ${
-                  lowCredits ? 'bg-primary/10 text-primary' : 'bg-foreground/[0.05] text-muted-foreground'
+                  lowCredits
+                    ? 'bg-primary/10 text-primary'
+                    : isHeroPage && !scrolled
+                      ? 'bg-white/20 text-white/80'
+                      : 'bg-foreground/[0.05] text-muted-foreground'
                 }`}
               >
                 <Flame size={12} className={lowCredits ? 'text-primary animate-pulse' : ''} />
