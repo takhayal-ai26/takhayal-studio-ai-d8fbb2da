@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Film, Clock, ChevronRight, ChevronDown, Image, Check, Diamond, Pencil, Play, Search } from 'lucide-react';
+import { X, Film, Clock, ChevronRight, ChevronDown, Image, Check, Diamond, Pencil, Play } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useModels } from '@/hooks/useModels';
@@ -110,7 +110,7 @@ function SettingSelector({ label, options, value, onSelect, icon, forceUpward = 
   );
 }
 
-/* ─── Desktop Model Side Panel (Higgsfield-style) ─── */
+/* ─── Desktop Model Side Panel ─── */
 function DesktopModelPanel({ videoModels, selectedModelId, onSelect, onClose, isAr }: {
   videoModels: VideoModel[];
   selectedModelId: string;
@@ -119,7 +119,6 @@ function DesktopModelPanel({ videoModels, selectedModelId, onSelect, onClose, is
   isAr: boolean;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
-  const [search, setSearch] = useState('');
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -129,115 +128,85 @@ function DesktopModelPanel({ videoModels, selectedModelId, onSelect, onClose, is
     return () => document.removeEventListener('mousedown', handler);
   }, [onClose]);
 
-  const filtered = videoModels.filter(m =>
-    m.model_name.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const featured = filtered.filter(m => m.is_default || m.supports_image_to_video);
-  const allModels = filtered;
-
   return (
     <div
       ref={panelRef}
       className={cn(
-        "absolute top-0 z-50 w-[360px] animate-in fade-in duration-200",
+        "absolute top-0 z-50 w-[320px] animate-in fade-in duration-200",
         isAr
           ? "right-full mr-3 slide-in-from-right-2"
           : "left-full ml-3 slide-in-from-left-2"
       )}
     >
       <div
-        className="rounded-2xl overflow-hidden bg-popover/95 backdrop-blur-xl border border-border/20 shadow-[0_16px_64px_-8px_rgba(0,0,0,0.3)] dark:shadow-[0_16px_64px_-8px_rgba(0,0,0,0.6)]"
+        className="rounded-[20px] overflow-hidden bg-popover/90 backdrop-blur-2xl shadow-[0_8px_40px_-4px_rgba(0,0,0,0.15),0_2px_12px_-2px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_40px_-4px_rgba(0,0,0,0.5),0_2px_12px_-2px_rgba(0,0,0,0.3)]"
         style={{ maxHeight: 'calc(100vh - 8rem)' }}
       >
-        {/* Search */}
-        <div className="sticky top-0 z-[1] px-4 pt-4 pb-3 border-b border-border/20 bg-popover/95 backdrop-blur-xl">
-          <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-muted/30 dark:bg-muted/15">
-            <Search size={14} className="text-muted-foreground/40 flex-shrink-0" />
-            <input
-              type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder={isAr ? 'بحث...' : 'Search...'}
-              className="bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none w-full"
-              autoFocus
-            />
-          </div>
+        {/* Header label */}
+        <div className="px-4 pt-3.5 pb-2">
+          <p className="text-[10px] uppercase tracking-[1.5px] font-semibold text-muted-foreground/40">
+            {isAr ? 'نماذج الفيديو' : 'Video models'}
+          </p>
         </div>
 
         {/* Model list */}
-        <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 14rem)' }}>
-          {/* Featured section */}
-          {featured.length > 0 && !search && (
-            <div className="px-4 pt-3 pb-1">
-              <p className="text-[10px] uppercase tracking-[1.5px] font-semibold text-muted-foreground/40 flex items-center gap-1.5">
-                <span>←</span> {isAr ? 'نماذج مميزة' : 'Featured models'}
-              </p>
-            </div>
-          )}
+        <div className="overflow-y-auto px-1.5 pb-2" style={{ maxHeight: 'calc(100vh - 12rem)' }}>
+          {videoModels.map(model => {
+            const isSelected = model.id === selectedModelId;
+            const bestFor = isAr ? model.best_for_ar : model.best_for;
 
-          <div className="py-1 px-1.5">
-            {(search ? allModels : allModels).map(model => {
-              const isSelected = model.id === selectedModelId;
-              const bestFor = isAr ? model.best_for_ar : model.best_for;
-
-              return (
-                <button
-                  key={model.id}
-                  onClick={() => onSelect(model.id)}
-                  className={cn(
-                    "w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all text-start group",
-                    isSelected ? "bg-primary/[0.08]" : "hover:bg-muted/40 dark:hover:bg-muted/20"
+            return (
+              <button
+                key={model.id}
+                onClick={() => onSelect(model.id)}
+                className={cn(
+                  "w-full flex items-center gap-3 px-3 py-3 rounded-[14px] transition-all duration-150 text-start group",
+                  isSelected
+                    ? "bg-primary/[0.08] dark:bg-primary/[0.12]"
+                    : "hover:bg-foreground/[0.04] dark:hover:bg-foreground/[0.06]"
+                )}
+              >
+                <div className={cn(
+                  "w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0 overflow-hidden",
+                  isSelected ? "ring-[1.5px] ring-primary/30" : "bg-muted/15 dark:bg-muted/10"
+                )}>
+                  {model.preview_image_url ? (
+                    <img src={model.preview_image_url} alt="" className="w-full h-full object-cover" />
+                  ) : (
+                    <Film size={15} className={isSelected ? "text-primary" : "text-muted-foreground/30"} />
                   )}
-                >
-                  <div className={cn(
-                    "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden",
-                    isSelected ? "ring-2 ring-primary/30" : "bg-muted/20 dark:bg-muted/10"
-                  )}>
-                    {model.preview_image_url ? (
-                      <img src={model.preview_image_url} alt="" className="w-full h-full object-cover" />
-                    ) : (
-                      <Film size={16} className={isSelected ? "text-primary" : "text-muted-foreground/40"} />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2">
+                    <span className={cn("text-[13px] font-semibold truncate", isSelected ? "text-primary" : "text-foreground")}>
+                      {model.model_name}
+                    </span>
+                    {model.supports_image_to_video && (
+                      <span className="text-[8px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold flex-shrink-0">I2V</span>
                     )}
                   </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className={cn("text-[14px] font-semibold truncate", isSelected ? "text-primary" : "text-foreground")}>
-                        {model.model_name}
+                  <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
+                    {model.supported_qualities.map(q => (
+                      <span key={q} className="text-[9px] px-1.5 py-px rounded-md bg-foreground/[0.04] dark:bg-foreground/[0.06] text-muted-foreground/60 font-medium">{q}</span>
+                    ))}
+                    {model.supported_durations.length > 0 && (
+                      <span className="text-[9px] px-1.5 py-px rounded-md bg-foreground/[0.04] dark:bg-foreground/[0.06] text-muted-foreground/60 font-medium">
+                        {model.supported_durations[0]}–{model.supported_durations[model.supported_durations.length - 1]}
                       </span>
-                      {model.supports_image_to_video && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold flex-shrink-0">I2V</span>
-                      )}
-                    </div>
-                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                      {model.supported_qualities.map(q => (
-                        <span key={q} className="text-[9px] px-1.5 py-0.5 rounded-md bg-muted/30 dark:bg-muted/15 text-muted-foreground/70 font-medium">{q}</span>
-                      ))}
-                      {model.supported_durations.length > 0 && (
-                        <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-muted/30 dark:bg-muted/15 text-muted-foreground/70 font-medium">
-                          {model.supported_durations[0]}–{model.supported_durations[model.supported_durations.length - 1]}
-                        </span>
-                      )}
-                    </div>
-                    {bestFor && (
-                      <p className="text-[11px] text-muted-foreground/50 mt-1 truncate">{bestFor}</p>
                     )}
                   </div>
-                  {isSelected && (
-                    <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                      <Check size={12} className="text-primary-foreground" />
-                    </div>
+                  {bestFor && (
+                    <p className="text-[10px] text-muted-foreground/40 mt-0.5 truncate">{bestFor}</p>
                   )}
-                </button>
-              );
-            })}
-          </div>
-
-          {filtered.length === 0 && (
-            <div className="py-12 text-center">
-              <p className="text-[13px] text-muted-foreground/40">{isAr ? 'لا توجد نتائج' : 'No results'}</p>
-            </div>
-          )}
+                </div>
+                {isSelected && (
+                  <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                    <Check size={11} className="text-primary-foreground" />
+                  </div>
+                )}
+              </button>
+            );
+          })}
         </div>
       </div>
     </div>
