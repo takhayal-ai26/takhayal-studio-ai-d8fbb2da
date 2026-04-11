@@ -444,19 +444,13 @@ export default function Video() {
             )}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
           </div>
-          <div className="absolute bottom-0 left-0 right-0 p-4 flex items-end justify-between">
-            <div>
-              <p className="text-[18px] font-black text-white tracking-tight leading-tight">{currentModel?.model_name}</p>
-              {currentModel?.supports_image_to_video && (
-                <p className="text-[11px] text-white/60 font-medium mt-0.5">
-                  {isAr ? 'صورة إلى فيديو' : 'Image to Video'}
-                </p>
-              )}
-            </div>
-            <div className="flex items-center gap-1.5 text-white/70 text-[11px] font-semibold bg-white/10 backdrop-blur-sm px-2.5 py-1.5 rounded-lg">
-              <Pencil size={10} />
-              {isAr ? 'تغيير' : 'Change'}
-            </div>
+          <div className="absolute bottom-0 left-0 right-0 p-4">
+            <p className="text-[18px] font-black text-white tracking-tight leading-tight">{currentModel?.model_name}</p>
+            {currentModel?.supports_image_to_video && (
+              <p className="text-[11px] text-white/60 font-medium mt-0.5">
+                {isAr ? 'صورة إلى فيديو' : 'Image to Video'}
+              </p>
+            )}
           </div>
         </button>
       )}
