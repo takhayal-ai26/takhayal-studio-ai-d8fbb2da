@@ -597,19 +597,23 @@ export default function Video() {
   if (isMobile) {
     return (
       <div
-        className="flex-1 flex flex-col"
+        className="flex-1 flex flex-col min-h-0"
         dir={isAr ? 'rtl' : 'ltr'}
         style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}
       >
-        <div className="flex-1 overflow-y-auto pb-44">
+        {/* Scrollable content area — bottom padding accounts for sticky CTA + bottom nav + safe area */}
+        <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(4.5rem + 4rem + env(safe-area-inset-bottom, 0px))' }}>
           <div className="max-w-lg mx-auto px-4 pt-4 space-y-3">
             <CreationPanel />
           </div>
         </div>
 
-        {/* Sticky Generate Button (mobile) */}
-        <div className="fixed bottom-20 left-0 right-0 z-40 px-4 pb-4 pt-6 bg-gradient-to-t from-background via-background/95 to-transparent pointer-events-none" style={{ paddingBottom: 'calc(1rem + env(safe-area-inset-bottom, 0px))' }}>
-          <div className="max-w-lg mx-auto pointer-events-auto">
+        {/* Sticky Generate Bar — sits above the bottom nav (bottom-nav is ~4rem tall) */}
+        <div
+          className="fixed left-0 right-0 z-40 px-4 py-3 bg-background/95 backdrop-blur-md"
+          style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}
+        >
+          <div className="max-w-lg mx-auto">
             <button
               onClick={handleGenerate}
               disabled={isGenerating || !prompt.trim() || isUploading}
@@ -617,7 +621,7 @@ export default function Video() {
                 "w-full h-[52px] rounded-2xl text-[16px] font-bold flex items-center justify-center gap-2.5 transition-all active:scale-[0.97]",
                 (!prompt.trim() || isUploading)
                   ? "bg-muted text-muted-foreground cursor-not-allowed"
-                  : "bg-primary text-primary-foreground shadow-[0_0_30px_rgba(var(--primary-rgb,240,62,27),0.3)] hover:shadow-[0_0_40px_rgba(var(--primary-rgb,240,62,27),0.4)] hover:brightness-110"
+                  : "bg-primary text-primary-foreground shadow-[0_0_30px_rgba(var(--primary-rgb,240,62,27),0.3)]"
               )}
             >
               {isGenerating ? (
@@ -726,23 +730,32 @@ function ModelPickerSheet({ videoModels, selectedModelId, onSelect, onClose, isA
   onClose: () => void;
   isAr: boolean;
 }) {
+  // Lock body scroll while sheet is open
+  useEffect(() => {
+    document.body.style.overflow = 'hidden';
+    return () => { document.body.style.overflow = ''; };
+  }, []);
+
   return (
-    <div className="fixed inset-0 z-50" onClick={onClose}>
+    <div className="fixed inset-0 z-[60]" onClick={onClose}>
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-150" />
       <div
         className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-popover flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.3)] animate-in slide-in-from-bottom duration-200"
-        style={{ maxHeight: '80vh' }}
+        style={{ maxHeight: '70vh' }}
         onClick={e => e.stopPropagation()}
       >
+        {/* Drag handle */}
         <div className="flex-shrink-0 pt-3 pb-2">
           <div className="w-10 h-1 rounded-full bg-muted-foreground/20 mx-auto" />
         </div>
+        {/* Title */}
         <div className="flex-shrink-0 px-5 pb-3 pt-1">
           <h3 className="text-[15px] font-bold text-foreground">{isAr ? 'اختر النموذج' : 'Choose Model'}</h3>
         </div>
+        {/* Scrollable model list */}
         <div
           className="flex-1 overflow-y-auto overscroll-contain px-3 space-y-0.5"
-          style={{ WebkitOverflowScrolling: 'touch', paddingBottom: 'calc(1.5rem + env(safe-area-inset-bottom))' }}
+          style={{ WebkitOverflowScrolling: 'touch' }}
         >
           {videoModels.map(model => {
             const isSelected = model.id === selectedModelId;
@@ -777,10 +790,16 @@ function ModelPickerSheet({ videoModels, selectedModelId, onSelect, onClose, isA
                     <p className="text-[11px] text-muted-foreground/50 mt-0.5 truncate">{bestFor}</p>
                   )}
                 </div>
-                {isSelected && <Check size={15} className="text-primary flex-shrink-0" />}
+                {isSelected && (
+                  <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                    <Check size={11} className="text-primary-foreground" />
+                  </div>
+                )}
               </button>
             );
           })}
+          {/* Bottom spacer so last item is always reachable above safe area */}
+          <div style={{ height: 'calc(2rem + env(safe-area-inset-bottom, 0px))' }} />
         </div>
       </div>
     </div>
