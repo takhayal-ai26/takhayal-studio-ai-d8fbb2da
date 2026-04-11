@@ -115,18 +115,18 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
 
   return (
     <>
-      <nav dir={isRTL ? 'rtl' : 'ltr'} className={`fixed left-0 right-0 z-50 h-14 flex items-center px-5 md:px-6 transition-[top,background,backdrop-filter] duration-300 ${bannerOffset ? 'top-[40px]' : 'top-0'} ${isHeroPage && !scrolled ? 'bg-transparent' : 'bg-background/80 backdrop-blur-xl'}`} data-hero-transparent={isHeroPage && !scrolled ? 'true' : undefined}>
+      <nav dir={isRTL ? 'rtl' : 'ltr'} className={`fixed left-0 right-0 z-50 h-14 md:h-11 flex items-center px-5 md:px-5 transition-[top,background,backdrop-filter] duration-300 ${bannerOffset ? 'top-[40px]' : 'top-0'} ${isHeroPage && !scrolled ? 'bg-transparent' : 'bg-background/80 backdrop-blur-xl'}`} data-hero-transparent={isHeroPage && !scrolled ? 'true' : undefined}>
         <div className="flex-shrink-0 whitespace-nowrap">
           <Logo />
         </div>
 
         {/* Center: Nav links (desktop) */}
-        <div className="hidden md:flex items-center gap-1 mx-auto">
+        <div className="hidden md:flex items-center gap-0.5 mx-auto">
           {navItemDefs.filter(item => !(isAuthenticated && item.id === 'pricing')).map(item => (
             <button
               key={item.id}
               onClick={() => handleNav(item)}
-              className={`relative px-3.5 py-1.5 text-base font-extrabold rounded-lg transition-all duration-200 ${
+              className={`relative px-2.5 py-1 text-[13px] font-bold rounded-md transition-all duration-200 ${
                 isActive(item)
                   ? 'text-foreground bg-foreground/[0.06]'
                   : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.04]'
@@ -138,7 +138,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
         </div>
 
         {/* Right: Desktop controls */}
-        <div className="hidden md:flex items-center gap-2.5 flex-shrink-0">
+        <div className="hidden md:flex items-center gap-2 flex-shrink-0">
           {!isAdmin && <ThemeToggle />}
           <LanguageToggle />
           {isAuthenticated ? (
