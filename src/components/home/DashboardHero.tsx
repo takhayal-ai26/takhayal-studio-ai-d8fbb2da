@@ -164,9 +164,12 @@ export function DashboardHero() {
 
       {/* Bottom fade to page bg */}
       <div
-        className="absolute bottom-0 left-0 right-0 h-32 pointer-events-none"
+        className="absolute bottom-0 left-0 right-0 pointer-events-none"
         style={{
-          background: 'linear-gradient(to bottom, transparent, hsl(var(--background)))',
+          height: isLight ? 64 : 128,
+          background: isLight
+            ? 'linear-gradient(to bottom, transparent, rgba(0,0,0,0.18))'
+            : 'linear-gradient(to bottom, transparent, hsl(var(--background)))',
           zIndex: 2,
         }}
       />
