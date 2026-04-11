@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
+import { useAppTheme } from '@/context/AppThemeContext';
 
 const HERO_CONFIG_KEYS = [
   'video_hero_video_url',
@@ -47,6 +48,8 @@ function readCache(): Record<string, string> {
 
 export function DashboardHero() {
   const { lang } = useLanguage();
+  const { mode } = useAppTheme();
+  const isLight = mode === 'light';
   const isAr = lang === 'ar';
   const [initial] = useState(() => readCache());
 
@@ -75,7 +78,8 @@ export function DashboardHero() {
   const videoUrl = c.video_hero_video_url;
   const posterUrl = c.video_hero_poster_url;
   const posterEnabled = c.video_hero_poster_enabled === 'true';
-  const overlay = parseFloat(c.video_hero_overlay_intensity) || 0.4;
+  const baseOverlay = parseFloat(c.video_hero_overlay_intensity) || 0.4;
+  const overlay = isLight ? Math.min(baseOverlay + 0.2, 0.75) : baseOverlay;
   const align = c.video_hero_text_align || 'center';
 
   const h1 = isAr ? c.video_hero_headline1_ar : c.video_hero_headline1_en;
