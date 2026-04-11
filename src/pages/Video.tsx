@@ -649,7 +649,7 @@ export default function Video() {
         {/* Edge-anchored layout — no max-w centering, sidebar hugs the side */}
         <div className="flex w-full">
           {/* Creation Sidebar — fixed width, sticky, edge-anchored */}
-          <div className="w-[400px] flex-shrink-0 relative border-e border-border/10">
+          <div className="w-[400px] flex-shrink-0 relative">
             <div
               className="sticky px-5 py-5 overflow-y-auto"
               style={{
