@@ -126,7 +126,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
             <button
               key={item.id}
               onClick={() => handleNav(item)}
-              className={`relative px-2.5 py-1 text-[13px] font-bold rounded-md transition-all duration-200 ${
+              className={`relative px-2.5 py-1 text-[14px] font-bold rounded-md transition-all duration-200 ${
                 isActive(item)
                   ? 'text-foreground bg-foreground/[0.06]'
                   : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.04]'
