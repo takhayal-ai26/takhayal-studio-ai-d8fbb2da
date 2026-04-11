@@ -5,6 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { Sparkles, Film } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
+import videoCoverImg from '@/assets/tools/video-cover.jpg';
 
 type Tab = 'image' | 'video';
 
@@ -142,9 +143,7 @@ export default function CreateHub() {
             style={{ textAlign: isAr ? 'right' : 'left' }}
           >
             <div className="aspect-[2/1] relative">
-              <div className="w-full h-full bg-gradient-to-br from-primary/25 via-muted/15 to-background flex items-center justify-center">
-                <Film size={56} className="text-primary/25" />
-              </div>
+              <img src={videoCoverImg} alt={isAr ? 'إنشاء فيديو' : 'Create Video'} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/5" />
             </div>
             <div className="absolute bottom-0 left-0 right-0 p-5">
