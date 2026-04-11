@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { X, Film, Clock, ChevronRight, ChevronDown, Image, Check, Diamond, Pencil, Play } from 'lucide-react';
+import { X, Film, Clock, ChevronRight, ChevronDown, Image, Check, Diamond, Pencil, Play, Search } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useModels } from '@/hooks/useModels';
@@ -45,9 +45,9 @@ interface VideoTier {
   tier_label: string;
 }
 
-/* ─── Drop-up Selector (mobile) / Dropdown (desktop) ─── */
-function SettingSelector({ label, options, value, onSelect, icon }: {
-  label: string; options: string[]; value: string; onSelect: (v: string) => void; icon?: React.ReactNode;
+/* ─── Drop-up Selector ─── */
+function SettingSelector({ label, options, value, onSelect, icon, forceUpward = false }: {
+  label: string; options: string[]; value: string; onSelect: (v: string) => void; icon?: React.ReactNode; forceUpward?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -81,7 +81,12 @@ function SettingSelector({ label, options, value, onSelect, icon }: {
       </button>
 
       {open && (
-        <div className="absolute bottom-full md:bottom-auto md:top-full left-0 right-0 mb-2 md:mb-0 md:mt-2 z-50 rounded-2xl bg-popover/95 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] overflow-hidden animate-in fade-in slide-in-from-bottom-2 md:slide-in-from-top-2 duration-150">
+        <div className={cn(
+          "absolute left-0 right-0 z-50 rounded-2xl bg-popover/95 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] overflow-hidden animate-in fade-in duration-150",
+          forceUpward
+            ? "bottom-full mb-2 slide-in-from-bottom-2"
+            : "bottom-full md:bottom-auto md:top-full mb-2 md:mb-0 md:mt-2 slide-in-from-bottom-2 md:slide-in-from-top-2"
+        )}>
           <div className="p-1.5 space-y-0.5">
             {options.map(opt => (
               <button
@@ -105,7 +110,7 @@ function SettingSelector({ label, options, value, onSelect, icon }: {
   );
 }
 
-/* ─── Desktop Model Side Panel ─── */
+/* ─── Desktop Model Side Panel (Higgsfield-style) ─── */
 function DesktopModelPanel({ videoModels, selectedModelId, onSelect, onClose, isAr }: {
   videoModels: VideoModel[];
   selectedModelId: string;
@@ -114,6 +119,7 @@ function DesktopModelPanel({ videoModels, selectedModelId, onSelect, onClose, is
   isAr: boolean;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const [search, setSearch] = useState('');
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
@@ -123,82 +129,115 @@ function DesktopModelPanel({ videoModels, selectedModelId, onSelect, onClose, is
     return () => document.removeEventListener('mousedown', handler);
   }, [onClose]);
 
+  const filtered = videoModels.filter(m =>
+    m.model_name.toLowerCase().includes(search.toLowerCase())
+  );
+
+  const featured = filtered.filter(m => m.is_default || m.supports_image_to_video);
+  const allModels = filtered;
+
   return (
     <div
       ref={panelRef}
       className={cn(
-        "absolute top-0 z-50 w-[340px] animate-in fade-in duration-200",
+        "absolute top-0 z-50 w-[360px] animate-in fade-in duration-200",
         isAr
           ? "right-full mr-3 slide-in-from-right-2"
           : "left-full ml-3 slide-in-from-left-2"
       )}
     >
-      <div className="rounded-2xl overflow-hidden bg-popover/95 backdrop-blur-xl shadow-[0_12px_48px_-8px_rgba(0,0,0,0.25)] dark:shadow-[0_12px_48px_-8px_rgba(0,0,0,0.5)]"
+      <div
+        className="rounded-2xl overflow-hidden bg-popover/95 backdrop-blur-xl border border-border/20 shadow-[0_16px_64px_-8px_rgba(0,0,0,0.3)] dark:shadow-[0_16px_64px_-8px_rgba(0,0,0,0.6)]"
         style={{ maxHeight: 'calc(100vh - 8rem)' }}
       >
-        {/* Header */}
-        <div className="sticky top-0 z-[1] px-5 py-3.5 border-b border-border/30 bg-popover/95 backdrop-blur-xl">
-          <p className="text-[11px] uppercase tracking-[2px] font-medium text-muted-foreground/60">
-            {isAr ? 'اختر النموذج' : 'Select Model'}
-          </p>
+        {/* Search */}
+        <div className="sticky top-0 z-[1] px-4 pt-4 pb-3 border-b border-border/20 bg-popover/95 backdrop-blur-xl">
+          <div className="flex items-center gap-2.5 px-3.5 py-2.5 rounded-xl bg-muted/30 dark:bg-muted/15">
+            <Search size={14} className="text-muted-foreground/40 flex-shrink-0" />
+            <input
+              type="text"
+              value={search}
+              onChange={e => setSearch(e.target.value)}
+              placeholder={isAr ? 'بحث...' : 'Search...'}
+              className="bg-transparent text-[13px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none w-full"
+              autoFocus
+            />
+          </div>
         </div>
 
-        {/* List */}
-        <div className="overflow-y-auto py-1.5" style={{ maxHeight: 'calc(100vh - 12rem)' }}>
-          {videoModels.map(model => {
-            const isSelected = model.id === selectedModelId;
-            const bestFor = isAr ? model.best_for_ar : model.best_for;
+        {/* Model list */}
+        <div className="overflow-y-auto" style={{ maxHeight: 'calc(100vh - 14rem)' }}>
+          {/* Featured section */}
+          {featured.length > 0 && !search && (
+            <div className="px-4 pt-3 pb-1">
+              <p className="text-[10px] uppercase tracking-[1.5px] font-semibold text-muted-foreground/40 flex items-center gap-1.5">
+                <span>←</span> {isAr ? 'نماذج مميزة' : 'Featured models'}
+              </p>
+            </div>
+          )}
 
-            return (
-              <button
-                key={model.id}
-                onClick={() => onSelect(model.id)}
-                className={cn(
-                  "w-full flex items-center gap-3 px-5 py-3.5 transition-all text-start",
-                  isSelected ? "bg-primary/[0.07]" : "hover:bg-muted/50"
-                )}
-              >
-                <div className={cn(
-                  "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden",
-                  isSelected ? "ring-2 ring-primary/30" : "bg-muted/20 dark:bg-muted/10"
-                )}>
-                  {model.preview_image_url ? (
-                    <img src={model.preview_image_url} alt="" className="w-full h-full object-cover" />
-                  ) : (
-                    <Film size={16} className={isSelected ? "text-primary" : "text-muted-foreground/40"} />
+          <div className="py-1 px-1.5">
+            {(search ? allModels : allModels).map(model => {
+              const isSelected = model.id === selectedModelId;
+              const bestFor = isAr ? model.best_for_ar : model.best_for;
+
+              return (
+                <button
+                  key={model.id}
+                  onClick={() => onSelect(model.id)}
+                  className={cn(
+                    "w-full flex items-center gap-3 px-4 py-3.5 rounded-xl transition-all text-start group",
+                    isSelected ? "bg-primary/[0.08]" : "hover:bg-muted/40 dark:hover:bg-muted/20"
                   )}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <span className={cn("text-[14px] font-semibold truncate", isSelected ? "text-primary" : "text-foreground")}>
-                      {model.model_name}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-1.5 mt-1 flex-wrap">
-                    {model.supports_image_to_video && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold">I2V</span>
+                >
+                  <div className={cn(
+                    "w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden",
+                    isSelected ? "ring-2 ring-primary/30" : "bg-muted/20 dark:bg-muted/10"
+                  )}>
+                    {model.preview_image_url ? (
+                      <img src={model.preview_image_url} alt="" className="w-full h-full object-cover" />
+                    ) : (
+                      <Film size={16} className={isSelected ? "text-primary" : "text-muted-foreground/40"} />
                     )}
-                    {model.supported_qualities.map(q => (
-                      <span key={q} className="text-[9px] px-1.5 py-0.5 rounded-md bg-muted/30 dark:bg-muted/15 text-muted-foreground/70 font-medium">{q}</span>
-                    ))}
-                    {model.supported_durations.length > 0 && (
-                      <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-muted/30 dark:bg-muted/15 text-muted-foreground/70 font-medium">
-                        {model.supported_durations[0]}–{model.supported_durations[model.supported_durations.length - 1]}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className={cn("text-[14px] font-semibold truncate", isSelected ? "text-primary" : "text-foreground")}>
+                        {model.model_name}
                       </span>
+                      {model.supports_image_to_video && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 font-bold flex-shrink-0">I2V</span>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1.5 mt-1 flex-wrap">
+                      {model.supported_qualities.map(q => (
+                        <span key={q} className="text-[9px] px-1.5 py-0.5 rounded-md bg-muted/30 dark:bg-muted/15 text-muted-foreground/70 font-medium">{q}</span>
+                      ))}
+                      {model.supported_durations.length > 0 && (
+                        <span className="text-[9px] px-1.5 py-0.5 rounded-md bg-muted/30 dark:bg-muted/15 text-muted-foreground/70 font-medium">
+                          {model.supported_durations[0]}–{model.supported_durations[model.supported_durations.length - 1]}
+                        </span>
+                      )}
+                    </div>
+                    {bestFor && (
+                      <p className="text-[11px] text-muted-foreground/50 mt-1 truncate">{bestFor}</p>
                     )}
                   </div>
-                  {bestFor && (
-                    <p className="text-[11px] text-muted-foreground/50 mt-1 truncate">{bestFor}</p>
+                  {isSelected && (
+                    <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
+                      <Check size={12} className="text-primary-foreground" />
+                    </div>
                   )}
-                </div>
-                {isSelected && (
-                  <div className="w-5 h-5 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
-                    <Check size={12} className="text-primary-foreground" />
-                  </div>
-                )}
-              </button>
-            );
-          })}
+                </button>
+              );
+            })}
+          </div>
+
+          {filtered.length === 0 && (
+            <div className="py-12 text-center">
+              <p className="text-[13px] text-muted-foreground/40">{isAr ? 'لا توجد نتائج' : 'No results'}</p>
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -341,8 +380,8 @@ export default function Video() {
             <div className="flex-1 rounded-2xl bg-muted/20 animate-pulse h-14" />
           </div>
         </div>
-        <div className="hidden md:flex max-w-7xl mx-auto w-full px-8 pt-6 gap-8">
-          <div className="w-[420px] flex-shrink-0 space-y-4">
+        <div className="hidden md:flex w-full px-6 pt-6 gap-6">
+          <div className="w-[400px] flex-shrink-0 space-y-4">
             <div className="rounded-2xl bg-muted/20 animate-pulse h-48" />
             <div className="rounded-2xl bg-muted/20 animate-pulse h-32" />
             <div className="rounded-2xl bg-muted/20 animate-pulse h-14" />
@@ -402,11 +441,11 @@ export default function Video() {
 
   /* ─── Creation Panel (shared between mobile & desktop) ─── */
   const CreationPanel = ({ isDesktop = false }: { isDesktop?: boolean }) => (
-    <div className={cn("space-y-3", isDesktop && "space-y-4")}>
-      {/* Hero Model Card — display only on desktop, clickable on mobile */}
+    <div className={cn("space-y-3", isDesktop && "space-y-3")}>
+      {/* Hero Model Card — display only */}
       {isDesktop ? (
         <div className="w-full rounded-2xl overflow-hidden relative shadow-sm">
-          <div className="aspect-[2.2/1] relative">
+          <div className="aspect-[2.4/1] relative">
             {currentModel?.preview_image_url ? (
               <img src={currentModel.preview_image_url} alt="" className="w-full h-full object-cover" />
             ) : (
@@ -510,7 +549,7 @@ export default function Video() {
         </button>
       )}
 
-      {/* Settings Row */}
+      {/* Settings Row — dropdowns open UPWARD on desktop */}
       <div className="flex items-stretch gap-2">
         <SettingSelector
           label={isAr ? 'المدة' : 'Duration'}
@@ -518,12 +557,14 @@ export default function Video() {
           value={selectedDuration}
           onSelect={setSelectedDuration}
           icon={<Clock size={13} className="text-muted-foreground/40 flex-shrink-0" />}
+          forceUpward={isDesktop}
         />
         <SettingSelector
           label={isAr ? 'النسبة' : 'Ratio'}
           options={currentModel?.supported_ratios || []}
           value={selectedRatio}
           onSelect={setSelectedRatio}
+          forceUpward={isDesktop}
         />
         <SettingSelector
           label={isAr ? 'الجودة' : 'Quality'}
@@ -531,6 +572,7 @@ export default function Video() {
           value={selectedQuality}
           onSelect={setSelectedQuality}
           icon={<Diamond size={12} className="text-muted-foreground/40 flex-shrink-0" />}
+          forceUpward={isDesktop}
         />
       </div>
 
@@ -635,16 +677,32 @@ export default function Video() {
       style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}
     >
       <div className="flex-1 overflow-y-auto">
-        <div className="max-w-7xl mx-auto w-full px-8 pt-6 pb-12 flex gap-8">
-          {/* Creation Panel — anchored start (left in LTR, right in RTL via dir) */}
-          <div className="w-[420px] flex-shrink-0 relative">
-            <div className="sticky" style={{ top: 'calc(4.5rem + var(--banner-h, 0px))' }}>
+        {/* Edge-anchored layout — no max-w centering, sidebar hugs the side */}
+        <div className="flex w-full">
+          {/* Creation Sidebar — fixed width, sticky, edge-anchored */}
+          <div className="w-[400px] flex-shrink-0 relative border-e border-border/10">
+            <div
+              className="sticky px-5 py-5 overflow-y-auto"
+              style={{
+                top: 'calc(3.5rem + var(--banner-h, 0px))',
+                height: 'calc(100vh - 3.5rem - var(--banner-h, 0px))',
+              }}
+            >
               <CreationPanel isDesktop />
             </div>
 
-            {/* Desktop Model Panel — opens beside creation panel */}
+            {/* Desktop Model Panel — opens beside sidebar */}
             {showModelPicker && (
-              <div className="sticky" style={{ top: 'calc(4.5rem + var(--banner-h, 0px))' }}>
+              <div
+                className="fixed z-50"
+                style={{
+                  top: 'calc(3.5rem + var(--banner-h, 0px) + 1.25rem)',
+                  ...(isAr
+                    ? { right: '420px' }
+                    : { left: '420px' }
+                  ),
+                }}
+              >
                 <DesktopModelPanel
                   videoModels={videoModels}
                   selectedModelId={selectedModelId}
@@ -656,8 +714,8 @@ export default function Video() {
             )}
           </div>
 
-          {/* Content Panel — end side */}
-          <div className="flex-1 min-w-0">
+          {/* Content Panel — fills remaining space */}
+          <div className="flex-1 min-w-0 px-8 py-6">
             <Tabs defaultValue="history" className="w-full">
               <TabsList className="bg-card/50 dark:bg-card/30 rounded-2xl p-1 mb-6 w-auto inline-flex">
                 <TabsTrigger
