@@ -48,7 +48,8 @@ function readCache(): Record<string, string> {
 
 export function DashboardHero() {
   const { lang } = useLanguage();
-  const isAr = lang === 'ar';
+  const { mode } = useAppTheme();
+  const isLight = mode === 'light';
   const [initial] = useState(() => readCache());
 
   const { data: config } = useQuery({
