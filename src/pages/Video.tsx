@@ -409,7 +409,7 @@ export default function Video() {
   );
 
   /* ─── Creation Panel (shared between mobile & desktop) ─── */
-  const CreationPanel = ({ isDesktop = false }: { isDesktop?: boolean }) => (
+  const renderCreationPanel = (isDesktop = false) => (
     <div className={cn("space-y-3", isDesktop && "space-y-3")}>
       {/* Hero Model Card — display only */}
       {isDesktop ? (
@@ -598,7 +598,7 @@ export default function Video() {
         {/* Scrollable content area — bottom padding accounts for sticky CTA + bottom nav + safe area */}
         <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(4.5rem + 4rem + env(safe-area-inset-bottom, 0px))' }}>
           <div className="max-w-lg mx-auto px-4 pt-4 space-y-3">
-            <CreationPanel />
+            {renderCreationPanel()}
           </div>
         </div>
 
@@ -655,7 +655,7 @@ export default function Video() {
                 height: 'calc(100vh - 3.5rem - var(--banner-h, 0px))',
               }}
             >
-              <CreationPanel isDesktop />
+              {renderCreationPanel(true)}
             </div>
 
             {/* Desktop Model Panel — opens beside sidebar */}
