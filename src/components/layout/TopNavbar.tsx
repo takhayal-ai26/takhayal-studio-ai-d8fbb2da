@@ -115,7 +115,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
 
   return (
     <>
-      <nav dir={isRTL ? 'rtl' : 'ltr'} className={`fixed left-0 right-0 z-50 h-14 flex items-center px-5 md:px-6 transition-[top,background,backdrop-filter] duration-300 ${bannerOffset ? 'top-[40px]' : 'top-0'} ${isHeroPage && !scrolled ? 'bg-transparent' : 'bg-background/80 backdrop-blur-xl'}`}>
+      <nav dir={isRTL ? 'rtl' : 'ltr'} className={`fixed left-0 right-0 z-50 h-14 flex items-center px-5 md:px-6 transition-[top,background,backdrop-filter] duration-300 ${bannerOffset ? 'top-[40px]' : 'top-0'} ${isHeroPage && !scrolled ? 'bg-transparent' : 'bg-background/80 backdrop-blur-xl'}`} data-hero-transparent={isHeroPage && !scrolled ? 'true' : undefined}>
         <div className="flex-shrink-0 whitespace-nowrap">
           <Logo />
         </div>
