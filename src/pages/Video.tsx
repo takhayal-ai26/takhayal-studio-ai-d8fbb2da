@@ -805,12 +805,3 @@ function ModelPickerSheet({ videoModels, selectedModelId, onSelect, onClose, isA
     </div>
   );
 }
-                {isSelected && <Check size={15} className="text-primary flex-shrink-0" />}
-              </button>
-            );
-          })}
-        </div>
-      </div>
-    </div>
-  );
-}
