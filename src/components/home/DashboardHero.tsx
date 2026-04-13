@@ -21,7 +21,7 @@ const HERO_CONFIG_KEYS = [
 ] as const;
 
 const DEFAULTS: Record<string, string> = {
-  video_hero_video_url: 'https://njenobbxlbhbzwpkylha.supabase.co/storage/v1/object/public/tool-covers/hero-video.mp4',
+  video_hero_video_url: 'https://njenobbxlbhbzwpkylha.supabase.co/storage/v1/object/public/tool-covers/hero-video-v2.mp4',
   video_hero_poster_url: '',
   video_hero_headline1_en: 'Imagine',
   video_hero_headline2_en: 'More',
