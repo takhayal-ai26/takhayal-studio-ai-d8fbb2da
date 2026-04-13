@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef, useCallback } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { useAppTheme } from '@/context/AppThemeContext';
+import heroPoster from '@/assets/landing/hero-video-poster.jpg';
 
 const HERO_CONFIG_KEYS = [
   'video_hero_video_url',
@@ -52,6 +53,8 @@ export function DashboardHero() {
   const isLight = mode === 'light';
   const isAr = lang === 'ar';
   const [initial] = useState(() => readCache());
+  const [videoFailed, setVideoFailed] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const { data: config } = useQuery({
     queryKey: ['video-hero-config'],
@@ -74,6 +77,40 @@ export function DashboardHero() {
     }
   }, [config]);
 
+  // Attempt autoplay on mount — handles mobile Safari restrictions
+  const tryPlay = useCallback(() => {
+    const v = videoRef.current;
+    if (!v) return;
+    const p = v.play();
+    if (p && typeof p.catch === 'function') {
+      p.catch(() => {
+        // Autoplay blocked — show poster fallback
+        setVideoFailed(true);
+      });
+    }
+  }, []);
+
+  useEffect(() => {
+    const v = videoRef.current;
+    if (!v) return;
+
+    // If metadata already loaded, try immediately
+    if (v.readyState >= 1) {
+      tryPlay();
+    } else {
+      v.addEventListener('loadedmetadata', tryPlay, { once: true });
+    }
+
+    // Also handle network/source errors
+    const onError = () => setVideoFailed(true);
+    v.addEventListener('error', onError);
+
+    return () => {
+      v.removeEventListener('loadedmetadata', tryPlay);
+      v.removeEventListener('error', onError);
+    };
+  }, [tryPlay]);
+
   const c = { ...DEFAULTS, ...(config || {}) };
   const videoUrl = c.video_hero_video_url;
   const posterUrl = c.video_hero_poster_url;
@@ -81,6 +118,9 @@ export function DashboardHero() {
   const baseOverlay = parseFloat(c.video_hero_overlay_intensity) || 0.4;
   const overlay = isLight ? Math.min(baseOverlay + 0.2, 0.75) : baseOverlay;
   const align = c.video_hero_text_align || 'center';
+
+  // Use admin poster, or built-in fallback
+  const fallbackPoster = (posterEnabled && posterUrl) ? posterUrl : heroPoster;
 
   const h1 = isAr ? c.video_hero_headline1_ar : c.video_hero_headline1_en;
   const h2 = isAr ? c.video_hero_headline2_ar : c.video_hero_headline2_en;
@@ -92,19 +132,31 @@ export function DashboardHero() {
       style={{ height: '100svh', minHeight: 520 }}
       data-desktop-hero
     >
-      {/* Video */}
-      <video
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-        {...(posterEnabled && posterUrl ? { poster: posterUrl } : {})}
-        className="absolute inset-0 w-full h-full object-cover"
-        style={{ zIndex: 0, objectPosition: 'center center' }}
-      >
-        <source src={videoUrl} type="video/mp4" />
-      </video>
+      {/* Video — uses src attribute directly + poster for mobile */}
+      {!videoFailed && (
+        <video
+          ref={videoRef}
+          autoPlay
+          muted
+          loop
+          playsInline
+          preload="auto"
+          poster={fallbackPoster}
+          src={videoUrl}
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ zIndex: 0 }}
+        />
+      )}
+
+      {/* Poster fallback when video fails */}
+      {videoFailed && (
+        <img
+          src={fallbackPoster}
+          alt=""
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ zIndex: 0 }}
+        />
+      )}
 
       {/* Overlay */}
       <div
@@ -121,7 +173,6 @@ export function DashboardHero() {
         style={{ textAlign: align as any }}
         dir={isAr ? 'rtl' : 'ltr'}
       >
-        {/* Headline */}
         <h1
           className="tracking-tight drop-shadow-2xl"
           style={{
@@ -146,7 +197,6 @@ export function DashboardHero() {
           </span>
         </h1>
 
-        {/* Subtitle */}
         {subtitle && (
           <p
             className="mt-5 md:mt-7 max-w-[560px] mx-auto drop-shadow-lg"
@@ -163,7 +213,7 @@ export function DashboardHero() {
         )}
       </div>
 
-      {/* Bottom fade to page bg */}
+      {/* Bottom fade */}
       <div
         className="absolute bottom-0 left-0 right-0 pointer-events-none"
         style={{
