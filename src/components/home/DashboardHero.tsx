@@ -21,7 +21,7 @@ const HERO_CONFIG_KEYS = [
 ] as const;
 
 const DEFAULTS: Record<string, string> = {
-  video_hero_video_url: 'https://njenobbxlbhbzwpkylha.supabase.co/storage/v1/object/public/tool-covers/hero-video.mp4',
+  video_hero_video_url: 'https://njenobbxlbhbzwpkylha.supabase.co/storage/v1/object/public/tool-covers/hero-video-v2.mp4',
   video_hero_poster_url: '',
   video_hero_headline1_en: 'Imagine',
   video_hero_headline2_en: 'More',
@@ -78,16 +78,31 @@ export function DashboardHero() {
   }, [config]);
 
   // Attempt autoplay on mount — handles mobile Safari restrictions
+  const stallTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
   const tryPlay = useCallback(() => {
     const v = videoRef.current;
     if (!v) return;
+
     const p = v.play();
     if (p && typeof p.catch === 'function') {
-      p.catch(() => {
-        // Autoplay blocked — show poster fallback
+      p.then(() => {
+        // Playback started — clear any stall timer
+        clearTimeout(stallTimerRef.current);
+      }).catch(() => {
+        // Autoplay explicitly blocked — show poster fallback
         setVideoFailed(true);
+        clearTimeout(stallTimerRef.current);
       });
     }
+
+    // iOS Low Power Mode: play() may resolve but video stays paused.
+    // Only start stall detection AFTER play attempt, not from mount.
+    stallTimerRef.current = setTimeout(() => {
+      if (v.paused && v.currentTime === 0) {
+        setVideoFailed(true);
+      }
+    }, 4000);
   }, []);
 
   useEffect(() => {
@@ -105,18 +120,10 @@ export function DashboardHero() {
     const onError = () => setVideoFailed(true);
     v.addEventListener('error', onError);
 
-    // iOS Low Power Mode: video loads a frame but refuses to play.
-    // Detect stalled playback after 3s — if paused & currentTime is 0, treat as failed.
-    const stallTimer = setTimeout(() => {
-      if (v.paused && v.currentTime === 0) {
-        setVideoFailed(true);
-      }
-    }, 3000);
-
     return () => {
       v.removeEventListener('loadedmetadata', tryPlay);
       v.removeEventListener('error', onError);
-      clearTimeout(stallTimer);
+      clearTimeout(stallTimerRef.current);
     };
   }, [tryPlay]);
 
@@ -141,7 +148,7 @@ export function DashboardHero() {
       style={{ height: '100svh', minHeight: 520 }}
       data-desktop-hero
     >
-      {/* Video — uses src attribute directly + poster for mobile */}
+      {/* Video — uses <source> with explicit type for mobile Safari MIME compliance */}
       {!videoFailed && (
         <video
           ref={videoRef}
@@ -151,10 +158,11 @@ export function DashboardHero() {
           playsInline
           preload="auto"
           poster={fallbackPoster}
-          src={videoUrl}
           className="absolute inset-0 w-full h-full object-cover"
           style={{ zIndex: 0 }}
-        />
+        >
+          <source src={videoUrl} type="video/mp4" />
+        </video>
       )}
 
       {/* Poster fallback when video fails */}
