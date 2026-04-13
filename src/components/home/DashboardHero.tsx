@@ -141,7 +141,7 @@ export function DashboardHero() {
       style={{ height: '100svh', minHeight: 520 }}
       data-desktop-hero
     >
-      {/* Video — uses src attribute directly + poster for mobile */}
+      {/* Video — uses <source> with explicit type for mobile Safari MIME compliance */}
       {!videoFailed && (
         <video
           ref={videoRef}
@@ -151,10 +151,11 @@ export function DashboardHero() {
           playsInline
           preload="auto"
           poster={fallbackPoster}
-          src={videoUrl}
           className="absolute inset-0 w-full h-full object-cover"
           style={{ zIndex: 0 }}
-        />
+        >
+          <source src={videoUrl} type="video/mp4" />
+        </video>
       )}
 
       {/* Poster fallback when video fails */}
