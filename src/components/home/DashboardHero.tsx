@@ -105,9 +105,18 @@ export function DashboardHero() {
     const onError = () => setVideoFailed(true);
     v.addEventListener('error', onError);
 
+    // iOS Low Power Mode: video loads a frame but refuses to play.
+    // Detect stalled playback after 3s — if paused & currentTime is 0, treat as failed.
+    const stallTimer = setTimeout(() => {
+      if (v.paused && v.currentTime === 0) {
+        setVideoFailed(true);
+      }
+    }, 3000);
+
     return () => {
       v.removeEventListener('loadedmetadata', tryPlay);
       v.removeEventListener('error', onError);
+      clearTimeout(stallTimer);
     };
   }, [tryPlay]);
 
