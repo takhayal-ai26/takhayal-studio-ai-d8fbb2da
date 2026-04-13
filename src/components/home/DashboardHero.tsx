@@ -89,7 +89,7 @@ export function DashboardHero() {
   return (
     <section
       className="relative w-full overflow-hidden mt-[calc(-3.5rem-var(--banner-h,0px))] md:mt-[calc(-2.75rem-var(--banner-h,0px))]"
-      style={{ height: '100vh', minHeight: 520 }}
+      style={{ height: '100svh', minHeight: 520 }}
       data-desktop-hero
     >
       {/* Video */}
@@ -101,7 +101,7 @@ export function DashboardHero() {
         preload="auto"
         {...(posterEnabled && posterUrl ? { poster: posterUrl } : {})}
         className="absolute inset-0 w-full h-full object-cover"
-        style={{ zIndex: 0 }}
+        style={{ zIndex: 0, objectPosition: 'center center' }}
       >
         <source src={videoUrl} type="video/mp4" />
       </video>
