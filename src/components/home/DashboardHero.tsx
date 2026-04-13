@@ -78,16 +78,31 @@ export function DashboardHero() {
   }, [config]);
 
   // Attempt autoplay on mount — handles mobile Safari restrictions
+  const stallTimerRef = useRef<ReturnType<typeof setTimeout>>();
+
   const tryPlay = useCallback(() => {
     const v = videoRef.current;
     if (!v) return;
+
     const p = v.play();
     if (p && typeof p.catch === 'function') {
-      p.catch(() => {
-        // Autoplay blocked — show poster fallback
+      p.then(() => {
+        // Playback started — clear any stall timer
+        clearTimeout(stallTimerRef.current);
+      }).catch(() => {
+        // Autoplay explicitly blocked — show poster fallback
         setVideoFailed(true);
+        clearTimeout(stallTimerRef.current);
       });
     }
+
+    // iOS Low Power Mode: play() may resolve but video stays paused.
+    // Only start stall detection AFTER play attempt, not from mount.
+    stallTimerRef.current = setTimeout(() => {
+      if (v.paused && v.currentTime === 0) {
+        setVideoFailed(true);
+      }
+    }, 4000);
   }, []);
 
   useEffect(() => {
@@ -105,18 +120,10 @@ export function DashboardHero() {
     const onError = () => setVideoFailed(true);
     v.addEventListener('error', onError);
 
-    // iOS Low Power Mode: video loads a frame but refuses to play.
-    // Detect stalled playback after 3s — if paused & currentTime is 0, treat as failed.
-    const stallTimer = setTimeout(() => {
-      if (v.paused && v.currentTime === 0) {
-        setVideoFailed(true);
-      }
-    }, 3000);
-
     return () => {
       v.removeEventListener('loadedmetadata', tryPlay);
       v.removeEventListener('error', onError);
-      clearTimeout(stallTimer);
+      clearTimeout(stallTimerRef.current);
     };
   }, [tryPlay]);
 
