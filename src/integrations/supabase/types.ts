@@ -471,6 +471,7 @@ export type Database = {
           comparison_model_ids: Json
           created_at: string
           featured: boolean
+          icon_url: string
           id: string
           linked_model_id: string | null
           main_image_url: string
@@ -488,7 +489,9 @@ export type Database = {
           tags_en: Json
           title_ar: string
           title_en: string
+          type: string
           updated_at: string
+          video_preview_url: string
         }
         Insert: {
           active?: boolean
@@ -500,6 +503,7 @@ export type Database = {
           comparison_model_ids?: Json
           created_at?: string
           featured?: boolean
+          icon_url?: string
           id?: string
           linked_model_id?: string | null
           main_image_url?: string
@@ -517,7 +521,9 @@ export type Database = {
           tags_en?: Json
           title_ar?: string
           title_en?: string
+          type?: string
           updated_at?: string
+          video_preview_url?: string
         }
         Update: {
           active?: boolean
@@ -529,6 +535,7 @@ export type Database = {
           comparison_model_ids?: Json
           created_at?: string
           featured?: boolean
+          icon_url?: string
           id?: string
           linked_model_id?: string | null
           main_image_url?: string
@@ -546,7 +553,9 @@ export type Database = {
           tags_en?: Json
           title_ar?: string
           title_en?: string
+          type?: string
           updated_at?: string
+          video_preview_url?: string
         }
         Relationships: [
           {
