@@ -507,17 +507,17 @@
 /* Model ticker marquee */
 @keyframes marquee-left {
   0% { transform: translateX(0); }
-  100% { transform: translateX(-33.333%); }
+  100% { transform: translateX(-25%); }
 }
 @keyframes marquee-right {
-  0% { transform: translateX(-33.333%); }
+  0% { transform: translateX(-25%); }
   100% { transform: translateX(0); }
 }
 .animate-marquee-left {
   animation: marquee-left 40s linear infinite;
 }
 .animate-marquee-right {
-  animation: marquee-right 40s linear infinite;
+  animation: marquee-right 32s linear infinite;
 }
 .marquee-row:hover .animate-marquee-left,
 .marquee-row:hover .animate-marquee-right {
@@ -529,33 +529,23 @@
   background: hsl(0 0% 4%);
 }
 [data-theme="light"] .explore-section-bg {
-  background: hsl(0 0% 98%);
+  background: hsl(0 0% 100%);
 }
-
-/* Badge styling */
-.explore-badge {
-  background: rgba(255, 255, 255, 0.05);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  color: #e4e4e7;
-  backdrop-filter: blur(8px);
+[data-theme="light"] .explore-subtitle-light {
+  color: hsl(0 0% 40%);
 }
-.explore-badge:hover {
+[data-theme="light"] .explore-badge-light {
+  background: hsl(0 0% 96%);
+  border-color: hsl(0 0% 87%);
+  color: hsl(0 0% 30%);
+}
+[data-theme="light"] .explore-badge-light:hover {
   border-color: rgba(240, 62, 27, 0.6);
-  background: rgba(240, 62, 27, 0.06);
   color: #F03E1B;
-  transform: scale(1.04);
+  background: rgba(240, 62, 27, 0.05);
 }
-[data-theme="light"] .explore-badge {
-  background: rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  color: #27272a;
-  backdrop-filter: none;
-}
-[data-theme="light"] .explore-badge:hover {
-  border-color: rgba(240, 62, 27, 0.6);
-  background: rgba(240, 62, 27, 0.06);
-  color: #F03E1B;
-  transform: scale(1.04);
+[data-theme="light"] .explore-divider-light {
+  border-color: hsl(0 0% 87% / 0.5);
 }
 
 /* Generation card animations */
