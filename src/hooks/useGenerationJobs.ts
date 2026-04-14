@@ -438,6 +438,8 @@ export function useGenerationJobs() {
           model_id: params.modelId,
           job_id: jobId,
           image_url: params.imageUrl,
+          end_frame_url: params.endFrameUrl,
+          generate_audio: params.generateAudio ?? false,
         },
       });
       if (invokeError) {
