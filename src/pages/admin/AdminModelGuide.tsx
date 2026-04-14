@@ -238,29 +238,6 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleMainImage(f); }} />
               </div>
 
-              {/* Icon / Logo */}
-              <div>
-                <Label className="text-xs">Icon / Logo (32×32 badge)</Label>
-                <div
-                  className="mt-1 border-2 border-dashed border-border/40 rounded-xl p-3 text-center cursor-pointer hover:border-primary/40 transition-colors"
-                  onClick={() => iconFileRef.current?.click()}
-                  onDragOver={e => e.preventDefault()}
-                  onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleIconImage(f); }}
-                >
-                  {form.icon_url ? (
-                    <div className="relative inline-block">
-                      <img src={form.icon_url} alt="" className="w-10 h-10 rounded-lg mx-auto object-cover" />
-                      <button onClick={e => { e.stopPropagation(); set('icon_url', ''); }} className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1"><X size={10} /></button>
-                    </div>
-                  ) : (
-                    <div className="py-3">
-                      <Upload size={16} className="mx-auto text-muted-foreground mb-1" />
-                      <p className="text-[10px] text-muted-foreground">Small icon for ticker badges</p>
-                    </div>
-                  )}
-                </div>
-                <input ref={iconFileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleIconImage(f); }} />
-              </div>
 
               {/* Video Preview URL — only for video type */}
               {isVideo && (
