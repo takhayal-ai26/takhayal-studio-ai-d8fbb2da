@@ -1823,6 +1823,78 @@ export type Database = {
         }
         Relationships: []
       }
+      video_models: {
+        Row: {
+          aspect_ratios: Json
+          badge: string | null
+          created_at: string
+          credit_cost_per_second_no_audio: number
+          credit_cost_per_second_with_audio: number
+          display_name: string
+          durations: Json
+          fal_endpoint: string
+          id: string
+          is_active: boolean
+          name: string
+          preview_image_url: string | null
+          provider: string
+          resolutions: Json
+          sort_order: number
+          start_frame_required: boolean
+          supports_audio: boolean
+          supports_end_frame: boolean
+          supports_reference_images: boolean
+          supports_start_frame: boolean
+          updated_at: string
+        }
+        Insert: {
+          aspect_ratios?: Json
+          badge?: string | null
+          created_at?: string
+          credit_cost_per_second_no_audio?: number
+          credit_cost_per_second_with_audio?: number
+          display_name: string
+          durations?: Json
+          fal_endpoint: string
+          id?: string
+          is_active?: boolean
+          name: string
+          preview_image_url?: string | null
+          provider?: string
+          resolutions?: Json
+          sort_order?: number
+          start_frame_required?: boolean
+          supports_audio?: boolean
+          supports_end_frame?: boolean
+          supports_reference_images?: boolean
+          supports_start_frame?: boolean
+          updated_at?: string
+        }
+        Update: {
+          aspect_ratios?: Json
+          badge?: string | null
+          created_at?: string
+          credit_cost_per_second_no_audio?: number
+          credit_cost_per_second_with_audio?: number
+          display_name?: string
+          durations?: Json
+          fal_endpoint?: string
+          id?: string
+          is_active?: boolean
+          name?: string
+          preview_image_url?: string | null
+          provider?: string
+          resolutions?: Json
+          sort_order?: number
+          start_frame_required?: boolean
+          supports_audio?: boolean
+          supports_end_frame?: boolean
+          supports_reference_images?: boolean
+          supports_start_frame?: boolean
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

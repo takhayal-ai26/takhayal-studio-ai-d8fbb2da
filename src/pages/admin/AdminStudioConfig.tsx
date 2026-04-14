@@ -1,8 +1,9 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Wrench, Cpu } from 'lucide-react';
+import { Wrench, Cpu, Film } from 'lucide-react';
 import { useLocation } from 'react-router-dom';
 import AdminTools from './AdminTools';
 import AdminModels from './AdminModels';
+import AdminVideoModels from './AdminVideoModels';
 
 export default function AdminStudioConfig() {
   const location = useLocation();
@@ -19,6 +20,7 @@ export default function AdminStudioConfig() {
         <TabsList className="bg-muted/30">
           <TabsTrigger value="tools" className="text-xs gap-1.5"><Wrench size={14} /> Tools</TabsTrigger>
           <TabsTrigger value="models" className="text-xs gap-1.5"><Cpu size={14} /> Models</TabsTrigger>
+          <TabsTrigger value="video-models" className="text-xs gap-1.5"><Film size={14} /> Video Models</TabsTrigger>
         </TabsList>
 
         <TabsContent value="tools">
@@ -27,6 +29,10 @@ export default function AdminStudioConfig() {
 
         <TabsContent value="models">
           <AdminModels embedded />
+        </TabsContent>
+
+        <TabsContent value="video-models">
+          <AdminVideoModels embedded />
         </TabsContent>
       </Tabs>
     </div>
