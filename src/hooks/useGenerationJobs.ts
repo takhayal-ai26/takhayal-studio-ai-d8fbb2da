@@ -378,6 +378,8 @@ export function useGenerationJobs() {
     modelId: string;
     creditCost: number;
     imageUrl?: string;
+    endFrameUrl?: string;
+    generateAudio?: boolean;
   }) => {
     if (!user) return null;
 
