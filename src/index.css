@@ -505,33 +505,47 @@
 }
 
 /* Model ticker marquee */
-@keyframes ticker {
+@keyframes marquee-left {
   0% { transform: translateX(0); }
-  100% { transform: translateX(-33.333%); }
+  100% { transform: translateX(-25%); }
 }
-@keyframes tickerReverse {
-  0% { transform: translateX(-33.333%); }
+@keyframes marquee-right {
+  0% { transform: translateX(-25%); }
   100% { transform: translateX(0); }
 }
-.animate-ticker {
-  animation: ticker 35s linear infinite;
+.animate-marquee-left {
+  animation: marquee-left 40s linear infinite;
 }
-.animate-ticker-reverse {
-  animation: tickerReverse 28s linear infinite;
+.animate-marquee-right {
+  animation: marquee-right 32s linear infinite;
+}
+.marquee-row:hover .animate-marquee-left,
+.marquee-row:hover .animate-marquee-right {
+  animation-play-state: paused;
 }
 
-/* Light mode overrides for Explore Models section */
-:root:not(.dark) .explore-models-light {
-  background: hsl(var(--muted)) !important;
+/* Explore Models section theming */
+.explore-section-bg {
+  background: hsl(0 0% 4%);
 }
-:root:not(.dark) .light-badge {
-  background: hsl(var(--muted));
-  border-color: hsl(var(--border));
-  color: hsl(var(--foreground));
+[data-theme="light"] .explore-section-bg {
+  background: hsl(0 0% 100%);
 }
-:root:not(.dark) .light-badge:hover {
-  border-color: rgba(240, 62, 27, 0.5);
-  color: hsl(var(--foreground));
+[data-theme="light"] .explore-subtitle-light {
+  color: hsl(0 0% 40%);
+}
+[data-theme="light"] .explore-badge-light {
+  background: hsl(0 0% 96%);
+  border-color: hsl(0 0% 87%);
+  color: hsl(0 0% 30%);
+}
+[data-theme="light"] .explore-badge-light:hover {
+  border-color: rgba(240, 62, 27, 0.6);
+  color: #F03E1B;
+  background: rgba(240, 62, 27, 0.05);
+}
+[data-theme="light"] .explore-divider-light {
+  border-color: hsl(0 0% 87% / 0.5);
 }
 
 /* Generation card animations */
