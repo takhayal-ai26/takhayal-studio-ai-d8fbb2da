@@ -1,5 +1,5 @@
 import { useState, useRef, useCallback } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
+import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
@@ -9,19 +9,19 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Label } from '@/components/ui/label';
-import { Plus, Edit, Trash2, Upload, X, GripVertical } from 'lucide-react';
+import { Plus, Edit, Trash2, Upload, X } from 'lucide-react';
 import { useModelGuides, type ModelGuide } from '@/hooks/useModelGuides';
 import { useModels } from '@/hooks/useModels';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 const EMPTY: Partial<ModelGuide> = {
-  slug: '', active: true, featured: false,
+  slug: '', type: 'image', active: true, featured: false,
   name_en: '', name_ar: '', title_en: '', title_ar: '',
   subtitle_en: '', subtitle_ar: '',
   short_description_en: '', short_description_ar: '',
   tags_en: [], tags_ar: [],
-  main_image_url: '',
+  main_image_url: '', icon_url: '', video_preview_url: '',
   comparison_enabled: false, comparison_images: [], comparison_model_ids: [],
   best_for_items: [],
   speed: 'fast', quality: 'high',
@@ -40,6 +40,7 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
   const [tagInputEn, setTagInputEn] = useState('');
   const [tagInputAr, setTagInputAr] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
+  const iconFileRef = useRef<HTMLInputElement>(null);
   const compFileRef = useRef<HTMLInputElement>(null);
 
   const set = (k: string, v: any) => setForm(prev => ({ ...prev, [k]: v }));
@@ -58,10 +59,13 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
 
   const handleMainImage = async (file: File) => {
     setUploading(true);
-    try {
-      const url = await uploadImage(file, 'main');
-      set('main_image_url', url);
-    } catch { toast.error('Upload failed'); }
+    try { const url = await uploadImage(file, 'main'); set('main_image_url', url); } catch { toast.error('Upload failed'); }
+    setUploading(false);
+  };
+
+  const handleIconImage = async (file: File) => {
+    setUploading(true);
+    try { const url = await uploadImage(file, 'icons'); set('icon_url', url); } catch { toast.error('Upload failed'); }
     setUploading(false);
   };
 
@@ -77,18 +81,13 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
   const validate = () => {
     if (!form.name_en) { toast.error('Name (EN) is required'); return false; }
     if (!form.slug) { toast.error('Slug is required'); return false; }
-    if (!form.main_image_url) { toast.error('Main image is required'); return false; }
     if (!form.short_description_en) { toast.error('Description (EN) is required'); return false; }
     return true;
   };
 
   const handleSave = async () => {
     if (!validate()) return;
-    try {
-      await upsert(form as any);
-      toast.success('Saved');
-      setOpen(false);
-    } catch (e: any) { toast.error(e.message); }
+    try { await upsert(form as any); toast.success('Saved'); setOpen(false); } catch (e: any) { toast.error(e.message); }
   };
 
   const handleDelete = async (id: string) => {
@@ -107,11 +106,13 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
   const addTag = (field: 'tags_en' | 'tags_ar', val: string) => {
     if (!val.trim()) return;
     const tags = [...(form[field] || [])];
-    if (tags.length < 3) tags.push(val.trim());
+    if (tags.length < 5) tags.push(val.trim());
     set(field, tags);
     field === 'tags_en' ? setTagInputEn('') : setTagInputAr('');
   };
   const removeTag = (field: 'tags_en' | 'tags_ar', idx: number) => set(field, (form[field] || []).filter((_, i) => i !== idx));
+
+  const isVideo = form.type === 'video';
 
   return (
     <div className="space-y-6">
@@ -129,6 +130,7 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
             <TableRow className="border-border/40">
               <TableHead className="text-[11px] uppercase text-muted-foreground">Name</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Slug</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Type</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Featured</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
               <TableHead className="w-20" />
@@ -139,6 +141,11 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
               <TableRow key={g.id} className="border-border/20 hover:bg-muted/20">
                 <TableCell className="text-[13px] font-medium">{g.name_en}</TableCell>
                 <TableCell className="text-[12px] text-muted-foreground">{g.slug}</TableCell>
+                <TableCell>
+                  <Badge variant="secondary" className={`text-[10px] ${g.type === 'video' ? 'bg-primary/15 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                    {g.type === 'video' ? 'Video' : 'Image'}
+                  </Badge>
+                </TableCell>
                 <TableCell>
                   <Switch checked={g.featured} onCheckedChange={(v) => upsert({ id: g.id, featured: v })} className="scale-75" />
                 </TableCell>
@@ -154,7 +161,7 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
               </TableRow>
             ))}
             {guides.length === 0 && (
-              <TableRow><TableCell colSpan={5} className="text-center text-muted-foreground py-8">No model guides yet</TableCell></TableRow>
+              <TableRow><TableCell colSpan={6} className="text-center text-muted-foreground py-8">No model guides yet</TableCell></TableRow>
             )}
           </TableBody>
         </Table>
@@ -175,9 +182,19 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
                 <div><Label className="text-xs">Name (EN) *</Label><Input value={form.name_en || ''} onChange={e => { set('name_en', e.target.value); if (!form.id) set('slug', slugify(e.target.value)); }} /></div>
                 <div><Label className="text-xs">Name (AR)</Label><Input value={form.name_ar || ''} onChange={e => set('name_ar', e.target.value)} dir="rtl" /></div>
               </div>
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
                 <div><Label className="text-xs">Slug *</Label><Input value={form.slug || ''} onChange={e => set('slug', e.target.value)} /></div>
                 <div><Label className="text-xs">Sort Order</Label><Input type="number" value={form.sort_order || 0} onChange={e => set('sort_order', parseInt(e.target.value) || 0)} /></div>
+                <div>
+                  <Label className="text-xs">Type *</Label>
+                  <Select value={form.type || 'image'} onValueChange={v => set('type', v)}>
+                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="image">Image</SelectItem>
+                      <SelectItem value="video">Video</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
               <div className="flex gap-6">
                 <label className="flex items-center gap-2 text-sm"><Switch checked={form.active ?? true} onCheckedChange={v => set('active', v)} /> Active</label>
@@ -199,7 +216,7 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
 
               {/* Main Image */}
               <div>
-                <Label className="text-xs">Main Image *</Label>
+                <Label className="text-xs">Main Image</Label>
                 <div
                   className="mt-1 border-2 border-dashed border-border/40 rounded-xl p-4 text-center cursor-pointer hover:border-primary/40 transition-colors"
                   onClick={() => fileRef.current?.click()}
@@ -220,6 +237,39 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
                 </div>
                 <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleMainImage(f); }} />
               </div>
+
+              {/* Icon / Logo */}
+              <div>
+                <Label className="text-xs">Icon / Logo (32×32 badge)</Label>
+                <div
+                  className="mt-1 border-2 border-dashed border-border/40 rounded-xl p-3 text-center cursor-pointer hover:border-primary/40 transition-colors"
+                  onClick={() => iconFileRef.current?.click()}
+                  onDragOver={e => e.preventDefault()}
+                  onDrop={e => { e.preventDefault(); const f = e.dataTransfer.files[0]; if (f) handleIconImage(f); }}
+                >
+                  {form.icon_url ? (
+                    <div className="relative inline-block">
+                      <img src={form.icon_url} alt="" className="w-10 h-10 rounded-lg mx-auto object-cover" />
+                      <button onClick={e => { e.stopPropagation(); set('icon_url', ''); }} className="absolute -top-2 -right-2 bg-destructive text-white rounded-full p-1"><X size={10} /></button>
+                    </div>
+                  ) : (
+                    <div className="py-3">
+                      <Upload size={16} className="mx-auto text-muted-foreground mb-1" />
+                      <p className="text-[10px] text-muted-foreground">Small icon for ticker badges</p>
+                    </div>
+                  )}
+                </div>
+                <input ref={iconFileRef} type="file" accept="image/*" className="hidden" onChange={e => { const f = e.target.files?.[0]; if (f) handleIconImage(f); }} />
+              </div>
+
+              {/* Video Preview URL — only for video type */}
+              {isVideo && (
+                <div>
+                  <Label className="text-xs">Video Preview URL</Label>
+                  <Input value={form.video_preview_url || ''} onChange={e => set('video_preview_url', e.target.value)} placeholder="https://... .mp4" />
+                  <p className="text-[10px] text-muted-foreground mt-1">Plays as hero preview on the model detail page</p>
+                </div>
+              )}
             </div>
 
             {/* Short Description */}
@@ -233,7 +283,7 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
 
             {/* Tags */}
             <div className="space-y-4">
-              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Tags (max 3)</h3>
+              <h3 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Tags (max 5)</h3>
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <Label className="text-xs">EN</Label>
@@ -289,9 +339,10 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
                   <Select value={form.quality || 'high'} onValueChange={v => set('quality', v)}>
                     <SelectTrigger><SelectValue /></SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="standard">Standard</SelectItem>
                       <SelectItem value="high">High</SelectItem>
                       <SelectItem value="premium">Premium</SelectItem>
-                      <SelectItem value="standard">Standard</SelectItem>
+                      <SelectItem value="ultra">Ultra</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
