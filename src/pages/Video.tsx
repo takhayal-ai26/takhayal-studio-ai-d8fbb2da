@@ -239,6 +239,8 @@ export default function Video() {
         modelId: currentModel.id,
         creditCost: totalCredits,
         imageUrl: uploadedImage?.url || undefined,
+        endFrameUrl: endFrameImage?.url || undefined,
+        generateAudio: audioEnabled && currentModel.supports_audio,
       });
       if (jobId) navigate(`/gallery?highlight=${jobId}`);
     } catch {
