@@ -514,10 +514,12 @@
   100% { transform: translateX(0); }
 }
 .animate-marquee-left {
-  animation: marquee-left 40s linear infinite;
+  animation: marquee-left 35s linear infinite;
+  will-change: transform;
 }
 .animate-marquee-right {
-  animation: marquee-right 32s linear infinite;
+  animation: marquee-right 28s linear infinite;
+  will-change: transform;
 }
 .marquee-row:hover .animate-marquee-left,
 .marquee-row:hover .animate-marquee-right {

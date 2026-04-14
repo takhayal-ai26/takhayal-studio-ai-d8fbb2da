@@ -88,7 +88,7 @@ export function ExploreModels() {
       </div>
 
       {/* Ticker rows — zero gap */}
-      <div className="flex flex-col" style={{ gap: 0 }}>
+      <div className="flex flex-col gap-4 w-full">
         <TickerRow items={ROW_1} isRTL={isRTL} />
         <TickerRow items={ROW_2} reverse isRTL={isRTL} />
       </div>
