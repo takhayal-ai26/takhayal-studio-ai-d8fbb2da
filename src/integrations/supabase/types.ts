@@ -1823,6 +1823,56 @@ export type Database = {
         }
         Relationships: []
       }
+      video_model_pricing: {
+        Row: {
+          api_cost_usd: number
+          audio_enabled: boolean
+          created_at: string
+          duration_seconds: number
+          id: string
+          is_active: boolean
+          is_available: boolean
+          our_credits: number
+          resolution: string
+          updated_at: string
+          video_model_id: string
+        }
+        Insert: {
+          api_cost_usd?: number
+          audio_enabled?: boolean
+          created_at?: string
+          duration_seconds: number
+          id?: string
+          is_active?: boolean
+          is_available?: boolean
+          our_credits?: number
+          resolution: string
+          updated_at?: string
+          video_model_id: string
+        }
+        Update: {
+          api_cost_usd?: number
+          audio_enabled?: boolean
+          created_at?: string
+          duration_seconds?: number
+          id?: string
+          is_active?: boolean
+          is_available?: boolean
+          our_credits?: number
+          resolution?: string
+          updated_at?: string
+          video_model_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_model_pricing_video_model_id_fkey"
+            columns: ["video_model_id"]
+            isOneToOne: false
+            referencedRelation: "video_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       video_models: {
         Row: {
           aspect_ratios: Json
