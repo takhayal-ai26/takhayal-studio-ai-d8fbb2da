@@ -13,7 +13,7 @@ const navItemDefs: { id: string; labelKey: string; route: string; studioPage?: N
   { id: 'home', labelKey: 'home', route: '/home' },
   { id: 'image', labelKey: 'image', route: '/image' },
   { id: 'video', labelKey: 'video', route: '/video' },
-  { id: 'models', labelKey: 'models', route: '/models' },
+  
   { id: 'gallery', labelKey: 'gallery', route: '/gallery' },
   { id: 'templates', labelKey: 'templates', route: '/templates' },
   { id: 'community', labelKey: 'community', route: '/community' },
