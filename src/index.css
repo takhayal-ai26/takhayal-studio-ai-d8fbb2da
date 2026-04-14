@@ -507,17 +507,31 @@
 /* Model ticker marquee */
 @keyframes ticker {
   0% { transform: translateX(0); }
-  100% { transform: translateX(-50%); }
+  100% { transform: translateX(-33.333%); }
 }
 @keyframes tickerReverse {
-  0% { transform: translateX(-50%); }
+  0% { transform: translateX(-33.333%); }
   100% { transform: translateX(0); }
 }
 .animate-ticker {
-  animation: ticker 40s linear infinite;
+  animation: ticker 35s linear infinite;
 }
 .animate-ticker-reverse {
-  animation: tickerReverse 40s linear infinite;
+  animation: tickerReverse 28s linear infinite;
+}
+
+/* Light mode overrides for Explore Models section */
+:root:not(.dark) .explore-models-light {
+  background: hsl(var(--muted)) !important;
+}
+:root:not(.dark) .light-badge {
+  background: hsl(var(--muted));
+  border-color: hsl(var(--border));
+  color: hsl(var(--foreground));
+}
+:root:not(.dark) .light-badge:hover {
+  border-color: rgba(240, 62, 27, 0.5);
+  color: hsl(var(--foreground));
 }
 
 /* Generation card animations */
