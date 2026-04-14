@@ -3,9 +3,9 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 
 const ROW_1 = [
-  { name: 'Nano Banana 2', slug: 'nano-banana-2' },
-  { name: 'Seedream 4.5', slug: 'seedream-4-5' },
   { name: 'Nano Banana Pro', slug: 'nano-banana-pro' },
+  { name: 'Seedream 4.5', slug: 'seedream-4-5' },
+  { name: 'Nano Banana 2', slug: 'nano-banana-2' },
   { name: 'Ideogram V3', slug: 'ideogram-v3' },
   { name: 'FLUX 1.1 Pro', slug: 'flux-1-1-pro' },
   { name: 'GPT Image 1.5', slug: 'gpt-image-1-5' },
@@ -26,25 +26,14 @@ const ROW_2 = [
 
 function TickerRow({ items, reverse, isRTL }: { items: typeof ROW_1; reverse?: boolean; isRTL?: boolean }) {
   const navigate = useNavigate();
-  // 4× duplication for seamless -25% loop
-  const quadrupled = [...items, ...items, ...items, ...items];
+  const sextupled = [...items, ...items, ...items, ...items, ...items, ...items];
 
-  // In RTL, flip directions
   const effectiveReverse = isRTL ? !reverse : reverse;
 
   return (
-    <div
-      className="marquee-row relative overflow-hidden"
-      style={{
-        maskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
-        WebkitMaskImage: 'linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%)',
-      }}
-    >
-      <div
-        className={`flex w-max ${effectiveReverse ? 'animate-marquee-right' : 'animate-marquee-left'}`}
-        style={{ gap: 0 }}
-      >
-        {quadrupled.map((m, i) => (
+    <div className="marquee-row ticker-wrapper relative overflow-hidden">
+      <div className={`ticker-track ${effectiveReverse ? 'ticker-right' : 'ticker-left'}`}>
+        {sextupled.map((m, i) => (
           <button
             key={`${m.slug}-${i}`}
             onClick={() => navigate(`/models/${m.slug}`)}
