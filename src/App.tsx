@@ -35,6 +35,7 @@ const Checkout = lazy(() => import("./pages/Checkout"));
 const CheckoutSuccess = lazy(() => import("./pages/CheckoutSuccess"));
 const SharePage = lazy(() => import("./pages/SharePage"));
 const ModelDetail = lazy(() => import("./pages/ModelDetail"));
+const ModelsDirectory = lazy(() => import("./pages/ModelsDirectory"));
 
 // Admin — fully code-split
 const AdminProtectedRoute = lazy(() => import("./components/AdminProtectedRoute").then(m => ({ default: m.AdminProtectedRoute })));
@@ -74,6 +75,7 @@ const RoutedApp = () => {
             <Route path="/templates" element={<Templates />} />
             <Route path="/templates/:id" element={<TemplateDetail />} />
             <Route path="/about" element={<About />} />
+            <Route path="/models" element={<ModelsDirectory />} />
             <Route path="/models/:slug" element={<ModelDetail />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/terms" element={<LegalPage />} />

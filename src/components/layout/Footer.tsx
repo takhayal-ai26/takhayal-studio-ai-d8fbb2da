@@ -12,7 +12,8 @@ const XIcon = ({ size = 14, className = '' }: { size?: number; className?: strin
 const navLinks = [
   { en: 'Home', ar: 'الرئيسية', to: '/' },
   { en: 'Studio', ar: 'الاستوديو', to: '/studio' },
-  { en: 'Gallery', ar: 'المعرض', to: '/studio' },
+  { en: 'Models', ar: 'النماذج', to: '/models' },
+  { en: 'Gallery', ar: 'المعرض', to: '/gallery' },
   { en: 'Templates', ar: 'القوالب', to: '/templates' },
   { en: 'Community', ar: 'المجتمع', to: '/community' },
 ];
