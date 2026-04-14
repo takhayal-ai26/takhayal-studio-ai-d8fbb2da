@@ -504,6 +504,22 @@
   animation: shimmer 1.5s infinite;
 }
 
+/* Model ticker marquee */
+@keyframes ticker {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+@keyframes tickerReverse {
+  0% { transform: translateX(-50%); }
+  100% { transform: translateX(0); }
+}
+.animate-ticker {
+  animation: ticker 40s linear infinite;
+}
+.animate-ticker-reverse {
+  animation: tickerReverse 40s linear infinite;
+}
+
 /* Generation card animations */
 .gen-card-processing {
   animation: genBreathe 3s ease-in-out infinite;

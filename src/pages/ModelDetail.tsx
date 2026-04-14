@@ -3,7 +3,8 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useModelGuides } from '@/hooks/useModelGuides';
 import { useApp } from '@/context/AppContext';
 import { usePricingTiers } from '@/hooks/usePricingTiers';
-import { ArrowLeft, ArrowRight, Zap, Star, Target, Gauge, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
+import { useVideoModels } from '@/hooks/useVideoModels';
+import { ArrowLeft, ArrowRight, Zap, Star, Target, Gauge, Sparkles, ChevronLeft, ChevronRight, Film } from 'lucide-react';
 import { Footer } from '@/components/layout/Footer';
 import { useRef, useState, useEffect } from 'react';
 
@@ -11,17 +12,16 @@ import { useRef, useState, useEffect } from 'react';
 function ModelDetailHero({ guide, isAr, isRTL, minCredits, onStart }: any) {
   const navigate = useNavigate();
   const tags = (isAr ? guide.tags_ar : guide.tags_en) || [];
+  const isVideo = guide.type === 'video';
 
   return (
     <section className="relative overflow-hidden">
-      {/* Layered radial backgrounds for depth */}
       <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 20% 30%, rgba(240,62,27,0.06), transparent 60%)' }} />
       <div className="absolute inset-0 pointer-events-none" style={{ background: 'radial-gradient(ellipse at 80% 70%, rgba(240,62,27,0.04), transparent 50%)' }} />
 
       <div className="max-w-7xl mx-auto px-5 md:px-8 pt-4 pb-12 md:pt-6 md:pb-20">
-        {/* Back */}
         <button
-          onClick={() => navigate('/')}
+          onClick={() => navigate(isVideo ? '/models' : '/')}
           className="inline-flex items-center gap-1.5 text-[13px] text-muted-foreground/70 hover:text-foreground mb-10 transition-colors group"
         >
           {isRTL ? <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" /> : <ArrowLeft size={14} className="group-hover:-translate-x-0.5 transition-transform" />}
@@ -29,46 +29,31 @@ function ModelDetailHero({ guide, isAr, isRTL, minCredits, onStart }: any) {
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 lg:gap-16 items-center">
-          {/* Text column */}
           <div className={isRTL ? 'order-2 lg:order-1' : ''}>
-
-            {/* Model Name — DOMINANT */}
             <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-[4.5rem] font-black tracking-tight leading-[1.05] text-foreground">
               {isAr ? guide.name_ar : guide.name_en}
             </h1>
-
-            {/* Title — secondary headline */}
             <p className="text-lg md:text-xl font-medium text-muted-foreground mt-3 leading-relaxed max-w-lg">
               {isAr ? guide.title_ar || '' : guide.title_en || ''}
             </p>
-
-            {/* Subtitle */}
             {(isAr ? guide.subtitle_ar : guide.subtitle_en) && (
               <p className="text-muted-foreground/70 text-[14px] md:text-[15px] mt-2 leading-relaxed max-w-md">
                 {isAr ? guide.subtitle_ar : guide.subtitle_en}
               </p>
             )}
-
-            {/* Tags — below subtitle */}
             {tags.length > 0 && (
               <div className="flex flex-wrap gap-2 mt-4">
                 {tags.map((tag: string, i: number) => (
-                  <span key={i} className="text-[11px] font-medium text-[#F03E1B] bg-[#F03E1B]/8 border border-[#F03E1B]/15 rounded-full px-3 py-1">
-                    {tag}
-                  </span>
+                  <span key={i} className="text-[11px] font-medium text-primary bg-primary/8 border border-primary/15 rounded-full px-3 py-1">{tag}</span>
                 ))}
               </div>
             )}
-
-            {/* Credit badge */}
             {minCredits !== null && (
               <div className="mt-5 inline-flex items-center gap-1.5 text-[13px] font-bold text-white rounded-full px-4 py-1.5" style={{ background: 'linear-gradient(135deg, #F03E1B, #e8522e)' }}>
                 <Zap size={14} fill="currentColor" />
                 {minCredits}
               </div>
             )}
-
-            {/* CTA — single gradient button */}
             <div className="mt-8">
               <button
                 onClick={onStart}
@@ -81,16 +66,30 @@ function ModelDetailHero({ guide, isAr, isRTL, minCredits, onStart }: any) {
             </div>
           </div>
 
-          {/* Image column */}
+          {/* Media column */}
           <div className={`relative ${isRTL ? 'order-1 lg:order-2' : ''}`}>
             <div
               className="rounded-3xl overflow-hidden aspect-square relative"
-              style={{
-                boxShadow: '0 0 0 1px rgba(240,62,27,0.15), 0 25px 80px -12px rgba(0,0,0,0.2), 0 0 40px rgba(240,62,27,0.08)',
-              }}
+              style={{ boxShadow: '0 0 0 1px rgba(240,62,27,0.15), 0 25px 80px -12px rgba(0,0,0,0.2), 0 0 40px rgba(240,62,27,0.08)' }}
             >
-              {guide.main_image_url ? (
+              {isVideo && guide.video_preview_url ? (
+                <video
+                  src={guide.video_preview_url}
+                  autoPlay
+                  muted
+                  loop
+                  playsInline
+                  className="w-full h-full object-cover"
+                />
+              ) : guide.main_image_url ? (
                 <img src={guide.main_image_url} alt={isAr ? guide.name_ar : guide.name_en} className="w-full h-full object-cover" />
+              ) : isVideo ? (
+                <div className="w-full h-full bg-gradient-to-br from-primary/15 to-zinc-900 flex items-center justify-center">
+                  <div className="text-center">
+                    <Film size={48} className="text-primary/30 mx-auto mb-3" />
+                    <p className="text-zinc-500 font-semibold text-lg">{isAr ? guide.name_ar : guide.name_en}</p>
+                  </div>
+                </div>
               ) : (
                 <div className="w-full h-full bg-muted/20 flex items-center justify-center">
                   <Sparkles size={64} className="text-muted-foreground/20" />
@@ -107,9 +106,9 @@ function ModelDetailHero({ guide, isAr, isRTL, minCredits, onStart }: any) {
 /* ─── Quick Info Card ─── */
 function QuickInfoCard({ icon: Icon, label, value }: { icon: any; label: string; value: string }) {
   return (
-    <div className="rounded-2xl bg-card/80 backdrop-blur-sm border border-border/20 p-6 shadow-sm hover:shadow-md hover:border-[#F03E1B]/15 transition-all duration-300 group">
-      <div className="p-2.5 rounded-xl bg-[#F03E1B]/8 w-fit mb-3 group-hover:bg-[#F03E1B]/12 transition-colors">
-        <Icon size={18} className="text-[#F03E1B]" />
+    <div className="rounded-2xl bg-card/80 backdrop-blur-sm border border-border/20 p-6 shadow-sm hover:shadow-md hover:border-primary/15 transition-all duration-300 group">
+      <div className="p-2.5 rounded-xl bg-primary/8 w-fit mb-3 group-hover:bg-primary/12 transition-colors">
+        <Icon size={18} className="text-primary" />
       </div>
       <p className="text-[11px] uppercase text-muted-foreground/50 tracking-wider font-medium">{label}</p>
       <p className="text-[15px] font-semibold mt-1 capitalize text-foreground">{value}</p>
@@ -153,20 +152,19 @@ function ModelCarousel({ guides, isAr, isRTL, navigate }: any) {
           <ChevronRight size={20} />
         </button>
       )}
-
       <div ref={scrollRef} className="overflow-x-auto scrollbar-hide -mx-5 px-5 md:-mx-8 md:px-8">
         <div className="flex gap-4 min-w-max pb-2">
           {guides.map((g: any) => (
             <button
               key={g.id}
               onClick={() => navigate(`/models/${g.slug}`)}
-              className="group relative flex-shrink-0 w-[220px] md:w-[260px] rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-[#F03E1B]/10 transition-all duration-300 hover:scale-[1.02]"
+              className="group relative flex-shrink-0 w-[220px] md:w-[260px] rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:scale-[1.02]"
             >
               <div className="aspect-square relative">
                 {g.main_image_url ? (
                   <img src={g.main_image_url} alt={isAr ? g.name_ar : g.name_en} className="absolute inset-0 w-full h-full object-cover" loading="lazy" />
                 ) : (
-                  <div className="absolute inset-0 bg-gradient-to-br from-[#F03E1B]/20 to-[#F03E1B]/5" />
+                  <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5" />
                 )}
                 <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/30 to-transparent" />
                 <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -191,8 +189,8 @@ export default function ModelDetail() {
   const { activeGuides, loading } = useModelGuides();
   const { setActivePage, setSelectedModelId } = useApp();
   const { tiers, allTiers } = usePricingTiers();
+  const { models: videoModels } = useVideoModels(false);
 
-  // Scroll to top when navigating between model pages
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
   }, [slug]);
@@ -208,12 +206,23 @@ export default function ModelDetail() {
   const guide = activeGuides.find(g => g.slug === slug);
   if (!guide) return <Navigate to="/" replace />;
 
+  const isVideo = guide.type === 'video';
   const otherGuides = activeGuides.filter(g => g.id !== guide.id);
   const bestForItems = guide.best_for_items || [];
   const bestForIcons = [Zap, Star, Target];
 
   let minCredits: number | null = null;
-  if (guide.linked_model_id) {
+  if (isVideo) {
+    // Find matching video model by slug similarity
+    const vm = videoModels.find(v => {
+      const vmSlug = v.display_name.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+      return vmSlug.includes(guide.slug.replace(/-/g, '')) || guide.slug.includes(vmSlug);
+    });
+    if (vm) {
+      const minDuration = Math.min(...(vm.durations.length ? vm.durations : [5]));
+      minCredits = minDuration * vm.credit_cost_per_second_no_audio;
+    }
+  } else if (guide.linked_model_id) {
     const modelTiers = (allTiers[guide.linked_model_id] || tiers.filter(t => t.model_id === guide.linked_model_id))
       .filter(t => t.is_active && t.is_available);
     if (modelTiers.length > 0) {
@@ -222,9 +231,13 @@ export default function ModelDetail() {
   }
 
   const handleStartCreating = () => {
-    if (guide.linked_model_id) setSelectedModelId(guide.linked_model_id);
-    setActivePage('canvas');
-    navigate('/studio');
+    if (isVideo) {
+      navigate(`/video?model=${guide.slug}`);
+    } else {
+      if (guide.linked_model_id) setSelectedModelId(guide.linked_model_id);
+      setActivePage('canvas');
+      navigate('/studio');
+    }
   };
 
   return (
@@ -232,8 +245,6 @@ export default function ModelDetail() {
       <ModelDetailHero guide={guide} isAr={isAr} isRTL={isRTL} minCredits={minCredits} onStart={handleStartCreating} />
 
       <div className="max-w-7xl mx-auto px-5 md:px-8">
-
-        {/* Quick Info */}
         <section className="my-14">
           <h2 className="typo-heading-section text-2xl font-bold mb-6">{isAr ? 'معلومات سريعة' : 'Quick Info'}</h2>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -243,7 +254,6 @@ export default function ModelDetail() {
           </div>
         </section>
 
-        {/* About */}
         {(isAr ? guide.short_description_ar : guide.short_description_en) && (
           <section className="my-14">
             <h2 className="typo-heading-section text-2xl font-bold mb-5">{isAr ? 'عن النموذج' : 'About the model'}</h2>
@@ -255,7 +265,6 @@ export default function ModelDetail() {
           </section>
         )}
 
-        {/* Comparison */}
         {guide.comparison_enabled && guide.comparison_images.length > 0 && (
           <section className="my-14">
             <h2 className="typo-heading-section text-2xl font-bold mb-6">{isAr ? 'مقارنة النماذج' : 'Compare Models'}</h2>
@@ -271,20 +280,19 @@ export default function ModelDetail() {
                   </div>
                 </div>
               ))}
-              <div className="rounded-2xl overflow-hidden bg-card/60 border-2 border-[#F03E1B]/30 ring-2 ring-[#F03E1B]/10">
+              <div className="rounded-2xl overflow-hidden bg-card/60 border-2 border-primary/30 ring-2 ring-primary/10">
                 <div className="aspect-square">
                   <img src={guide.main_image_url} alt={isAr ? guide.name_ar : guide.name_en} className="w-full h-full object-cover" />
                 </div>
                 <div className="p-4">
-                  <p className="text-sm font-bold text-[#F03E1B]">{isAr ? guide.name_ar : guide.name_en}</p>
-                  <span className="text-[11px] text-[#F03E1B]/70">{isAr ? 'الحالي' : 'Current'}</span>
+                  <p className="text-sm font-bold text-primary">{isAr ? guide.name_ar : guide.name_en}</p>
+                  <span className="text-[11px] text-primary/70">{isAr ? 'الحالي' : 'Current'}</span>
                 </div>
               </div>
             </div>
           </section>
         )}
 
-        {/* Best For */}
         {bestForItems.length > 0 && (
           <section className="my-14">
             <h2 className="typo-heading-section text-2xl font-bold mb-6">{isAr ? 'الأفضل في' : "What it's best for"}</h2>
@@ -292,9 +300,9 @@ export default function ModelDetail() {
               {bestForItems.slice(0, 3).map((item: any, i: number) => {
                 const Icon = bestForIcons[i % bestForIcons.length];
                 return (
-                  <div key={i} className="rounded-2xl bg-card/60 border border-border/20 p-6 hover:border-[#F03E1B]/15 transition-all shadow-sm group">
-                    <div className="p-2.5 rounded-xl bg-[#F03E1B]/8 w-fit mb-4 group-hover:bg-[#F03E1B]/12 transition-colors">
-                      <Icon size={20} className="text-[#F03E1B]" />
+                  <div key={i} className="rounded-2xl bg-card/60 border border-border/20 p-6 hover:border-primary/15 transition-all shadow-sm group">
+                    <div className="p-2.5 rounded-xl bg-primary/8 w-fit mb-4 group-hover:bg-primary/12 transition-colors">
+                      <Icon size={20} className="text-primary" />
                     </div>
                     <h3 className="font-semibold text-[15px]">{isAr ? item.title_ar : item.title_en}</h3>
                     <p className="text-[13px] text-muted-foreground mt-1.5">{isAr ? item.description_ar : item.description_en}</p>
@@ -305,7 +313,6 @@ export default function ModelDetail() {
           </section>
         )}
 
-        {/* Explore Other Models */}
         {otherGuides.length > 0 && (
           <section className="my-14">
             <h2 className="typo-heading-section text-2xl font-bold mb-6">{isAr ? 'استكشف نماذج أخرى' : 'Explore other models'}</h2>
@@ -313,7 +320,6 @@ export default function ModelDetail() {
           </section>
         )}
 
-        {/* Final CTA */}
         <section className="my-20 text-center">
           <h2 className="text-2xl md:text-3xl font-extrabold">
             {isAr ? `جاهز للإبداع باستخدام ${guide.name_ar}؟` : `Ready to create with ${guide.name_en}?`}
