@@ -39,6 +39,7 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Partial<ModelGuide>>(EMPTY);
   const [uploading, setUploading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [tagInputEn, setTagInputEn] = useState('');
   const [tagInputAr, setTagInputAr] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
