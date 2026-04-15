@@ -469,6 +469,9 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
                   {models.filter(m => m.is_active).map(m => (
                     <SelectItem key={m.id} value={m.id}>{m.model_name}</SelectItem>
                   ))}
+                  {videoModels.filter(vm => vm.is_active).map(vm => (
+                    <SelectItem key={vm.id} value={vm.id}>{vm.display_name} (Video)</SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>
