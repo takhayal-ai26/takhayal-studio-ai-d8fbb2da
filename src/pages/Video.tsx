@@ -320,13 +320,8 @@ export default function Video() {
     return (
       <div className="flex items-center justify-between px-4 py-3 rounded-2xl bg-card/60 dark:bg-card/40">
         <div className="flex items-center gap-2.5">
-          <Volume2 size={16} className={cn("transition-colors", audioEnabled ? "text-primary" : "text-muted-foreground/40")} />
-          <div>
-            <span className="text-[13px] font-semibold text-foreground">{isAr ? 'صوت AI' : 'AI Audio'}</span>
-            {audioEnabled && extraCost > 0 && (
-              <span className="text-[10px] text-primary font-medium ml-2">+{extraCost * selectedDuration} credits</span>
-            )}
-          </div>
+          <Volume2 size={16} className={cn("transition-colors duration-200", audioEnabled ? "text-primary" : "text-muted-foreground/40")} />
+          <span className="text-[13px] font-semibold text-foreground">{isAr ? 'صوت' : 'Audio'}</span>
         </div>
         <Switch checked={audioEnabled} onCheckedChange={setAudioEnabled} />
       </div>
