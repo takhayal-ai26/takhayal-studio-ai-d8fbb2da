@@ -217,7 +217,12 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
           <h2 className="text-lg font-bold">Model Guide</h2>
           <p className="text-sm text-muted-foreground mt-0.5">Manage model pages content (EN + AR)</p>
         </div>
-        <Button size="sm" onClick={openNew} className="gap-1.5 text-xs"><Plus size={14} /> Add Model</Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={syncMissingModels} disabled={syncing} className="gap-1.5 text-xs">
+            {syncing ? 'Syncing...' : 'Sync Active Models'}
+          </Button>
+          <Button size="sm" onClick={openNew} className="gap-1.5 text-xs"><Plus size={14} /> Add Model</Button>
+        </div>
       </div>
 
       <Card className="border-border/40 bg-card/50">
