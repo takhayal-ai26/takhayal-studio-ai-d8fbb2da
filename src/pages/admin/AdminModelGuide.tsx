@@ -35,6 +35,7 @@ function slugify(s: string) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
   const { guides, upsert, remove, refetch } = useModelGuides();
   const { models } = useModels();
+  const { models: videoModels } = useVideoModels(false);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Partial<ModelGuide>>(EMPTY);
   const [uploading, setUploading] = useState(false);
