@@ -207,6 +207,8 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
     else toast.info('All active models already have guides');
   };
 
+  const isVideo = form.type === 'video';
+
 
   return (
     <div className="space-y-6">
