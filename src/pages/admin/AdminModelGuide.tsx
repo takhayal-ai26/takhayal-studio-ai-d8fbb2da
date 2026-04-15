@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Plus, Edit, Trash2, Upload, X } from 'lucide-react';
 import { useModelGuides, type ModelGuide } from '@/hooks/useModelGuides';
 import { useModels } from '@/hooks/useModels';
+import { useVideoModels } from '@/hooks/useVideoModels';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
@@ -34,9 +35,11 @@ function slugify(s: string) { return s.toLowerCase().replace(/[^a-z0-9]+/g, '-')
 export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
   const { guides, upsert, remove, refetch } = useModelGuides();
   const { models } = useModels();
+  const { models: videoModels } = useVideoModels(false);
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState<Partial<ModelGuide>>(EMPTY);
   const [uploading, setUploading] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [tagInputEn, setTagInputEn] = useState('');
   const [tagInputAr, setTagInputAr] = useState('');
   const fileRef = useRef<HTMLInputElement>(null);
@@ -112,7 +115,100 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
   };
   const removeTag = (field: 'tags_en' | 'tags_ar', idx: number) => set(field, (form[field] || []).filter((_, i) => i !== idx));
 
+  // Sync: auto-create model guide entries for active models that don't have one
+  const syncMissingModels = async () => {
+    setSyncing(true);
+    let count = 0;
+    const existingSlugs = new Set(guides.map(g => g.slug));
+
+    // Sync active image models from `models` table
+    const activeImageModels = models.filter(m => m.is_active);
+    for (const m of activeImageModels) {
+      const slug = m.model_name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      if (existingSlugs.has(slug)) continue;
+      try {
+        await upsert({
+          slug,
+          name_en: m.model_name,
+          name_ar: '',
+          type: m.media_type === 'video' ? 'video' : 'image',
+          active: true,
+          featured: false,
+          title_en: m.model_name,
+          title_ar: '',
+          subtitle_en: m.best_for || '',
+          subtitle_ar: m.best_for_ar || '',
+          short_description_en: m.best_for || m.model_name,
+          short_description_ar: m.best_for_ar || '',
+          tags_en: [],
+          tags_ar: [],
+          main_image_url: m.preview_image_url || '',
+          icon_url: '',
+          video_preview_url: '',
+          comparison_enabled: false,
+          comparison_images: [],
+          comparison_model_ids: [],
+          best_for_items: [],
+          speed: (m.speed as any) || 'fast',
+          quality: 'high',
+          best_for_line_en: m.best_for || '',
+          best_for_line_ar: m.best_for_ar || '',
+          linked_model_id: m.id,
+          sort_order: 0,
+        });
+        existingSlugs.add(slug);
+        count++;
+      } catch (e) { console.error('Sync image model failed:', m.model_name, e); }
+    }
+
+    // Sync active video models from `video_models` table
+    const activeVidModels = videoModels.filter(vm => vm.is_active);
+    for (const vm of activeVidModels) {
+      const slug = vm.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      if (existingSlugs.has(slug)) continue;
+      try {
+        await upsert({
+          slug,
+          name_en: vm.display_name,
+          name_ar: '',
+          type: 'video',
+          active: true,
+          featured: false,
+          title_en: vm.display_name,
+          title_ar: '',
+          subtitle_en: '',
+          subtitle_ar: '',
+          short_description_en: vm.display_name,
+          short_description_ar: '',
+          tags_en: [],
+          tags_ar: [],
+          main_image_url: vm.preview_image_url || '',
+          icon_url: '',
+          video_preview_url: '',
+          comparison_enabled: false,
+          comparison_images: [],
+          comparison_model_ids: [],
+          best_for_items: [],
+          speed: 'fast',
+          quality: 'high',
+          best_for_line_en: '',
+          best_for_line_ar: '',
+          linked_model_id: null,
+          sort_order: 0,
+        });
+        existingSlugs.add(slug);
+        count++;
+      } catch (e) { console.error('Sync video model failed:', vm.display_name, e); }
+    }
+
+    await refetch();
+    setSyncing(false);
+    if (count > 0) toast.success(`Added ${count} new model guide(s)`);
+    else toast.info('All active models already have guides');
+  };
+
   const isVideo = form.type === 'video';
+
 
   return (
     <div className="space-y-6">
@@ -121,7 +217,12 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
           <h2 className="text-lg font-bold">Model Guide</h2>
           <p className="text-sm text-muted-foreground mt-0.5">Manage model pages content (EN + AR)</p>
         </div>
-        <Button size="sm" onClick={openNew} className="gap-1.5 text-xs"><Plus size={14} /> Add Model</Button>
+        <div className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={syncMissingModels} disabled={syncing} className="gap-1.5 text-xs">
+            {syncing ? 'Syncing...' : 'Sync Active Models'}
+          </Button>
+          <Button size="sm" onClick={openNew} className="gap-1.5 text-xs"><Plus size={14} /> Add Model</Button>
+        </div>
       </div>
 
       <Card className="border-border/40 bg-card/50">
@@ -367,6 +468,9 @@ export default function AdminModelGuide({ embedded }: { embedded?: boolean }) {
                   <SelectItem value="none">No link</SelectItem>
                   {models.filter(m => m.is_active).map(m => (
                     <SelectItem key={m.id} value={m.id}>{m.model_name}</SelectItem>
+                  ))}
+                  {videoModels.filter(vm => vm.is_active).map(vm => (
+                    <SelectItem key={vm.id} value={vm.id}>{vm.display_name} (Video)</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
