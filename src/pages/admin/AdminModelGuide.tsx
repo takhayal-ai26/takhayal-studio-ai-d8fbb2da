@@ -12,6 +12,7 @@ import { Label } from '@/components/ui/label';
 import { Plus, Edit, Trash2, Upload, X } from 'lucide-react';
 import { useModelGuides, type ModelGuide } from '@/hooks/useModelGuides';
 import { useModels } from '@/hooks/useModels';
+import { useVideoModels } from '@/hooks/useVideoModels';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
