@@ -1,28 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
-// Import all project images
-import authVisual from '@/assets/auth-visual.jpg';
-import beforeAfter from '@/assets/landing/before-after.jpg';
-import categoryFashion from '@/assets/landing/category-fashion.jpg';
-import categoryFood from '@/assets/landing/category-food.jpg';
-import categoryLogos from '@/assets/landing/category-logos.jpg';
-import categoryPosters from '@/assets/landing/category-posters.jpg';
-import categoryProduct from '@/assets/landing/category-product.jpg';
-import categorySocial from '@/assets/landing/category-social.jpg';
-import logoFull from '@/assets/logo-full.svg';
-import logoMarkAr from '@/assets/logo-mark-ar.svg';
-import logoMark from '@/assets/logo-mark.svg';
-import toolEnhance from '@/assets/tools/enhance.jpg';
-import toolGenerate from '@/assets/tools/generate.jpg';
-import toolLogo from '@/assets/tools/logo.jpg';
-import toolRemoveBg from '@/assets/tools/remove-bg.jpg';
-import toolEnhanceCover from '@/assets/tools/tool-enhance.jpg';
-import toolGenerateCover from '@/assets/tools/tool-generate.jpg';
-import toolLogoCover from '@/assets/tools/tool-logo.jpg';
-import toolRemovebgCover from '@/assets/tools/tool-removebg.jpg';
-import toolUpscaleCover from '@/assets/tools/tool-upscale.jpg';
-import toolUpscale from '@/assets/tools/upscale.jpg';
 
 export interface MediaAsset {
   id: string;
