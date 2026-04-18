@@ -73,7 +73,10 @@ export function AppLoader({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      <div style={{ visibility: phase === 'done' ? 'visible' : 'hidden' }}>
+      <div style={{ 
+        opacity: phase === 'loading' ? 0 : 1,
+        transition: phase !== 'loading' ? 'opacity 0.3s ease-out' : 'none',
+      }}>
         {children}
       </div>
 
