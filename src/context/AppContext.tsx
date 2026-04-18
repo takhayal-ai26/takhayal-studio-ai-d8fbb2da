@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useCallback, useEffect, useMemo, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { toast } from 'sonner';
@@ -351,20 +351,31 @@ export function AppProvider({ children }: { children: ReactNode }) {
     }
   }, [prompt, isGenerating, isAuthenticated, credits, quality, selectedTemplate, selectedStyle, aspectRatio, selectedModelId, selectedQualityTier, getCreditCost]);
 
+  const contextValue = useMemo(() => ({
+    isAuthenticated, userName, userEmail, userAvatarUrl, activePage, credits, plan,
+    prompt, selectedTemplate, selectedStyle, aspectRatio, quality,
+    selectedQualityTier, enhancePrompt, isGenerating, generatedImages, currentImageIndex, gallery,
+    generationCards, setGenerationCards, lastGenerationMeta,
+    authModalOpen, authModalTab, upgradeModalOpen,
+    availableModels, selectedModelId, selectedModel, availableQualityTiers, availableRatios, tierCreditsMap,
+    login, logout, openAuthModal, closeAuthModal, openUpgradeModal, closeUpgradeModal, closeAllModals, requireAuth,
+    setActivePage, setPrompt, setSelectedTemplate,
+    setSelectedStyle, setAspectRatio, setQuality, setSelectedQualityTier, setSelectedModelId,
+    setEnhancePrompt,
+    setCurrentImageIndex, generate, getCreditCost, getQualityTierLabel,
+  }), [
+    isAuthenticated, userName, userEmail, userAvatarUrl, activePage, credits, plan,
+    prompt, selectedTemplate, selectedStyle, aspectRatio, quality,
+    selectedQualityTier, enhancePrompt, isGenerating, generatedImages, currentImageIndex, gallery,
+    generationCards, lastGenerationMeta,
+    authModalOpen, authModalTab, upgradeModalOpen,
+    availableModels, selectedModelId, selectedModel, availableQualityTiers, availableRatios, tierCreditsMap,
+    login, logout, openAuthModal, closeAuthModal, openUpgradeModal, closeUpgradeModal, closeAllModals, requireAuth,
+    getCreditCost, getQualityTierLabel, generate,
+  ]);
+
   return (
-    <AppContext.Provider value={{
-      isAuthenticated, userName, userEmail, userAvatarUrl, activePage, credits, plan,
-      prompt, selectedTemplate, selectedStyle, aspectRatio, quality,
-      selectedQualityTier, enhancePrompt, isGenerating, generatedImages, currentImageIndex, gallery,
-      generationCards, setGenerationCards, lastGenerationMeta,
-      authModalOpen, authModalTab, upgradeModalOpen,
-      availableModels, selectedModelId, selectedModel, availableQualityTiers, availableRatios, tierCreditsMap,
-      login, logout, openAuthModal, closeAuthModal, openUpgradeModal, closeUpgradeModal, closeAllModals, requireAuth,
-      setActivePage, setPrompt, setSelectedTemplate,
-      setSelectedStyle, setAspectRatio, setQuality, setSelectedQualityTier, setSelectedModelId,
-      setEnhancePrompt,
-      setCurrentImageIndex, generate, getCreditCost, getQualityTierLabel,
-    }}>
+    <AppContext.Provider value={contextValue}>
       {children}
     </AppContext.Provider>
   );
