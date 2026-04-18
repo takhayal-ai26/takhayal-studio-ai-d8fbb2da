@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useTemplates, FrontendTemplate } from '@/hooks/useTemplates';
+import { getOptimizedImageUrl } from '@/lib/imageUtils';
 
 function ratioToNumber(ratio: string): number {
   const [w, h] = ratio.split(':').map(Number);
@@ -110,10 +111,11 @@ const TemplateCard = memo(function TemplateCard({
     >
       <div className="relative overflow-hidden" style={{ aspectRatio }}>
         <img
-          src={tpl.image}
+          src={getOptimizedImageUrl(tpl.image, 400, 75)}
           alt={tpl.name}
           loading="lazy"
           decoding="async"
+          className="w-full h-full object-cover"
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         <h3 className="absolute bottom-3 left-3 right-3 font-semibold text-white leading-tight drop-shadow-lg text-lg">
