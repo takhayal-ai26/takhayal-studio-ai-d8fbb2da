@@ -468,12 +468,12 @@
 
 /* Page fade-in — GPU-accelerated, no layout shift */
 @keyframes pageEnter {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 .animate-page-enter {
-  animation: pageEnter 0.2s ease-out;
-  will-change: opacity;
+  animation: pageEnter 0.16s ease-out both;
+  will-change: opacity, transform;
 }
 
 /* Hero gradient wave */

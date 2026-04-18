@@ -1,5 +1,6 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
+import { AppLoader } from "./components/AppLoader";
 import "./index.css";
 
 function clearCorruptLocalStorage() {
@@ -30,4 +31,8 @@ function clearCorruptLocalStorage() {
 
 clearCorruptLocalStorage();
 
-createRoot(document.getElementById("root")!).render(<App />);
+createRoot(document.getElementById("root")!).render(
+  <AppLoader>
+    <App />
+  </AppLoader>
+);

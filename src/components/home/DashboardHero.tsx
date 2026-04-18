@@ -156,7 +156,7 @@ export function DashboardHero() {
           muted
           loop
           playsInline
-          preload="auto"
+          preload="none"
           poster={fallbackPoster}
           className="absolute inset-0 w-full h-full object-cover"
           style={{ zIndex: 0 }}
