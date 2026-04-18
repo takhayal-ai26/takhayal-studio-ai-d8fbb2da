@@ -22,7 +22,9 @@ export function AppLayout() {
   return (
     <div
       className="flex flex-col h-screen w-full bg-background"
-      style={{ '--banner-h': bannerVisible ? '40px' : '0px' } as React.CSSProperties}
+      style={{
+        '--banner-h': bannerVisible ? 'calc(40px + env(safe-area-inset-top, 0px))' : '0px'
+      } as React.CSSProperties}
     >
       <PromoBannerStrip />
       <TopNavbar bannerOffset={bannerVisible} />
