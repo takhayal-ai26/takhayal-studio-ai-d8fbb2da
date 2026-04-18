@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { ArrowRight, Sparkles } from 'lucide-react';
 const videoCoverImg = '/video-cover.jpg';
 import { useState, useEffect, lazy, Suspense, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTools } from '@/hooks/useTools';
 import { useTemplates } from '@/hooks/useTemplates';
