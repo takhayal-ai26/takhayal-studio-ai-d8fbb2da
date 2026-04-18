@@ -7,6 +7,7 @@ import heroPoster from '@/assets/landing/hero-video-poster.jpg';
 
 const HERO_CONFIG_KEYS = [
   'video_hero_video_url',
+  'video_hero_webm_url',
   'video_hero_poster_url',
   'video_hero_headline1_en',
   'video_hero_headline2_en',
@@ -21,7 +22,8 @@ const HERO_CONFIG_KEYS = [
 ] as const;
 
 const DEFAULTS: Record<string, string> = {
-  video_hero_video_url: 'https://njenobbxlbhbzwpkylha.supabase.co/storage/v1/object/public/tool-covers/hero-video-v2.mp4',
+  video_hero_video_url: 'https://njenobbxlbhbzwpkylha.supabase.co/storage/v1/object/public/tool-covers/hero-video-optimized.mp4',
+  video_hero_webm_url: 'https://njenobbxlbhbzwpkylha.supabase.co/storage/v1/object/public/tool-covers/hero-video-optimized.webm',
   video_hero_poster_url: '',
   video_hero_headline1_en: 'Imagine',
   video_hero_headline2_en: 'More',
@@ -129,6 +131,7 @@ export function DashboardHero() {
 
   const c = { ...DEFAULTS, ...(config || {}) };
   const videoUrl = c.video_hero_video_url;
+  const webmUrl = c.video_hero_webm_url;
   const posterUrl = c.video_hero_poster_url;
   const posterEnabled = c.video_hero_poster_enabled === 'true';
   const baseOverlay = parseFloat(c.video_hero_overlay_intensity) || 0.4;
@@ -161,6 +164,7 @@ export function DashboardHero() {
           className="absolute inset-0 w-full h-full object-cover"
           style={{ zIndex: 0 }}
         >
+          {webmUrl && <source src={webmUrl} type="video/webm" />}
           <source src={videoUrl} type="video/mp4" />
         </video>
       )}
