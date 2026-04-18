@@ -3,7 +3,7 @@ import { TEMPLATE_PROMPTS, useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
 import { ArrowRight, Sparkles } from 'lucide-react';
-import videoCoverImg from '@/assets/tools/video-cover.jpg';
+const videoCoverImg = '/video-cover.jpg';
 import { useState, useEffect, lazy, Suspense, useMemo } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useTools } from '@/hooks/useTools';
