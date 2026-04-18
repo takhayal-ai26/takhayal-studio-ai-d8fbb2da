@@ -58,12 +58,21 @@ const bgStyles: Record<string, string> = {
   custom: '',
 };
 
+function getBannerCachedHeight(): boolean {
+  try {
+    return localStorage.getItem('takhayal-banner-shown') === 'true';
+  } catch {
+    return false;
+  }
+}
+
 // Shared state for banner visibility
-let _bannerVisible = false;
+let _bannerVisible = getBannerCachedHeight();
 const _listeners = new Set<(v: boolean) => void>();
 function setBannerVisible(v: boolean) {
   _bannerVisible = v;
   _listeners.forEach(fn => fn(v));
+  try { localStorage.setItem('takhayal-banner-shown', v ? 'true' : 'false'); } catch {}
 }
 
 export function usePromoBannerVisible() {
