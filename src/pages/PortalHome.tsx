@@ -17,6 +17,7 @@ import { WelcomeBack } from '@/components/home/WelcomeBack';
 import { ExploreModels } from '@/components/home/ExploreModels';
 import { QuickActions } from '@/components/home/QuickActions';
 import { Footer } from '@/components/layout/Footer';
+import { getOptimizedImageUrl } from '@/lib/imageUtils';
 
 const TestimonialsCarousel = lazy(() => import('@/components/home/TestimonialsCarousel').then(m => ({ default: m.TestimonialsCarousel })));
 const PricingPreview = lazy(() => import('@/components/home/PricingPreview').then(m => ({ default: m.PricingPreview })));
@@ -170,7 +171,7 @@ export default function PortalHome() {
             {filteredTemplates.map((tpl) => (
               <button key={tpl.id} onClick={() => goToTemplateDetail(tpl.id)} dir={isRTL ? 'rtl' : 'ltr'} className="group w-full rounded-2xl overflow-hidden break-inside-avoid mb-2 block text-start hover:shadow-lg hover:shadow-black/10 transition-shadow duration-300">
                 <div className="relative overflow-hidden" style={{ aspectRatio: ratioToNumber(tpl.ratio) }}>
-                  <img src={tpl.image} alt={tpl.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                  <img src={getOptimizedImageUrl(tpl.image, 400, 75)} alt={tpl.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
                   <h3 className="absolute bottom-2.5 left-3 right-3 font-semibold text-white leading-tight drop-shadow-md text-lg">{tpl.name}</h3>
                   <div className={`absolute top-2.5 ${isRTL ? 'left-2.5' : 'right-2.5'} opacity-0 group-hover:opacity-100 transition-opacity duration-200`}>
@@ -215,7 +216,7 @@ export default function PortalHome() {
             <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
               {communityPosts.map((item, i) => (
                 <button key={i} onClick={() => navigate('/community')} className="group relative w-full rounded-2xl overflow-hidden break-inside-avoid block hover:shadow-lg hover:shadow-black/10 transition-shadow duration-300">
-                  <img src={item.image_url} alt={item.prompt || ''} className="w-full object-cover" loading="lazy" decoding="async" width={400} height={500} />
+                  <img src={getOptimizedImageUrl(item.image_url, 400, 75)} alt={item.prompt || ''} className="w-full object-cover" loading="lazy" decoding="async" width={400} height={500} />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                   <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                     <p className="text-[11px] text-white/80 line-clamp-1">{item.prompt}</p>
