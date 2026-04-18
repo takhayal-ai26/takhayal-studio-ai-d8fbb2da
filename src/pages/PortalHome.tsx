@@ -40,19 +40,20 @@ export default function PortalHome() {
   const isLoggedIn = !!user;
 
   // Fetch real approved community posts
-  const [communityPosts, setCommunityPosts] = useState<{ image_url: string; prompt: string; ratio?: string }[]>([]);
-  useEffect(() => {
-    supabase
-      .from('community_posts')
-      .select('image_url, prompt, ratio')
-      .eq('status', 'approved')
-      .eq('is_featured', true)
-      .order('created_at', { ascending: false })
-      .limit(8)
-      .then(({ data }) => {
-        if (data && data.length > 0) setCommunityPosts(data);
-      });
-  }, []);
+  const { data: communityPosts = [] } = useQuery({
+    queryKey: ['community-posts-featured'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('community_posts')
+        .select('image_url, prompt, ratio')
+        .eq('status', 'approved')
+        .eq('is_featured', true)
+        .order('created_at', { ascending: false })
+        .limit(8);
+      return data || [];
+    },
+    staleTime: 5 * 60_000,
+  });
 
   useEffect(() => {
     const authParam = searchParams.get('auth');
