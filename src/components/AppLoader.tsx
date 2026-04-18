@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import splashLogo from '@/assets/logo-splash.svg';
 
 export function AppLoader({ children }: { children: React.ReactNode }) {
   const [phase, setPhase] = useState<'loading' | 'fading' | 'done'>('loading');
@@ -38,36 +39,16 @@ export function AppLoader({ children }: { children: React.ReactNode }) {
               gap: 24,
             }}
           >
-            <div
+            <img
+              src={splashLogo}
+              alt="Takhayal"
               style={{
-                width: 88,
-                height: 88,
-                borderRadius: 24,
-                background: 'linear-gradient(135deg, #F03E1B 0%, #FF6B35 60%, #FFB347 100%)',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                animation: 'splashPulse 1.6s ease-in-out infinite',
+                width: 80,
+                height: 80,
+                borderRadius: 18,
+                display: 'block',
               }}
-            >
-              <svg width="44" height="44" viewBox="0 0 24 24" fill="none">
-                <path
-                  d="M12 2L13.09 8.26L20 9.27L15 14.14L16.18 21.02L12 17.77L7.82 21.02L9 14.14L4 9.27L10.91 8.26L12 2Z"
-                  fill="white"
-                />
-              </svg>
-            </div>
-            <div
-              style={{
-                fontFamily: "'Almarai', system-ui, sans-serif",
-                fontWeight: 700,
-                fontSize: 28,
-                color: 'white',
-                letterSpacing: '-0.02em',
-              }}
-            >
-              تخيّل.ai
-            </div>
+            />
           </div>
           <div
             style={{
@@ -100,10 +81,6 @@ export function AppLoader({ children }: { children: React.ReactNode }) {
         @keyframes splashIn {
           from { opacity: 0; transform: scale(0.88) translateY(8px); }
           to   { opacity: 1; transform: scale(1) translateY(0); }
-        }
-        @keyframes splashPulse {
-          0%, 100% { box-shadow: 0 0 0 0 rgba(240,62,27,0.4), 0 16px 40px rgba(240,62,27,0.3); }
-          50%       { box-shadow: 0 0 0 10px rgba(240,62,27,0), 0 20px 50px rgba(240,62,27,0.4); }
         }
         @keyframes splashProgress {
           from { transform: translateX(-100%); }
