@@ -5,7 +5,7 @@ import { useApp } from '@/context/AppContext';
 import { Sparkles, Film } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-import videoCoverImg from '@/assets/tools/video-cover.jpg';
+const videoCoverImg = '/video-cover.jpg';
 
 type Tab = 'image' | 'video';
 
