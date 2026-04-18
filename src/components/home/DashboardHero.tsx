@@ -176,9 +176,6 @@ export function DashboardHero() {
         <img
           src={fallbackPoster}
           alt=""
-          loading="eager"
-          decoding="async"
-          fetchPriority="high"
           className="absolute inset-0 w-full h-full object-cover"
           style={{ zIndex: 0 }}
         />
