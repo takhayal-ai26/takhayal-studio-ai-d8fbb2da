@@ -155,7 +155,12 @@ function BannerRow({ banner, onDismiss }: { banner: PromoBanner; onDismiss: () =
   return (
     <div
       className={`fixed top-0 left-0 right-0 z-[60] w-full ${bgClass} text-white`}
-      style={banner.background_style === 'custom' ? { background: banner.text_color } : undefined}
+      style={{
+        paddingTop: 'env(safe-area-inset-top, 0px)',
+        ...(banner.background_style === 'custom'
+          ? { background: banner.text_color }
+          : undefined)
+      }}
       dir={isRTL ? 'rtl' : 'ltr'}
     >
       <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 sm:gap-3 px-10 sm:px-12 h-[40px]">

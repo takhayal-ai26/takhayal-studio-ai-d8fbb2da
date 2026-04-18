@@ -159,7 +159,9 @@ export function DashboardHero() {
           muted
           loop
           playsInline
-          preload="none"
+          preload="metadata"
+          x-webkit-airplay="deny"
+          webkit-playsinline="true"
           poster={fallbackPoster}
           className="absolute inset-0 w-full h-full object-cover"
           style={{ zIndex: 0 }}
@@ -191,7 +193,10 @@ export function DashboardHero() {
       {/* Content */}
       <div
         className="relative z-10 flex flex-col items-center justify-center h-full px-6"
-        style={{ textAlign: align as any }}
+        style={{
+          textAlign: align as any,
+          paddingTop: 'calc(3.5rem + var(--banner-h, 0px) + env(safe-area-inset-top, 0px))',
+        }}
         dir={isAr ? 'rtl' : 'ltr'}
       >
         <h1
