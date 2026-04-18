@@ -5,6 +5,7 @@ import { useAuth } from '@/context/AuthContext';
 import { ArrowRight, Sparkles } from 'lucide-react';
 const videoCoverImg = '/video-cover.jpg';
 import { useState, useEffect, lazy, Suspense, useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useTools } from '@/hooks/useTools';
 import { useTemplates } from '@/hooks/useTemplates';
@@ -39,19 +40,20 @@ export default function PortalHome() {
   const isLoggedIn = !!user;
 
   // Fetch real approved community posts
-  const [communityPosts, setCommunityPosts] = useState<{ image_url: string; prompt: string; ratio?: string }[]>([]);
-  useEffect(() => {
-    supabase
-      .from('community_posts')
-      .select('image_url, prompt, ratio')
-      .eq('status', 'approved')
-      .eq('is_featured', true)
-      .order('created_at', { ascending: false })
-      .limit(8)
-      .then(({ data }) => {
-        if (data && data.length > 0) setCommunityPosts(data);
-      });
-  }, []);
+  const { data: communityPosts = [] } = useQuery({
+    queryKey: ['community-posts-featured'],
+    queryFn: async () => {
+      const { data } = await supabase
+        .from('community_posts')
+        .select('image_url, prompt, ratio')
+        .eq('status', 'approved')
+        .eq('is_featured', true)
+        .order('created_at', { ascending: false })
+        .limit(8);
+      return data || [];
+    },
+    staleTime: 5 * 60_000,
+  });
 
   useEffect(() => {
     const authParam = searchParams.get('auth');
