@@ -20,7 +20,7 @@ type OpenDropdown = 'model' | 'size' | 'resolution' | null;
 export function CreationPanel() {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, enhancePrompt, setEnhancePrompt, isGenerating, credits, getCreditCost, isAuthenticated, openAuthModal, openUpgradeModal } = useApp();
+  const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, enhancePrompt, setEnhancePrompt, isGenerating, credits, getCreditCost, isAuthenticated, openAuthModal, openUpgradeModal, selectedModelId: contextModelId, setSelectedModelId: setContextModelId } = useApp();
   const { submitJob } = useGenerationJobs();
   const [localGenerating, setLocalGenerating] = useState(false);
   const { t, lang: language } = useLanguage();
@@ -29,7 +29,6 @@ export function CreationPanel() {
   const { getCreditsForModelQuality, getCostForModelQuality, allTiers } = usePricingTiers();
 
   // Use AppContext's selectedModelId to sync with model detail page navigation
-  const { selectedModelId: contextModelId, setSelectedModelId: setContextModelId } = useApp();
   const [localModelId, setLocalModelId] = useState<string>('');
   const selectedModelId = localModelId || contextModelId || '';
   const setSelectedModelId = (id: string) => { setLocalModelId(id); setContextModelId(id); };
