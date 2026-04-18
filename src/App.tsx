@@ -65,7 +65,7 @@ const RoutedApp = () => {
   const { lang } = useLanguage();
 
   return (
-    <AppThemeProvider key={lang}>
+    <AppThemeProvider>
       <Suspense fallback={<PageSkeleton />}>
         <Routes key={lang}>
           <Route element={<AppLayout />}>
