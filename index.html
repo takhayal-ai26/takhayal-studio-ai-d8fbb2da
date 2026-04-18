@@ -33,7 +33,6 @@
     <script>
       (function(){
         var p=window.location.pathname;
-        if(p==='/'){document.documentElement.setAttribute('data-theme','light');return}
         var s=localStorage.getItem('takhayal-theme')||'dark';
         if(p.startsWith('/admin')){s='dark'}
         document.documentElement.setAttribute('data-theme',s);
