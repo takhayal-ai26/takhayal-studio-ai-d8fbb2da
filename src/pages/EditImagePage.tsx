@@ -1,20 +1,18 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { Upload, X, Coins, Cpu, Maximize, Image as ImageIcon, Wand2, ChevronRight, Plus, Loader2, Sparkles } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { Upload, X, Coins, Maximize, Image as ImageIcon, Wand2, ChevronRight, Plus, Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { useApp, AspectRatio } from '@/context/AppContext';
+import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useGenerationJobs } from '@/hooks/useGenerationJobs';
 import { useModels } from '@/hooks/useModels';
 import { usePricingTiers } from '@/hooks/usePricingTiers';
-import { useToolsDB } from '@/hooks/useToolsDB';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
 import { cn } from '@/lib/utils';
 
-import { ModelDropdown } from '@/components/layout/dropdowns/ModelDropdown';
 import { SizeDropdown } from '@/components/layout/dropdowns/SizeDropdown';
 import { ResolutionDropdown } from '@/components/layout/dropdowns/ResolutionDropdown';
 import { MobileBottomSheet } from '@/components/layout/dropdowns/MobileBottomSheet';
@@ -23,23 +21,24 @@ import { BackToImageTools } from '@/components/tools/BackToImageTools';
 const MAX_SLOTS = 14;
 const MAX_BYTES = 10 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
-const FALLBACK_COVER = '/placeholder.svg';
 
-type OpenDropdown = 'model' | 'size' | 'resolution' | null;
+type OpenDropdown = 'size' | 'resolution' | null;
 
 interface UploadedImage {
   preview: string;
   url: string | null;
 }
 
-// ───────────────────────────────────────────── Controls panel ─────────────────────────────────────────────
-
 interface ControlsPanelProps {
   inSheet?: boolean;
   onAfterGenerate?: () => void;
+  uploaded: UploadedImage[];
+  setUploaded: React.Dispatch<React.SetStateAction<UploadedImage[]>>;
+  resultUrl: string | null;
+  setResultUrl: (u: string | null) => void;
 }
 
-function EditControlsPanel({ inSheet = false, onAfterGenerate }: ControlsPanelProps) {
+function EditControlsPanel({ inSheet = false, onAfterGenerate, uploaded, setUploaded, setResultUrl }: ControlsPanelProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { credits, isAuthenticated, openAuthModal, openUpgradeModal, requireAuth } = useApp();
@@ -50,27 +49,14 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate }: ControlsPanelPr
   const { activeModels } = useModels();
   const { allTiers, getCreditsForModelQuality } = usePricingTiers();
 
-  // Edit-capable models only
-  const editableModels = useMemo(
-    () => activeModels.filter(m => m.supports_image_input && m.media_type === 'image'),
+  // Fixed model: Nano Banana 2
+  const currentModel = useMemo(
+    () => activeModels.find(m => m.endpoint_id === 'fal-ai/nano-banana-2'),
     [activeModels],
   );
 
-  // Default to Nano Banana 2 if available, else first editable model
-  const nanoBanana2 = useMemo(
-    () => editableModels.find(m => m.endpoint_id === 'fal-ai/nano-banana-2') || editableModels[0],
-    [editableModels],
-  );
+  const maxImages = Math.min(currentModel?.max_image_inputs ?? 14, MAX_SLOTS);
 
-  const [selectedModelId, setSelectedModelId] = useState<string>('');
-  useEffect(() => {
-    if (!selectedModelId && nanoBanana2) setSelectedModelId(nanoBanana2.id);
-  }, [nanoBanana2, selectedModelId]);
-
-  const currentModel = editableModels.find(m => m.id === selectedModelId) || nanoBanana2;
-  const maxImages = Math.min(currentModel?.max_image_inputs ?? 1, MAX_SLOTS);
-
-  // Available quality tiers from pricing
   const modelQualityTiers = useMemo(() => {
     if (!currentModel) return ['1K'];
     const fromPricing = (allTiers[currentModel.id] || [])
@@ -79,7 +65,6 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate }: ControlsPanelPr
     return fromPricing.length > 0 ? fromPricing : currentModel.supported_quality_tiers || ['1K'];
   }, [currentModel, allTiers]);
 
-  // Available aspect ratios
   const availableRatios = currentModel?.supported_ratios?.length
     ? currentModel.supported_ratios.filter(r => r !== 'auto')
     : ['1:1', '16:9', '9:16', '4:5'];
@@ -89,19 +74,15 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate }: ControlsPanelPr
   const [resolution, setResolution] = useState<string>('1K');
   const [aspectRatio, setAspectRatio] = useState<string>('1:1');
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
-  const [uploaded, setUploaded] = useState<UploadedImage[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const slotInputRef = useRef<HTMLInputElement>(null);
   const slotTargetIndex = useRef<number | null>(null);
   const panelRef = useRef<HTMLDivElement>(null);
-  const modelRowRef = useRef<HTMLButtonElement>(null);
   const sizeRowRef = useRef<HTMLButtonElement>(null);
   const resRowRef = useRef<HTMLButtonElement>(null);
 
-  // Keep resolution / ratio in sync with model capabilities
   useEffect(() => {
     if (currentModel && !modelQualityTiers.includes(resolution)) {
       setResolution(modelQualityTiers[0] || '1K');
@@ -114,21 +95,12 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate }: ControlsPanelPr
     }
   }, [availableRatios, aspectRatio, currentModel]);
 
-  // Reset uploads when switching to a model that no longer supports input
-  useEffect(() => {
-    if (currentModel && !currentModel.supports_image_input && uploaded.length > 0) {
-      setUploaded([]);
-    }
-  }, [currentModel, uploaded.length]);
-
-  // Pricing
   const creditCost = useMemo(() => {
     if (!currentModel) return 0;
     const v = getCreditsForModelQuality(currentModel.id, resolution);
     return v ?? currentModel.credits_per_generation ?? 0;
   }, [currentModel, resolution, getCreditsForModelQuality]);
 
-  // Click outside to close dropdown (ignore portal)
   useEffect(() => {
     if (inSheet) return;
     const handler = (e: MouseEvent) => {
@@ -142,7 +114,6 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate }: ControlsPanelPr
     return () => document.removeEventListener('mousedown', handler);
   }, [openDropdown, inSheet]);
 
-  // ───── Upload helpers ─────
   const uploadOne = useCallback(async (file: File, targetIndex?: number) => {
     if (!user) { openAuthModal('signup'); return; }
     if (!ALLOWED_TYPES.includes(file.type)) {
@@ -184,15 +155,9 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate }: ControlsPanelPr
     } finally {
       setIsUploading(false);
     }
-  }, [user, openAuthModal, isAr]);
+  }, [user, openAuthModal, isAr, setUploaded]);
 
-  const handleAddFiles = useCallback((files: FileList | File[]) => {
-    const list = Array.from(files);
-    const remaining = maxImages - uploaded.length;
-    list.slice(0, Math.max(remaining, 0)).forEach(f => uploadOne(f));
-  }, [maxImages, uploaded.length, uploadOne]);
-
-  const handleSlotPick = (index: number) => {
+  const handleSlotPick = (index: number | null) => {
     if (!user) { openAuthModal('signup'); return; }
     slotTargetIndex.current = index;
     slotInputRef.current?.click();
@@ -213,17 +178,6 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate }: ControlsPanelPr
     setUploaded(prev => prev.filter((_, i) => i !== index));
   };
 
-  const onSlotDrop = (e: React.DragEvent, index: number) => {
-    e.preventDefault();
-    e.stopPropagation();
-    if (!user) { openAuthModal('signup'); return; }
-    const file = e.dataTransfer.files?.[0];
-    if (!file) return;
-    if (index < uploaded.length) uploadOne(file, index);
-    else if (uploaded.length < maxImages) uploadOne(file);
-  };
-
-  // ───── Generate ─────
   const readyImages = uploaded.filter(u => u.url).map(u => u.url!);
   const canGenerate =
     !!currentModel &&
@@ -265,18 +219,13 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate }: ControlsPanelPr
   const getRect = (ref: React.RefObject<HTMLElement>): DOMRect | null =>
     ref.current?.getBoundingClientRect() ?? null;
 
-  // ───── Render ─────
-  // Compute visible slot count: filled slots + 1 empty (capped at maxImages)
-  const visibleSlots = Math.min(uploaded.length + 1, maxImages);
-  const slotIndices = Array.from({ length: visibleSlots }, (_, i) => i);
-
   const containerCls = inSheet
     ? 'flex flex-col w-full bg-background'
     : 'w-full md:w-[380px] xl:w-[420px] flex flex-col bg-background flex-shrink-0 overflow-visible relative z-30';
 
   return (
     <aside ref={panelRef} className={containerCls}>
-      <div className="flex-1 overflow-y-auto overflow-x-visible p-4 space-y-2 scrollbar-thin">
+      <div className="flex-1 overflow-y-auto overflow-x-visible p-4 space-y-3 scrollbar-thin">
         {!inSheet && <BackToImageTools className="mb-2" />}
 
         {/* Title */}
@@ -333,24 +282,13 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate }: ControlsPanelPr
           </div>
         </div>
 
-        {/* Upload slots */}
+        {/* Reference images — compact horizontal row */}
         <input
           ref={slotInputRef}
           type="file"
           accept="image/jpeg,image/png,image/webp"
           className="hidden"
           onChange={handleSlotInputChange}
-        />
-        <input
-          ref={fileInputRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp"
-          multiple={maxImages > 1}
-          className="hidden"
-          onChange={e => {
-            if (e.target.files) handleAddFiles(e.target.files);
-            e.target.value = '';
-          }}
         />
 
         <div>
@@ -362,56 +300,44 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate }: ControlsPanelPr
               {uploaded.length}/{maxImages}
             </span>
           </div>
-          <div className="grid grid-cols-3 gap-2">
-            {slotIndices.map(i => {
-              const img = uploaded[i];
-              const isEmpty = !img;
-              return (
-                <div
-                  key={i}
-                  onDragOver={e => e.preventDefault()}
-                  onDrop={e => onSlotDrop(e, i)}
-                  className={cn(
-                    'relative aspect-square rounded-xl overflow-hidden transition-all',
-                    isEmpty
-                      ? 'border border-dashed border-foreground/20 bg-foreground/[0.02] hover:border-primary/40 hover:bg-primary/[0.03] cursor-pointer'
-                      : 'border border-primary/20 bg-card/50',
-                  )}
-                  onClick={() => isEmpty && handleSlotPick(i)}
+          <div className="flex items-center gap-2 overflow-x-auto scrollbar-thin pb-1 -mx-1 px-1">
+            {uploaded.map((img, i) => (
+              <div
+                key={i}
+                className="relative flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border border-border/30 bg-card/50 group"
+              >
+                <img src={img.preview} alt={`Reference ${i + 1}`} className="w-full h-full object-cover" />
+                {!img.url && (
+                  <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
+                    <span className="w-3.5 h-3.5 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                  </div>
+                )}
+                <button
+                  onClick={() => removeSlot(i)}
+                  className="absolute top-0.5 end-0.5 w-4 h-4 rounded-full bg-background/90 backdrop-blur-sm flex items-center justify-center text-foreground shadow-sm opacity-90 hover:opacity-100 transition-opacity"
+                  aria-label={isAr ? 'إزالة' : 'Remove'}
                 >
-                  {isEmpty ? (
-                    <div className="absolute inset-0 flex flex-col items-center justify-center text-muted-foreground/60">
-                      <Plus size={18} />
-                    </div>
-                  ) : (
-                    <>
-                      <img src={img.preview} alt={`Reference ${i + 1}`} className="w-full h-full object-cover" />
-                      {!img.url && (
-                        <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
-                          <span className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                        </div>
-                      )}
-                      <button
-                        onClick={(e) => { e.stopPropagation(); removeSlot(i); }}
-                        className="absolute top-1 end-1 w-6 h-6 rounded-md bg-background/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-                        aria-label={isAr ? 'إزالة' : 'Remove'}
-                      >
-                        <X size={12} />
-                      </button>
-                    </>
-                  )}
-                </div>
-              );
-            })}
+                  <X size={9} strokeWidth={2.5} />
+                </button>
+              </div>
+            ))}
+            {uploaded.length < maxImages && (
+              <button
+                onClick={() => handleSlotPick(null)}
+                className="flex-shrink-0 w-16 h-16 rounded-lg border border-dashed border-foreground/25 bg-foreground/[0.02] hover:border-primary/40 hover:bg-primary/[0.04] flex items-center justify-center text-muted-foreground hover:text-primary transition-all"
+                aria-label={isAr ? 'إضافة صورة' : 'Add image'}
+              >
+                <Plus size={18} />
+              </button>
+            )}
           </div>
           <p className="text-[11px] text-muted-foreground/60 mt-2 px-1">
             {isAr ? 'JPG / PNG / WEBP حتى 10 ميغابايت' : 'JPG / PNG / WEBP up to 10MB'}
           </p>
         </div>
 
-        {/* Model / Size / Resolution rows */}
+        {/* Size / Resolution rows */}
         {[
-          { ref: modelRowRef, key: 'model' as OpenDropdown, icon: <Cpu size={14} />, label: t.studio.model, value: currentModel?.model_name || 'Select' },
           { ref: sizeRowRef, key: 'size' as OpenDropdown, icon: <Maximize size={14} />, label: t.studio.size, value: aspectRatio },
           { ref: resRowRef, key: 'resolution' as OpenDropdown, icon: <ImageIcon size={14} />, label: t.studio.resolution, value: resolution },
         ].map(item => (
@@ -468,17 +394,6 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate }: ControlsPanelPr
       </div>
 
       {/* Dropdowns (portal) */}
-      {openDropdown === 'model' && (
-        <ModelDropdown
-          models={editableModels}
-          selectedModelId={selectedModelId}
-          allTiers={allTiers}
-          language={lang}
-          anchorRect={getRect(modelRowRef)}
-          onSelect={(id) => { setSelectedModelId(id); setOpenDropdown(null); }}
-          onClose={() => setOpenDropdown(null)}
-        />
-      )}
       {openDropdown === 'size' && (
         <SizeDropdown
           availableRatios={availableRatios}
@@ -506,128 +421,109 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate }: ControlsPanelPr
   );
 }
 
-// ───────────────────────────────────────────── Right panel — cover + results ─────────────────────────────────────────────
+// ───────────────────────────────────────────── Right panel — pure image zone ─────────────────────────────────────────────
 
-function CoverHero({ coverUrl, name, subtitle, isAr }: { coverUrl: string; name: string; subtitle: string; isAr: boolean }) {
-  return (
-    <div className="relative rounded-2xl overflow-hidden border border-border/30 bg-card/40">
-      <div className="aspect-[21/9] sm:aspect-[16/6]">
-        <img
-          src={coverUrl || FALLBACK_COVER}
-          alt={name}
-          className="w-full h-full object-cover"
-          loading="eager"
-        />
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-        <div className="absolute inset-x-0 bottom-0 p-5 sm:p-7">
-          <div className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-primary/15 backdrop-blur-md text-primary text-[10px] font-bold uppercase tracking-wider mb-2 border border-primary/20">
-            <Wand2 size={10} />
-            {isAr ? 'تعديل الصورة' : 'Edit Image'}
-          </div>
-          <h2 className="text-white text-xl sm:text-2xl font-bold leading-tight drop-shadow-lg">
-            {name}
-          </h2>
-          <p className="text-white/85 text-[12.5px] sm:text-[13.5px] mt-1 max-w-2xl drop-shadow">
-            {subtitle}
-          </p>
-        </div>
-      </div>
-    </div>
-  );
+interface ImageZoneProps {
+  uploaded: UploadedImage[];
+  resultUrl: string | null;
+  onPickFile: (file: File) => void;
+  isAr: boolean;
 }
 
-function RecentEdits({ isAr }: { isAr: boolean }) {
-  const { user } = useAuth();
-  const [items, setItems] = useState<Array<{ id: string; image_url: string | null; prompt: string | null; status: string }>>([]);
+function ImageZone({ uploaded, resultUrl, onPickFile, isAr }: ImageZoneProps) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [dragOver, setDragOver] = useState(false);
 
-  const load = useCallback(async () => {
-    if (!user) { setItems([]); return; }
-    const { data } = await supabase
-      .from('generation_logs')
-      .select('id, image_url, prompt, status')
-      .eq('user_id', user.id)
-      .eq('tool_id', 'tool:edit-image')
-      .order('created_at', { ascending: false })
-      .limit(8);
-    setItems(data || []);
-  }, [user]);
+  const displayUrl = resultUrl || uploaded[0]?.preview || null;
 
-  useEffect(() => { load(); }, [load]);
+  const handleDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) onPickFile(file);
+  };
 
-  useEffect(() => {
-    if (!user) return;
-    const channel = supabase
-      .channel('edit-image-feed')
-      .on('postgres_changes',
-        { event: '*', schema: 'public', table: 'generation_logs', filter: `user_id=eq.${user.id}` },
-        () => load(),
-      )
-      .subscribe();
-    return () => { supabase.removeChannel(channel); };
-  }, [user, load]);
-
-  if (items.length === 0) {
+  if (displayUrl) {
     return (
-      <div className="flex flex-col items-center justify-center text-center py-16 px-6">
-        <div className="w-14 h-14 rounded-2xl bg-primary/10 flex items-center justify-center mb-3">
-          <Wand2 size={22} className="text-primary" />
-        </div>
-        <p className="text-[14px] font-semibold text-foreground">
-          {isAr ? 'ستظهر صورك المعدّلة هنا' : 'Your edited images will appear here'}
-        </p>
-        <p className="text-[12px] text-muted-foreground mt-1 max-w-sm">
-          {isAr ? 'ارفع صورة وصِف التعديل لبدء الإبداع' : 'Upload an image and describe the edit to get started'}
-        </p>
+      <div className="w-full h-full rounded-2xl overflow-hidden bg-black/40">
+        <img src={displayUrl} alt="" className="w-full h-full object-cover" />
       </div>
     );
   }
 
   return (
-    <div>
-      <p className="text-[10px] font-semibold text-muted-foreground/60 uppercase tracking-[0.15em] mb-3 px-1">
-        {isAr ? 'تعديلاتك الأخيرة' : 'Your recent edits'}
-      </p>
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-        {items.map(item => (
-          <div key={item.id} className="relative aspect-square rounded-xl overflow-hidden bg-muted/20 border border-border/30 group">
-            {item.image_url ? (
-              <img
-                src={item.image_url}
-                alt={item.prompt || 'Edited'}
-                className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-[1.03]"
-                loading="lazy"
-              />
-            ) : (
-              <div className="absolute inset-0 flex items-center justify-center">
-                {item.status === 'failed' ? (
-                  <span className="text-[11px] text-destructive">{isAr ? 'فشل' : 'Failed'}</span>
-                ) : (
-                  <Loader2 size={16} className="animate-spin text-primary" />
-                )}
-              </div>
-            )}
-          </div>
-        ))}
-      </div>
-    </div>
+    <button
+      type="button"
+      onClick={() => inputRef.current?.click()}
+      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
+      onDragLeave={() => setDragOver(false)}
+      onDrop={handleDrop}
+      className={cn(
+        'w-full h-full rounded-2xl border-2 border-dashed flex items-center justify-center transition-colors',
+        dragOver
+          ? 'border-primary bg-primary/[0.04]'
+          : 'border-foreground/15 bg-foreground/[0.015] hover:border-primary/40 hover:bg-primary/[0.02]',
+      )}
+      aria-label={isAr ? 'رفع صورة' : 'Upload image'}
+    >
+      <input
+        ref={inputRef}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) onPickFile(file);
+          e.target.value = '';
+        }}
+      />
+      <Upload size={36} className="text-foreground/30" strokeWidth={1.5} />
+    </button>
   );
 }
 
 // ───────────────────────────────────────────── Page ─────────────────────────────────────────────
 
 export default function EditImagePage() {
-  const { toolId } = useParams();
   const { lang, isRTL } = useLanguage();
   const isAr = lang === 'ar';
   const isMobile = useIsMobile();
-  const { tools } = useToolsDB();
-  const tool = tools.find(t => t.slug === (toolId || 'edit-image') || t.id === toolId);
+  const { user } = useAuth();
+  const { openAuthModal } = useApp();
 
+  const [uploaded, setUploaded] = useState<UploadedImage[]>([]);
+  const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
 
-  const coverUrl = tool?.image || FALLBACK_COVER;
-  const heroTitle = tool?.heroTitle || (isAr ? 'عدّل صورك بدقة احترافية' : 'Edit your images with precision');
-  const heroSubtitle = tool?.heroSubtitle || (isAr ? 'حوّل صورك بقوة الذكاء الاصطناعي' : 'Transform your images with AI');
+  // Upload from the right-panel zone
+  const handleZonePick = useCallback(async (file: File) => {
+    if (!user) { openAuthModal('signup'); return; }
+    if (!ALLOWED_TYPES.includes(file.type)) {
+      toast.error(isAr ? 'نوع الملف غير مدعوم' : 'Unsupported file type');
+      return;
+    }
+    if (file.size > MAX_BYTES) {
+      toast.error(isAr ? 'حجم الملف يتجاوز 10 ميغابايت' : 'File exceeds 10MB');
+      return;
+    }
+    const preview = URL.createObjectURL(file);
+    setUploaded(prev => [...prev, { preview, url: null }]);
+
+    try {
+      const ext = file.name.split('.').pop() || 'png';
+      const path = `${user.id}/edit-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { error: upErr } = await supabase.storage
+        .from('tool-files')
+        .upload(path, file, { contentType: file.type, upsert: true });
+      if (upErr) throw upErr;
+      const { data: urlData } = supabase.storage.from('tool-files').getPublicUrl(path);
+      setUploaded(prev => prev.map(img => img.preview === preview ? { ...img, url: urlData.publicUrl } : img));
+    } catch (err) {
+      console.error('Upload failed:', err);
+      setUploaded(prev => prev.filter(img => img.preview !== preview));
+      toast.error(isAr ? 'فشل الرفع' : 'Upload failed');
+    }
+  }, [user, openAuthModal, isAr]);
 
   return (
     <>
@@ -638,14 +534,25 @@ export default function EditImagePage() {
       >
         <div className="flex flex-1 min-h-0 relative overflow-visible">
           {/* Desktop left panel */}
-          {!isMobile && <EditControlsPanel />}
+          {!isMobile && (
+            <EditControlsPanel
+              uploaded={uploaded}
+              setUploaded={setUploaded}
+              resultUrl={resultUrl}
+              setResultUrl={setResultUrl}
+            />
+          )}
 
-          {/* Right side: cover + results */}
-          <div className="flex-1 flex flex-col overflow-y-auto scrollbar-thin">
-            <div className="flex-1 p-4 sm:p-6 space-y-6 max-w-[1400px] w-full mx-auto">
-              {isMobile && <BackToImageTools />}
-              <CoverHero coverUrl={coverUrl} name={heroTitle} subtitle={heroSubtitle} isAr={isAr} />
-              <RecentEdits isAr={isAr} />
+          {/* Right side: pure image zone */}
+          <div className="flex-1 flex flex-col overflow-hidden p-4 sm:p-6">
+            {isMobile && <BackToImageTools className="mb-3" />}
+            <div className="flex-1 min-h-0">
+              <ImageZone
+                uploaded={uploaded}
+                resultUrl={resultUrl}
+                onPickFile={handleZonePick}
+                isAr={isAr}
+              />
             </div>
           </div>
         </div>
@@ -670,7 +577,14 @@ export default function EditImagePage() {
           onClose={() => setMobileSheetOpen(false)}
           maxHeight="92vh"
         >
-          <EditControlsPanel inSheet onAfterGenerate={() => setMobileSheetOpen(false)} />
+          <EditControlsPanel
+            inSheet
+            onAfterGenerate={() => setMobileSheetOpen(false)}
+            uploaded={uploaded}
+            setUploaded={setUploaded}
+            resultUrl={resultUrl}
+            setResultUrl={setResultUrl}
+          />
         </MobileBottomSheet>
       )}
     </>
