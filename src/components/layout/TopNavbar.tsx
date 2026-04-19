@@ -108,6 +108,15 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
 
   const isActive = (item: typeof navItemDefs[0]) => {
     if (item.route === '/home') return location.pathname === '/' || location.pathname === '/home';
+    if (item.route === '/image') {
+      return (
+        location.pathname === '/image' ||
+        location.pathname.startsWith('/image/') ||
+        location.pathname.startsWith('/tools') ||
+        location.pathname.startsWith('/studio') ||
+        location.pathname.startsWith('/models')
+      );
+    }
     return location.pathname === item.route || (item.route !== '/' && location.pathname.startsWith(item.route));
   };
 
