@@ -1,7 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { useState } from 'react';
-import { Search, ArrowRight, ArrowLeft } from 'lucide-react';
+import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { useToolsDB } from '@/hooks/useToolsDB';
 import { useApp } from '@/context/AppContext';
 import { cn } from '@/lib/utils';
@@ -12,11 +11,8 @@ export default function ToolsDirectory() {
   const { t, isRTL } = useLanguage();
   const { tools } = useToolsDB();
   const { setActivePage } = useApp();
-  const [search, setSearch] = useState('');
 
-  const filtered = tools
-    .filter(t => !search || t.name.toLowerCase().includes(search.toLowerCase()) || t.shortDesc.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+  const filtered = [...tools].sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
   const seoTitle = t.toolsDir.findNewWays;
   const seoDescription = isRTL
     ? 'استكشف أدوات تخيّل للصور والفيديو والتصميم والتحرير بالذكاء الاصطناعي.'
@@ -44,25 +40,10 @@ export default function ToolsDirectory() {
         schemas={[toolSchema]}
       />
       <section className="max-w-6xl mx-auto px-5 md:px-8 pt-10 pb-8">
-        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
-          <div>
-            <h1 className="typo-heading-page">
-              {t.toolsDir.findNewWays}
-            </h1>
-          </div>
-          <div className="relative w-full md:w-80">
-            <Search size={15} className={cn("absolute top-1/2 -translate-y-1/2 text-muted-foreground/40", isRTL ? "right-3.5" : "left-3.5")} />
-            <input
-              type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder={t.toolsDir.searchPlaceholder}
-              className={cn(
-                "w-full h-11 bg-card/50 border border-border/30 rounded-2xl pr-4 text-[13px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none focus:border-primary/30 focus:ring-2 focus:ring-primary/10 transition-all",
-                isRTL ? "pr-10 pl-4" : "pl-10 pr-4"
-              )}
-            />
-          </div>
+        <div>
+          <h1 className="typo-heading-page">
+            {t.toolsDir.findNewWays}
+          </h1>
         </div>
       </section>
       <section className="max-w-6xl mx-auto px-5 md:px-8 pb-16">
