@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, X, Coins, Maximize, Image as ImageIcon, Wand2, ChevronRight, Plus, Loader2, Sparkles } from 'lucide-react';
+import { X, Coins, Maximize, Image as ImageIcon, Wand2, ChevronRight, Plus, Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useApp } from '@/context/AppContext';
@@ -9,9 +9,9 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useGenerationJobs } from '@/hooks/useGenerationJobs';
 import { useModels } from '@/hooks/useModels';
 import { usePricingTiers } from '@/hooks/usePricingTiers';
+import { useToolsDB } from '@/hooks/useToolsDB';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
-import { cn } from '@/lib/utils';
 
 import { SizeDropdown } from '@/components/layout/dropdowns/SizeDropdown';
 import { ResolutionDropdown } from '@/components/layout/dropdowns/ResolutionDropdown';
@@ -21,6 +21,7 @@ import { BackToImageTools } from '@/components/tools/BackToImageTools';
 const MAX_SLOTS = 14;
 const MAX_BYTES = 10 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+const FALLBACK_COVER = '/placeholder.svg';
 
 type OpenDropdown = 'size' | 'resolution' | null;
 
@@ -421,64 +422,39 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate, uploaded, setUplo
   );
 }
 
-// ───────────────────────────────────────────── Right panel — pure image zone ─────────────────────────────────────────────
+// ───────────────────────────────────────────── Right panel — cover / preview ─────────────────────────────────────────────
 
-interface ImageZoneProps {
+interface CoverPanelProps {
+  coverUrl: string;
   uploaded: UploadedImage[];
   resultUrl: string | null;
-  onPickFile: (file: File) => void;
   isAr: boolean;
 }
 
-function ImageZone({ uploaded, resultUrl, onPickFile, isAr }: ImageZoneProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [dragOver, setDragOver] = useState(false);
-
-  const displayUrl = resultUrl || uploaded[0]?.preview || null;
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) onPickFile(file);
-  };
-
-  if (displayUrl) {
-    return (
-      <div className="w-full h-full rounded-2xl overflow-hidden bg-black/40">
-        <img src={displayUrl} alt="" className="w-full h-full object-cover" />
-      </div>
-    );
-  }
+function CoverPanel({ coverUrl, uploaded, resultUrl, isAr }: CoverPanelProps) {
+  // Priority: result > first uploaded preview > tool cover image
+  const displayUrl = resultUrl || uploaded[0]?.preview || coverUrl || FALLBACK_COVER;
+  const isCover = !resultUrl && !uploaded[0];
 
   return (
-    <button
-      type="button"
-      onClick={() => inputRef.current?.click()}
-      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-      onDragLeave={() => setDragOver(false)}
-      onDrop={handleDrop}
-      className={cn(
-        'w-full h-full rounded-2xl border-2 border-dashed flex items-center justify-center transition-colors',
-        dragOver
-          ? 'border-primary bg-primary/[0.04]'
-          : 'border-foreground/15 bg-foreground/[0.015] hover:border-primary/40 hover:bg-primary/[0.02]',
-      )}
-      aria-label={isAr ? 'رفع صورة' : 'Upload image'}
-    >
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) onPickFile(file);
-          e.target.value = '';
-        }}
+    <div className="w-full h-full rounded-2xl overflow-hidden bg-black/40 relative">
+      <img
+        src={displayUrl}
+        alt={isAr ? 'تعديل الصورة' : 'Edit Image'}
+        className="w-full h-full object-cover"
       />
-      <Upload size={36} className="text-foreground/30" strokeWidth={1.5} />
-    </button>
+      {isCover && (
+        <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none">
+          <div className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-primary/15 backdrop-blur-md text-primary text-[10px] font-bold uppercase tracking-wider mb-2 border border-primary/20">
+            <Wand2 size={10} />
+            {isAr ? 'تعديل الصورة' : 'Edit Image'}
+          </div>
+          <p className="text-white text-xl font-bold drop-shadow-lg">
+            {isAr ? 'مدعوم بـ Nano Banana 2' : 'Powered by Nano Banana 2'}
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -488,42 +464,14 @@ export default function EditImagePage() {
   const { lang, isRTL } = useLanguage();
   const isAr = lang === 'ar';
   const isMobile = useIsMobile();
-  const { user } = useAuth();
-  const { openAuthModal } = useApp();
+  const { tools } = useToolsDB();
 
   const [uploaded, setUploaded] = useState<UploadedImage[]>([]);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
 
-  // Upload from the right-panel zone
-  const handleZonePick = useCallback(async (file: File) => {
-    if (!user) { openAuthModal('signup'); return; }
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      toast.error(isAr ? 'نوع الملف غير مدعوم' : 'Unsupported file type');
-      return;
-    }
-    if (file.size > MAX_BYTES) {
-      toast.error(isAr ? 'حجم الملف يتجاوز 10 ميغابايت' : 'File exceeds 10MB');
-      return;
-    }
-    const preview = URL.createObjectURL(file);
-    setUploaded(prev => [...prev, { preview, url: null }]);
-
-    try {
-      const ext = file.name.split('.').pop() || 'png';
-      const path = `${user.id}/edit-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from('tool-files')
-        .upload(path, file, { contentType: file.type, upsert: true });
-      if (upErr) throw upErr;
-      const { data: urlData } = supabase.storage.from('tool-files').getPublicUrl(path);
-      setUploaded(prev => prev.map(img => img.preview === preview ? { ...img, url: urlData.publicUrl } : img));
-    } catch (err) {
-      console.error('Upload failed:', err);
-      setUploaded(prev => prev.filter(img => img.preview !== preview));
-      toast.error(isAr ? 'فشل الرفع' : 'Upload failed');
-    }
-  }, [user, openAuthModal, isAr]);
+  const tool = tools.find(t => t.slug === 'edit-image');
+  const coverUrl = tool?.image || FALLBACK_COVER;
 
   return (
     <>
@@ -543,14 +491,14 @@ export default function EditImagePage() {
             />
           )}
 
-          {/* Right side: pure image zone */}
+          {/* Right side: cover image / preview */}
           <div className="flex-1 flex flex-col overflow-hidden p-4 sm:p-6">
             {isMobile && <BackToImageTools className="mb-3" />}
             <div className="flex-1 min-h-0">
-              <ImageZone
+              <CoverPanel
+                coverUrl={coverUrl}
                 uploaded={uploaded}
                 resultUrl={resultUrl}
-                onPickFile={handleZonePick}
                 isAr={isAr}
               />
             </div>
