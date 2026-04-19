@@ -3,6 +3,7 @@ import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { Upload, Coins, Loader2, X } from 'lucide-react';
 import { BackToImageTools } from '@/components/tools/BackToImageTools';
+import { ToolPreviewImage } from '@/components/tools/ToolPreviewImage';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useToolsDB } from '@/hooks/useToolsDB';
 import { useToolProviders } from '@/hooks/useToolProviders';
@@ -282,22 +283,12 @@ export default function ToolPage() {
           {/* ── RIGHT: Preview Panel (desktop only) ── */}
           <div className="flex-1 min-w-0">
             <div className="lg:sticky lg:top-24">
-              {tool.image ? (
-                <div className="rounded-2xl overflow-hidden bg-muted/5">
-                  <img src={tool.image} alt={tool.name} className="w-full rounded-2xl object-cover aspect-[4/3]" />
-                  <div className="p-5">
-                    <h3 className="text-lg font-medium text-foreground/80 mb-1">{tool.heroTitle}</h3>
-                    <p className="text-[13px] text-muted-foreground leading-relaxed">{tool.heroSubtitle}</p>
-                  </div>
-                </div>
-              ) : (
-                <div className="rounded-2xl bg-gradient-to-br from-primary/5 via-muted/10 to-card aspect-[4/3] flex items-center justify-center">
-                  <div className="text-center px-8">
-                    <h3 className="text-lg font-medium text-foreground/60 mb-2">{tool.heroTitle}</h3>
-                    <p className="text-[13px] text-muted-foreground">{tool.heroSubtitle}</p>
-                  </div>
-                </div>
-              )}
+              <ToolPreviewImage
+                src={tool.image}
+                alt={tool.name}
+                title={tool.heroTitle}
+                subtitle={tool.heroSubtitle}
+              />
             </div>
           </div>
         </div>
