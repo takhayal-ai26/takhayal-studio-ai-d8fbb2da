@@ -162,6 +162,8 @@ export const translations = {
       submitting: 'Submitting…',
       best: 'BEST',
       allTools: 'All Tools',
+      backToImageTools: 'Back to Image Tools',
+      openTool: 'Open tool',
     },
     // Studio / Creation Panel
     studio: {
@@ -519,6 +521,8 @@ export const translations = {
       submitting: 'جاري الإرسال…',
       best: 'الأفضل',
       allTools: 'جميع الأدوات',
+      backToImageTools: 'العودة إلى أدوات الصور',
+      openTool: 'افتح الأداة',
     },
     studio: {
       prompt: 'الأمر',
