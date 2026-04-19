@@ -1,7 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useState } from 'react';
-import { Search } from 'lucide-react';
+import { Search, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useToolsDB } from '@/hooks/useToolsDB';
 import { useApp } from '@/context/AppContext';
 import { cn } from '@/lib/utils';
@@ -51,6 +51,7 @@ export default function ToolsDirectory() {
             {filtered.map(tool => {
               const Icon = tool.icon;
               const hasImage = !!tool.image;
+              const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;
               return (
                 <button
                   key={tool.id}
@@ -62,17 +63,22 @@ export default function ToolsDirectory() {
                       navigate(`/tools/${tool.slug}`);
                     }
                   }}
+                  aria-label={tool.name}
                   className={cn(
-                    "group relative rounded-2xl overflow-hidden transition-all duration-300 hover:scale-[1.02] hover:shadow-2xl hover:shadow-primary/10 focus:outline-none",
+                    "group relative rounded-2xl overflow-hidden",
+                    "transition-[transform,box-shadow] duration-300 ease-out will-change-transform",
+                    "hover:-translate-y-0.5 md:hover:scale-[1.015] hover:shadow-2xl hover:shadow-primary/10",
+                    "active:scale-[0.985] active:translate-y-0 active:transition-transform active:duration-100",
+                    "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 focus-visible:ring-offset-2 focus-visible:ring-offset-background",
                     isRTL ? "text-right" : "text-left"
                   )}
                 >
-                  <div className="aspect-[4/3] relative">
+                  <div className="aspect-[4/3] relative bg-muted/10">
                     {hasImage ? (
                       <img
                         src={tool.image}
                         alt={tool.name}
-                        className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.06]"
+                        className="w-full h-full object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.07] group-active:scale-[1.03]"
                         loading="lazy"
                       />
                     ) : (
@@ -81,12 +87,36 @@ export default function ToolsDirectory() {
                       </div>
                     )}
                   </div>
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                  <div className="absolute bottom-0 left-0 right-0 p-5">
-                    <h3 className="text-xl font-bold text-white">{tool.name}</h3>
-                    <p className="text-[15px] text-white/50 mt-1">{tool.shortDesc}</p>
+
+                  {/* Base gradient (always visible) */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent transition-opacity duration-300" />
+                  {/* Hover/press gradient boost — stronger contrast for readability */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/95 via-black/50 to-black/10 opacity-0 group-hover:opacity-100 group-active:opacity-100 transition-opacity duration-300" />
+
+                  <div className="absolute bottom-0 inset-x-0 p-5">
+                    <h3 className="text-xl font-bold text-white drop-shadow-sm">{tool.name}</h3>
+                    <p className="text-[14px] text-white/70 mt-1 line-clamp-2 transition-colors duration-300 group-hover:text-white/90">
+                      {tool.shortDesc}
+                    </p>
+
+                    {/* "Open tool" cue — slides in on hover, always visible on touch via active */}
+                    <div
+                      className={cn(
+                        "mt-3 inline-flex items-center gap-1.5 text-[12px] font-medium text-white/0 group-hover:text-white group-active:text-white",
+                        "translate-y-1 group-hover:translate-y-0 group-active:translate-y-0",
+                        "transition-all duration-300 ease-out"
+                      )}
+                    >
+                      <span>{t.toolPage.openTool}</span>
+                      <ArrowIcon
+                        size={13}
+                        className="transition-transform duration-300 group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5"
+                      />
+                    </div>
                   </div>
-                  <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/[0.04] group-hover:ring-primary/20 transition-all duration-300 pointer-events-none" />
+
+                  {/* Border ring — brightens on interaction */}
+                  <div className="absolute inset-0 rounded-2xl ring-1 ring-inset ring-white/[0.05] group-hover:ring-primary/30 group-active:ring-primary/40 transition-all duration-300 pointer-events-none" />
                 </button>
               );
             })}
