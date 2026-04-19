@@ -1,7 +1,8 @@
 import { useParams, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { Upload, Coins, Loader2, X, ArrowLeft } from 'lucide-react';
+import { Upload, Coins, Loader2, X } from 'lucide-react';
+import { BackToImageTools } from '@/components/tools/BackToImageTools';
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { useToolsDB } from '@/hooks/useToolsDB';
 import { useToolProviders } from '@/hooks/useToolProviders';
@@ -167,14 +168,8 @@ export default function ToolPage() {
     <div className="flex-1 animate-page-enter" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
-        {/* Back link */}
-        <button
-          onClick={() => navigate('/tools')}
-          className={`flex items-center gap-1.5 text-[13px] text-muted-foreground hover:text-foreground transition-colors mb-6 cursor-pointer ${isRTL ? 'flex-row-reverse' : ''}`}
-        >
-          <ArrowLeft size={14} className={isRTL ? 'rotate-180' : ''} />
-          {t.toolPage.allTools}
-        </button>
+        {/* Back to Image Tools */}
+        <BackToImageTools />
 
         {/* ══════ 2-Column Desktop / Stacked Mobile ══════ */}
         <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
