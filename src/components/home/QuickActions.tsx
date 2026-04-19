@@ -1,11 +1,11 @@
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { Image, ArrowUpCircle, Eraser, Wand2 } from 'lucide-react';
+import { Image, ArrowUpCircle, Eraser, Wand2, Pencil } from 'lucide-react';
 
 const actions = [
   { icon: Image, en: 'Generate Image', ar: 'إنشاء صورة', route: '/studio' },
+  { icon: Pencil, en: 'Edit Image', ar: 'تعديل الصورة', route: '/tools/edit-image' },
   { icon: ArrowUpCircle, en: 'Upscale', ar: 'تكبير', route: '/tools/upscale' },
-  { icon: Eraser, en: 'Remove Background', ar: 'إزالة الخلفية', route: '/tools/background-removal' },
   { icon: Wand2, en: 'Enhance', ar: 'تحسين', route: '/tools/enhance' },
 ];
 
