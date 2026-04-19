@@ -15,7 +15,7 @@ import { supabase } from '@/integrations/supabase/client';
 
 import { SizeDropdown } from '@/components/layout/dropdowns/SizeDropdown';
 import { ResolutionDropdown } from '@/components/layout/dropdowns/ResolutionDropdown';
-import { MobileBottomSheet } from '@/components/layout/dropdowns/MobileBottomSheet';
+
 import { BackToImageTools } from '@/components/tools/BackToImageTools';
 
 const MAX_SLOTS = 14;
