@@ -5,7 +5,8 @@ import { useApp } from '@/context/AppContext';
 import { Sparkles, Film } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
-const videoCoverImg = '/video-cover.jpg';
+import { PageSeo } from '@/components/seo/PageSeo';
+import heroPoster from '@/assets/landing/hero-video-poster-960.avif';
 
 type Tab = 'image' | 'video';
 
@@ -35,6 +36,14 @@ export default function CreateHub() {
       dir={isAr ? 'rtl' : 'ltr'}
       style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}
     >
+      <PageSeo
+        title={isAr ? 'إنشاء | تخيّل' : 'Create | Takhayal.ai'}
+        description={isAr
+          ? 'ابدأ إنشاء الصور أو الفيديوهات بالذكاء الاصطناعي فوراً من مركز الإنشاء في تخيّل.'
+          : 'Start generating AI images and videos instantly from the Takhayal create hub.'}
+        canonicalPath="/create"
+        pageType="CollectionPage"
+      />
       <div className="max-w-lg mx-auto px-5 pt-6">
         {/* Header */}
         <div className="mb-5">
@@ -53,7 +62,7 @@ export default function CreateHub() {
               key={t}
               onClick={() => setTab(t)}
               className={cn(
-                'px-6 py-2 rounded-full text-sm font-semibold transition-all duration-200',
+                'min-h-11 px-6 py-2.5 rounded-full text-sm font-semibold transition-all duration-200',
                 tab === t
                   ? 'bg-primary text-primary-foreground shadow-sm'
                   : 'text-muted-foreground hover:text-foreground'
@@ -143,7 +152,7 @@ export default function CreateHub() {
             style={{ textAlign: isAr ? 'right' : 'left' }}
           >
             <div className="aspect-[2/1] relative">
-              <img src={videoCoverImg} alt={isAr ? 'إنشاء فيديو' : 'Create Video'} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+              <img src={heroPoster} alt={isAr ? 'إنشاء فيديو' : 'Create Video'} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/5" />
             </div>
             <div className="absolute bottom-0 left-0 right-0 p-5">

@@ -37,12 +37,9 @@ function TickerRow({ items, reverse, isRTL }: { items: typeof ROW_1; reverse?: b
           <button
             key={`${m.slug}-${i}`}
             onClick={() => navigate(`/models/${m.slug}`)}
-            className="flex-shrink-0 mx-1.5 px-6 py-3 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer
-              bg-zinc-900 border border-zinc-800 text-zinc-300
-              hover:border-[rgba(240,62,27,0.6)] hover:text-[#F03E1B] hover:bg-[rgba(240,62,27,0.05)] hover:scale-[1.04]
-              dark:bg-zinc-900 dark:border-zinc-800 dark:text-zinc-300
-              dark:hover:border-[rgba(240,62,27,0.6)] dark:hover:text-[#F03E1B] dark:hover:bg-[rgba(240,62,27,0.05)]
-              explore-badge-light"
+            className="flex min-h-11 flex-shrink-0 items-center mx-1.5 px-6 py-3 rounded-full text-sm font-semibold whitespace-nowrap transition-all duration-200 cursor-pointer
+              bg-card border border-border/60 text-muted-foreground
+              hover:border-primary/60 hover:text-primary hover:bg-primary/5 hover:scale-[1.04]"
           >
             {m.name}
           </button>
@@ -63,15 +60,15 @@ export function ExploreModels() {
       style={{ marginLeft: 'calc(-50vw + 50%)', marginRight: 'calc(-50vw + 50%)', width: '100vw' }}
     >
       {/* Subtle ember gradient at bottom */}
-      <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent 60%, rgba(240,62,27,0.04) 100%)' }} />
+      <div className="absolute inset-0 pointer-events-none" style={{ background: 'linear-gradient(to bottom, transparent 60%, hsl(var(--primary) / 0.04) 100%)' }} />
 
       <div className="relative text-center px-5 md:px-8 mb-12">
         <h2 className="text-4xl md:text-5xl font-bold text-foreground">
           {isAr ? 'استكشف نماذجنا' : 'Explore Our Models'}
         </h2>
         {/* Ember underline accent */}
-        <div className="mx-auto mt-2 w-10 h-0.5 rounded-full" style={{ background: '#F03E1B' }} />
-        <p className="mt-3 text-sm text-zinc-400 dark:text-zinc-400 explore-subtitle-light">
+        <div className="mx-auto mt-2 w-10 h-0.5 rounded-full bg-primary" />
+        <p className="mt-3 text-sm text-muted-foreground">
           {isAr ? 'محركات الذكاء الاصطناعي التي تشغّل إبداعاتك' : 'Powerful AI engines behind your creations'}
         </p>
       </div>
@@ -86,10 +83,7 @@ export function ExploreModels() {
       <div className="relative text-center mt-12 px-5 md:px-8">
         <button
           onClick={() => navigate('/models')}
-          className="inline-flex items-center gap-2.5 px-8 py-3.5 rounded-full text-[15px] font-semibold text-white transition-all duration-200 hover:brightness-110 active:scale-[0.98]"
-          style={{ background: 'linear-gradient(135deg, #F03E1B 0%, #d4341a 50%, #c42d15 100%)', boxShadow: '0 4px 16px rgba(240,62,27,0.2)' }}
-          onMouseEnter={e => (e.currentTarget.style.boxShadow = '0 8px 24px rgba(240,62,27,0.35)')}
-          onMouseLeave={e => (e.currentTarget.style.boxShadow = '0 4px 16px rgba(240,62,27,0.2)')}
+          className="inline-flex min-h-11 items-center gap-2.5 px-8 py-3.5 rounded-full text-[15px] font-semibold bg-primary text-primary-foreground transition-all duration-200 hover:brightness-110 hover:shadow-[0_8px_24px_hsl(var(--primary)/0.35)] shadow-[0_4px_16px_hsl(var(--primary)/0.2)] active:scale-[0.98]"
         >
           {isAr ? 'تصفح جميع النماذج' : 'Browse All Models'}
           {isRTL ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
@@ -97,7 +91,7 @@ export function ExploreModels() {
       </div>
 
       {/* Bottom divider */}
-      <div className="absolute bottom-0 left-0 right-0 border-t border-zinc-800/50 dark:border-zinc-800/50 explore-divider-light" />
+      <div className="absolute bottom-0 left-0 right-0 border-t border-border/40" />
     </section>
   );
 }

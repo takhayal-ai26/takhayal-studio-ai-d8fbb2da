@@ -3,15 +3,30 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Takhayal.ai — AI Image Generation Studio</title>
-    <meta name="description" content="Create stunning AI-generated images with Takhayal.ai. Arabic-first AI image generation studio.">
+    <script>
+      (function () {
+        try {
+          var storedLang = localStorage.getItem('takhayal-lang');
+          var lang = storedLang === 'en' ? 'en' : 'ar';
+          document.documentElement.lang = lang;
+          document.documentElement.dir = lang === 'ar' ? 'rtl' : 'ltr';
+        } catch (_) {}
+      })();
+    </script>
+    <title>Takhayal.ai | Arabic-first AI creative studio</title>
+    <meta name="description" content="Takhayal.ai is an Arabic-first AI creative studio for image generation, video creation, templates, and creator workflows built for the Gulf.">
     <meta name="author" content="Takhayal.ai" />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
 
     
     
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Takhayal.ai" />
+    <meta property="og:url" content="https://takhayal.ai/" />
 
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:site" content="@takhayal_ai" />
+    <link rel="canonical" href="https://takhayal.ai/" />
 
     <link rel="privacy-policy" href="https://takhayal.ai/privacy" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -25,12 +40,12 @@
   
   
   
-  <meta property="og:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/af458844-8774-4dee-addf-b2f0938dc95c?Expires=1775236225&amp;GoogleAccessId=go-api-on-aws%40gpt-engineer-390607.iam.gserviceaccount.com&amp;Signature=TH9UT8BuB9mVrm4kwEKv38mEfaIOeDMtDrLd1oABbM6vpxaDsFiSaR9tHE6SkGI2s%2FFnrRPkU1UhfG9nB5sAaIX6HqBJ5D7debK32Lcat%2Fe9smEFZL089vEWlXKn%2BpxmX7UL10vrSG9MLNI7ACT1vx3s8NIfJ671GtzQn9q2wD2mxBUSFz5mEEPRChcy6T3xwwh9QXFS1MRO80VtmyTLHdzlgFCud4Z9cIEgdFUVCDoIpab%2BKXkpMKofK3fGEiA%2BV0HbQhI8mrugOlmf83okJ%2Fx6PFV5UN%2FyY9ChpVXLE0Rp%2FRNx2OzR4dW9%2B3pgfe8VwdhB4ztG%2Fjiri55oDkBiqQ%3D%3D">
-  <meta name="twitter:image" content="https://storage.googleapis.com/gpt-engineer-file-uploads/attachments/og-images/af458844-8774-4dee-addf-b2f0938dc95c?Expires=1775236225&amp;GoogleAccessId=go-api-on-aws%40gpt-engineer-390607.iam.gserviceaccount.com&amp;Signature=TH9UT8BuB9mVrm4kwEKv38mEfaIOeDMtDrLd1oABbM6vpxaDsFiSaR9tHE6SkGI2s%2FFnrRPkU1UhfG9nB5sAaIX6HqBJ5D7debK32Lcat%2Fe9smEFZL089vEWlXKn%2BpxmX7UL10vrSG9MLNI7ACT1vx3s8NIfJ671GtzQn9q2wD2mxBUSFz5mEEPRChcy6T3xwwh9QXFS1MRO80VtmyTLHdzlgFCud4Z9cIEgdFUVCDoIpab%2BKXkpMKofK3fGEiA%2BV0HbQhI8mrugOlmf83okJ%2Fx6PFV5UN%2FyY9ChpVXLE0Rp%2FRNx2OzR4dW9%2B3pgfe8VwdhB4ztG%2Fjiri55oDkBiqQ%3D%3D">
-  <meta property="og:title" content="Takhayal.ai — AI Image Generation Studio">
-  <meta name="twitter:title" content="Takhayal.ai — AI Image Generation Studio">
-  <meta property="og:description" content="Create stunning AI-generated images with Takhayal.ai. Arabic-first AI image generation studio.">
-  <meta name="twitter:description" content="Create stunning AI-generated images with Takhayal.ai. Arabic-first AI image generation studio.">
+  <meta property="og:image" content="https://takhayal.ai/og-cover.jpg">
+  <meta name="twitter:image" content="https://takhayal.ai/og-cover.jpg">
+  <meta property="og:title" content="Takhayal.ai | Arabic-first AI creative studio">
+  <meta name="twitter:title" content="Takhayal.ai | Arabic-first AI creative studio">
+  <meta property="og:description" content="Takhayal.ai is an Arabic-first AI creative studio for image generation, video creation, templates, and creator workflows built for the Gulf.">
+  <meta name="twitter:description" content="Takhayal.ai is an Arabic-first AI creative studio for image generation, video creation, templates, and creator workflows built for the Gulf.">
 </head>
 
   <body>
@@ -42,10 +57,6 @@
         document.documentElement.setAttribute('data-theme',s);
       })()
     </script>
-    <div id="seo-footer" style="position:absolute;opacity:0;pointer-events:none;font-size:1px;">
-      <a href="/privacy">Privacy Policy</a>
-      <a href="/terms">Terms and Conditions</a>
-    </div>
     <div id="root"></div>
     <noscript>
       <footer style="padding:24px 32px;text-align:center;font-size:13px;color:#888;font-family:sans-serif">

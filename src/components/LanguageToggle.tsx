@@ -7,7 +7,7 @@ export function LanguageToggle() {
     <div className="flex items-center p-0.5 rounded-full bg-foreground/[0.06]">
       <button
         onClick={() => setLang('en')}
-        className={`px-3 py-1 rounded-full text-[12px] font-medium transition-all duration-200 ${
+        className={`min-h-10 px-3.5 py-2 rounded-full text-[12px] font-medium transition-all duration-200 ${
           lang === 'en'
             ? 'bg-primary text-primary-foreground'
             : 'text-muted-foreground hover:text-foreground'
@@ -17,7 +17,7 @@ export function LanguageToggle() {
       </button>
       <button
         onClick={() => setLang('ar')}
-        className={`px-3 py-1 rounded-full text-[12px] font-medium transition-all duration-200 ${
+        className={`min-h-10 px-3.5 py-2 rounded-full text-[12px] font-medium transition-all duration-200 ${
           lang === 'ar'
             ? 'bg-primary text-primary-foreground'
             : 'text-muted-foreground hover:text-foreground'

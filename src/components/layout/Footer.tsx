@@ -19,8 +19,8 @@ const navLinks = [
 ];
 
 const legalLinks = [
-  { en: 'Terms & Conditions', ar: 'الشروط والأحكام', to: '/legal/terms' },
-  { en: 'Privacy Policy', ar: 'سياسة الخصوصية', to: '/legal/privacy' },
+  { en: 'Terms & Conditions', ar: 'الشروط والأحكام', to: '/terms' },
+  { en: 'Privacy Policy', ar: 'سياسة الخصوصية', to: '/privacy' },
   { en: 'Contact Us', ar: 'تواصل معنا', to: '/contact' },
   { en: 'Support', ar: 'الدعم', to: 'mailto:support@takhayal.ai' },
 ];
@@ -59,7 +59,7 @@ function ModelAccordion({ title, links, isAr }: { title: string; links: { name: 
     <div className="border-b border-foreground/[0.06] last:border-0">
       <button
         onClick={() => setOpen(!open)}
-        className="flex items-center justify-between w-full py-3 text-left"
+        className="flex min-h-11 items-center justify-between w-full py-3 text-left"
       >
         <span className="text-[11px] uppercase tracking-widest font-semibold text-primary">{title}</span>
         <ChevronDown size={14} className={`text-muted-foreground transition-transform duration-200 ${open ? 'rotate-180' : ''}`} />
@@ -109,7 +109,7 @@ export function Footer() {
 
           {/* Navigate */}
           <div>
-            <h4 className="text-[12px] uppercase tracking-widest text-muted-foreground/60 font-semibold mb-4">
+            <h4 className="text-[11px] uppercase tracking-widest font-semibold mb-4 text-primary">
               {isAr ? 'التنقل' : 'Navigate'}
             </h4>
             <ul className="space-y-2.5">
@@ -125,7 +125,7 @@ export function Footer() {
 
           {/* Legal */}
           <div>
-            <h4 className="text-[12px] uppercase tracking-widest text-muted-foreground/60 font-semibold mb-4">
+            <h4 className="text-[11px] uppercase tracking-widest font-semibold mb-4 text-primary">
               {isAr ? 'قانوني' : 'Legal'}
             </h4>
             <ul className="space-y-2.5">
@@ -199,7 +199,7 @@ export function Footer() {
           {/* Nav + Legal inline */}
           <div className="grid grid-cols-2 gap-8">
             <div>
-              <h4 className="text-[12px] uppercase tracking-widest text-muted-foreground/60 font-semibold mb-3">{isAr ? 'التنقل' : 'Navigate'}</h4>
+              <h4 className="text-[11px] uppercase tracking-widest font-semibold mb-3 text-primary">{isAr ? 'التنقل' : 'Navigate'}</h4>
               <ul className="space-y-2">
                 {navLinks.map(link => (
                   <li key={link.to}><Link to={link.to} className="text-[13px] text-muted-foreground hover:text-primary transition-colors">{isAr ? link.ar : link.en}</Link></li>
@@ -207,7 +207,7 @@ export function Footer() {
               </ul>
             </div>
             <div>
-              <h4 className="text-[12px] uppercase tracking-widest text-muted-foreground/60 font-semibold mb-3">{isAr ? 'قانوني' : 'Legal'}</h4>
+              <h4 className="text-[11px] uppercase tracking-widest font-semibold mb-3 text-primary">{isAr ? 'قانوني' : 'Legal'}</h4>
               <ul className="space-y-2">
                 {legalLinks.map(link => (
                   <li key={link.to}>

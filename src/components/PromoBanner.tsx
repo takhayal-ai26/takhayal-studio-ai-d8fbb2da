@@ -52,9 +52,9 @@ function dismissBanner(banner: PromoBanner) {
 }
 
 const bgStyles: Record<string, string> = {
-  brand_orange: 'bg-gradient-to-r from-primary via-primary/90 to-primary/80',
-  brand_lime: 'bg-gradient-to-r from-emerald-600 via-emerald-500 to-teal-500',
-  dark: 'bg-gradient-to-r from-zinc-900 via-zinc-800 to-zinc-900',
+  brand_orange: 'bg-primary',
+  brand_lime: 'bg-emerald-600',
+  dark: 'bg-zinc-900',
   custom: '',
 };
 
@@ -163,9 +163,9 @@ function BannerRow({ banner, onDismiss }: { banner: PromoBanner; onDismiss: () =
       }}
       dir={isRTL ? 'rtl' : 'ltr'}
     >
-      <div className="max-w-7xl mx-auto flex items-center justify-center gap-2 sm:gap-3 px-10 sm:px-12 h-[40px]">
+      <div className="max-w-7xl mx-auto flex h-[40px] items-center justify-center gap-2 px-10 sm:px-12">
         {badge && (
-          <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-white/20 backdrop-blur-sm whitespace-nowrap">
+          <span className="hidden sm:inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-white/15 whitespace-nowrap">
             {badge}
           </span>
         )}
@@ -180,7 +180,7 @@ function BannerRow({ banner, onDismiss }: { banner: PromoBanner; onDismiss: () =
         {ctaLabel && (
           <button
             onClick={handleCTA}
-            className="shrink-0 px-3 py-1 rounded-full bg-white/20 hover:bg-white/30 backdrop-blur-sm text-[11px] sm:text-[12px] font-semibold transition-colors whitespace-nowrap"
+            className="shrink-0 px-3 py-1 rounded-full bg-white/15 hover:bg-white/25 text-[11px] sm:text-[12px] font-semibold transition-colors whitespace-nowrap"
           >
             {ctaLabel}
           </button>
@@ -189,10 +189,10 @@ function BannerRow({ banner, onDismiss }: { banner: PromoBanner; onDismiss: () =
         {banner.dismissible && (
           <button
             onClick={onDismiss}
-            className={`absolute ${isRTL ? 'left-2 sm:left-4' : 'right-2 sm:right-4'} top-1/2 -translate-y-1/2 p-1 rounded-full hover:bg-white/20 transition-colors`}
+            className={`absolute ${isRTL ? 'left-2 sm:left-4' : 'right-2 sm:right-4'} top-1/2 -translate-y-1/2 p-1 rounded-md hover:bg-white/20 transition-colors flex items-center justify-center`}
             aria-label="Dismiss"
           >
-            <X size={14} className="text-white/80" />
+          <X size={14} className="text-white/80" />
           </button>
         )}
       </div>

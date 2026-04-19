@@ -3,8 +3,9 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { useAppTheme } from '@/context/AppThemeContext';
-import heroPoster from '@/assets/landing/hero-video-poster.jpg';
-
+import heroPoster768 from '@/assets/landing/hero-video-poster-768.avif';
+import heroPoster960 from '@/assets/landing/hero-video-poster-960.avif';
+import heroPosterFallback from '@/assets/landing/hero-video-poster.jpg';
 const HERO_CONFIG_KEYS = [
   'video_hero_video_url',
   'video_hero_webm_url',
@@ -55,6 +56,7 @@ export function DashboardHero() {
   const isLight = mode === 'light';
   const isAr = lang === 'ar';
   const [initial] = useState(() => readCache());
+  const [shouldLoadVideo, setShouldLoadVideo] = useState(true);
   const [videoFailed, setVideoFailed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -108,6 +110,8 @@ export function DashboardHero() {
   }, []);
 
   useEffect(() => {
+    if (!shouldLoadVideo) return;
+
     const v = videoRef.current;
     if (!v) return;
 
@@ -127,19 +131,21 @@ export function DashboardHero() {
       v.removeEventListener('error', onError);
       clearTimeout(stallTimerRef.current);
     };
-  }, [tryPlay]);
+  }, [shouldLoadVideo, tryPlay]);
 
   const c = { ...DEFAULTS, ...(config || {}) };
   const videoUrl = c.video_hero_video_url;
   const webmUrl = c.video_hero_webm_url;
   const posterUrl = c.video_hero_poster_url;
   const posterEnabled = c.video_hero_poster_enabled === 'true';
+  const heroEnabled = c.video_hero_enabled !== 'false';
   const baseOverlay = parseFloat(c.video_hero_overlay_intensity) || 0.4;
   const overlay = isLight ? Math.min(baseOverlay + 0.2, 0.75) : baseOverlay;
   const align = c.video_hero_text_align || 'center';
 
   // Use admin poster, or built-in fallback
-  const fallbackPoster = (posterEnabled && posterUrl) ? posterUrl : heroPoster;
+  const usingCustomPoster = posterEnabled && !!posterUrl;
+  const fallbackPoster = usingCustomPoster ? posterUrl : heroPosterFallback;
 
   const h1 = isAr ? c.video_hero_headline1_ar : c.video_hero_headline1_en;
   const h2 = isAr ? c.video_hero_headline2_ar : c.video_hero_headline2_en;
@@ -151,8 +157,32 @@ export function DashboardHero() {
       style={{ height: '100svh', minHeight: 520 }}
       data-desktop-hero
     >
-      {/* Video — uses <source> with explicit type for mobile Safari MIME compliance */}
-      {!videoFailed && (
+      {usingCustomPoster ? (
+        <img
+          src={fallbackPoster}
+          alt=""
+          loading="eager"
+          fetchPriority="high"
+          className="absolute inset-0 w-full h-full object-cover"
+          style={{ zIndex: 0 }}
+        />
+      ) : (
+        <picture>
+          <source media="(max-width: 768px)" srcSet={heroPoster768} type="image/avif" />
+          <source media="(max-width: 1280px)" srcSet={heroPoster960} type="image/avif" />
+          <img
+            src={heroPosterFallback}
+            alt=""
+            loading="eager"
+            fetchPriority="high"
+            className="absolute inset-0 w-full h-full object-cover"
+            style={{ zIndex: 0 }}
+          />
+        </picture>
+      )}
+
+      {/* Video — autoplay by default with poster fallback if playback fails */}
+      {heroEnabled && shouldLoadVideo && !videoFailed && (
         <video
           ref={videoRef}
           autoPlay
@@ -165,20 +195,11 @@ export function DashboardHero() {
           poster={fallbackPoster}
           className="absolute inset-0 w-full h-full object-cover"
           style={{ zIndex: 0 }}
+          aria-hidden="true"
         >
           {webmUrl && <source src={webmUrl} type="video/webm" />}
           <source src={videoUrl} type="video/mp4" />
         </video>
-      )}
-
-      {/* Poster fallback when video fails */}
-      {videoFailed && (
-        <img
-          src={fallbackPoster}
-          alt=""
-          className="absolute inset-0 w-full h-full object-cover"
-          style={{ zIndex: 0 }}
-        />
       )}
 
       {/* Overlay */}
@@ -213,10 +234,8 @@ export function DashboardHero() {
           <span
             className="block"
             style={{
-              background: 'linear-gradient(135deg, #F03E1B 0%, #FF6B35 40%, #FFB347 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              color: 'hsl(var(--primary))',
+              textShadow: '0 10px 30px rgba(240, 62, 27, 0.24)',
             }}
           >
             {h2}

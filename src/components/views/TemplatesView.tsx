@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useTemplates, FrontendTemplate } from '@/hooks/useTemplates';
+import { PageSeo, absoluteUrl } from '@/components/seo/PageSeo';
 
 function ratioToNumber(ratio: string): number {
   const [w, h] = ratio.split(':').map(Number);
@@ -30,9 +31,32 @@ export function TemplatesView() {
   const filtered = templates.filter(tpl => {
     return activeCategoryEn === 'All' || tpl.category === activeCategoryEn;
   });
+  const seoTitle = t.templatesView.title;
+  const seoDescription = isRTL
+    ? 'تصفح قوالب تخيّل الجاهزة لبدء إنشاء الصور والحملات والمحتوى بسرعة أكبر.'
+    : 'Browse ready-to-use Takhayal templates to launch images, campaigns, and creative concepts faster.';
+  const templateSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: seoTitle,
+    itemListElement: templates.slice(0, 16).map((template, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: absoluteUrl(`/templates/${template.id}`),
+      name: template.name,
+      image: template.image,
+    })),
+  };
 
   return (
     <div className="flex-1 overflow-y-auto pb-20 md:pb-6 animate-page-enter">
+      <PageSeo
+        title={`${seoTitle} | Takhayal.ai`}
+        description={seoDescription}
+        canonicalPath="/templates"
+        pageType="CollectionPage"
+        schemas={[templateSchema]}
+      />
       {/* Header */}
       <div className="px-6 md:px-10 pt-8 pb-6">
         <h1 className="typo-heading-page">{t.templatesView.title}</h1>

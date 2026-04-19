@@ -4,6 +4,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useModelGuides } from '@/hooks/useModelGuides';
 import { Cpu, Film, Sparkles } from 'lucide-react';
 import { Footer } from '@/components/layout/Footer';
+import { PageSeo, absoluteUrl } from '@/components/seo/PageSeo';
 
 type FilterType = 'all' | 'image' | 'video';
 
@@ -48,6 +49,7 @@ export default function ModelsDirectory() {
   const isAr = lang === 'ar';
   const { imageGuides, videoGuides, loading } = useModelGuides();
   const [filter, setFilter] = useState<FilterType>('all');
+  const allGuides = [...imageGuides, ...videoGuides];
 
   const filters: { key: FilterType; label: string }[] = [
     { key: 'all', label: isAr ? 'الكل' : 'All' },
@@ -57,9 +59,32 @@ export default function ModelsDirectory() {
 
   const showImage = filter === 'all' || filter === 'image';
   const showVideo = filter === 'all' || filter === 'video';
+  const seoTitle = isAr ? 'جميع النماذج' : 'All Models';
+  const seoDescription = isAr
+    ? 'اكتشف نماذج الصور والفيديو المتاحة داخل تخيّل، واختر المحرك المناسب لأسلوبك الإبداعي.'
+    : 'Discover the image and video models available in Takhayal and choose the right engine for your creative workflow.';
+  const modelSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: seoTitle,
+    itemListElement: allGuides.slice(0, 20).map((guide, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: absoluteUrl(`/models/${guide.slug}`),
+      name: isAr ? guide.name_ar || guide.name_en : guide.name_en,
+      description: isAr ? guide.short_description_ar || guide.short_description_en : guide.short_description_en,
+    })),
+  };
 
   return (
     <div className="flex-1 overflow-y-auto animate-page-enter" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
+      <PageSeo
+        title={`${seoTitle} | Takhayal.ai`}
+        description={seoDescription}
+        canonicalPath="/models"
+        pageType="CollectionPage"
+        schemas={loading ? [] : [modelSchema]}
+      />
       <div className="max-w-7xl mx-auto px-5 md:px-8 pt-8 pb-4">
         {/* Hero */}
         <div className="text-center mb-10">
@@ -96,7 +121,7 @@ export default function ModelsDirectory() {
             <button
               key={f.key}
               onClick={() => setFilter(f.key)}
-              className={`flex-shrink-0 px-4 py-2 rounded-full text-[13px] font-medium transition-all ${
+              className={`flex min-h-11 flex-shrink-0 items-center px-4 py-2.5 rounded-full text-[13px] font-medium transition-all ${
                 filter === f.key
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted/50 text-muted-foreground'

@@ -155,45 +155,45 @@
 [data-theme="light"] input:not([data-hero-input]),
 [data-theme="light"] textarea:not([data-hero-input]),
 [data-theme="light"] select {
-  background: #FFFFFF !important;
+  background: hsl(var(--card)) !important;
   border: 1px solid transparent !important;
   border-radius: 12px;
-  color: #111111;
+  color: hsl(var(--foreground));
   font-size: 15px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 2px hsl(var(--shadow-color));
 }
 [data-theme="light"] input:not([data-hero-input])::placeholder,
 [data-theme="light"] textarea:not([data-hero-input])::placeholder {
-  color: #888888;
+  color: hsl(var(--placeholder-color));
   opacity: 1;
 }
 [data-theme="light"] input:not([data-hero-input]):focus,
 [data-theme="light"] textarea:not([data-hero-input]):focus,
 [data-theme="light"] select:focus {
-  border-color: rgba(240, 62, 27, 0.4) !important;
+  border-color: hsl(var(--input-focus)) !important;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(240, 62, 27, 0.06);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.06);
 }
 [data-theme="dark"] input:not([data-hero-input]),
 [data-theme="dark"] textarea:not([data-hero-input]),
 [data-theme="dark"] select {
-  background: hsl(0 0% 18%) !important;
+  background: hsl(var(--card)) !important;
   border: 1px solid transparent !important;
   border-radius: 12px;
-  color: #FFFFFF;
+  color: hsl(var(--foreground));
   font-size: 15px;
 }
 [data-theme="dark"] input:not([data-hero-input])::placeholder,
 [data-theme="dark"] textarea:not([data-hero-input])::placeholder {
-  color: #9E9E9E;
+  color: hsl(var(--placeholder-color));
   opacity: 1;
 }
 [data-theme="dark"] input:not([data-hero-input]):focus,
 [data-theme="dark"] textarea:not([data-hero-input]):focus,
 [data-theme="dark"] select:focus {
-  border-color: rgba(240, 62, 27, 0.4) !important;
+  border-color: hsl(var(--input-focus)) !important;
   outline: none;
-  box-shadow: 0 0 0 3px rgba(240, 62, 27, 0.06);
+  box-shadow: 0 0 0 3px hsl(var(--primary) / 0.06);
 }
 
 /* ── Buttons (secondary) ── */
@@ -201,55 +201,62 @@
   border-color: transparent !important;
 }
 [data-theme="light"] button:not(.btn-primary):not([data-hero-input]):hover {
-  background: rgba(0, 0, 0, 0.03);
+  background: hsl(var(--foreground) / 0.03);
 }
 [data-theme="dark"] button:not(.btn-primary):not([data-hero-input]) {
   border-color: transparent !important;
 }
 [data-theme="dark"] button:not(.btn-primary):not([data-hero-input]):hover {
-  background: rgba(255, 255, 255, 0.04);
+  background: hsl(var(--foreground) / 0.04);
 }
 
-/* ── Hero input: kill all focus rings ── */
+/* ── Hero input: keep a visible keyboard focus without adding heavy chrome ── */
 [data-hero-input],
 [data-hero-input]:focus,
-[data-hero-input]:focus-visible,
 [data-hero-input]:active {
   outline: none !important;
   box-shadow: none !important;
   border: none !important;
   background: transparent !important;
 }
+[data-hero-input]:focus-visible {
+  outline: 2px solid hsl(var(--ring)) !important;
+  outline-offset: 4px !important;
+  border-radius: 12px;
+}
 
 /* ── Filter pills ── */
 .filter-pill {
   background: transparent;
-  border: none;
+  border: 1px solid transparent;
   border-radius: 999px;
-  color: hsl(0 0% 50%);
+  color: hsl(var(--text-tertiary));
   font-size: 13px;
   font-weight: 500;
-  padding: 6px 16px;
+  min-height: 44px;
+  padding: 10px 18px;
   cursor: pointer;
   transition: all 0.2s ease;
 }
 .filter-pill:hover {
-  background: rgba(255, 255, 255, 0.06);
-  color: hsl(0 0% 70%);
+  background: hsl(var(--foreground) / 0.06);
+  color: hsl(var(--text-secondary));
 }
 .filter-pill.active {
   background: hsl(var(--primary));
-  color: #FFFFFF;
+  border-color: hsl(var(--primary));
+  box-shadow: 0 12px 28px hsl(var(--primary) / 0.16);
+  color: hsl(var(--primary-foreground));
 }
 [data-theme="light"] .filter-pill {
-  color: hsl(0 0% 40%);
+  color: hsl(var(--text-secondary));
 }
 [data-theme="light"] .filter-pill:hover {
-  background: rgba(0, 0, 0, 0.04);
+  background: hsl(var(--foreground) / 0.04);
 }
 [data-theme="light"] .filter-pill.active {
   background: hsl(var(--primary));
-  color: #FFFFFF;
+  color: hsl(var(--primary-foreground));
 }
 
 @layer base {
@@ -562,9 +569,9 @@
   color: hsl(0 0% 30%);
 }
 [data-theme="light"] .explore-badge-light:hover {
-  border-color: rgba(240, 62, 27, 0.6);
-  color: #F03E1B;
-  background: rgba(240, 62, 27, 0.05);
+  border-color: hsl(var(--primary) / 0.6);
+  color: hsl(var(--primary));
+  background: hsl(var(--primary) / 0.05);
 }
 [data-theme="light"] .explore-divider-light {
   border-color: hsl(0 0% 87% / 0.5);
@@ -631,7 +638,7 @@
 
 /* Focus states */
 *:focus-visible {
-  outline: 2px solid hsl(10 88% 52%);
+  outline: 2px solid hsl(var(--ring));
   outline-offset: 2px;
 }
 
@@ -653,34 +660,33 @@
 
 /* Premium glass surface */
 .glass-surface {
-  background: rgba(255, 255, 255, 0.03);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: hsl(var(--card) / 0.92);
+  border: 1px solid hsl(var(--surface-border));
+  box-shadow: 0 1px 2px hsl(var(--shadow-color) / 0.05);
 }
 [data-theme="light"] .glass-surface {
-  background: rgba(255, 255, 255, 0.7);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  background: hsl(var(--card) / 0.96);
+  border: 1px solid hsl(var(--surface-border));
 }
 
 /* Soft elevation */
 .elevation-1 {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08), 0 1px 2px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px hsl(var(--shadow-color) / 0.08), 0 1px 2px hsl(var(--shadow-color) / 0.04);
 }
 .elevation-2 {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 4px 20px hsl(var(--shadow-color) / 0.15);
 }
 .elevation-3 {
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 10px 40px hsl(var(--shadow-color) / 0.25);
 }
 [data-theme="dark"] .elevation-1 {
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3), 0 1px 2px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 1px 3px hsl(var(--shadow-color) / 0.3), 0 1px 2px hsl(var(--shadow-color) / 0.2);
 }
 [data-theme="dark"] .elevation-2 {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 4px 20px hsl(var(--shadow-color) / 0.4);
 }
 [data-theme="dark"] .elevation-3 {
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 10px 40px hsl(var(--shadow-color) / 0.5);
 }
 
 /* Hover scale for cards */
@@ -689,10 +695,10 @@
 }
 .hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 30px hsl(var(--shadow-color) / 0.12);
 }
 [data-theme="dark"] .hover-lift:hover {
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+  box-shadow: 0 8px 30px hsl(var(--shadow-color) / 0.4);
 }
 
 /* Mobile hero – stable full-screen with safe-area support */

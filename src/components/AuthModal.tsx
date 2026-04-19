@@ -5,7 +5,6 @@ import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { Logo, LogoMark } from '@/components/Logo';
 import { useMedia } from '@/hooks/useMedia';
-import { lovable } from '@/integrations/lovable';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useIsMobile } from '@/hooks/use-mobile';
@@ -73,8 +72,11 @@ export function AuthModal() {
   const handleGoogle = async () => {
     setLoading(true); setError('');
     try {
-      const result = await lovable.auth.signInWithOAuth('google', { redirect_uri: window.location.origin });
-      if (result.error) setError(lang === 'ar' ? 'فشل تسجيل الدخول بـ Google. حاول مجدداً.' : 'Google sign in failed. Please try again.');
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: { redirectTo: authRedirectUrl },
+      });
+      if (error) setError(lang === 'ar' ? 'فشل تسجيل الدخول بـ Google. حاول مجدداً.' : 'Google sign in failed. Please try again.');
     } catch { setError(lang === 'ar' ? 'حدث خطأ. حاول مجدداً.' : 'Something went wrong. Please try again.'); }
     finally { setLoading(false); }
   };
@@ -82,8 +84,11 @@ export function AuthModal() {
   const handleApple = async () => {
     setLoading(true); setError('');
     try {
-      const result = await lovable.auth.signInWithOAuth('apple', { redirect_uri: window.location.origin });
-      if (result.error) setError(lang === 'ar' ? 'فشل تسجيل الدخول بـ Apple. حاول مجدداً.' : 'Apple sign in failed. Please try again.');
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'apple',
+        options: { redirectTo: authRedirectUrl },
+      });
+      if (error) setError(lang === 'ar' ? 'فشل تسجيل الدخول بـ Apple. حاول مجدداً.' : 'Apple sign in failed. Please try again.');
     } catch { setError(lang === 'ar' ? 'حدث خطأ. حاول مجدداً.' : 'Something went wrong. Please try again.'); }
     finally { setLoading(false); }
   };
@@ -250,9 +255,9 @@ export function AuthModal() {
                 <button
                   onClick={handleGoogle}
                   disabled={loading}
-                  className="w-full h-[56px] rounded-2xl bg-white text-gray-900 text-[15px] font-semibold flex items-center justify-center gap-3 shadow-[0_2px_12px_rgba(0,0,0,0.08)] active:scale-[0.97] transition-all disabled:opacity-50"
+                  className="w-full h-[56px] rounded-2xl border border-border/40 bg-card text-foreground text-[15px] font-semibold flex items-center justify-center gap-3 shadow-[0_10px_30px_-24px_hsl(var(--shadow-color))] hover:bg-muted/40 active:scale-[0.97] transition-all disabled:opacity-50"
                 >
-                  {loading ? <Loader2 size={18} className="animate-spin text-gray-500" /> : (
+                  {loading ? <Loader2 size={18} className="animate-spin text-muted-foreground" /> : (
                     <>{googleIcon}{t.auth.continueWithGoogle}</>
                   )}
                 </button>
@@ -332,14 +337,14 @@ export function AuthModal() {
             </form>
           ) : !showEmailForm ? (
             <div className="space-y-3 flex-1">
-              <button onClick={handleGoogle} disabled={loading} className="w-full h-[52px] rounded-[14px] border border-border bg-transparent text-foreground text-sm font-medium flex items-center justify-center gap-3 hover:bg-muted hover:border-border transition-all duration-150 disabled:opacity-50">
+              <button onClick={handleGoogle} disabled={loading} className="w-full h-[52px] rounded-[14px] border border-border/40 bg-card text-foreground text-sm font-medium flex items-center justify-center gap-3 hover:bg-muted/50 hover:border-border transition-all duration-150 disabled:opacity-50">
                 {loading ? <Loader2 size={16} className="animate-spin" /> : (<>{googleIcon}{t.auth.continueWithGoogle}</>)}
               </button>
-              <button onClick={handleApple} disabled={loading} className="w-full h-[52px] rounded-[14px] border border-border bg-transparent text-foreground text-sm font-medium flex items-center justify-center gap-3 hover:bg-muted hover:border-border transition-all duration-150 disabled:opacity-50">
+              <button onClick={handleApple} disabled={loading} className="w-full h-[52px] rounded-[14px] border border-border/40 bg-card text-foreground text-sm font-medium flex items-center justify-center gap-3 hover:bg-muted/50 hover:border-border transition-all duration-150 disabled:opacity-50">
                 {appleIcon}{t.auth.continueWithApple}
               </button>
               <div className="flex items-center gap-4 py-2"><div className="flex-1 h-px bg-border" /><span className="text-[11px] text-muted-foreground uppercase tracking-wider">{t.auth.or}</span><div className="flex-1 h-px bg-border" /></div>
-              <button onClick={() => { setShowEmailForm(true); setError(''); }} className="w-full h-[52px] rounded-[14px] border border-border bg-transparent text-foreground text-sm font-medium flex items-center justify-center gap-3 hover:bg-muted hover:border-border transition-all duration-150"><Mail size={17} />{t.auth.continueWithEmail}</button>
+              <button onClick={() => { setShowEmailForm(true); setError(''); }} className="w-full h-[52px] rounded-[14px] border border-border/40 bg-transparent text-foreground text-sm font-medium flex items-center justify-center gap-3 hover:bg-muted/50 hover:border-border transition-all duration-150"><Mail size={17} />{t.auth.continueWithEmail}</button>
               {error && <p className="text-[12px] text-red-400 text-center">{error}</p>}
             </div>
           ) : (

@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { Send, Mail, User, MessageSquare } from 'lucide-react';
 import { z } from 'zod';
+import { PageSeo } from '@/components/seo/PageSeo';
 
 const contactSchema = z.object({
   first_name: z.string().trim().min(1).max(100),
@@ -22,6 +23,9 @@ export default function Contact() {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState(false);
+  const firstNameFieldId = 'contact-first-name';
+  const emailFieldId = 'contact-email';
+  const messageFieldId = 'contact-message';
 
   const t = {
     title: isAr ? 'تواصل معنا' : 'Contact Us',
@@ -99,6 +103,14 @@ export default function Contact() {
   if (success) {
     return (
       <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-[70vh] flex items-center justify-center px-5">
+        <PageSeo
+          title={isAr ? 'تواصل معنا | تخيّل' : 'Contact | Takhayal.ai'}
+          description={isAr
+            ? 'تواصل مع فريق تخيّل بخصوص الدعم أو الشراكات أو الاستفسارات العامة.'
+            : 'Contact the Takhayal team for support, partnerships, or general questions.'}
+          canonicalPath="/contact"
+          pageType="ContactPage"
+        />
         <div className="text-center max-w-md mx-auto space-y-6">
           <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mx-auto">
             <Send size={28} className="text-primary" />
@@ -117,6 +129,23 @@ export default function Contact() {
 
   return (
     <div dir={isRTL ? 'rtl' : 'ltr'} className="min-h-[70vh] py-16 md:py-24 px-5">
+      <PageSeo
+        title={isAr ? 'تواصل معنا | تخيّل' : 'Contact | Takhayal.ai'}
+        description={isAr
+          ? 'تواصل مع فريق تخيّل بخصوص الدعم أو الشراكات أو الاستفسارات العامة.'
+          : 'Contact the Takhayal team for support, partnerships, or general questions.'}
+        canonicalPath="/contact"
+        pageType="ContactPage"
+        schemas={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'ContactPoint',
+            contactType: 'customer support',
+            email: 'support@takhayal.ai',
+            availableLanguage: ['Arabic', 'English'],
+          },
+        ]}
+      />
       <div className="max-w-5xl mx-auto">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 lg:gap-20 items-start">
           {/* Left: Copy */}
@@ -147,50 +176,59 @@ export default function Contact() {
             <form onSubmit={handleSubmit} className="space-y-5" noValidate>
               {/* First Name */}
               <div className="space-y-2">
-                <label className="text-[13px] font-medium text-foreground flex items-center gap-1.5">
+                <label htmlFor={firstNameFieldId} className="text-[13px] font-medium text-foreground flex items-center gap-1.5">
                   <User size={13} className="text-muted-foreground" />
                   {t.firstName}
                 </label>
                 <input
+                  id={firstNameFieldId}
                   type="text"
                   value={form.first_name}
                   onChange={e => setForm(f => ({ ...f, first_name: e.target.value }))}
+                  aria-invalid={errors.first_name ? 'true' : 'false'}
+                  aria-describedby={errors.first_name ? `${firstNameFieldId}-error` : undefined}
                   className="w-full h-11 rounded-xl bg-muted/50 px-4 text-[14px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
                   placeholder={isAr ? 'أدخل اسمك' : 'Enter your name'}
                 />
-                {errors.first_name && <p className="text-[12px] text-destructive">{errors.first_name}</p>}
+                {errors.first_name && <p id={`${firstNameFieldId}-error`} className="text-[12px] text-destructive">{errors.first_name}</p>}
               </div>
 
               {/* Email */}
               <div className="space-y-2">
-                <label className="text-[13px] font-medium text-foreground flex items-center gap-1.5">
+                <label htmlFor={emailFieldId} className="text-[13px] font-medium text-foreground flex items-center gap-1.5">
                   <Mail size={13} className="text-muted-foreground" />
                   {t.email}
                 </label>
                 <input
+                  id={emailFieldId}
                   type="email"
                   value={form.email}
                   onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
+                  aria-invalid={errors.email ? 'true' : 'false'}
+                  aria-describedby={errors.email ? `${emailFieldId}-error` : undefined}
                   className="w-full h-11 rounded-xl bg-muted/50 px-4 text-[14px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all"
                   placeholder={isAr ? 'أدخل بريدك الإلكتروني' : 'Enter your email'}
                 />
-                {errors.email && <p className="text-[12px] text-destructive">{errors.email}</p>}
+                {errors.email && <p id={`${emailFieldId}-error`} className="text-[12px] text-destructive">{errors.email}</p>}
               </div>
 
               {/* Message */}
               <div className="space-y-2">
-                <label className="text-[13px] font-medium text-foreground flex items-center gap-1.5">
+                <label htmlFor={messageFieldId} className="text-[13px] font-medium text-foreground flex items-center gap-1.5">
                   <MessageSquare size={13} className="text-muted-foreground" />
                   {t.message}
                 </label>
                 <textarea
+                  id={messageFieldId}
                   value={form.message}
                   onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
                   rows={5}
+                  aria-invalid={errors.message ? 'true' : 'false'}
+                  aria-describedby={errors.message ? `${messageFieldId}-error` : undefined}
                   className="w-full rounded-xl bg-muted/50 px-4 py-3 text-[14px] text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:ring-2 focus:ring-primary/40 transition-all resize-none"
                   placeholder={isAr ? 'اكتب رسالتك هنا...' : 'Write your message here...'}
                 />
-                {errors.message && <p className="text-[12px] text-destructive">{errors.message}</p>}
+                {errors.message && <p id={`${messageFieldId}-error`} className="text-[12px] text-destructive">{errors.message}</p>}
               </div>
 
               {/* Submit */}

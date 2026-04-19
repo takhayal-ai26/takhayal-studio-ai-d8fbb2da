@@ -5,6 +5,7 @@ import { Search, ArrowRight, ArrowLeft } from 'lucide-react';
 import { useToolsDB } from '@/hooks/useToolsDB';
 import { useApp } from '@/context/AppContext';
 import { cn } from '@/lib/utils';
+import { PageSeo, absoluteUrl } from '@/components/seo/PageSeo';
 
 export default function ToolsDirectory() {
   const navigate = useNavigate();
@@ -16,9 +17,32 @@ export default function ToolsDirectory() {
   const filtered = tools
     .filter(t => !search || t.name.toLowerCase().includes(search.toLowerCase()) || t.shortDesc.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+  const seoTitle = t.toolsDir.findNewWays;
+  const seoDescription = isRTL
+    ? 'استكشف أدوات تخيّل للصور والفيديو والتصميم والتحرير بالذكاء الاصطناعي.'
+    : 'Explore Takhayal AI tools for image generation, editing, video creation, and creative workflows.';
+  const toolSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'ItemList',
+    name: seoTitle,
+    itemListElement: tools.slice(0, 12).map((tool, index) => ({
+      '@type': 'ListItem',
+      position: index + 1,
+      url: absoluteUrl(tool.route),
+      name: tool.name,
+      description: tool.shortDesc,
+    })),
+  };
 
   return (
     <div className="flex-1 overflow-y-auto animate-page-enter" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
+      <PageSeo
+        title={`${seoTitle} | Takhayal.ai`}
+        description={seoDescription}
+        canonicalPath="/tools"
+        pageType="CollectionPage"
+        schemas={[toolSchema]}
+      />
       <section className="max-w-6xl mx-auto px-5 md:px-8 pt-10 pb-8">
         <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-4">
           <div>

@@ -12,6 +12,7 @@ import {
 } from '@/hooks/useBillingData';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import { PageSeo, absoluteUrl } from '@/components/seo/PageSeo';
 
 // Credit cost data for the tool table
 const CREDIT_COST_DATA = [
@@ -83,7 +84,7 @@ function PlanCard({ p, isAr, billing, isAuthenticated, authLoading, userPlan, sl
   return (
     <div
       className={`rounded-2xl p-6 flex flex-col transition-all duration-200 relative ${
-        p.featured ? 'bg-card shadow-[0_0_0_1.5px_hsl(var(--primary)),0_8px_30px_rgba(240,62,27,0.12)]' : 'bg-card shadow-[0_2px_12px_rgba(0,0,0,0.06)]'
+        p.featured ? 'bg-primary/[0.03] border border-primary/35' : 'bg-card border border-border/40'
       }`}
       style={{
         transform: scale !== 1 ? `scale(${scale})` : undefined,
@@ -208,7 +209,8 @@ function MobilePlanCarousel({ plans, isAr, ...cardProps }: { plans: any[] } & Om
       {canPrev && (
         <button
           onClick={() => scrollToIdx(activeIdx - 1)}
-          className="absolute top-1/2 left-0.5 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-card/90 backdrop-blur-sm shadow-lg flex items-center justify-center text-foreground/50 active:scale-90 transition-all"
+          className="absolute top-1/2 left-1 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border/50 bg-card text-foreground/70 transition-all active:scale-95"
+          aria-label={isAr ? 'الخطة السابقة' : 'Previous plan'}
         >
           {isAr ? <ChevronRight size={16} /> : <ChevronLeft size={16} />}
         </button>
@@ -216,7 +218,8 @@ function MobilePlanCarousel({ plans, isAr, ...cardProps }: { plans: any[] } & Om
       {canNext && (
         <button
           onClick={() => scrollToIdx(activeIdx + 1)}
-          className="absolute top-1/2 right-0.5 -translate-y-1/2 z-20 w-7 h-7 rounded-full bg-card/90 backdrop-blur-sm shadow-lg flex items-center justify-center text-foreground/50 active:scale-90 transition-all"
+          className="absolute top-1/2 right-1 z-20 flex h-11 w-11 -translate-y-1/2 items-center justify-center rounded-full border border-border/50 bg-card text-foreground/70 transition-all active:scale-95"
+          aria-label={isAr ? 'الخطة التالية' : 'Next plan'}
         >
           {isAr ? <ChevronLeft size={16} /> : <ChevronRight size={16} />}
         </button>
@@ -269,12 +272,15 @@ function MobilePlanCarousel({ plans, isAr, ...cardProps }: { plans: any[] } & Om
           <button
             key={i}
             onClick={() => scrollToIdx(i)}
-            className={`rounded-full transition-all duration-300 ${
+            className="flex h-11 w-11 items-center justify-center rounded-full transition-all duration-300"
+            aria-label={isAr ? `عرض الخطة ${i + 1}` : `Show plan ${i + 1}`}
+          >
+            <span className={`rounded-full transition-all duration-300 ${
               i === activeIdx
                 ? 'w-6 h-2 bg-primary'
-                : 'w-2 h-2 bg-muted-foreground/20'
-            }`}
-          />
+                : 'w-2.5 h-2.5 bg-muted-foreground/20'
+            }`} />
+          </button>
         ))}
       </div>
     </div>
@@ -338,9 +344,9 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
         <article
           key={`${activeTestimonial.id}-${isAr ? 'ar' : 'en'}-${activeIdx}`}
           dir={isAr ? 'rtl' : 'ltr'}
-          className={`animate-page-enter relative overflow-hidden rounded-[24px] border border-primary/15 bg-card/75 p-5 shadow-[0_24px_80px_-32px_hsl(var(--primary)/0.28)] backdrop-blur-xl sm:p-7 ${isAr ? 'text-right' : 'text-left'}`}
+          className={`animate-page-enter relative overflow-hidden rounded-[24px] border border-border/40 bg-card/80 p-5 sm:p-7 ${isAr ? 'text-right' : 'text-left'}`}
         >
-          <div className={`pointer-events-none absolute -top-8 h-32 w-32 rounded-full bg-primary/12 blur-3xl ${isAr ? '-right-8' : '-left-8'}`} />
+          <div className={`pointer-events-none absolute inset-x-6 top-4 h-16 rounded-[20px] bg-primary/[0.03] ${isAr ? 'right-0' : 'left-0'}`} />
           <div className={`relative flex min-h-[270px] flex-col sm:min-h-[240px]`}>
             <span className="mb-5 text-4xl leading-none text-primary/45">“</span>
 
@@ -379,11 +385,12 @@ function TestimonialCarousel({ isAr }: { isAr: boolean }) {
                 type="button"
                 aria-label={isAr ? `عرض الشهادة ${idx + 1}` : `Show testimonial ${idx + 1}`}
                 onClick={() => setActiveIdx(idx)}
-                className={`rounded-full transition-all duration-300 ${isActive ? 'w-7 bg-primary' : 'w-2.5 bg-muted-foreground/20 hover:bg-muted-foreground/35'} h-2.5`}
-                style={{
-                  boxShadow: isActive ? '0 0 18px hsl(var(--primary) / 0.4)' : undefined,
-                }}
-              />
+                className="flex h-11 w-11 items-center justify-center rounded-full transition-all duration-300"
+              >
+                <span
+                  className={`rounded-full transition-all duration-300 ${isActive ? 'w-7 bg-primary' : 'w-2.5 bg-muted-foreground/20 hover:bg-muted-foreground/35'} h-2.5`}
+                />
+              </button>
             );
           })}
         </div>
@@ -415,7 +422,10 @@ const Pricing = () => {
 
   // Use DB FAQs if available, otherwise fallback
   const faqs = dbFaqs.length > 0 ? dbFaqs.filter((f: any) => f.active) : FAQ_DATA.map((f, i) => ({ id: `faq-${i}`, question_en: f.q_en, question_ar: f.q_ar, answer_en: f.a_en, answer_ar: f.a_ar }));
-
+  const seoTitle = isAr ? 'الأسعار' : 'Pricing';
+  const seoDescription = isAr
+    ? 'خطط وأسعار تخيّل مع أرصدة واضحة، شحن إضافي، وأسئلة شائعة للمبدعين والفرق في الخليج.'
+    : 'Explore Takhayal pricing plans, credit top-ups, and FAQs for creators and teams building with AI in the Gulf.';
   const selectedPlanCredits = activePlans.find((p: any) => p.slug === selectedPlanPill)?.credits_monthly || 5000;
 
   const slugOrder = ['free', 'starter', 'creator', 'studio'];
@@ -439,14 +449,53 @@ const Pricing = () => {
     return p.price_monthly_usd || p.price;
   };
 
+  const pricingSchemas = [
+    {
+      '@context': 'https://schema.org',
+      '@type': 'OfferCatalog',
+      name: isAr ? 'باقات تخيّل' : 'Takhayal pricing plans',
+      itemListElement: activePlans.map((plan: any, index: number) => ({
+        '@type': 'ListItem',
+        position: index + 1,
+        item: {
+          '@type': 'Offer',
+          name: isAr ? plan.name_ar : plan.name_en,
+          price: String(getPrice(plan)),
+          priceCurrency: plan.currency || 'USD',
+          url: absoluteUrl('/pricing'),
+          availability: 'https://schema.org/InStock',
+        },
+      })),
+    },
+    {
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqs.slice(0, 8).map((faq: any) => ({
+        '@type': 'Question',
+        name: isAr ? (faq.question_ar || faq.q_ar) : (faq.question_en || faq.q_en),
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: isAr ? (faq.answer_ar || faq.a_ar) : (faq.answer_en || faq.a_en),
+        },
+      })),
+    },
+  ];
+
   return (
     <div className="flex-1 overflow-y-auto" style={{ paddingTop: 'calc(4rem + var(--banner-h, 0px))' }}>
+      <PageSeo
+        title={`${seoTitle} | Takhayal.ai`}
+        description={seoDescription}
+        canonicalPath="/pricing"
+        pageType="CollectionPage"
+        schemas={pricingSchemas}
+      />
       {/* Sign up banner — logged out only */}
       {!isAuthenticated && !authLoading && (
         <div className="bg-primary text-primary-foreground text-center py-3 px-4">
           <p className="text-sm font-medium">
             {isAr ? 'سجل مجاناً واحصل على 15 رصيداً فوراً — لا حاجة لبطاقة' : 'Sign up free and get 15 credits instantly — no card required'}
-            <button onClick={() => openAuthModal('signup')} className="ml-3 px-4 py-1 rounded-full bg-white text-primary text-xs font-semibold hover:bg-white/90 transition-colors">
+            <button onClick={() => openAuthModal('signup')} className="ml-3 min-h-11 px-4 py-2 rounded-full bg-white text-primary text-xs font-semibold hover:bg-white/90 transition-colors">
               {isAr ? 'ابدأ مجاناً' : 'Get started free'}
             </button>
           </p>
@@ -466,10 +515,10 @@ const Pricing = () => {
       {/* Billing toggle */}
       <div className="flex justify-center mb-10">
         <div className="flex p-1 rounded-full bg-muted">
-          <button onClick={() => setBilling('monthly')} className={`px-6 py-2.5 rounded-full text-[13px] font-medium transition-all ${billing === 'monthly' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+          <button onClick={() => setBilling('monthly')} className={`min-h-11 px-6 py-2.5 rounded-full text-[13px] font-medium transition-all ${billing === 'monthly' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
             {isAr ? 'شهري' : 'Monthly'}
           </button>
-          <button onClick={() => setBilling('annual')} className={`px-6 py-2.5 rounded-full text-[13px] font-medium transition-all flex items-center gap-2 ${billing === 'annual' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
+          <button onClick={() => setBilling('annual')} className={`min-h-11 px-6 py-2.5 rounded-full text-[13px] font-medium transition-all flex items-center gap-2 ${billing === 'annual' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
             {isAr ? 'سنوي' : 'Annual'}
             <span className="text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full">{isAr ? 'وفر 20%' : 'Save 20%'}</span>
           </button>
@@ -506,7 +555,7 @@ const Pricing = () => {
             <button
               key={p.slug}
               onClick={() => setSelectedPlanPill(p.slug)}
-              className={`px-4 py-2 rounded-full text-[12px] font-medium transition-all ${
+              className={`min-h-11 px-4 py-2.5 rounded-full text-[12px] font-medium transition-all ${
                 selectedPlanPill === p.slug
                   ? 'bg-primary text-primary-foreground'
                   : 'bg-muted/40 text-muted-foreground hover:text-foreground'
@@ -518,7 +567,7 @@ const Pricing = () => {
         </div>
 
         {/* Credit cost table */}
-        <div className="bg-card/60 backdrop-blur-sm rounded-2xl overflow-hidden shadow-[0_4px_20px_rgba(0,0,0,0.08)]">
+        <div className="bg-card/72 rounded-2xl overflow-hidden border border-border/40">
           <div className="grid grid-cols-4 text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-6 py-4 bg-muted/20">
             <span>{isAr ? 'النموذج' : 'Model'}</span>
             <span>{isAr ? 'الخيار' : 'Option'}</span>
@@ -555,8 +604,8 @@ const Pricing = () => {
             const name = isAr ? pkg.name_ar : pkg.name_en;
             const badge = isAr ? pkg.badge_ar : pkg.badge_en;
             return (
-              <div key={pkg.id} className={`bg-card rounded-xl p-5 flex flex-col items-center text-center relative ${
-                pkg.is_popular ? 'shadow-[0_0_0_1.5px_hsl(var(--primary)),0_8px_30px_rgba(240,62,27,0.12)]' : 'shadow-[0_2px_12px_rgba(0,0,0,0.06)]'
+              <div key={pkg.id} className={`bg-card rounded-xl p-5 flex flex-col items-center text-center relative border ${
+                pkg.is_popular ? 'border-primary/45 bg-primary/[0.03]' : 'border-border/40'
               }`}>
                 {badge && (
                   <span className="absolute -top-2.5 px-3 py-0.5 rounded-full text-[10px] font-medium bg-primary text-primary-foreground">{badge}</span>
@@ -579,7 +628,7 @@ const Pricing = () => {
                     }
                     navigate(`/checkout?credits=${pkg.credits}&price=${pkg.price}`);
                   }}
-                  className={`mt-4 w-full h-10 rounded-xl text-[13px] font-medium transition-all ${
+                  className={`mt-4 w-full min-h-11 rounded-xl text-[13px] font-medium transition-all ${
                     pkg.is_popular
                       ? 'bg-primary text-primary-foreground hover:brightness-90'
                       : 'bg-muted/50 text-foreground hover:bg-muted'
@@ -600,7 +649,7 @@ const Pricing = () => {
         </div>
         <Accordion type="single" collapsible className="space-y-2">
           {faqs.map((faq: any, i: number) => (
-            <AccordionItem key={faq.id || i} value={`faq-${i}`} className="bg-card rounded-xl px-5 py-1 shadow-[0_1px_6px_rgba(0,0,0,0.04)] data-[state=open]:shadow-[0_0_0_1px_rgba(240,62,27,0.15),0_4px_16px_rgba(0,0,0,0.06)]">
+            <AccordionItem key={faq.id || i} value={`faq-${i}`} className="bg-card rounded-xl border border-border/40 px-5 py-1 data-[state=open]:border-primary/30 data-[state=open]:bg-primary/[0.02]">
               <AccordionTrigger className="text-[14px] font-medium text-foreground hover:no-underline py-4">
                 {isAr ? (faq.question_ar || faq.q_ar) : (faq.question_en || faq.q_en)}
               </AccordionTrigger>
@@ -616,9 +665,9 @@ const Pricing = () => {
       <section className="max-w-2xl mx-auto px-6 pb-16 text-center">
         <p className="text-[12px] text-muted-foreground">
           {isAr ? 'بالاشتراك أنت توافق على ' : 'By subscribing you agree to our '}
-          <a href="/terms" className="hover:text-foreground transition-colors">{isAr ? 'الشروط والأحكام' : 'Terms & Conditions'}</a>
+          <a href="/terms" className="inline-flex min-h-11 items-center hover:text-foreground transition-colors">{isAr ? 'الشروط والأحكام' : 'Terms & Conditions'}</a>
           {isAr ? ' و' : ' and '}
-          <a href="/privacy" className="hover:text-foreground transition-colors">{isAr ? 'سياسة الخصوصية' : 'Privacy Policy'}</a>
+          <a href="/privacy" className="inline-flex min-h-11 items-center hover:text-foreground transition-colors">{isAr ? 'سياسة الخصوصية' : 'Privacy Policy'}</a>
         </p>
       </section>
     </div>

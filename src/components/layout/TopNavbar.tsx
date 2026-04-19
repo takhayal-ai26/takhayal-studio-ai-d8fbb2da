@@ -128,7 +128,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
             <button
               key={item.id}
               onClick={() => handleNav(item)}
-              className={`relative px-3 py-1 text-[15px] font-bold rounded-md transition-all duration-200 ${
+              className={`relative px-3 py-1 text-[15px] font-semibold rounded-md transition-all duration-200 ${
                 isActive(item)
                   ? 'text-foreground bg-foreground/[0.06]'
                   : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.04]'
@@ -161,7 +161,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
               {plan === 'free' ? (
                 <button
                   onClick={() => navigate('/pricing')}
-                  className="h-8 px-4 rounded-full bg-gradient-to-r from-primary to-primary/80 text-primary-foreground text-[12px] font-semibold hover:shadow-lg hover:shadow-primary/20 transition-all duration-200"
+                  className="h-8 px-4 rounded-full bg-primary text-primary-foreground text-[12px] font-semibold hover:brightness-110 hover:shadow-lg hover:shadow-primary/20 transition-all duration-200"
                 >
                   {t.nav.upgrade}
                 </button>
@@ -221,10 +221,10 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
                     {/* Language & Theme */}
                     <div className="flex items-center justify-between px-3 py-2.5">
                       <div className="flex items-center gap-0.5 p-0.5 rounded-full bg-foreground/[0.05]">
-                        <button onClick={() => setLang('en')} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>EN</button>
-                        <button onClick={() => setLang('ar')} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${lang === 'ar' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>AR</button>
+                        <button onClick={() => setLang('en')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>EN</button>
+                        <button onClick={() => setLang('ar')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'ar' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>AR</button>
                       </div>
-                      <button onClick={toggleMode} className="w-8 h-8 rounded-full bg-foreground/[0.05] flex items-center justify-center hover:bg-foreground/[0.08] transition-colors">
+                      <button onClick={toggleMode} className="w-11 h-11 rounded-full bg-foreground/[0.05] flex items-center justify-center hover:bg-foreground/[0.08] transition-colors">
                         {mode === 'dark' ? <Sun size={14} className="text-muted-foreground" /> : <Moon size={14} className="text-muted-foreground" />}
                       </button>
                     </div>
@@ -235,8 +235,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
                     {plan === 'free' && (
                       <button
                         onClick={() => { setAvatarOpen(false); navigate('/pricing'); }}
-                        className="w-full mt-1 mb-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-all hover:brightness-110 hover:shadow-lg hover:shadow-orange-500/20 active:scale-[0.98]"
-                        style={{ background: 'linear-gradient(135deg, #F03E1B 0%, #FF6B35 50%, #F03E1B 100%)' }}
+                        className="w-full mt-1 mb-1 flex min-h-11 items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-[13px] font-semibold bg-primary text-primary-foreground transition-all hover:brightness-110 hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98]"
                       >
                         <Crown size={14} />
                         {t.nav.upgrade}
@@ -280,7 +279,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
               {/* Credits pill */}
               <button
                 onClick={() => { setActivePage('credits'); navigate('/studio'); }}
-                className={`flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[12px] font-medium ${
+                className={`flex min-h-11 items-center gap-1.5 px-3.5 py-2 rounded-full text-[12px] font-medium ${
                   lowCredits
                     ? 'bg-primary/10 text-primary'
                     : isHeroPage && !scrolled
@@ -296,7 +295,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
               <div ref={mobileAvatarRef} className="relative">
                 <button
                   onClick={() => setAvatarOpen(!avatarOpen)}
-                  className="w-8 h-8 rounded-full bg-foreground/[0.06] flex items-center justify-center text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors overflow-hidden"
+                  className="w-11 h-11 rounded-full bg-foreground/[0.06] flex items-center justify-center text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors overflow-hidden"
                 >
                   {userAvatarUrl ? (
                     <img src={userAvatarUrl} alt={userName} className="w-full h-full object-cover" />
@@ -341,10 +340,10 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
                     {/* Language & Theme */}
                     <div className="flex items-center justify-between px-3 py-2.5">
                       <div className="flex items-center gap-0.5 p-0.5 rounded-full bg-foreground/[0.05]">
-                        <button onClick={() => setLang('en')} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>EN</button>
-                        <button onClick={() => setLang('ar')} className={`px-2.5 py-1 rounded-full text-[11px] font-medium transition-all ${lang === 'ar' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>AR</button>
+                        <button onClick={() => setLang('en')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>EN</button>
+                        <button onClick={() => setLang('ar')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'ar' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>AR</button>
                       </div>
-                      <button onClick={toggleMode} className="w-8 h-8 rounded-full bg-foreground/[0.05] flex items-center justify-center hover:bg-foreground/[0.08] transition-colors">
+                      <button onClick={toggleMode} className="w-11 h-11 rounded-full bg-foreground/[0.05] flex items-center justify-center hover:bg-foreground/[0.08] transition-colors">
                         {mode === 'dark' ? <Sun size={14} className="text-muted-foreground" /> : <Moon size={14} className="text-muted-foreground" />}
                       </button>
                     </div>
@@ -355,8 +354,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
                     {plan === 'free' && (
                       <button
                         onClick={() => { setAvatarOpen(false); navigate('/pricing'); }}
-                        className="w-full mx-auto mt-1 mb-1 flex items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-[13px] font-semibold text-white transition-all hover:brightness-110 hover:shadow-lg hover:shadow-orange-500/20 active:scale-[0.98]"
-                        style={{ background: 'linear-gradient(135deg, #F03E1B 0%, #FF6B35 50%, #F03E1B 100%)' }}
+                        className="w-full mx-auto mt-1 mb-1 flex min-h-11 items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-[13px] font-semibold bg-primary text-primary-foreground transition-all hover:brightness-110 hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98]"
                       >
                         <Crown size={14} />
                         {t.nav.upgrade}
@@ -380,7 +378,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
               {/* Try Free CTA */}
               <button
                 onClick={() => openAuthModal('signup')}
-                className="h-8 px-4 rounded-full bg-primary text-primary-foreground text-[12px] font-semibold shadow-lg shadow-primary/20 transition-all duration-200 active:scale-95"
+                className="h-11 px-4 rounded-full bg-primary text-primary-foreground text-[12px] font-semibold shadow-lg shadow-primary/20 transition-all duration-200 active:scale-95"
               >
                 {isRTL ? 'جرّب مجاناً' : 'Try Free'}
               </button>
@@ -388,7 +386,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
               {/* Menu icon */}
               <button
                 onClick={() => setDrawerOpen(true)}
-                className="w-8 h-8 rounded-lg bg-foreground/[0.05] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                className="w-11 h-11 rounded-lg bg-foreground/[0.05] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
               >
                 <Menu size={18} />
               </button>
@@ -408,7 +406,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-5 pb-3">
               <span className="text-[14px] font-semibold text-foreground">{isRTL ? 'القائمة' : 'Menu'}</span>
-              <button onClick={() => setDrawerOpen(false)} className="w-8 h-8 rounded-lg bg-foreground/[0.05] flex items-center justify-center text-muted-foreground">
+              <button onClick={() => setDrawerOpen(false)} className="w-11 h-11 rounded-xl bg-foreground/[0.05] flex items-center justify-center text-muted-foreground">
                 <X size={18} />
               </button>
             </div>
@@ -467,13 +465,13 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
               <div className="flex items-center justify-between px-3 py-2">
                 <span className="text-[12px] text-muted-foreground">{isRTL ? 'اللغة' : 'Language'}</span>
                 <div className="flex items-center gap-1 p-0.5 rounded-full bg-foreground/[0.04]">
-                  <button onClick={() => setLang('en')} className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>EN</button>
-                  <button onClick={() => setLang('ar')} className={`px-2.5 py-0.5 rounded-full text-[11px] font-medium transition-all ${lang === 'ar' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>AR</button>
+                  <button onClick={() => setLang('en')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>EN</button>
+                  <button onClick={() => setLang('ar')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'ar' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>AR</button>
                 </div>
               </div>
               <div className="flex items-center justify-between px-3 py-2">
                 <span className="text-[12px] text-muted-foreground">{isRTL ? 'الوضع' : 'Theme'}</span>
-                <button onClick={toggleMode} className="w-8 h-8 rounded-lg bg-foreground/[0.05] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                <button onClick={toggleMode} className="w-11 h-11 rounded-xl bg-foreground/[0.05] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
                   {mode === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
                 </button>
               </div>

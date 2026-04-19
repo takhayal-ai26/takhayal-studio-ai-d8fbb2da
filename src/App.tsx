@@ -66,31 +66,33 @@ const RoutedApp = () => {
 
   return (
     <AppThemeProvider>
-      <Routes key={lang}>
-        <Route element={<AppLayout />}>
-          <Route path="/" element={<Suspense fallback={<PageSkeleton />}><PortalHome /></Suspense>} />
-          <Route path="/home" element={<Navigate to="/" replace />} />
-          <Route path="/studio" element={<Suspense fallback={<StudioSkeleton />}><Canvas /></Suspense>} />
-          <Route path="/image" element={<Suspense fallback={<PageSkeleton />}><ToolsDirectory /></Suspense>} />
-          <Route path="/video" element={<Suspense fallback={<StudioSkeleton />}><Video /></Suspense>} />
-          <Route path="/generate/result" element={<Suspense fallback={<PageSkeleton />}><GenerateResult /></Suspense>} />
-          <Route path="/pricing" element={<Suspense fallback={<PageSkeleton />}><Pricing /></Suspense>} />
-          <Route path="/tools" element={<Suspense fallback={<PageSkeleton />}><ToolsDirectory /></Suspense>} />
-          <Route path="/create" element={<Suspense fallback={<PageSkeleton />}><CreateHub /></Suspense>} />
-          <Route path="/gallery" element={<Suspense fallback={<PageSkeleton />}><Gallery /></Suspense>} />
-          <Route path="/tools/:toolId" element={<Suspense fallback={<PageSkeleton />}><ToolPageRouter /></Suspense>} />
-          <Route path="/community" element={<Suspense fallback={<PageSkeleton />}><Community /></Suspense>} />
-          <Route path="/templates" element={<Suspense fallback={<PageSkeleton />}><Templates /></Suspense>} />
-          <Route path="/templates/:id" element={<Suspense fallback={<PageSkeleton />}><TemplateDetail /></Suspense>} />
-          <Route path="/about" element={<Suspense fallback={<PageSkeleton />}><About /></Suspense>} />
-          <Route path="/models" element={<Suspense fallback={<PageSkeleton />}><ModelsDirectory /></Suspense>} />
-          <Route path="/models/:slug" element={<Suspense fallback={<PageSkeleton />}><ModelDetail /></Suspense>} />
-          <Route path="/contact" element={<Suspense fallback={<PageSkeleton />}><Contact /></Suspense>} />
-          <Route path="/terms" element={<Suspense fallback={<PageSkeleton />}><LegalPage /></Suspense>} />
-          <Route path="/privacy" element={<Suspense fallback={<PageSkeleton />}><LegalPage /></Suspense>} />
-          <Route path="/checkout" element={<ProtectedRoute><Suspense fallback={<PageSkeleton />}><Checkout /></Suspense></ProtectedRoute>} />
-          <Route path="/checkout/success" element={<ProtectedRoute><Suspense fallback={<PageSkeleton />}><CheckoutSuccess /></Suspense></ProtectedRoute>} />
-        </Route>
+      <Suspense fallback={<PageSkeleton />}>
+        <Routes key={lang}>
+          <Route element={<AppLayout />}>
+            <Route path="/" element={<PortalHome />} />
+            <Route path="/home" element={<Navigate to="/" replace />} />
+            <Route path="/studio" element={<Suspense fallback={<StudioSkeleton />}><Canvas /></Suspense>} />
+            <Route path="/image" element={<ToolsDirectory />} />
+            <Route path="/video" element={<Suspense fallback={<StudioSkeleton />}><Video /></Suspense>} />
+            <Route path="/generate/result" element={<GenerateResult />} />
+            <Route path="/pricing" element={<Pricing />} />
+            <Route path="/tools" element={<ToolsDirectory />} />
+            <Route path="/create" element={<CreateHub />} />
+            <Route path="/gallery" element={<Gallery />} />
+            <Route path="/tools/:toolId" element={<ToolPageRouter />} />
+            <Route path="/community" element={<Community />} />
+            <Route path="/templates" element={<Templates />} />
+            <Route path="/templates/:id" element={<TemplateDetail />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/models" element={<ModelsDirectory />} />
+            <Route path="/models/:slug" element={<ModelDetail />} />
+            <Route path="/contact" element={<Contact />} />
+            <Route path="/terms" element={<LegalPage />} />
+            <Route path="/privacy" element={<LegalPage />} />
+            <Route path="/refund" element={<LegalPage />} />
+            <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+            <Route path="/checkout/success" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
+          </Route>
 
         <Route path="/share/:publicId" element={<Suspense fallback={<PageSkeleton />}><SharePage /></Suspense>} />
         <Route path="/auth/callback" element={<Suspense fallback={<PageSkeleton />}><AuthCallback /></Suspense>} />
@@ -122,25 +124,29 @@ const RoutedApp = () => {
         <Route path="/admin/support" element={<Navigate to="/admin/settings" replace />} />
         <Route path="/admin/integrations" element={<Navigate to="/admin/settings" replace />} />
 
-        <Route path="/users" element={<Navigate to="/admin/users" replace />} />
-        <Route path="/billing" element={<Navigate to="/admin/users" replace />} />
-        <Route path="/pricing-economics" element={<Navigate to="/admin/pricing" replace />} />
-        <Route path="/models" element={<Navigate to="/admin/models" replace />} />
-        <Route path="/content" element={<Navigate to="/admin/content" replace />} />
-        <Route path="/media" element={<Navigate to="/admin/content" replace />} />
-        <Route path="/analytics" element={<Navigate to="/admin/analytics" replace />} />
-        <Route path="/support" element={<Navigate to="/admin/settings" replace />} />
-        <Route path="/notifications" element={<Navigate to="/admin/settings" replace />} />
-        <Route path="/integrations" element={<Navigate to="/admin/settings" replace />} />
-        <Route path="/roles" element={<Navigate to="/admin/settings" replace />} />
-        <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
-        <Route path="/translations" element={<Navigate to="/admin/settings" replace />} />
-        <Route path="/dashboard/admin" element={<Navigate to="/admin" replace />} />
-        <Route path="/admin-panel" element={<Navigate to="/admin" replace />} />
-        <Route path="/internal/*" element={<Navigate to="/admin" replace />} />
+          <Route path="/users" element={<Navigate to="/admin/users" replace />} />
+          <Route path="/billing" element={<Navigate to="/admin/users" replace />} />
+          <Route path="/pricing-economics" element={<Navigate to="/admin/pricing" replace />} />
+          <Route path="/models" element={<Navigate to="/admin/models" replace />} />
+          <Route path="/content" element={<Navigate to="/admin/content" replace />} />
+          <Route path="/media" element={<Navigate to="/admin/content" replace />} />
+          <Route path="/analytics" element={<Navigate to="/admin/analytics" replace />} />
+          <Route path="/support" element={<Navigate to="/admin/settings" replace />} />
+          <Route path="/notifications" element={<Navigate to="/admin/settings" replace />} />
+          <Route path="/integrations" element={<Navigate to="/admin/settings" replace />} />
+          <Route path="/roles" element={<Navigate to="/admin/settings" replace />} />
+          <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
+          <Route path="/translations" element={<Navigate to="/admin/settings" replace />} />
+          <Route path="/dashboard/admin" element={<Navigate to="/admin" replace />} />
+          <Route path="/admin-panel" element={<Navigate to="/admin" replace />} />
+          <Route path="/internal/*" element={<Navigate to="/admin" replace />} />
+          <Route path="/legal/privacy" element={<Navigate to="/privacy" replace />} />
+          <Route path="/legal/terms" element={<Navigate to="/terms" replace />} />
+          <Route path="/legal/refund" element={<Navigate to="/refund" replace />} />
 
         <Route path="*" element={<Suspense fallback={<PageSkeleton />}><NotFound /></Suspense>} />
       </Routes>
+      </Suspense>
     </AppThemeProvider>
   );
 };

@@ -5,6 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { LogoMark } from '@/components/Logo';
 import { ArrowLeft } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
+import { PageSeo } from '@/components/seo/PageSeo';
 
 const TITLES: Record<string, { en: string; ar: string }> = {
   terms: { en: 'Terms & Conditions', ar: 'الشروط والأحكام' },
@@ -19,6 +20,7 @@ export default function LegalPage() {
   const isAr = lang === 'ar';
   const [content, setContent] = useState('');
   const [lastUpdated, setLastUpdated] = useState('');
+  const [lastUpdatedIso, setLastUpdatedIso] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -33,6 +35,7 @@ export default function LegalPage() {
         if (data) {
           const text = isAr && data.content_ar ? data.content_ar : data.content_en;
           setContent(text);
+          setLastUpdatedIso(data.last_updated || '');
           setLastUpdated(formatDate(data.last_updated, isAr));
         }
         setLoading(false);
@@ -40,9 +43,28 @@ export default function LegalPage() {
   }, [type, isAr]);
 
   const title = TITLES[type || ''] || TITLES.terms;
+  const seoTitle = `${isAr ? title.ar : title.en} | Takhayal.ai`;
+  const seoDescription = isAr
+    ? `اقرأ ${title.ar} الخاصة بمنصة تخيّل.`
+    : `Read the Takhayal.ai ${title.en.toLowerCase()}.`;
 
   return (
     <div className="min-h-screen bg-background">
+      <PageSeo
+        title={seoTitle}
+        description={seoDescription}
+        canonicalPath={`/${type || 'terms'}`}
+        pageType="WebPage"
+        schemas={[
+          {
+            '@context': 'https://schema.org',
+            '@type': 'WebPage',
+            name: seoTitle,
+            url: `https://takhayal.ai/${type || 'terms'}`,
+            dateModified: lastUpdatedIso || undefined,
+          },
+        ]}
+      />
       {/* Simple nav */}
       <nav className="h-14 border-b border-border flex items-center px-6 sticky top-0 bg-background/95 backdrop-blur-sm z-50">
         <Link to="/" className="flex items-center gap-2">

@@ -69,13 +69,13 @@ export function PricingPreview() {
         <div className="flex items-center gap-1 p-0.5 rounded-full bg-muted/60">
           <button
             onClick={() => setBillingPeriod('monthly')}
-            className={`px-4 py-1.5 rounded-full text-[12px] font-medium transition-all ${billingPeriod === 'monthly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`min-h-11 px-4 py-2 rounded-full text-[12px] font-medium transition-all ${billingPeriod === 'monthly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
           >
             {isAr ? 'شهري' : 'Monthly'}
           </button>
           <button
             onClick={() => setBillingPeriod('annual')}
-            className={`px-4 py-1.5 rounded-full text-[12px] font-medium transition-all flex items-center gap-1.5 ${billingPeriod === 'annual' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+            className={`min-h-11 px-4 py-2 rounded-full text-[12px] font-medium transition-all flex items-center gap-1.5 ${billingPeriod === 'annual' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
           >
             {isAr ? 'سنوي' : 'Annual'}
             {plans.some(p => p.annual_discount_percent > 0) && (
@@ -139,7 +139,7 @@ export function PricingPreview() {
               {/* CTA */}
               <button
                 onClick={() => navigate('/pricing')}
-                className={`w-full h-10 rounded-xl text-[13px] font-semibold transition-all duration-200 ${
+                className={`w-full h-11 rounded-xl text-[13px] font-semibold transition-all duration-200 ${
                   plan.featured
                     ? 'bg-primary text-primary-foreground hover:brightness-110'
                     : 'bg-muted/60 text-foreground hover:bg-muted'
@@ -156,7 +156,7 @@ export function PricingPreview() {
       <div className="text-center mt-6">
         <button
           onClick={() => navigate('/pricing')}
-          className="inline-flex items-center gap-2 text-[13px] text-primary font-medium hover:underline group"
+          className="inline-flex min-h-11 items-center gap-2 px-3 text-[13px] text-primary font-medium hover:underline group"
         >
           {isAr ? 'عرض جميع الخطط' : 'View all plans'}
           <ArrowRight size={14} className={`group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />

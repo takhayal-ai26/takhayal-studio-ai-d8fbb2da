@@ -80,6 +80,7 @@ export function TestimonialsCarousel() {
             <button
               key={i}
               onClick={() => setActiveIdx(i)}
+              aria-label={isAr ? `عرض الشهادة ${i + 1}` : `Show testimonial ${i + 1}`}
               className={`w-2 h-2 rounded-full transition-all duration-300 ${i === activeIdx ? 'bg-primary w-5' : 'bg-foreground/15 hover:bg-foreground/25'}`}
             />
           ))}

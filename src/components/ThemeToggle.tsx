@@ -15,7 +15,7 @@ export function ThemeToggle() {
   return (
     <button
       onClick={handleClick}
-      className="w-9 h-9 rounded-lg bg-transparent flex items-center justify-center hover:bg-foreground/[0.06] transition-all duration-150"
+      className="w-11 h-11 rounded-xl bg-transparent flex items-center justify-center hover:bg-foreground/[0.06] transition-all duration-150"
       aria-label={mode === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
     >
       {mode === 'dark' ? (

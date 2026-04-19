@@ -1,8 +1,8 @@
-import generateImg from '@/assets/tools/generate.jpg';
-import upscaleImg from '@/assets/tools/upscale.jpg';
-import logoImg from '@/assets/tools/logo.jpg';
-import removeBgImg from '@/assets/tools/remove-bg.jpg';
-import enhanceImg from '@/assets/tools/enhance.jpg';
+import generateImg from '@/assets/tools/generate-520.avif';
+import upscaleImg from '@/assets/tools/upscale-520.avif';
+import logoImg from '@/assets/tools/logo-520.avif';
+import removeBgImg from '@/assets/tools/remove-bg-520.avif';
+import enhanceImg from '@/assets/tools/enhance-520.avif';
 import { Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2, type LucideIcon } from 'lucide-react';
 
 export interface ToolDef {

@@ -6,6 +6,7 @@ import {
   Star, Clock, MapPin, Layers, Paintbrush, Zap, Target,
 } from 'lucide-react';
 import { useEffect, useRef, useState } from 'react';
+import { PageSeo } from '@/components/seo/PageSeo';
 
 /* ── scroll-reveal hook (same as landing) ── */
 function useReveal() {
@@ -103,21 +104,25 @@ export default function About() {
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
+      <PageSeo
+        title={isAr ? 'من نحن | تخيّل' : 'About | Takhayal.ai'}
+        description={isAr
+          ? 'تعرّف على قصة تخيّل ورسالتها لبناء استوديو ذكاء اصطناعي عربي أولاً للمبدعين في الخليج.'
+          : 'Learn about Takhayal, the Arabic-first AI creative studio built for creators and brands across the Gulf.'}
+        canonicalPath="/about"
+        pageType="AboutPage"
+      />
 
       {/* ━━━ HERO ━━━ */}
       <section className="relative flex flex-col items-center justify-center text-center px-6 pt-32 pb-24 md:pt-44 md:pb-32 overflow-hidden">
-        {/* Animated background — same as landing */}
+        {/* Quiet studio backdrop */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          <div className="absolute inset-0 opacity-[0.10]"
-            style={{ background: 'radial-gradient(ellipse 80% 50% at 30% 60%, hsl(var(--primary) / 0.6), transparent), radial-gradient(ellipse 60% 40% at 70% 40%, hsl(var(--primary) / 0.4), transparent)', filter: 'blur(90px)' }}
+          <div className="absolute inset-0 opacity-[0.06]"
+            style={{ background: 'radial-gradient(ellipse 72% 46% at 30% 62%, hsl(var(--primary) / 0.22), transparent), radial-gradient(ellipse 56% 34% at 70% 38%, hsl(var(--primary) / 0.12), transparent)', filter: 'blur(96px)' }}
           />
-          <div className="absolute top-[45%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[600px] h-[400px] rounded-full"
-            style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.25) 0%, transparent 70%)', filter: 'blur(120px)' }}
+          <div className="absolute top-[45%] left-[50%] -translate-x-1/2 -translate-y-1/2 w-[560px] h-[360px] rounded-full"
+            style={{ background: 'radial-gradient(circle, hsl(var(--primary) / 0.12) 0%, transparent 72%)', filter: 'blur(120px)' }}
           />
-        </div>
-        {/* Grid overlay */}
-        <div className="absolute inset-0 pointer-events-none overflow-hidden opacity-[0.03]">
-          <div className="absolute inset-0" style={{ backgroundImage: 'linear-gradient(hsl(var(--foreground)) 1px, transparent 1px), linear-gradient(90deg, hsl(var(--foreground)) 1px, transparent 1px)', backgroundSize: '80px 80px' }} />
         </div>
 
         {/* Back + Logo */}
@@ -140,14 +145,14 @@ export default function About() {
         <h1 className="relative typo-display-hero max-w-[800px] animate-fade-in" style={{ animationDelay: '100ms' }}>
           {isAr ? 'صُمم لمبدعي' : 'Built for the'}{' '}
           <br className="hidden md:block" />
-          <span className="bg-gradient-to-r from-primary to-primary/60 bg-clip-text text-transparent font-light">
+          <span className="text-primary font-light">
             {isAr ? 'الخليج' : 'Gulf creator.'}
           </span>
         </h1>
         <p className="relative text-base md:text-lg font-light text-muted-foreground mt-6 max-w-xl animate-fade-in leading-relaxed" style={{ animationDelay: '200ms' }}>
           {isAr
-            ? 'تخيّل هو استوديو الذكاء الاصطناعي العربي أولاً الذي يحوّل رؤيتك الإبداعية إلى مرئيات جاهزة للإنتاج — في ثوانٍ، بلغتك، لثقافتك.'
-            : 'Takhayal is the Arabic-first AI image studio that turns your creative vision into production-ready visuals — in seconds, in your language, for your culture.'}
+            ? 'تخيّل هو استوديو الذكاء الاصطناعي العربي أولاً الذي يحوّل رؤيتك الإبداعية إلى صور ومقاطع فيديو احترافية في ثوانٍ.'
+            : 'Takhayal is the Arabic-first AI creative studio transforming your vision into professional images and videos in seconds.'}
         </p>
       </section>
 
@@ -157,10 +162,10 @@ export default function About() {
           <div className="max-w-5xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-3 md:gap-4">
             {stats.map((s, i) => (
               <Reveal key={s.value + i} delay={i * 80}>
-                <div className="group relative bg-card/50 border border-border/40 rounded-2xl p-6 text-center hover:border-primary/30 transition-all duration-500">
-                  <div className="absolute inset-0 rounded-2xl bg-primary/[0.03] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <div className="group relative bg-card/65 border border-border/50 rounded-2xl p-6 text-center hover:border-primary/20 transition-all duration-500">
+                  <div className="absolute inset-0 rounded-2xl bg-primary/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   <div className="relative">
-                    <div className="w-10 h-10 rounded-xl bg-primary/[0.1] border border-primary/15 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/[0.15] group-hover:shadow-[0_0_20px_rgba(245,81,48,0.1)] transition-all duration-500">
+                    <div className="w-10 h-10 rounded-xl bg-primary/[0.08] border border-primary/12 flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/[0.12] transition-all duration-500">
                       <s.icon size={18} className="text-primary" strokeWidth={1.5} />
                     </div>
                     <div className="text-3xl md:text-4xl font-light text-primary mb-1">{s.value}</div>
@@ -213,10 +218,10 @@ export default function About() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {values.map((v, i) => (
                 <Reveal key={v.title} delay={i * 100}>
-                  <div className="group relative bg-card/40 border border-border/40 rounded-2xl p-7 hover:border-primary/25 hover:bg-card/60 transition-all duration-500 h-full">
-                    <div className="absolute inset-0 rounded-2xl bg-primary/[0.02] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                  <div className="group relative bg-card/58 border border-border/45 rounded-2xl p-7 hover:border-primary/18 hover:bg-card/72 transition-all duration-500 h-full">
+                    <div className="absolute inset-0 rounded-2xl bg-primary/[0.015] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                     <div className="relative">
-                      <div className="w-11 h-11 rounded-xl bg-primary/[0.1] border border-primary/15 flex items-center justify-center mb-5 group-hover:bg-primary/[0.18] group-hover:shadow-[0_0_24px_rgba(245,81,48,0.12)] transition-all duration-500">
+                      <div className="w-11 h-11 rounded-xl bg-primary/[0.08] border border-primary/12 flex items-center justify-center mb-5 group-hover:bg-primary/[0.14] transition-all duration-500">
                         <v.icon size={20} className="text-primary" strokeWidth={1.5} />
                       </div>
                       <h3 className="text-base font-medium text-foreground mb-2">{v.title}</h3>
@@ -254,8 +259,8 @@ export default function About() {
                   <Reveal key={item.title} delay={i * 150}>
                     <div className={`relative flex items-start gap-6 md:gap-8 ${isRTL ? 'flex-row-reverse' : ''}`}>
                       {/* Dot */}
-                      <div className="relative z-10 w-10 h-10 md:w-16 md:h-16 rounded-2xl bg-card border border-border/60 flex items-center justify-center shrink-0 group-hover:border-primary/40 transition-colors">
-                        <div className="absolute inset-0 rounded-2xl bg-primary/[0.06]" />
+                      <div className="relative z-10 w-10 h-10 md:w-16 md:h-16 rounded-2xl bg-card border border-border/60 flex items-center justify-center shrink-0 group-hover:border-primary/25 transition-colors">
+                        <div className="absolute inset-0 rounded-2xl bg-primary/[0.04]" />
                         <item.icon size={20} className="text-primary relative" strokeWidth={1.5} />
                       </div>
                       {/* Content */}
@@ -308,13 +313,12 @@ export default function About() {
       <section className="relative px-6 md:px-12 pb-24 md:pb-32">
         <Reveal>
           <div className="relative max-w-4xl mx-auto text-center py-16 md:py-20">
-            {/* Glow */}
             <div className="absolute inset-0 pointer-events-none">
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[400px] h-[250px] bg-primary/[0.08] rounded-full blur-[100px]" />
+              <div className="absolute inset-x-12 inset-y-8 rounded-[32px] bg-primary/[0.03]" />
             </div>
-            <div className="absolute inset-0 rounded-3xl border border-border/30 bg-card/20" />
+            <div className="absolute inset-0 rounded-3xl border border-border/40 bg-card/40" />
             <div className="relative">
-              <Sparkles size={24} className="text-primary mx-auto mb-6 opacity-60" />
+              <Sparkles size={22} className="text-primary mx-auto mb-6 opacity-45" />
               <h2 className="typo-heading-section mb-4">
                 {isAr ? 'مستعد لإنشاء شيء مذهل؟' : 'Ready to create something?'}
               </h2>
@@ -325,7 +329,7 @@ export default function About() {
               </p>
               <button
                 onClick={() => navigate('/home')}
-                className="group h-14 px-10 rounded-full bg-primary text-primary-foreground text-base font-medium hover:brightness-110 transition-all duration-300 hover:shadow-[0_0_40px_rgba(245,81,48,0.35)] hover:scale-[1.02]"
+                className="group h-14 px-10 rounded-full bg-primary text-primary-foreground text-base font-medium transition-all duration-300 hover:brightness-95 hover:-translate-y-0.5"
               >
                 {isAr ? 'ابدأ الإنشاء مجاناً' : 'Start creating free'}
                 <ArrowRight size={16} className={`inline ${isRTL ? 'mr-2 rotate-180' : 'ml-2'} group-hover:translate-x-1 transition-transform`} />
