@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Upload, X, Coins, Maximize, Image as ImageIcon, Wand2, ChevronRight, Plus, Loader2, Sparkles } from 'lucide-react';
+import { X, Coins, Maximize, Image as ImageIcon, Wand2, ChevronRight, Plus, Loader2, Sparkles } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useApp } from '@/context/AppContext';
@@ -9,9 +9,9 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { useGenerationJobs } from '@/hooks/useGenerationJobs';
 import { useModels } from '@/hooks/useModels';
 import { usePricingTiers } from '@/hooks/usePricingTiers';
+import { useToolsDB } from '@/hooks/useToolsDB';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { supabase } from '@/integrations/supabase/client';
-import { cn } from '@/lib/utils';
 
 import { SizeDropdown } from '@/components/layout/dropdowns/SizeDropdown';
 import { ResolutionDropdown } from '@/components/layout/dropdowns/ResolutionDropdown';
@@ -21,6 +21,7 @@ import { BackToImageTools } from '@/components/tools/BackToImageTools';
 const MAX_SLOTS = 14;
 const MAX_BYTES = 10 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
+const FALLBACK_COVER = '/placeholder.svg';
 
 type OpenDropdown = 'size' | 'resolution' | null;
 
