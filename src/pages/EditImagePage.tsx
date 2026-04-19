@@ -422,64 +422,39 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate, uploaded, setUplo
   );
 }
 
-// ───────────────────────────────────────────── Right panel — pure image zone ─────────────────────────────────────────────
+// ───────────────────────────────────────────── Right panel — cover / preview ─────────────────────────────────────────────
 
-interface ImageZoneProps {
+interface CoverPanelProps {
+  coverUrl: string;
   uploaded: UploadedImage[];
   resultUrl: string | null;
-  onPickFile: (file: File) => void;
   isAr: boolean;
 }
 
-function ImageZone({ uploaded, resultUrl, onPickFile, isAr }: ImageZoneProps) {
-  const inputRef = useRef<HTMLInputElement>(null);
-  const [dragOver, setDragOver] = useState(false);
-
-  const displayUrl = resultUrl || uploaded[0]?.preview || null;
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setDragOver(false);
-    const file = e.dataTransfer.files?.[0];
-    if (file) onPickFile(file);
-  };
-
-  if (displayUrl) {
-    return (
-      <div className="w-full h-full rounded-2xl overflow-hidden bg-black/40">
-        <img src={displayUrl} alt="" className="w-full h-full object-cover" />
-      </div>
-    );
-  }
+function CoverPanel({ coverUrl, uploaded, resultUrl, isAr }: CoverPanelProps) {
+  // Priority: result > first uploaded preview > tool cover image
+  const displayUrl = resultUrl || uploaded[0]?.preview || coverUrl || FALLBACK_COVER;
+  const isCover = !resultUrl && !uploaded[0];
 
   return (
-    <button
-      type="button"
-      onClick={() => inputRef.current?.click()}
-      onDragOver={(e) => { e.preventDefault(); setDragOver(true); }}
-      onDragLeave={() => setDragOver(false)}
-      onDrop={handleDrop}
-      className={cn(
-        'w-full h-full rounded-2xl border-2 border-dashed flex items-center justify-center transition-colors',
-        dragOver
-          ? 'border-primary bg-primary/[0.04]'
-          : 'border-foreground/15 bg-foreground/[0.015] hover:border-primary/40 hover:bg-primary/[0.02]',
-      )}
-      aria-label={isAr ? 'رفع صورة' : 'Upload image'}
-    >
-      <input
-        ref={inputRef}
-        type="file"
-        accept="image/jpeg,image/png,image/webp"
-        className="hidden"
-        onChange={(e) => {
-          const file = e.target.files?.[0];
-          if (file) onPickFile(file);
-          e.target.value = '';
-        }}
+    <div className="w-full h-full rounded-2xl overflow-hidden bg-black/40 relative">
+      <img
+        src={displayUrl}
+        alt={isAr ? 'تعديل الصورة' : 'Edit Image'}
+        className="w-full h-full object-cover"
       />
-      <Upload size={36} className="text-foreground/30" strokeWidth={1.5} />
-    </button>
+      {isCover && (
+        <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none">
+          <div className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-primary/15 backdrop-blur-md text-primary text-[10px] font-bold uppercase tracking-wider mb-2 border border-primary/20">
+            <Wand2 size={10} />
+            {isAr ? 'تعديل الصورة' : 'Edit Image'}
+          </div>
+          <p className="text-white text-xl font-bold drop-shadow-lg">
+            {isAr ? 'مدعوم بـ Nano Banana 2' : 'Powered by Nano Banana 2'}
+          </p>
+        </div>
+      )}
+    </div>
   );
 }
 
