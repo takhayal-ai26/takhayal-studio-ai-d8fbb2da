@@ -3,6 +3,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { useToolsDB } from '@/hooks/useToolsDB';
 import { useApp } from '@/context/AppContext';
+import { cn } from '@/lib/utils';
 import { PageSeo, absoluteUrl } from '@/components/seo/PageSeo';
 
 export default function ToolsDirectory() {
