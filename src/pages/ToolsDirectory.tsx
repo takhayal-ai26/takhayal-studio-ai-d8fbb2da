@@ -1,10 +1,8 @@
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { useState } from 'react';
-import { Search, ArrowRight, ArrowLeft } from 'lucide-react';
+import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { useToolsDB } from '@/hooks/useToolsDB';
 import { useApp } from '@/context/AppContext';
-import { cn } from '@/lib/utils';
 import { PageSeo, absoluteUrl } from '@/components/seo/PageSeo';
 
 export default function ToolsDirectory() {
@@ -12,11 +10,8 @@ export default function ToolsDirectory() {
   const { t, isRTL } = useLanguage();
   const { tools } = useToolsDB();
   const { setActivePage } = useApp();
-  const [search, setSearch] = useState('');
 
-  const filtered = tools
-    .filter(t => !search || t.name.toLowerCase().includes(search.toLowerCase()) || t.shortDesc.toLowerCase().includes(search.toLowerCase()))
-    .sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+  const filtered = [...tools].sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
   const seoTitle = t.toolsDir.findNewWays;
   const seoDescription = isRTL
     ? 'استكشف أدوات تخيّل للصور والفيديو والتصميم والتحرير بالذكاء الاصطناعي.'
