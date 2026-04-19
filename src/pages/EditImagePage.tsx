@@ -464,42 +464,14 @@ export default function EditImagePage() {
   const { lang, isRTL } = useLanguage();
   const isAr = lang === 'ar';
   const isMobile = useIsMobile();
-  const { user } = useAuth();
-  const { openAuthModal } = useApp();
+  const { tools } = useToolsDB();
 
   const [uploaded, setUploaded] = useState<UploadedImage[]>([]);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
 
-  // Upload from the right-panel zone
-  const handleZonePick = useCallback(async (file: File) => {
-    if (!user) { openAuthModal('signup'); return; }
-    if (!ALLOWED_TYPES.includes(file.type)) {
-      toast.error(isAr ? 'نوع الملف غير مدعوم' : 'Unsupported file type');
-      return;
-    }
-    if (file.size > MAX_BYTES) {
-      toast.error(isAr ? 'حجم الملف يتجاوز 10 ميغابايت' : 'File exceeds 10MB');
-      return;
-    }
-    const preview = URL.createObjectURL(file);
-    setUploaded(prev => [...prev, { preview, url: null }]);
-
-    try {
-      const ext = file.name.split('.').pop() || 'png';
-      const path = `${user.id}/edit-${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-      const { error: upErr } = await supabase.storage
-        .from('tool-files')
-        .upload(path, file, { contentType: file.type, upsert: true });
-      if (upErr) throw upErr;
-      const { data: urlData } = supabase.storage.from('tool-files').getPublicUrl(path);
-      setUploaded(prev => prev.map(img => img.preview === preview ? { ...img, url: urlData.publicUrl } : img));
-    } catch (err) {
-      console.error('Upload failed:', err);
-      setUploaded(prev => prev.filter(img => img.preview !== preview));
-      toast.error(isAr ? 'فشل الرفع' : 'Upload failed');
-    }
-  }, [user, openAuthModal, isAr]);
+  const tool = tools.find(t => t.slug === 'edit-image');
+  const coverUrl = tool?.image || FALLBACK_COVER;
 
   return (
     <>
@@ -519,14 +491,14 @@ export default function EditImagePage() {
             />
           )}
 
-          {/* Right side: pure image zone */}
+          {/* Right side: cover image / preview */}
           <div className="flex-1 flex flex-col overflow-hidden p-4 sm:p-6">
             {isMobile && <BackToImageTools className="mb-3" />}
             <div className="flex-1 min-h-0">
-              <ImageZone
+              <CoverPanel
+                coverUrl={coverUrl}
                 uploaded={uploaded}
                 resultUrl={resultUrl}
-                onPickFile={handleZonePick}
                 isAr={isAr}
               />
             </div>
