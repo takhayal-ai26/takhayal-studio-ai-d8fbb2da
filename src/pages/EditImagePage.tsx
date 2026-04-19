@@ -473,68 +473,49 @@ export default function EditImagePage() {
   const tool = tools.find(t => t.slug === 'edit-image');
   const coverUrl = tool?.image || FALLBACK_COVER;
 
-  return (
-    <>
+  // Mobile: render the creation panel directly, no cover/preview intro
+  if (isMobile) {
+    return (
       <div
         className="flex flex-1 min-h-0 overflow-visible"
         style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}
         dir={isRTL ? 'rtl' : 'ltr'}
       >
-        <div className="flex flex-1 min-h-0 relative overflow-visible">
-          {/* Desktop left panel */}
-          {!isMobile && (
-            <EditControlsPanel
-              uploaded={uploaded}
-              setUploaded={setUploaded}
-              resultUrl={resultUrl}
-              setResultUrl={setResultUrl}
-            />
-          )}
+        <EditControlsPanel
+          inSheet
+          uploaded={uploaded}
+          setUploaded={setUploaded}
+          resultUrl={resultUrl}
+          setResultUrl={setResultUrl}
+        />
+      </div>
+    );
+  }
 
-          {/* Right side: cover image / preview */}
-          <div className="flex-1 flex flex-col overflow-hidden p-4 sm:p-6">
-            {isMobile && <BackToImageTools className="mb-3" />}
-            <div className="flex-1 min-h-0">
-              <CoverPanel
-                coverUrl={coverUrl}
-                uploaded={uploaded}
-                resultUrl={resultUrl}
-                isAr={isAr}
-              />
-            </div>
+  return (
+    <div
+      className="flex flex-1 min-h-0 overflow-visible"
+      style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}
+      dir={isRTL ? 'rtl' : 'ltr'}
+    >
+      <div className="flex flex-1 min-h-0 relative overflow-visible">
+        <EditControlsPanel
+          uploaded={uploaded}
+          setUploaded={setUploaded}
+          resultUrl={resultUrl}
+          setResultUrl={setResultUrl}
+        />
+        <div className="flex-1 flex flex-col overflow-hidden p-4 sm:p-6">
+          <div className="flex-1 min-h-0">
+            <CoverPanel
+              coverUrl={coverUrl}
+              uploaded={uploaded}
+              resultUrl={resultUrl}
+              isAr={isAr}
+            />
           </div>
         </div>
       </div>
-
-      {/* Mobile floating CTA */}
-      {isMobile && (
-        <button
-          onClick={() => setMobileSheetOpen(true)}
-          className="fixed bottom-20 inset-x-4 z-40 h-14 rounded-2xl bg-primary text-primary-foreground font-semibold text-[14px] flex items-center justify-center gap-2 shadow-[0_12px_32px_-8px] shadow-primary/40 active:scale-[0.98] transition-transform"
-        >
-          <Wand2 size={16} />
-          {isAr ? 'ابدأ التعديل' : 'Start Editing'}
-        </button>
-      )}
-
-      {/* Mobile bottom sheet with full controls */}
-      {isMobile && mobileSheetOpen && (
-        <MobileBottomSheet
-          title={isAr ? 'تعديل الصورة' : 'Edit Image'}
-          open={mobileSheetOpen}
-          onClose={() => setMobileSheetOpen(false)}
-          maxHeight="92vh"
-        >
-          <EditControlsPanel
-            inSheet
-            onAfterGenerate={() => setMobileSheetOpen(false)}
-            uploaded={uploaded}
-            setUploaded={setUploaded}
-            resultUrl={resultUrl}
-            setResultUrl={setResultUrl}
-          />
-        </MobileBottomSheet>
-      )}
-    </>
+    </div>
   );
 }
