@@ -468,7 +468,7 @@ export default function EditImagePage() {
 
   const [uploaded, setUploaded] = useState<UploadedImage[]>([]);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
-  const [mobileSheetOpen, setMobileSheetOpen] = useState(false);
+  
 
   const tool = tools.find(t => t.slug === 'edit-image');
   const coverUrl = tool?.image || FALLBACK_COVER;
