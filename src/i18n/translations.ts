@@ -164,6 +164,7 @@ export const translations = {
       allTools: 'All Tools',
       backToImageTools: 'Back to Image Tools',
       openTool: 'Open tool',
+      previewLabel: 'Preview',
     },
     // Studio / Creation Panel
     studio: {
@@ -523,6 +524,7 @@ export const translations = {
       allTools: 'جميع الأدوات',
       backToImageTools: 'العودة إلى أدوات الصور',
       openTool: 'افتح الأداة',
+      previewLabel: 'معاينة',
     },
     studio: {
       prompt: 'الأمر',

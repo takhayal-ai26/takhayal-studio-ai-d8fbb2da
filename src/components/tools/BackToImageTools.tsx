@@ -19,7 +19,7 @@ export function BackToImageTools({ className }: BackToImageToolsProps) {
   return (
     <button
       type="button"
-      onClick={() => navigate('/tools')}
+      onClick={() => navigate('/image')}
       aria-label={t.toolPage.backToImageTools}
       className={cn(
         'group inline-flex items-center gap-2 h-9 ps-2 pe-3.5 -ms-2 mb-6 rounded-full',

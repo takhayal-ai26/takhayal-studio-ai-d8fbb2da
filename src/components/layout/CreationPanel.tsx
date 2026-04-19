@@ -13,6 +13,7 @@ import { SizeDropdown } from './dropdowns/SizeDropdown';
 import { ResolutionDropdown } from './dropdowns/ResolutionDropdown';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
+import { BackToImageTools } from '@/components/tools/BackToImageTools';
 
 const CREDIT_VALUE = CREDIT_VALUE_USD;
 type OpenDropdown = 'model' | 'size' | 'resolution' | null;
@@ -189,6 +190,8 @@ export function CreationPanel() {
   return (
     <aside ref={panelRef} className="w-full md:w-[380px] xl:w-[420px] flex flex-col bg-background flex-shrink-0 overflow-visible relative z-30">
       <div className="flex-1 overflow-y-auto overflow-x-visible p-4 space-y-2 scrollbar-thin">
+        {/* Back to Image Tools — keeps Generate Image consistent with all other tool pages */}
+        <BackToImageTools className="mb-2" />
         {/* Prompt */}
         <div className="rounded-2xl bg-card/50 p-4 border border-border/30 hover:border-border/50 transition-colors">
           <div className="flex items-center justify-between mb-3">
