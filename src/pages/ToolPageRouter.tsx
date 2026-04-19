@@ -5,6 +5,7 @@ import { Loader2 } from 'lucide-react';
 
 const StandardToolPage = lazy(() => import('./ToolPage'));
 const GuidedToolPage = lazy(() => import('./GuidedToolPage'));
+const EditImagePage = lazy(() => import('./EditImagePage'));
 
 export default function ToolPageRouter() {
   const { toolId } = useParams();
@@ -15,7 +16,10 @@ export default function ToolPageRouter() {
     return <div className="flex items-center justify-center h-screen"><Loader2 className="animate-spin text-primary" size={24} /></div>;
   }
 
-  const Component = tool?.toolMode === 'guided_image' ? GuidedToolPage : StandardToolPage;
+  const Component =
+    tool?.toolMode === 'edit_image' ? EditImagePage :
+    tool?.toolMode === 'guided_image' ? GuidedToolPage :
+    StandardToolPage;
 
   return (
     <Suspense fallback={<div className="flex items-center justify-center h-screen"><Loader2 className="animate-spin text-primary" size={24} /></div>}>
