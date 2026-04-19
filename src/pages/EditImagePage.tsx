@@ -227,7 +227,7 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate, uploaded, setUplo
   return (
     <aside ref={panelRef} className={containerCls}>
       <div className="flex-1 overflow-y-auto overflow-x-visible p-4 space-y-3 scrollbar-thin">
-        {!inSheet && <BackToImageTools className="mb-2" />}
+        <BackToImageTools className="mb-2" />
 
         {/* Title */}
         <div className="px-1 pb-1">
