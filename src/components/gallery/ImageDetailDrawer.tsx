@@ -3,7 +3,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { GenerationJob } from '@/hooks/useGenerationJobs';
 import { useModels } from '@/hooks/useModels';
 import { Drawer, DrawerContent, DrawerClose } from '@/components/ui/drawer';
-import { Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw, Calendar, Cpu, Ratio, Sparkles, Share2, Trash2, Copy, Check, LayoutTemplate, ChevronDown, Wrench, ImageIcon } from 'lucide-react';
+import { Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw, Calendar, Cpu, Ratio, Sparkles, Share2, Trash2, Copy, Check, LayoutTemplate, ChevronDown, Wrench, Image as ImageLucide } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
 import { isToolJob, getToolName, getToolAction } from '@/hooks/useToolInfo';
