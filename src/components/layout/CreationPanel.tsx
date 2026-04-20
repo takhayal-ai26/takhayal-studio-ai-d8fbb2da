@@ -137,7 +137,8 @@ export function CreationPanel() {
     if (fileInputRef.current) fileInputRef.current.value = '';
   }, []);
 
-  const canGenerate = prompt.trim().length > 0 && !isGenerating && !localGenerating && credits >= cost && !!currentModel && !isUploading;
+  const pendingUploads = uploadedImages.some(img => !img.url);
+  const canGenerate = prompt.trim().length > 0 && !isGenerating && !localGenerating && credits >= cost && !!currentModel && !isUploading && !pendingUploads;
   const toggleDropdown = (key: OpenDropdown) => setOpenDropdown(prev => prev === key ? null : key);
 
   useEffect(() => { const handler = (e: MouseEvent) => { if (openDropdown && panelRef.current && !panelRef.current.contains(e.target as Node)) { const target = e.target as HTMLElement; if (target.closest('[data-dropdown-portal]')) return; setOpenDropdown(null); } }; document.addEventListener('mousedown', handler); return () => document.removeEventListener('mousedown', handler); }, [openDropdown]);
@@ -153,6 +154,13 @@ export function CreationPanel() {
       : prompt;
 
     const imageUrls = uploadedImages.filter(img => img.url).map(img => img.url!);
+
+    // Safety: if user attached refs but none resolved to URLs, block instead of silently falling back.
+    if (uploadedImages.length > 0 && imageUrls.length === 0) {
+      setLocalGenerating(false);
+      console.error('[studio] Aborting: uploaded references have no resolved URLs.');
+      return;
+    }
 
     const jobId = await submitJob({
       prompt: fullPrompt,

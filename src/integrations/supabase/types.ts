@@ -309,6 +309,7 @@ export type Database = {
           generation_cost: number
           id: string
           image_url: string | null
+          input_image_urls: Json
           is_public: boolean
           is_shared_to_community: boolean
           margin: number
@@ -334,6 +335,7 @@ export type Database = {
           tool_id: string | null
           upscale_cost: number
           upscale_model: string | null
+          used_image_input: boolean
           used_upscale_pipeline: boolean
           user_id: string | null
           video_url: string | null
@@ -349,6 +351,7 @@ export type Database = {
           generation_cost?: number
           id?: string
           image_url?: string | null
+          input_image_urls?: Json
           is_public?: boolean
           is_shared_to_community?: boolean
           margin?: number
@@ -374,6 +377,7 @@ export type Database = {
           tool_id?: string | null
           upscale_cost?: number
           upscale_model?: string | null
+          used_image_input?: boolean
           used_upscale_pipeline?: boolean
           user_id?: string | null
           video_url?: string | null
@@ -389,6 +393,7 @@ export type Database = {
           generation_cost?: number
           id?: string
           image_url?: string | null
+          input_image_urls?: Json
           is_public?: boolean
           is_shared_to_community?: boolean
           margin?: number
@@ -414,6 +419,7 @@ export type Database = {
           tool_id?: string | null
           upscale_cost?: number
           upscale_model?: string | null
+          used_image_input?: boolean
           used_upscale_pipeline?: boolean
           user_id?: string | null
           video_url?: string | null

@@ -258,11 +258,26 @@ serve(async (req) => {
     }
 
     // Determine if this is an image-to-image request
-    const hasImageInput = (!!image_url || (Array.isArray(image_urls) && image_urls.length > 0));
-    const isImageToImage = hasImageInput && supportsImageInput && !!editEndpoint;
-    const activeEndpoint = isImageToImage ? editEndpoint! : endpoint;
+    // Normalize incoming image URLs and drop any blob:/data: leftovers (only real provider-accessible URLs)
+    const rawUrls: string[] = Array.isArray(image_urls)
+      ? image_urls.filter((u: unknown) => typeof u === 'string' && /^https?:\/\//i.test(u as string)) as string[]
+      : [];
+    const singleInUrl: string | undefined = (typeof image_url === 'string' && /^https?:\/\//i.test(image_url)) ? image_url : undefined;
+    const allInputUrls: string[] = rawUrls.length > 0 ? rawUrls : (singleInUrl ? [singleInUrl] : []);
+    const hasImageInput = allInputUrls.length > 0;
 
-    console.log(`[generate-image] mode=${isImageToImage ? 'image-to-image' : 'text-to-image'} endpoint=${activeEndpoint} ratio=${aspect_ratio || '1:1'} quality=${quality_tier || '1K'} job_id=${job_id || 'none'}`);
+    // Hard block silent fallback: if user sent refs but model doesn't support them, fail loudly.
+    if (hasImageInput && !supportsImageInput) {
+      if (supabase && job_id) await supabase.from("generation_logs").update({ status: "failed" }).eq("id", job_id);
+      return new Response(JSON.stringify({ error: "The selected model does not support reference images. Please choose a different model or remove the uploaded images." }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+
+    // Route: prefer edit_endpoint when ref images are provided; fallback to main endpoint for models where same endpoint handles both (Nano Banana, GPT Image).
+    const isImageToImage = hasImageInput && supportsImageInput;
+    const activeEndpoint = isImageToImage ? (editEndpoint || endpoint) : endpoint;
+
+    console.log(`[generate-image] mode=${isImageToImage ? 'image-to-image' : 'text-to-image'} endpoint=${activeEndpoint} refs=${allInputUrls.length} ratio=${aspect_ratio || '1:1'} quality=${quality_tier || '1K'} job_id=${job_id || 'none'}`);
 
     const falHeaders = { Authorization: `Key ${FAL_AI_API_KEY}`, "Content-Type": "application/json" };
     const selectedRatio = aspect_ratio || "1:1";
@@ -271,10 +286,18 @@ serve(async (req) => {
     const actualApiCost = calculateProviderCost(activeEndpoint, selectedRatio, selectedQuality, dbBaseCost, pricingMode);
     const dims = getResolutionDims(selectedRatio, selectedQuality);
 
+    // Skip clarity upscale for image-to-image (it would lose the subject). Also skip when endpoint natively supports the requested tier.
     const needsUpscale = (selectedQuality === "2K" || selectedQuality === "4K") && upscaleStrategy === "clarity" && !isImageToImage;
     const generateQuality = needsUpscale ? "1K" : selectedQuality;
 
-    const payloadParams = resolvePayload(activeEndpoint, selectedRatio, generateQuality, modelInputType, isImageToImage ? image_url : undefined, isImageToImage ? image_urls : undefined);
+    const payloadParams = resolvePayload(
+      activeEndpoint,
+      selectedRatio,
+      generateQuality,
+      modelInputType,
+      isImageToImage && allInputUrls.length === 1 ? allInputUrls[0] : undefined,
+      isImageToImage && allInputUrls.length > 1 ? allInputUrls : (isImageToImage && allInputUrls.length === 1 ? allInputUrls : undefined),
+    );
     const payload: Record<string, unknown> = {
       prompt,
       num_images: num_images || 1,
@@ -285,15 +308,11 @@ serve(async (req) => {
     // Flux redux doesn't use prompt — it uses the image as the base
     if (activeEndpoint.includes("/redux")) {
       delete payload.prompt;
-      // Redux uses image_url as primary input; prompt becomes optional guidance
-      if (prompt && prompt.trim()) {
-        // Some redux endpoints don't accept prompt, but we keep it for those that do
-      }
     }
 
     if (activeEndpoint === "fal-ai/flux/schnell") payload.num_inference_steps = 4;
 
-    console.log(`[generate-image] payload keys: ${Object.keys(payload).join(', ')}`);
+    console.log(`[generate-image] payload keys: ${Object.keys(payload).join(', ')} | has_image_url=${!!payload.image_url} has_image_urls=${Array.isArray(payload.image_urls) ? (payload.image_urls as unknown[]).length : 0}`);
 
     // ===== GENERATE =====
     const genResult = await falQueueRun(activeEndpoint, payload, falHeaders);
@@ -385,6 +404,9 @@ serve(async (req) => {
           actual_output_height: finalHeight,
           image_url: imageResultUrl,
           status: imageResultUrl ? "completed" : "failed",
+          used_image_input: isImageToImage,
+          input_image_urls: isImageToImage ? allInputUrls : [],
+          source_mode: isImageToImage ? 'image-to-image' : 'text-to-image',
         };
 
         if (job_id) {
