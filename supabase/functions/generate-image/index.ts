@@ -286,10 +286,18 @@ serve(async (req) => {
     const actualApiCost = calculateProviderCost(activeEndpoint, selectedRatio, selectedQuality, dbBaseCost, pricingMode);
     const dims = getResolutionDims(selectedRatio, selectedQuality);
 
+    // Skip clarity upscale for image-to-image (it would lose the subject). Also skip when endpoint natively supports the requested tier.
     const needsUpscale = (selectedQuality === "2K" || selectedQuality === "4K") && upscaleStrategy === "clarity" && !isImageToImage;
     const generateQuality = needsUpscale ? "1K" : selectedQuality;
 
-    const payloadParams = resolvePayload(activeEndpoint, selectedRatio, generateQuality, modelInputType, isImageToImage ? image_url : undefined, isImageToImage ? image_urls : undefined);
+    const payloadParams = resolvePayload(
+      activeEndpoint,
+      selectedRatio,
+      generateQuality,
+      modelInputType,
+      isImageToImage && allInputUrls.length === 1 ? allInputUrls[0] : undefined,
+      isImageToImage && allInputUrls.length > 1 ? allInputUrls : (isImageToImage && allInputUrls.length === 1 ? allInputUrls : undefined),
+    );
     const payload: Record<string, unknown> = {
       prompt,
       num_images: num_images || 1,
@@ -300,15 +308,11 @@ serve(async (req) => {
     // Flux redux doesn't use prompt — it uses the image as the base
     if (activeEndpoint.includes("/redux")) {
       delete payload.prompt;
-      // Redux uses image_url as primary input; prompt becomes optional guidance
-      if (prompt && prompt.trim()) {
-        // Some redux endpoints don't accept prompt, but we keep it for those that do
-      }
     }
 
     if (activeEndpoint === "fal-ai/flux/schnell") payload.num_inference_steps = 4;
 
-    console.log(`[generate-image] payload keys: ${Object.keys(payload).join(', ')}`);
+    console.log(`[generate-image] payload keys: ${Object.keys(payload).join(', ')} | has_image_url=${!!payload.image_url} has_image_urls=${Array.isArray(payload.image_urls) ? (payload.image_urls as unknown[]).length : 0}`);
 
     // ===== GENERATE =====
     const genResult = await falQueueRun(activeEndpoint, payload, falHeaders);
