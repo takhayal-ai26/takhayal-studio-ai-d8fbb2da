@@ -21,9 +21,11 @@ export interface GenerationJob {
   thumbnail_url?: string | null;
   duration?: string | null;
   source_mode?: string | null;
+  used_image_input?: boolean;
+  input_image_urls?: string[];
 }
 
-const JOB_COLUMNS = 'id, status, prompt, image_url, ratio, resolution, quality_tier, model_id, credits_used, created_at, tool_id, media_type, video_url, thumbnail_url, duration, source_mode';
+const JOB_COLUMNS = 'id, status, prompt, image_url, ratio, resolution, quality_tier, model_id, credits_used, created_at, tool_id, media_type, video_url, thumbnail_url, duration, source_mode, used_image_input, input_image_urls';
 const IN_PROGRESS_STATUSES: JobStatus[] = ['queued', 'generating', 'processing'];
 
 function normalizeStatus(status: string | null | undefined): JobStatus {
@@ -73,6 +75,7 @@ export function useGenerationJobs() {
           status: normalizeStatus(d.status),
           resolution: d.resolution || d.quality_tier || null,
           tool_id: d.tool_id || null,
+          input_image_urls: Array.isArray(d.input_image_urls) ? (d.input_image_urls as string[]) : [],
         })));
       }
     } catch (err) {

@@ -3,7 +3,7 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { GenerationJob } from '@/hooks/useGenerationJobs';
 import { useModels } from '@/hooks/useModels';
 import { Drawer, DrawerContent, DrawerClose } from '@/components/ui/drawer';
-import { Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw, Calendar, Cpu, Ratio, Sparkles, Share2, Trash2, Copy, Check, LayoutTemplate, ChevronDown, Wrench } from 'lucide-react';
+import { Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw, Calendar, Cpu, Ratio, Sparkles, Share2, Trash2, Copy, Check, LayoutTemplate, ChevronDown, Wrench, Image as ImageLucide } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
 import { isToolJob, getToolName, getToolAction } from '@/hooks/useToolInfo';
@@ -236,11 +236,41 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
                     <p className="text-[13px] text-foreground/80 leading-relaxed">{job.prompt}</p>
                   </div>
                 )}
+                {job.used_image_input && job.input_image_urls && job.input_image_urls.length > 0 && (
+                  <div className="rounded-xl bg-muted/15 p-3.5">
+                    <div className="flex items-center gap-1.5 mb-2">
+                      <ImageLucide size={12} className="text-primary" />
+                      <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider">
+                        {isAr ? `الصور المرجعية (${job.input_image_urls.length})` : `Reference Images (${job.input_image_urls.length})`}
+                      </span>
+                    </div>
+                    <div className="flex gap-2 overflow-x-auto">
+                      {job.input_image_urls.map((url, i) => (
+                        <a
+                          key={`${url}-${i}`}
+                          href={url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="shrink-0 w-16 h-16 rounded-lg overflow-hidden bg-muted/20 hover:ring-2 hover:ring-primary/50 transition-all"
+                        >
+                          <img src={url} alt={`reference ${i + 1}`} className="w-full h-full object-cover" loading="lazy" />
+                        </a>
+                      ))}
+                    </div>
+                  </div>
+                )}
                 <div className="grid grid-cols-2 gap-2">
                   <MetaItem icon={<Calendar size={12} />} label={isAr ? 'التاريخ' : 'Date'} value={dateStr} />
                   <MetaItem icon={<Cpu size={12} />} label={isAr ? 'النموذج' : 'Model'} value={modelName} />
                   <MetaItem icon={<Ratio size={12} />} label={isAr ? 'النسبة' : 'Ratio'} value={job.ratio || '1:1'} />
                   <MetaItem icon={<Sparkles size={12} />} label={isAr ? 'الجودة' : 'Quality'} value={job.quality_tier || '1K'} />
+                  {job.source_mode && (
+                    <MetaItem
+                      icon={<ImageLucide size={12} />}
+                      label={isAr ? 'الوضع' : 'Mode'}
+                      value={job.source_mode === 'image-to-image' ? (isAr ? 'صورة إلى صورة' : 'Image-to-Image') : (isAr ? 'نص إلى صورة' : 'Text-to-Image')}
+                    />
+                  )}
                 </div>
               </>
             )}
