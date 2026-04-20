@@ -75,6 +75,7 @@ export function useGenerationJobs() {
           status: normalizeStatus(d.status),
           resolution: d.resolution || d.quality_tier || null,
           tool_id: d.tool_id || null,
+          input_image_urls: Array.isArray(d.input_image_urls) ? (d.input_image_urls as string[]) : [],
         })));
       }
     } catch (err) {
