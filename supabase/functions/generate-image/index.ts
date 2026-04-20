@@ -404,6 +404,9 @@ serve(async (req) => {
           actual_output_height: finalHeight,
           image_url: imageResultUrl,
           status: imageResultUrl ? "completed" : "failed",
+          used_image_input: isImageToImage,
+          input_image_urls: isImageToImage ? allInputUrls : [],
+          source_mode: isImageToImage ? 'image-to-image' : 'text-to-image',
         };
 
         if (job_id) {
