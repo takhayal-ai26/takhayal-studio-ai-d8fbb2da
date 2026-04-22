@@ -31,6 +31,7 @@ interface UploadedImage {
 }
 
 interface ControlsPanelProps {
+  tool?: ReturnType<typeof useToolsDB>['tools'][number];
   inSheet?: boolean;
   onAfterGenerate?: () => void;
   uploaded: UploadedImage[];
@@ -39,7 +40,7 @@ interface ControlsPanelProps {
   setResultUrl: (u: string | null) => void;
 }
 
-function EditControlsPanel({ inSheet = false, onAfterGenerate, uploaded, setUploaded, setResultUrl }: ControlsPanelProps) {
+function EditControlsPanel({ tool, inSheet = false, onAfterGenerate, uploaded, setUploaded, setResultUrl }: ControlsPanelProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { credits, isAuthenticated, openAuthModal, openUpgradeModal, requireAuth } = useApp();
@@ -49,6 +50,16 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate, uploaded, setUplo
 
   const { activeModels } = useModels();
   const { allTiers, getCreditsForModelQuality } = usePricingTiers();
+  const fallbackTitle = isAr ? 'تعديل الصورة' : 'Edit Image';
+  const fallbackSubtitle = isAr ? 'حوّل صورك بدقة باستخدام Nano Banana 2' : 'Transform your images with Nano Banana 2';
+  const fallbackPromptPlaceholder = isAr ? 'صِف التغييرات التي تريدها...' : 'Describe what you want to change...';
+  const fallbackUploadHelper = isAr ? 'JPG / PNG / WEBP حتى 10 ميغابايت' : 'JPG / PNG / WEBP up to 10MB';
+  const fallbackCtaLabel = isAr ? 'تعديل الصورة' : 'Edit Image';
+  const pageTitle = tool?.name || fallbackTitle;
+  const pageSubtitle = tool?.heroSubtitle || tool?.shortDesc || tool?.description || fallbackSubtitle;
+  const uploadLabel = tool?.uploadLabel || fallbackTitle;
+  const uploadHelper = tool?.uploadHelper || fallbackUploadHelper;
+  const ctaLabel = tool?.ctaLabel || fallbackCtaLabel;
 
   // Fixed model: Nano Banana 2
   const currentModel = useMemo(
@@ -232,10 +243,10 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate, uploaded, setUplo
         {/* Title */}
         <div className="px-1 pb-1">
           <h1 className="typo-heading-card text-[20px] font-bold leading-tight">
-            {isAr ? 'تعديل الصورة' : 'Edit Image'}
+            {pageTitle}
           </h1>
           <p className="text-[12px] text-muted-foreground mt-0.5">
-            {isAr ? 'حوّل صورك بدقة باستخدام Nano Banana 2' : 'Transform your images with Nano Banana 2'}
+            {pageSubtitle}
           </p>
         </div>
 
@@ -274,7 +285,7 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate, uploaded, setUplo
           <textarea
             value={prompt}
             onChange={e => setPrompt(e.target.value.slice(0, 500))}
-            placeholder={isAr ? 'صِف التغييرات التي تريدها...' : 'Describe what you want to change...'}
+            placeholder={fallbackPromptPlaceholder}
             dir={isAr ? 'rtl' : 'ltr'}
             className="w-full min-h-[100px] bg-foreground/[0.03] border border-border/20 rounded-xl p-3.5 text-[15px] font-medium text-foreground placeholder:text-foreground/40 focus:border-primary/30 focus:bg-foreground/[0.04] focus:outline-none focus:ring-2 focus:ring-primary/10 resize-none leading-relaxed transition-all"
           />
@@ -333,7 +344,7 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate, uploaded, setUplo
             )}
           </div>
           <p className="text-[11px] text-muted-foreground/60 mt-2 px-1">
-            {isAr ? 'JPG / PNG / WEBP حتى 10 ميغابايت' : 'JPG / PNG / WEBP up to 10MB'}
+            {uploadHelper}
           </p>
         </div>
 
@@ -380,7 +391,7 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate, uploaded, setUplo
             </span>
           ) : (
             <>
-              {isAr ? 'تعديل الصورة' : 'Edit Image'}
+              {ctaLabel}
               <span className="flex items-center gap-1 text-[12px] opacity-70">
                 <Coins size={11} />{creditCost}
               </span>
@@ -425,32 +436,40 @@ function EditControlsPanel({ inSheet = false, onAfterGenerate, uploaded, setUplo
 // ───────────────────────────────────────────── Right panel — cover / preview ─────────────────────────────────────────────
 
 interface CoverPanelProps {
+  tool?: ReturnType<typeof useToolsDB>['tools'][number];
   coverUrl: string;
   uploaded: UploadedImage[];
   resultUrl: string | null;
   isAr: boolean;
 }
 
-function CoverPanel({ coverUrl, uploaded, resultUrl, isAr }: CoverPanelProps) {
+function CoverPanel({ tool, coverUrl, uploaded, resultUrl, isAr }: CoverPanelProps) {
   // Priority: result > first uploaded preview > tool cover image
   const displayUrl = resultUrl || uploaded[0]?.preview || coverUrl || FALLBACK_COVER;
   const isCover = !resultUrl && !uploaded[0];
+  const fallbackTitle = isAr ? 'تعديل الصورة' : 'Edit Image';
+  const fallbackSubtitle = isAr ? 'مدعوم بـ Nano Banana 2' : 'Powered by Nano Banana 2';
+  const overlayTitle = tool?.heroTitle || tool?.name || fallbackTitle;
+  const overlaySubtitle = tool?.heroSubtitle || tool?.shortDesc || fallbackSubtitle;
 
   return (
     <div className="w-full h-full rounded-2xl overflow-hidden bg-black/40 relative">
       <img
         src={displayUrl}
-        alt={isAr ? 'تعديل الصورة' : 'Edit Image'}
+        alt={tool?.name || fallbackTitle}
         className="w-full h-full object-cover"
       />
       {isCover && (
         <div className="absolute inset-x-0 bottom-0 p-6 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none">
           <div className="inline-flex items-center gap-1.5 h-6 px-2.5 rounded-full bg-primary/15 backdrop-blur-md text-primary text-[10px] font-bold uppercase tracking-wider mb-2 border border-primary/20">
             <Wand2 size={10} />
-            {isAr ? 'تعديل الصورة' : 'Edit Image'}
+            {tool?.name || fallbackTitle}
           </div>
           <p className="text-white text-xl font-bold drop-shadow-lg">
-            {isAr ? 'مدعوم بـ Nano Banana 2' : 'Powered by Nano Banana 2'}
+            {overlayTitle}
+          </p>
+          <p className="text-white/80 text-sm mt-1 drop-shadow-md">
+            {overlaySubtitle}
           </p>
         </div>
       )}
@@ -482,6 +501,7 @@ export default function EditImagePage() {
         dir={isRTL ? 'rtl' : 'ltr'}
       >
         <EditControlsPanel
+          tool={tool}
           inSheet
           uploaded={uploaded}
           setUploaded={setUploaded}
@@ -500,6 +520,7 @@ export default function EditImagePage() {
     >
       <div className="flex flex-1 min-h-0 relative overflow-visible">
         <EditControlsPanel
+          tool={tool}
           uploaded={uploaded}
           setUploaded={setUploaded}
           resultUrl={resultUrl}
@@ -508,6 +529,7 @@ export default function EditImagePage() {
         <div className="flex-1 flex flex-col overflow-hidden p-4 sm:p-6">
           <div className="flex-1 min-h-0">
             <CoverPanel
+              tool={tool}
               coverUrl={coverUrl}
               uploaded={uploaded}
               resultUrl={resultUrl}
