@@ -187,6 +187,8 @@ export const VERIFIED_PRICING: Record<string, { type: PricingType; cost1k: numbe
   'fal-ai/flux/schnell':     { type: 'per_megapixel', cost1k: 0.003 },
   'fal-ai/flux-pro/v1.1':   { type: 'per_megapixel', cost1k: 0.04 },
   'fal-ai/qwen-image':      { type: 'per_megapixel', cost1k: 0.02 },
+  'fal-ai/gpt-image-2':     { type: 'quality_tier',  cost1k: 0.04, cost2k: 0.08 },
+  'openai/gpt-image-2/edit': { type: 'quality_tier',  cost1k: 0.04, cost2k: 0.08 },
   'fal-ai/gpt-image-1.5':   { type: 'size_locked',   cost1k: 0.009 },
   'fal-ai/ideogram/v3':     { type: 'quality_tier',  cost1k: 0.03, cost2k: 0.06, cost4k: 0.09 },
   'fal-ai/imagen4/preview': { type: 'flat_per_image', cost1k: 0.04, cost2k: 0.08 },

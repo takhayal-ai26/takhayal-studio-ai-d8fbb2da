@@ -7,6 +7,48 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+const CURATED_IMAGE_MODELS: Record<string, Record<string, unknown>> = {
+  "fal-ai/gpt-image-2": {
+    model_name: "GPT Image 2",
+    provider_name: "Fal.ai",
+    speed: "~18s",
+    cost_per_run: 0.04,
+    best_for: "Premium ads, product shots, detailed scenes, accurate typography",
+    best_for_ar: "الإعلانات الفاخرة، صور المنتجات، المشاهد التفصيلية، الكتابة الدقيقة",
+    input_type: "image_size",
+    supported_ratios: ["1:1", "16:9", "9:16", "4:3", "3:4", "4:5", "5:4", "3:2", "2:3"],
+    supported_sizes: ["square_hd", "square", "portrait_4_3", "portrait_16_9", "landscape_4_3", "landscape_16_9"],
+    supported_quality_tiers: ["1K", "2K"],
+    default_ratio: "4:3",
+    default_resolution: "landscape_4_3",
+    max_resolution: "3840px edge",
+    pricing_mode: "quality_tier",
+    credits_per_generation: 4,
+    supports_native_high_res: true,
+    supports_image_input: true,
+    edit_endpoint_id: "openai/gpt-image-2/edit",
+    max_image_inputs: 10,
+    media_type: "image",
+    upscale_strategy: "none",
+    is_active: true,
+    is_default: false,
+    notes: "Native GPT Image 2 text and edit endpoints on fal.ai. Native sizes cap at 3840px max edge.",
+    preview_image_url: "",
+    admin_overrides: {
+      supported_ratios: true,
+      supported_quality_tiers: true,
+      default_ratio: true,
+      max_resolution: true,
+      notes: true,
+      pricing_mode: true,
+      supports_image_input: true,
+      edit_endpoint_id: true,
+      max_image_inputs: true,
+      upscale_strategy: true,
+    },
+  },
+};
+
 // Quality-based pricing tiers for all known fal.ai models
 const KNOWN_COSTS: Record<string, { base: number; notes: string; pricingUnit: string; supportsNativeHighRes: boolean; tiers: { label: string; quality: string; res: string; multiplier: number; cost: number; credits: number; usesUpscale: boolean }[] }> = {
   "fal-ai/flux/schnell":              { base: 0.003, pricingUnit: "per_image", supportsNativeHighRes: false, notes: "Fastest FLUX, fixed per image", tiers: [
@@ -94,6 +136,10 @@ const KNOWN_COSTS: Record<string, { base: number; notes: string; pricingUnit: st
     { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.08, credits:5, usesUpscale:false },
     { label:"2K HD", quality:"2K", res:"2048x2048", multiplier:1, cost:0.081, credits:6, usesUpscale:true },
     { label:"4K Ultra", quality:"4K", res:"4096x4096", multiplier:1, cost:0.083, credits:8, usesUpscale:true },
+  ]},
+  "fal-ai/gpt-image-2":              { base: 0.04, pricingUnit: "quality_tier", supportsNativeHighRes: true, notes: "GPT Image 2 on fal.ai uses token-based pricing with strong quality sensitivity. Starter tiers below are conservative defaults for admin and can be adjusted.", tiers: [
+    { label:"1K Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.04, credits:4, usesUpscale:false },
+    { label:"2K HD", quality:"2K", res:"2048x2048", multiplier:2, cost:0.08, credits:6, usesUpscale:false },
   ]},
   "fal-ai/gpt-image-1.5":            { base: 0.003, pricingUnit: "per_megapixel", supportsNativeHighRes: true, notes: "GPT Image 1.5, ~$0.003/MP", tiers: [
     { label:"Standard", quality:"1K", res:"1024x1024", multiplier:1, cost:0.003, credits:1, usesUpscale:false },
@@ -210,14 +256,30 @@ serve(async (req) => {
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
     const { endpoint_id } = await req.json().catch(() => ({ endpoint_id: null }));
 
-    const { data: existingModels, error: fetchError } = await supabase.from("models").select("*");
+    let { data: existingModels, error: fetchError } = await supabase.from("models").select("*");
+    if (fetchError) throw fetchError;
+
+    const { data: falProvider } = await supabase.from("provider_configs").select("id").eq("provider_name", "Fal.ai").single();
+
+    for (const [curatedEndpointId, modelData] of Object.entries(CURATED_IMAGE_MODELS)) {
+      if (endpoint_id && endpoint_id !== curatedEndpointId) continue;
+      const exists = (existingModels || []).some((m: any) => m.endpoint_id === curatedEndpointId);
+      if (exists) continue;
+      const insertPayload = {
+        provider_id: falProvider?.id || null,
+        endpoint_id: curatedEndpointId,
+        ...modelData,
+      };
+      const { error: insertError } = await supabase.from("models").insert(insertPayload);
+      if (insertError) throw insertError;
+    }
+
+    ({ data: existingModels, error: fetchError } = await supabase.from("models").select("*"));
     if (fetchError) throw fetchError;
 
     const modelsToSync = endpoint_id
       ? existingModels?.filter((m: any) => m.endpoint_id === endpoint_id) || []
       : existingModels || [];
-
-    const { data: falProvider } = await supabase.from("provider_configs").select("id").eq("provider_name", "Fal.ai").single();
 
     const results: any[] = [];
     let syncedCount = 0;

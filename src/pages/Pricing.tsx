@@ -18,7 +18,7 @@ import { PageSeo, absoluteUrl } from '@/components/seo/PageSeo';
 const CREDIT_COST_DATA = [
   { model: 'Flux Schnell', options: [{ label: '1K', credits: 3 }, { label: '2K', credits: 4 }, { label: '4K', credits: 5 }] },
   { model: 'Flux Dev', options: [{ label: '1K', credits: 5 }, { label: '2K', credits: 6 }, { label: '4K', credits: 7 }] },
-  { model: 'GPT Image 1.5', options: [{ label: '1K', credits: 6 }, { label: '2K', credits: 8 }] },
+  { model: 'GPT Image 2', options: [{ label: '1K', credits: 4 }, { label: '2K', credits: 6 }] },
   { model: 'Ideogram V3', options: [{ label: '1K', credits: 4 }, { label: '2K', credits: 5 }] },
   { model: 'Imagen 4', options: [{ label: '1K', credits: 6 }, { label: '2K', credits: 7 }] },
   { model: 'Nano Banana 2', options: [{ label: '1K', credits: 10 }, { label: '2K', credits: 14 }, { label: '4K', credits: 18 }] },

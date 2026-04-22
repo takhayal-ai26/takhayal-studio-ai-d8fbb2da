@@ -17,6 +17,9 @@ const BASE_DIMS: Record<string, { w: number; h: number }> = {
   "21:9": { w: 1536, h: 640 },
 };
 
+const GPT_IMAGE_2_MAX_EDGE = 3840;
+const GPT_IMAGE_2_MAX_PIXELS = 8_294_400;
+
 function getQualityScale(q: string): number {
   return q === "4K" ? 4 : q === "3K" ? 3 : q === "2K" ? 2 : 1;
 }
@@ -32,6 +35,8 @@ const VERIFIED: Record<string, { type: string; cost1k: number; cost2k?: number; 
   "fal-ai/flux-pro/v1.1":   { type: "per_megapixel", cost1k: 0.04 },
   "fal-ai/qwen-image":      { type: "per_megapixel", cost1k: 0.02 },
   "fal-ai/gpt-image-1.5":   { type: "size_locked", cost1k: 0.009 },
+  "fal-ai/gpt-image-2":     { type: "quality_tier", cost1k: 0.04, cost2k: 0.08 },
+  "openai/gpt-image-2/edit": { type: "quality_tier", cost1k: 0.04, cost2k: 0.08 },
   "fal-ai/ideogram/v3":     { type: "quality_tier", cost1k: 0.03, cost2k: 0.06, cost4k: 0.09 },
   "fal-ai/imagen4/preview": { type: "flat_per_image", cost1k: 0.04, cost2k: 0.08 },
   "fal-ai/recraft-v3":      { type: "flat_per_image", cost1k: 0.04, cost4k: 0.08 },
@@ -67,6 +72,28 @@ function calculateProviderCost(endpoint: string, ratio: string, quality: string,
   return verified?.cost1k ?? dbBaseCost;
 }
 
+function clampGptImage2Dims(ratio: string, quality: string) {
+  const baseDims = getResolutionDims(ratio, quality);
+  let width = baseDims.width;
+  let height = baseDims.height;
+
+  const scaleByEdge = Math.min(1, GPT_IMAGE_2_MAX_EDGE / Math.max(width, height));
+  width = Math.floor((width * scaleByEdge) / 16) * 16;
+  height = Math.floor((height * scaleByEdge) / 16) * 16;
+
+  const pixels = width * height;
+  if (pixels > GPT_IMAGE_2_MAX_PIXELS) {
+    const scaleByPixels = Math.sqrt(GPT_IMAGE_2_MAX_PIXELS / pixels);
+    width = Math.floor((width * scaleByPixels) / 16) * 16;
+    height = Math.floor((height * scaleByPixels) / 16) * 16;
+  }
+
+  return {
+    width: Math.max(width, 1024),
+    height: Math.max(height, 1024),
+  };
+}
+
 // ===== RESOLUTION PAYLOAD RESOLVERS =====
 function resolvePayload(endpoint: string, ratio: string, quality: string, inputType: string, imageUrl?: string, imageUrls?: string[]): Record<string, unknown> {
   const hasImages = !!imageUrl || (imageUrls && imageUrls.length > 0);
@@ -79,6 +106,20 @@ function resolvePayload(endpoint: string, ratio: string, quality: string, inputT
     const base: Record<string, unknown> = { quality: "low", image_size: sizeMap[ratio] || "1024x1024" };
     if (allImageUrls.length > 1) base.image_urls = allImageUrls;
     else if (singleUrl) base.image_url = singleUrl;
+    return base;
+  }
+
+  // GPT Image 2 — text and edit use separate endpoints but share native image_size + quality controls
+  if (endpoint === "fal-ai/gpt-image-2" || endpoint === "openai/gpt-image-2/edit") {
+    const qualityMap: Record<string, string> = { "1K": "low", "2K": "medium", "4K": "high" };
+    const dims = clampGptImage2Dims(ratio, quality);
+    const base: Record<string, unknown> = {
+      quality: qualityMap[quality] || "high",
+      image_size: { width: dims.width, height: dims.height },
+    };
+    if (endpoint === "openai/gpt-image-2/edit" && allImageUrls.length > 0) {
+      base.image_urls = allImageUrls;
+    }
     return base;
   }
 
@@ -156,7 +197,7 @@ async function falQueueRun(endpoint: string, payload: Record<string, unknown>, f
   const { status_url, response_url } = submitData;
   if (!status_url || !response_url) return { data: submitData };
 
-  for (let i = 0; i < 30; i++) {
+  for (let i = 0; i < 60; i++) {
     await new Promise(r => setTimeout(r, 2000));
     const statusRes = await fetch(status_url, { headers: falHeaders });
     const statusData = await statusRes.json();
@@ -167,7 +208,7 @@ async function falQueueRun(endpoint: string, payload: Record<string, unknown>, f
     }
     if (statusData.status === "FAILED") return { data: null, error: `Generation failed: ${JSON.stringify(statusData)}` };
   }
-  return { data: null, error: "Generation timed out" };
+  return { data: null, error: "Generation timed out after 120 seconds" };
 }
 
 // ===== UPSCALE WITH CLARITY UPSCALER =====

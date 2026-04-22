@@ -101,8 +101,8 @@ export default function EconomicsTab() {
     }))
     .sort((a, b) => { const order = ['1K', '2K', '4K']; return order.indexOf(a.tier) - order.indexOf(b.tier); });
 
-  // GPT Image 1.5 cost guard
-  const gptLogs = logs.filter(l => modelNames[l.model_id || ''] === 'GPT Image 1.5');
+  // GPT Image cost guard
+  const gptLogs = logs.filter(l => ['GPT Image 1.5', 'GPT Image 2'].includes(modelNames[l.model_id || '']));
   const gptTotal = gptLogs.length;
   const gptAvgCost = gptTotal > 0 ? gptLogs.reduce((s, l) => s + getCost(l), 0) / gptTotal : 0;
   const gptHighCostAlert = gptLogs.some(l => getCost(l) > 0.020);
@@ -235,17 +235,17 @@ export default function EconomicsTab() {
         </CardContent>
       </Card>
 
-      {/* GPT Image 1.5 Cost Guard */}
+      {/* GPT Image Cost Guard */}
       <Card className="border-border/40 bg-card/50">
         <CardHeader className="pb-2">
           <CardTitle className="text-sm font-semibold flex items-center gap-2">
             <Shield size={14} className="text-primary" />
-            GPT Image 1.5 Cost Guard
+            GPT Image Cost Guard
           </CardTitle>
         </CardHeader>
         <CardContent>
           {gptTotal === 0 ? (
-            <p className="text-xs text-muted-foreground">No GPT Image 1.5 generations yet.</p>
+            <p className="text-xs text-muted-foreground">No GPT Image generations yet.</p>
           ) : (
             <div className="space-y-3">
               {gptHighCostAlert && (
