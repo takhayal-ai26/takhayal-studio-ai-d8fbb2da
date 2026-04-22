@@ -306,6 +306,7 @@ export type Database = {
           created_at: string
           credits_used: number
           duration: string | null
+          error_message: string | null
           generation_cost: number
           id: string
           image_url: string | null
@@ -348,6 +349,7 @@ export type Database = {
           created_at?: string
           credits_used?: number
           duration?: string | null
+          error_message?: string | null
           generation_cost?: number
           id?: string
           image_url?: string | null
@@ -390,6 +392,7 @@ export type Database = {
           created_at?: string
           credits_used?: number
           duration?: string | null
+          error_message?: string | null
           generation_cost?: number
           id?: string
           image_url?: string | null
