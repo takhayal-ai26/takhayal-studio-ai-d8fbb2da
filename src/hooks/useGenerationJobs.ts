@@ -9,6 +9,7 @@ export interface GenerationJob {
   status: JobStatus;
   prompt: string;
   image_url: string | null;
+  error_message?: string | null;
   ratio: string | null;
   resolution: string | null;
   quality_tier: string | null;
@@ -25,7 +26,7 @@ export interface GenerationJob {
   input_image_urls?: string[];
 }
 
-const JOB_COLUMNS = 'id, status, prompt, image_url, ratio, resolution, quality_tier, model_id, credits_used, created_at, tool_id, media_type, video_url, thumbnail_url, duration, source_mode, used_image_input, input_image_urls';
+const JOB_COLUMNS = 'id, status, prompt, image_url, error_message, ratio, resolution, quality_tier, model_id, credits_used, created_at, tool_id, media_type, video_url, thumbnail_url, duration, source_mode, used_image_input, input_image_urls';
 const IN_PROGRESS_STATUSES: JobStatus[] = ['queued', 'generating', 'processing'];
 
 function normalizeStatus(status: string | null | undefined): JobStatus {
@@ -41,12 +42,12 @@ export function useGenerationJobs() {
   const [jobs, setJobs] = useState<GenerationJob[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const markJobFailed = useCallback(async (jobId: string) => {
-    setJobs(prev => prev.map(job => job.id === jobId ? { ...job, status: 'failed' as JobStatus } : job));
+  const markJobFailed = useCallback(async (jobId: string, errorMessage?: string | null) => {
+    setJobs(prev => prev.map(job => job.id === jobId ? { ...job, status: 'failed' as JobStatus, error_message: errorMessage ?? job.error_message ?? null } : job));
 
     const { error } = await supabase
       .from('generation_logs')
-      .update({ status: 'failed' as string })
+      .update({ status: 'failed' as string, error_message: errorMessage ?? null })
       .eq('id', jobId);
 
     if (error) {
@@ -108,12 +109,13 @@ export function useGenerationJobs() {
             if (exists) {
               return prev.map(j =>
                 j.id === updated.id
-                  ? {
-                      ...j,
-                      status: normalizeStatus(updated.status),
-                      prompt: updated.prompt ?? j.prompt,
-                      image_url: updated.image_url ?? j.image_url,
-                      ratio: updated.ratio ?? j.ratio,
+          ? {
+              ...j,
+              status: normalizeStatus(updated.status),
+              prompt: updated.prompt ?? j.prompt,
+              image_url: updated.image_url ?? j.image_url,
+              error_message: updated.error_message ?? j.error_message ?? null,
+              ratio: updated.ratio ?? j.ratio,
                       resolution: updated.resolution ?? updated.quality_tier ?? j.resolution,
                       quality_tier: updated.quality_tier ?? j.quality_tier,
                       model_id: updated.model_id ?? j.model_id,
@@ -131,6 +133,7 @@ export function useGenerationJobs() {
               status: normalizeStatus(updated.status),
               prompt: updated.prompt || '',
               image_url: updated.image_url ?? null,
+              error_message: updated.error_message ?? null,
               ratio: updated.ratio ?? null,
               resolution: updated.resolution ?? updated.quality_tier ?? null,
               quality_tier: updated.quality_tier ?? null,
@@ -157,6 +160,7 @@ export function useGenerationJobs() {
               status: normalizeStatus(inserted.status),
               prompt: inserted.prompt || '',
               image_url: inserted.image_url ?? null,
+              error_message: inserted.error_message ?? null,
               ratio: inserted.ratio ?? null,
               resolution: inserted.resolution ?? inserted.quality_tier ?? null,
               quality_tier: inserted.quality_tier ?? null,
@@ -248,6 +252,7 @@ export function useGenerationJobs() {
       status: 'queued' as JobStatus,
       prompt: params.prompt,
       image_url: null,
+      error_message: null,
       ratio: params.ratio,
       resolution: params.qualityTier,
       quality_tier: params.qualityTier,
@@ -313,11 +318,12 @@ export function useGenerationJobs() {
 
       if (error) {
         console.error('Generation invoke error:', error);
-        await markJobFailed(jobId);
+        await markJobFailed(jobId, error.message);
       }
     } catch (err) {
       console.error('Generation call failed:', err);
-      await markJobFailed(jobId);
+      const message = err instanceof Error ? err.message : 'Unknown generation error';
+      await markJobFailed(jobId, message);
     }
   }, [markJobFailed]);
 

@@ -236,12 +236,12 @@ async function upscaleWithClarity(imageUrl: string, falHeaders: Record<string, s
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
+  const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
   try {
     const FAL_AI_API_KEY = Deno.env.get("FAL_AI_API_KEY");
     if (!FAL_AI_API_KEY) throw new Error("FAL_AI_API_KEY is not configured");
-
-    const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
-    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
     const { prompt, model_endpoint, aspect_ratio, num_images, input_type, quality_tier, model_id, job_id, image_url, image_urls } = await req.json();
 
@@ -309,8 +309,9 @@ serve(async (req) => {
 
     // Hard block silent fallback: if user sent refs but model doesn't support them, fail loudly.
     if (hasImageInput && !supportsImageInput) {
-      if (supabase && job_id) await supabase.from("generation_logs").update({ status: "failed" }).eq("id", job_id);
-      return new Response(JSON.stringify({ error: "The selected model does not support reference images. Please choose a different model or remove the uploaded images." }),
+      const message = "The selected model does not support reference images. Please choose a different model or remove the uploaded images.";
+      if (supabase && job_id) await supabase.from("generation_logs").update({ status: "failed", error_message: message }).eq("id", job_id);
+      return new Response(JSON.stringify({ error: message }),
         { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
@@ -360,7 +361,7 @@ serve(async (req) => {
 
     if (genResult.error) {
       if (supabase && job_id) {
-        await supabase.from("generation_logs").update({ status: "failed" }).eq("id", job_id);
+        await supabase.from("generation_logs").update({ status: "failed", error_message: genResult.error }).eq("id", job_id);
       }
       return new Response(JSON.stringify({ error: genResult.error }),
         { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
@@ -444,6 +445,7 @@ serve(async (req) => {
           actual_output_width: finalWidth,
           actual_output_height: finalHeight,
           image_url: imageResultUrl,
+          error_message: imageResultUrl ? null : 'No image URL found in provider response.',
           status: imageResultUrl ? "completed" : "failed",
           used_image_input: isImageToImage,
           input_image_urls: isImageToImage ? allInputUrls : [],
@@ -486,6 +488,20 @@ serve(async (req) => {
 
   } catch (error) {
     console.error("generate-image error:", error);
+    if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
+      try {
+        const { job_id } = await req.clone().json();
+        if (job_id) {
+          const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+          await supabase
+            .from("generation_logs")
+            .update({ status: "failed", error_message: error instanceof Error ? error.message : "Unknown error" })
+            .eq("id", job_id);
+        }
+      } catch {
+        // no-op: preserve original error response
+      }
+    }
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : "Unknown error" }),
       { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }

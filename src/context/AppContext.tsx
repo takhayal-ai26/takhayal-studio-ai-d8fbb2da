@@ -156,6 +156,17 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [authModalTab, setAuthModalTab] = useState<'login' | 'signup'>('signup');
   const [upgradeModalOpen, setUpgradeModalOpen] = useState(false);
 
+  const getGenerationErrorMessage = useCallback((message: string, isArabic: boolean) => {
+    const raw = message.toLowerCase();
+    if (raw.includes('exhausted balance') || raw.includes('top up your balance') || raw.includes('user is locked')) {
+      return isArabic ? 'رصيد fal.ai منتهي. قم بشحن الرصيد ثم أعد المحاولة.' : 'Your fal.ai balance is exhausted. Top up the balance and try again.';
+    }
+    if (raw.includes('timed out')) {
+      return isArabic ? 'استغرقت العملية وقتاً أطول من المتوقع. حاول مرة أخرى بعد قليل.' : 'The generation timed out. Please try again in a moment.';
+    }
+    return message;
+  }, []);
+
   // Close all modals on language switch to prevent glitched overlays
   useEffect(() => {
     const handler = () => {
@@ -345,11 +356,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
       setGallery(prev => [...newImages, ...prev]);
     } catch (err) {
       console.error('Generation failed:', err);
-      toast.error('Something went wrong. Please try again.');
+      const isArabic = window.localStorage.getItem('takhayal-lang') === 'ar' || document.documentElement.lang === 'ar';
+      const fallback = isArabic ? 'حدث خطأ ما. يرجى المحاولة مرة أخرى.' : 'Something went wrong. Please try again.';
+      const message = err instanceof Error ? getGenerationErrorMessage(err.message, isArabic) : fallback;
+      toast.error(message || fallback);
     } finally {
       setIsGenerating(false);
     }
-  }, [prompt, isGenerating, isAuthenticated, credits, quality, selectedTemplate, selectedStyle, aspectRatio, selectedModelId, selectedQualityTier, getCreditCost]);
+  }, [prompt, isGenerating, isAuthenticated, credits, quality, selectedTemplate, selectedStyle, aspectRatio, selectedModelId, selectedQualityTier, getCreditCost, getGenerationErrorMessage]);
 
   const contextValue = useMemo(() => ({
     isAuthenticated, userName, userEmail, userAvatarUrl, activePage, credits, plan,

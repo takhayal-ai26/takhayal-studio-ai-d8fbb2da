@@ -54,6 +54,23 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
   isHighlighted: boolean;
   templateTitle: string | null;
 }) {
+  const getFailureMessage = () => {
+    const raw = (job.error_message || '').toLowerCase();
+    if (!raw) {
+      return isAr ? 'حدث خطأ أثناء التوليد. حاول مرة أخرى.' : 'Something went wrong during generation. Please try again.';
+    }
+
+    if (raw.includes('exhausted balance') || raw.includes('top up your balance') || raw.includes('user is locked')) {
+      return isAr ? 'رصيد fal.ai منتهي. قم بشحن الرصيد ثم أعد المحاولة.' : 'Your fal.ai balance is exhausted. Top up the balance and try again.';
+    }
+
+    if (raw.includes('timed out')) {
+      return isAr ? 'استغرقت العملية وقتاً أطول من المتوقع. أعد المحاولة بعد قليل.' : 'The generation timed out. Please try again in a moment.';
+    }
+
+    return job.error_message || (isAr ? 'حدث خطأ أثناء التوليد. حاول مرة أخرى.' : 'Something went wrong during generation. Please try again.');
+  };
+
   // Treat "completed" with no image as still processing (prevents blank white cards)
   const hasValidImage = !!job.image_url && job.image_url.length > 5;
   const isProcessing = job.status === 'queued' || job.status === 'generating' || job.status === 'processing' || (job.status === 'completed' && !hasValidImage);
@@ -144,6 +161,9 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
           <span className="text-sm font-bold text-foreground">
             {isAr ? 'فشل التوليد' : 'Generation failed'}
           </span>
+          <p className="max-w-[220px] text-xs leading-5 text-muted-foreground">
+            {getFailureMessage()}
+          </p>
           <span
             onClick={handleRetry}
             className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors"
