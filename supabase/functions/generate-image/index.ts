@@ -184,31 +184,52 @@ function resolvePayload(endpoint: string, ratio: string, quality: string, inputT
 }
 
 // ===== FAL QUEUE RUNNER =====
-async function falQueueRun(endpoint: string, payload: Record<string, unknown>, falHeaders: Record<string, string>): Promise<{ data: any; error?: string }> {
+// Slow endpoints (GPT Image 2) where inference can exceed Supabase edge function wall-clock.
+// For these, we return the queued response immediately and finish the work in the background
+// via EdgeRuntime.waitUntil (so the row is updated when fal completes, even after the HTTP
+// response is closed).
+const SLOW_ENDPOINTS = new Set<string>([
+  "fal-ai/gpt-image-2",
+  "openai/gpt-image-2/edit",
+]);
+
+async function falSubmit(endpoint: string, payload: Record<string, unknown>, falHeaders: Record<string, string>): Promise<{ submit?: any; error?: string }> {
   const submitRes = await fetch(`https://queue.fal.run/${endpoint}`, {
     method: "POST", headers: falHeaders, body: JSON.stringify(payload),
   });
   if (!submitRes.ok) {
     const errorText = await submitRes.text();
     console.error(`fal.ai submit error for ${endpoint}:`, submitRes.status, errorText);
-    return { data: null, error: `fal.ai API error ${submitRes.status}: ${errorText}` };
+    return { error: `fal.ai API error ${submitRes.status}: ${errorText}` };
   }
-  const submitData = await submitRes.json();
-  const { status_url, response_url } = submitData;
-  if (!status_url || !response_url) return { data: submitData };
+  return { submit: await submitRes.json() };
+}
 
-  for (let i = 0; i < 60; i++) {
-    await new Promise(r => setTimeout(r, 2000));
+async function falPollUntilDone(submit: any, falHeaders: Record<string, string>, opts: { maxAttempts?: number; intervalMs?: number; label?: string } = {}): Promise<{ data: any; error?: string }> {
+  const { status_url, response_url } = submit || {};
+  if (!status_url || !response_url) return { data: submit };
+  const maxAttempts = opts.maxAttempts ?? 180;   // up to ~9 min at 3s
+  const intervalMs = opts.intervalMs ?? 3000;
+  const label = opts.label || "poll";
+  for (let i = 0; i < maxAttempts; i++) {
+    await new Promise(r => setTimeout(r, intervalMs));
     const statusRes = await fetch(status_url, { headers: falHeaders });
     const statusData = await statusRes.json();
-    console.log(`[${endpoint}] Poll ${i + 1}: ${statusData.status}`);
+    if (i % 5 === 0) console.log(`[${label}] Poll ${i + 1}: ${statusData.status}`);
     if (statusData.status === "COMPLETED") {
       const resultRes = await fetch(response_url, { headers: falHeaders });
       return { data: await resultRes.json() };
     }
     if (statusData.status === "FAILED") return { data: null, error: `Generation failed: ${JSON.stringify(statusData)}` };
   }
-  return { data: null, error: "Generation timed out after 120 seconds" };
+  return { data: null, error: `Generation timed out after ${(maxAttempts * intervalMs) / 1000}s` };
+}
+
+// Backwards-compatible synchronous runner used for fast endpoints + upscale steps.
+async function falQueueRun(endpoint: string, payload: Record<string, unknown>, falHeaders: Record<string, string>): Promise<{ data: any; error?: string }> {
+  const sub = await falSubmit(endpoint, payload, falHeaders);
+  if (sub.error) return { data: null, error: sub.error };
+  return await falPollUntilDone(sub.submit, falHeaders, { maxAttempts: 60, intervalMs: 2000, label: endpoint });
 }
 
 // ===== UPSCALE WITH CLARITY UPSCALER =====
@@ -356,133 +377,174 @@ serve(async (req) => {
 
     console.log(`[generate-image] payload keys: ${Object.keys(payload).join(', ')} | has_image_url=${!!payload.image_url} has_image_urls=${Array.isArray(payload.image_urls) ? (payload.image_urls as unknown[]).length : 0}`);
 
-    // ===== GENERATE =====
-    const genResult = await falQueueRun(activeEndpoint, payload, falHeaders);
-
-    if (genResult.error) {
-      if (supabase && job_id) {
-        await supabase.from("generation_logs").update({ status: "failed", error_message: genResult.error }).eq("id", job_id);
+    // Helper that runs after fal returns: handle upscale, write economics, update the job row.
+    const finalizeJob = async (genResult: { data: any; error?: string }) => {
+      if (genResult.error) {
+        if (supabase && job_id) {
+          await supabase.from("generation_logs").update({ status: "failed", error_message: genResult.error }).eq("id", job_id);
+        }
+        return { ok: false as const, error: genResult.error };
       }
-      return new Response(JSON.stringify({ error: genResult.error }),
-        { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
-    }
 
-    let resultData = genResult.data;
-    let upscaleCost = 0;
-    let wasUpscaled = false;
-    let upscaleModel: string | null = null;
-    let finalWidth = dims.width;
-    let finalHeight = dims.height;
+      let resultData = genResult.data;
+      let upscaleCost = 0;
+      let wasUpscaled = false;
+      let upscaleModel: string | null = null;
+      const finalWidth = dims.width;
+      const finalHeight = dims.height;
 
-    // ===== UPSCALE PIPELINE =====
-    if (needsUpscale) {
-      const generatedUrl = resultData?.images?.[0]?.url;
-      if (generatedUrl) {
-        let currentUrl = generatedUrl;
-        const upscaleSteps = selectedQuality === "4K" ? 2 : 1;
-        
-        for (let step = 0; step < upscaleSteps; step++) {
-          const upscaleResult = await upscaleWithClarity(currentUrl, falHeaders);
-          if (upscaleResult) {
-            currentUrl = upscaleResult.url;
-            upscaleCost += upscaleResult.cost;
-            wasUpscaled = true;
-            upscaleModel = "fal-ai/clarity-upscaler";
-          } else {
-            break;
+      if (needsUpscale) {
+        const generatedUrl = resultData?.images?.[0]?.url;
+        if (generatedUrl) {
+          let currentUrl = generatedUrl;
+          const upscaleSteps = selectedQuality === "4K" ? 2 : 1;
+          for (let step = 0; step < upscaleSteps; step++) {
+            const upscaleResult = await upscaleWithClarity(currentUrl, falHeaders);
+            if (upscaleResult) {
+              currentUrl = upscaleResult.url;
+              upscaleCost += upscaleResult.cost;
+              wasUpscaled = true;
+              upscaleModel = "fal-ai/clarity-upscaler";
+            } else {
+              break;
+            }
+          }
+          if (wasUpscaled) {
+            resultData = { ...resultData, images: [{ url: currentUrl, ...resultData.images[0] }] };
           }
         }
+      }
 
-        if (wasUpscaled) {
-          resultData = { ...resultData, images: [{ url: currentUrl, ...resultData.images[0] }] };
+      const totalCost = actualApiCost + upscaleCost;
+      const revenueUsd = creditsUsed * CREDIT_VALUE_USD;
+      const profitUsd = revenueUsd - totalCost;
+      const marginPct = revenueUsd > 0 ? (profitUsd / revenueUsd) * 100 : 0;
+
+      const imageResultUrl = resultData?.images?.[0]?.url
+        || resultData?.image?.url
+        || resultData?.output?.url
+        || (typeof resultData?.output === 'string' ? resultData.output : null)
+        || (Array.isArray(resultData?.output) ? resultData.output[0]?.url || resultData.output[0] : null)
+        || null;
+
+      if (!imageResultUrl) {
+        console.log(`[generate-image] WARNING: No image URL in provider response. Keys: ${Object.keys(resultData || {}).join(', ')}`);
+        console.log(`[generate-image] Response snippet: ${JSON.stringify(resultData).slice(0, 500)}`);
+      }
+
+      if (supabase) {
+        try {
+          const logData = {
+            model_id: resolvedModelId,
+            prompt: prompt.slice(0, 500),
+            ratio: selectedRatio,
+            resolution: selectedQuality,
+            quality_tier: selectedQuality,
+            credits_used: creditsUsed,
+            provider_cost: totalCost,
+            revenue: revenueUsd,
+            margin: profitUsd,
+            requested_ratio: selectedRatio,
+            requested_quality_tier: selectedQuality,
+            actual_api_cost: totalCost,
+            generation_cost: actualApiCost,
+            upscale_cost: upscaleCost,
+            revenue_usd: revenueUsd,
+            profit_usd: profitUsd,
+            margin_pct: marginPct,
+            was_upscaled: wasUpscaled,
+            used_upscale_pipeline: wasUpscaled,
+            upscale_model: upscaleModel,
+            actual_output_width: finalWidth,
+            actual_output_height: finalHeight,
+            image_url: imageResultUrl,
+            error_message: imageResultUrl ? null : 'No image URL found in provider response.',
+            status: imageResultUrl ? "completed" : "failed",
+            used_image_input: isImageToImage,
+            input_image_urls: isImageToImage ? allInputUrls : [],
+            source_mode: isImageToImage ? 'image-to-image' : 'text-to-image',
+          };
+          if (job_id) {
+            await supabase.from("generation_logs").update(logData).eq("id", job_id);
+          } else {
+            await supabase.from("generation_logs").insert(logData);
+          }
+        } catch (e) {
+          console.log("Generation log error (non-fatal):", e);
         }
       }
-    }
 
-    // ===== ECONOMICS =====
-    const totalCost = actualApiCost + upscaleCost;
-    const revenueUsd = creditsUsed * CREDIT_VALUE_USD;
-    const profitUsd = revenueUsd - totalCost;
-    const marginPct = revenueUsd > 0 ? (profitUsd / revenueUsd) * 100 : 0;
-
-    // Robust image URL extraction — different providers return different shapes
-    const imageResultUrl = resultData?.images?.[0]?.url
-      || resultData?.image?.url
-      || resultData?.output?.url
-      || (typeof resultData?.output === 'string' ? resultData.output : null)
-      || (Array.isArray(resultData?.output) ? resultData.output[0]?.url || resultData.output[0] : null)
-      || null;
-
-    if (!imageResultUrl) {
-      console.log(`[generate-image] WARNING: No image URL found in provider response. Keys: ${Object.keys(resultData || {}).join(', ')}`);
-      console.log(`[generate-image] Response snippet: ${JSON.stringify(resultData).slice(0, 500)}`);
-    }
-
-    // ===== UPDATE OR INSERT LOG =====
-    if (supabase) {
-      try {
-        const logData = {
-          model_id: resolvedModelId,
-          prompt: prompt.slice(0, 500),
-          ratio: selectedRatio,
-          resolution: selectedQuality,
-          quality_tier: selectedQuality,
+      console.log(`[generate-image] Done. job_id=${job_id || 'none'} mode=${isImageToImage ? 'i2i' : 't2i'} genCost=$${actualApiCost.toFixed(4)} total=$${totalCost.toFixed(4)} margin=${marginPct.toFixed(1)}%`);
+      const normalizedImages = resultData?.images || (resultData?.image ? [resultData.image] : []);
+      return {
+        ok: true as const,
+        payload: {
+          ...resultData,
+          images: normalizedImages,
+          model_used: activeEndpoint,
           credits_used: creditsUsed,
-          provider_cost: totalCost,
-          revenue: revenueUsd,
-          margin: profitUsd,
-          requested_ratio: selectedRatio,
-          requested_quality_tier: selectedQuality,
           actual_api_cost: totalCost,
-          generation_cost: actualApiCost,
-          upscale_cost: upscaleCost,
           revenue_usd: revenueUsd,
           profit_usd: profitUsd,
           margin_pct: marginPct,
+          requested_ratio: selectedRatio,
+          requested_quality: selectedQuality,
           was_upscaled: wasUpscaled,
-          used_upscale_pipeline: wasUpscaled,
           upscale_model: upscaleModel,
-          actual_output_width: finalWidth,
-          actual_output_height: finalHeight,
-          image_url: imageResultUrl,
-          error_message: imageResultUrl ? null : 'No image URL found in provider response.',
-          status: imageResultUrl ? "completed" : "failed",
-          used_image_input: isImageToImage,
-          input_image_urls: isImageToImage ? allInputUrls : [],
-          source_mode: isImageToImage ? 'image-to-image' : 'text-to-image',
-        };
+          job_id: job_id || null,
+          is_image_to_image: isImageToImage,
+        },
+      };
+    };
 
-        if (job_id) {
-          await supabase.from("generation_logs").update(logData).eq("id", job_id);
-        } else {
-          await supabase.from("generation_logs").insert(logData);
-        }
-      } catch (e) {
-        console.log("Generation log error (non-fatal):", e);
+    // ===== ASYNC PATH for slow endpoints (GPT Image 2 etc.) =====
+    // Submit to fal, then keep finalizing in the background after returning the response.
+    if (SLOW_ENDPOINTS.has(activeEndpoint) && job_id) {
+      const sub = await falSubmit(activeEndpoint, payload, falHeaders);
+      if (sub.error) {
+        if (supabase) await supabase.from("generation_logs").update({ status: "failed", error_message: sub.error }).eq("id", job_id);
+        return new Response(JSON.stringify({ error: sub.error }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
+
+      // Mark the job as actively generating now that fal accepted the submission.
+      if (supabase) {
+        await supabase.from("generation_logs").update({ status: "generating" }).eq("id", job_id);
+      }
+
+      const backgroundWork = (async () => {
+        try {
+          const polled = await falPollUntilDone(sub.submit, falHeaders, { maxAttempts: 200, intervalMs: 3000, label: activeEndpoint });
+          await finalizeJob(polled);
+        } catch (e) {
+          console.error(`[generate-image] background finalize failed for job ${job_id}:`, e);
+          if (supabase) {
+            await supabase.from("generation_logs").update({
+              status: "failed",
+              error_message: e instanceof Error ? e.message : "Background finalize error",
+            }).eq("id", job_id);
+          }
+        }
+      })();
+
+      // Keep the function alive until background work completes, even after we respond.
+      // @ts-ignore EdgeRuntime is provided by Supabase Edge runtime
+      try { (globalThis as any).EdgeRuntime?.waitUntil?.(backgroundWork); } catch (_) {}
+
+      return new Response(JSON.stringify({
+        status: "queued",
+        job_id,
+        provider_request_id: sub.submit?.request_id || null,
+        model_used: activeEndpoint,
+      }), { status: 202, headers: { ...corsHeaders, "Content-Type": "application/json" } });
     }
 
-    console.log(`[generate-image] Complete. job_id=${job_id || 'none'} mode=${isImageToImage ? 'i2i' : 't2i'} genCost=$${actualApiCost.toFixed(4)} total=$${totalCost.toFixed(4)} margin=${marginPct.toFixed(1)}%`);
-
-    // Normalize output: some endpoints return { image: { url } } instead of { images: [{ url }] }
-    const normalizedImages = resultData?.images || (resultData?.image ? [resultData.image] : []);
-
-    return new Response(JSON.stringify({
-      ...resultData,
-      images: normalizedImages,
-      model_used: activeEndpoint,
-      credits_used: creditsUsed,
-      actual_api_cost: totalCost,
-      revenue_usd: revenueUsd,
-      profit_usd: profitUsd,
-      margin_pct: marginPct,
-      requested_ratio: selectedRatio,
-      requested_quality: selectedQuality,
-      was_upscaled: wasUpscaled,
-      upscale_model: upscaleModel,
-      job_id: job_id || null,
-      is_image_to_image: isImageToImage,
-    }), {
+    // ===== SYNCHRONOUS PATH (default — fast endpoints) =====
+    const genResult = await falQueueRun(activeEndpoint, payload, falHeaders);
+    const finalized = await finalizeJob(genResult);
+    if (!finalized.ok) {
+      return new Response(JSON.stringify({ error: finalized.error }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+    }
+    return new Response(JSON.stringify(finalized.payload), {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
 
@@ -499,7 +561,7 @@ serve(async (req) => {
             .eq("id", job_id);
         }
       } catch {
-        // no-op: preserve original error response
+        // no-op
       }
     }
     return new Response(
