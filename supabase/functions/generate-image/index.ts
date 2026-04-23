@@ -184,31 +184,52 @@ function resolvePayload(endpoint: string, ratio: string, quality: string, inputT
 }
 
 // ===== FAL QUEUE RUNNER =====
-async function falQueueRun(endpoint: string, payload: Record<string, unknown>, falHeaders: Record<string, string>): Promise<{ data: any; error?: string }> {
+// Slow endpoints (GPT Image 2) where inference can exceed Supabase edge function wall-clock.
+// For these, we return the queued response immediately and finish the work in the background
+// via EdgeRuntime.waitUntil (so the row is updated when fal completes, even after the HTTP
+// response is closed).
+const SLOW_ENDPOINTS = new Set<string>([
+  "fal-ai/gpt-image-2",
+  "openai/gpt-image-2/edit",
+]);
+
+async function falSubmit(endpoint: string, payload: Record<string, unknown>, falHeaders: Record<string, string>): Promise<{ submit?: any; error?: string }> {
   const submitRes = await fetch(`https://queue.fal.run/${endpoint}`, {
     method: "POST", headers: falHeaders, body: JSON.stringify(payload),
   });
   if (!submitRes.ok) {
     const errorText = await submitRes.text();
     console.error(`fal.ai submit error for ${endpoint}:`, submitRes.status, errorText);
-    return { data: null, error: `fal.ai API error ${submitRes.status}: ${errorText}` };
+    return { error: `fal.ai API error ${submitRes.status}: ${errorText}` };
   }
-  const submitData = await submitRes.json();
-  const { status_url, response_url } = submitData;
-  if (!status_url || !response_url) return { data: submitData };
+  return { submit: await submitRes.json() };
+}
 
-  for (let i = 0; i < 60; i++) {
-    await new Promise(r => setTimeout(r, 2000));
+async function falPollUntilDone(submit: any, falHeaders: Record<string, string>, opts: { maxAttempts?: number; intervalMs?: number; label?: string } = {}): Promise<{ data: any; error?: string }> {
+  const { status_url, response_url } = submit || {};
+  if (!status_url || !response_url) return { data: submit };
+  const maxAttempts = opts.maxAttempts ?? 180;   // up to ~9 min at 3s
+  const intervalMs = opts.intervalMs ?? 3000;
+  const label = opts.label || "poll";
+  for (let i = 0; i < maxAttempts; i++) {
+    await new Promise(r => setTimeout(r, intervalMs));
     const statusRes = await fetch(status_url, { headers: falHeaders });
     const statusData = await statusRes.json();
-    console.log(`[${endpoint}] Poll ${i + 1}: ${statusData.status}`);
+    if (i % 5 === 0) console.log(`[${label}] Poll ${i + 1}: ${statusData.status}`);
     if (statusData.status === "COMPLETED") {
       const resultRes = await fetch(response_url, { headers: falHeaders });
       return { data: await resultRes.json() };
     }
     if (statusData.status === "FAILED") return { data: null, error: `Generation failed: ${JSON.stringify(statusData)}` };
   }
-  return { data: null, error: "Generation timed out after 120 seconds" };
+  return { data: null, error: `Generation timed out after ${(maxAttempts * intervalMs) / 1000}s` };
+}
+
+// Backwards-compatible synchronous runner used for fast endpoints + upscale steps.
+async function falQueueRun(endpoint: string, payload: Record<string, unknown>, falHeaders: Record<string, string>): Promise<{ data: any; error?: string }> {
+  const sub = await falSubmit(endpoint, payload, falHeaders);
+  if (sub.error) return { data: null, error: sub.error };
+  return await falPollUntilDone(sub.submit, falHeaders, { maxAttempts: 60, intervalMs: 2000, label: endpoint });
 }
 
 // ===== UPSCALE WITH CLARITY UPSCALER =====
