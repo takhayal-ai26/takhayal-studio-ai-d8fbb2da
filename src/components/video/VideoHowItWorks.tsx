@@ -132,7 +132,7 @@ export default function VideoHowItWorks() {
 
       <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-[0_16px_48px_hsl(var(--shadow-color))] dark:bg-card/25">
         <div className="absolute inset-y-0 start-0 w-48 bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.24),transparent_66%)]" />
-        <div className="relative grid items-center gap-5 px-6 py-5 lg:grid-cols-[92px_230px_minmax(0,1fr)]">
+        <div className="relative grid items-center gap-5 px-6 py-5 lg:grid-cols-[92px_250px_minmax(0,1fr)] xl:grid-cols-[92px_280px_minmax(0,1fr)]">
           <div className="flex items-center gap-4 lg:justify-center">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary shadow-[0_0_42px_hsl(var(--primary)/0.24)]">
               <Lightbulb size={30} strokeWidth={1.8} />
@@ -146,11 +146,11 @@ export default function VideoHowItWorks() {
             {isAr ? 'نصائح لنتائج أفضل' : 'Pro tips for better results'}
           </h4>
 
-          <div className="grid min-w-0 gap-4 md:grid-cols-2 lg:grid-cols-4 lg:gap-0">
+          <div className="grid min-w-0 gap-3 md:grid-cols-2 xl:grid-cols-4">
             {tips.map((tip, i) => (
               <div
                 key={i}
-                className="flex min-w-0 items-center gap-3 py-1 lg:border-s lg:border-border/70 lg:px-5 lg:first:border-s-0"
+                className="flex min-w-0 items-center gap-3 rounded-xl bg-background/20 px-3 py-2.5"
               >
                 <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary shadow-[0_0_22px_hsl(var(--primary)/0.12)]">
                   {tip.icon}
