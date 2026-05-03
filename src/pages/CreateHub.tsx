@@ -25,7 +25,7 @@ export default function CreateHub() {
   const handleToolClick = (tool: typeof tools[0]) => {
     if (tool.slug === 'generate') {
       setActivePage('canvas');
-      navigate(localizePath('/studio', lang));
+      navigate(localizePath('/tools/generate', lang));
       return;
     }
     navigate(localizePath(`/tools/${tool.slug}`, lang));

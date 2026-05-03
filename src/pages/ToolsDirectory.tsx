@@ -64,7 +64,7 @@ export default function ToolsDirectory() {
                   onClick={() => {
                     if (tool.slug === 'generate') {
                       setActivePage('canvas');
-                      navigate(localizePath('/studio', lang));
+                      navigate(localizePath('/tools/generate', lang));
                     } else {
                       navigate(localizePath(`/tools/${tool.slug}`, lang));
                     }

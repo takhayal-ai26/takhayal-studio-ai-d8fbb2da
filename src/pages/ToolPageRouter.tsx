@@ -6,11 +6,20 @@ import { Loader2 } from 'lucide-react';
 const StandardToolPage = lazy(() => import('./ToolPage'));
 const GuidedToolPage = lazy(() => import('./GuidedToolPage'));
 const EditImagePage = lazy(() => import('./EditImagePage'));
+const GenerateImageToolPage = lazy(() => import('./GenerateImageToolPage'));
 
 export default function ToolPageRouter() {
   const { toolId } = useParams();
   const { tools, isLoading } = useToolsDB();
   const tool = tools.find(t => t.slug === toolId || t.id === toolId);
+
+  if (toolId === 'generate') {
+    return (
+      <Suspense fallback={<div className="flex items-center justify-center h-screen"><Loader2 className="animate-spin text-primary" size={24} /></div>}>
+        <GenerateImageToolPage />
+      </Suspense>
+    );
+  }
 
   if (isLoading) {
     return <div className="flex items-center justify-center h-screen"><Loader2 className="animate-spin text-primary" size={24} /></div>;
