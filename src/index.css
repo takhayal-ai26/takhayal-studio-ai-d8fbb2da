@@ -98,13 +98,13 @@
 /* ── Light-mode hero readability (desktop only) ── */
 @media (min-width: 768px) {
   [data-theme="light"] nav[data-hero-transparent="true"] {
-    background: rgba(255, 255, 255, 0.55) !important;
-    backdrop-filter: blur(16px) saturate(1.4) !important;
-    -webkit-backdrop-filter: blur(16px) saturate(1.4) !important;
+    background: hsl(var(--background) / 0.78);
+    backdrop-filter: blur(12px) saturate(1.12);
+    -webkit-backdrop-filter: blur(12px) saturate(1.12);
   }
   [data-theme="light"] nav[data-hero-transparent="true"] button,
   [data-theme="light"] nav[data-hero-transparent="true"] a {
-    text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+    text-shadow: none;
   }
 }
 
@@ -218,6 +218,11 @@
   box-shadow: none !important;
   border: none !important;
   background: transparent !important;
+}
+
+[data-home-surface] a:hover,
+[data-home-surface] button:hover {
+  text-decoration: none;
 }
 [data-hero-input]:focus-visible {
   outline: 2px solid hsl(var(--ring)) !important;
@@ -650,7 +655,18 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
     animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  .ticker-left,
+  .ticker-right,
+  .gen-card-processing,
+  .gen-shimmer,
+  .gen-glow,
+  .gen-sweep::after {
+    animation: none !important;
   }
 }
 
@@ -658,7 +674,7 @@
    UTILITY CLASSES
    ══════════════════════════════════════════ */
 
-/* Premium glass surface */
+/* Subtle app surface */
 .glass-surface {
   background: hsl(var(--card) / 0.92);
   border: 1px solid hsl(var(--surface-border));

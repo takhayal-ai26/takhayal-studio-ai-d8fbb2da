@@ -7,6 +7,9 @@ import { useVideoModels } from '@/hooks/useVideoModels';
 import { ArrowLeft, ArrowRight, Zap, Star, Target, Gauge, Sparkles, ChevronLeft, ChevronRight, Film } from 'lucide-react';
 import { Footer } from '@/components/layout/Footer';
 import { useRef, useState, useEffect } from 'react';
+import { PageSeo, absoluteUrl } from '@/components/seo/PageSeo';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
+import { toDateOnly } from '@/lib/seo-helpers';
 
 /* ─── Hero ─── */
 function ModelDetailHero({ guide, isAr, isRTL, minCredits, onStart }: any) {
@@ -232,16 +235,130 @@ export default function ModelDetail() {
 
   const handleStartCreating = () => {
     if (isVideo) {
-      navigate(`/video?model=${guide.slug}`);
+      const slugify = (value: string) => value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+      const matchedVideo = videoModels.find(model =>
+        slugify(model.display_name) === guide.slug ||
+        slugify(model.name) === guide.slug ||
+        guide.slug.includes(slugify(model.display_name)) ||
+        slugify(model.display_name).includes(guide.slug)
+      );
+      navigate(`/video?modelId=${matchedVideo?.id || guide.slug}`);
     } else {
       if (guide.linked_model_id) setSelectedModelId(guide.linked_model_id);
       setActivePage('canvas');
-      navigate('/studio');
+      navigate(guide.linked_model_id ? `/studio?modelId=${guide.linked_model_id}` : '/studio');
     }
   };
 
+  const displayName = isAr ? guide.name_ar : guide.name_en;
+  const shortDescription = isAr
+    ? guide.short_description_ar || guide.short_description_en || guide.title_ar
+    : guide.short_description_en || guide.short_description_ar || guide.title_en;
+  const bestForLine = isAr ? guide.best_for_line_ar : guide.best_for_line_en;
+  const dateModified = toDateOnly(guide.updated_at);
+  const updatedLabel = dateModified
+    ? new Intl.DateTimeFormat(isAr ? 'ar-KW' : 'en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      }).format(new Date(dateModified))
+    : null;
+  const seoTitle = `${displayName} | Takhayal.ai`;
+  const seoDescription = shortDescription
+    ? `${shortDescription} ${isAr ? `الأفضل لـ ${bestForLine}.` : `Best for ${bestForLine}.`}`
+    : `${displayName} | Takhayal.ai`;
+  const faqSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: isAr ? `ما هو نموذج ${displayName}؟` : `What is ${displayName}?`,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: shortDescription || seoDescription,
+        },
+      },
+      {
+        '@type': 'Question',
+        name: isAr ? 'ما أفضل استخدام لهذا النموذج؟' : 'What is this model best for?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: bestForLine || (isAr ? 'مهام إبداعية متنوعة داخل تخيّل.' : 'A range of creative tasks inside Takhayal.'),
+        },
+      },
+      {
+        '@type': 'Question',
+        name: isAr ? 'كيف أبدأ باستخدامه؟' : 'How do I start with it?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: isVideo
+            ? (isAr ? 'ابدأ من صفحة الفيديو ثم اختر النموذج المناسب ومدة التوليد.' : 'Start from the video page, then choose the model and generation duration.')
+            : (isAr ? 'ابدأ من الاستوديو، ثم اختر النموذج وابدأ التوليد أو التعديل حسب المهمة.' : 'Start from the studio, choose the model, then generate or edit based on your workflow.'),
+        },
+      },
+    ],
+  };
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: isAr ? 'النماذج' : 'Models',
+        item: absoluteUrl('/models'),
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: displayName,
+        item: absoluteUrl(`/models/${guide.slug}`),
+      },
+    ],
+  };
+  const softwareSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'SoftwareApplication',
+    name: displayName,
+    description: seoDescription,
+    url: absoluteUrl(`/models/${guide.slug}`),
+    image: guide.main_image_url || guide.video_preview_url,
+    applicationCategory: isVideo ? 'VideoApplication' : 'GraphicsApplication',
+    operatingSystem: 'Web',
+    inLanguage: isAr ? 'ar' : 'en',
+    ...(dateModified ? { dateModified } : {}),
+  };
+  const faqs = [
+    {
+      q: isAr ? `ما الذي يميز ${displayName}؟` : `What makes ${displayName} different?`,
+      a: seoDescription,
+    },
+    {
+      q: isAr ? 'متى أختار هذا النموذج؟' : 'When should I choose this model?',
+      a: isAr
+        ? `اختره عندما يكون هدفك الأساسي هو ${bestForLine || 'الحصول على نتيجة إبداعية مناسبة'}.`
+        : `Choose it when your main goal is ${bestForLine || 'getting the right creative output'}.`,
+    },
+    {
+      q: isAr ? 'هل هو مناسب للمقارنة مع نماذج أخرى؟' : 'Is it suitable for side-by-side comparison?',
+      a: isAr
+        ? 'نعم. صفحة النموذج تعرض السرعة والجودة وأفضل استخدام، وبعض النماذج تتضمن مقارنات بصرية مباشرة.'
+        : 'Yes. The page shows speed, quality, and best-for guidance, and some models include direct visual comparisons.',
+    },
+  ];
+
   return (
     <div className="flex-1 overflow-y-auto animate-page-enter" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
+      <PageSeo
+        title={seoTitle}
+        description={seoDescription}
+        canonicalPath={`/models/${guide.slug}`}
+        image={guide.main_image_url || guide.video_preview_url || undefined}
+        pageType="WebPage"
+        dateModified={dateModified}
+        schemas={[breadcrumbSchema, softwareSchema, faqSchema]}
+      />
       <ModelDetailHero guide={guide} isAr={isAr} isRTL={isRTL} minCredits={minCredits} onStart={handleStartCreating} />
 
       <div className="max-w-7xl mx-auto px-5 md:px-8">
@@ -252,6 +369,11 @@ export default function ModelDetail() {
             <QuickInfoCard icon={Star} label={isAr ? 'الجودة' : 'Quality'} value={guide.quality} />
             <QuickInfoCard icon={Target} label={isAr ? 'الأفضل لـ' : 'Best For'} value={isAr ? guide.best_for_line_ar : guide.best_for_line_en} />
           </div>
+          {updatedLabel && (
+            <p className="text-[12px] text-muted-foreground mt-4">
+              {isAr ? `آخر تحديث: ${updatedLabel}` : `Last updated: ${updatedLabel}`}
+            </p>
+          )}
         </section>
 
         {(isAr ? guide.short_description_ar : guide.short_description_en) && (
@@ -312,6 +434,22 @@ export default function ModelDetail() {
             </div>
           </section>
         )}
+
+        <section className="my-14">
+          <h2 className="typo-heading-section text-2xl font-bold mb-5">{isAr ? 'أسئلة شائعة' : 'Frequently asked questions'}</h2>
+          <div className="rounded-2xl bg-card/60 backdrop-blur-sm border border-border/20 p-4 md:p-6 shadow-sm">
+            <Accordion type="single" collapsible>
+              {faqs.map((item, index) => (
+                <AccordionItem key={item.q} value={`faq-${index}`}>
+                  <AccordionTrigger className="text-start font-medium">{item.q}</AccordionTrigger>
+                  <AccordionContent className="text-sm text-muted-foreground leading-7">
+                    {item.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </section>
 
         {otherGuides.length > 0 && (
           <section className="my-14">

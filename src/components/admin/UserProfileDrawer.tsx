@@ -249,8 +249,8 @@ export function UserProfileDrawer({ userId, initialAction, onClose, onRefresh }:
   if (!profile && loading) {
     return (
       <div className="fixed inset-0 z-50">
-        <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-        <div className="absolute right-0 top-0 bottom-0 w-[480px] bg-[#111111] p-6 flex items-center justify-center">
+        <div className="absolute inset-0 bg-foreground/50" onClick={onClose} />
+        <div className="absolute right-0 top-0 bottom-0 w-[480px] bg-card p-6 flex items-center justify-center">
           <p className="text-muted-foreground">Loading...</p>
         </div>
       </div>
@@ -263,16 +263,16 @@ export function UserProfileDrawer({ userId, initialAction, onClose, onRefresh }:
 
   return (
     <div className="fixed inset-0 z-50">
-      <div className="absolute inset-0 bg-black/50" onClick={onClose} />
-      <div className="absolute right-0 top-0 bottom-0 w-[480px] bg-[#111111] border-l border-border/30 flex flex-col animate-in slide-in-from-right duration-200 overflow-hidden">
+      <div className="absolute inset-0 bg-foreground/50" onClick={onClose} />
+      <div className="absolute right-0 top-0 bottom-0 w-[480px] bg-card border-l border-border/30 flex flex-col animate-in slide-in-from-right duration-200 overflow-hidden">
         {/* Header */}
         <div className="p-5 border-b border-border/20 flex items-start gap-4">
           <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center text-lg font-bold text-primary shrink-0">
-            {profile.avatar_url ? <img src={profile.avatar_url} className="w-14 h-14 rounded-full object-cover" /> : initials}
+            {profile.avatar_url ? <img src={profile.avatar_url} alt="" className="w-14 h-14 rounded-full object-cover" /> : initials}
           </div>
           <div className="flex-1 min-w-0">
             <p className="text-lg font-bold text-foreground truncate">{profile.full_name}</p>
-            <p className="text-sm text-[#6B6969]">{profile.email}</p>
+            <p className="text-sm text-muted-foreground">{profile.email}</p>
             <div className="flex items-center gap-2 mt-1.5">
               <Badge variant="outline" className={`text-[10px] capitalize ${statusColor[profile.status] || statusColor.active}`}>{profile.status}</Badge>
               <Badge variant={profile.plan !== 'free' ? 'default' : 'secondary'} className="text-[10px] capitalize">{profile.plan}</Badge>
@@ -484,7 +484,7 @@ export function UserProfileDrawer({ userId, initialAction, onClose, onRefresh }:
                       <tr key={g.id} className="border-b border-border/10">
                         <td className="p-2">
                           {g.image_url ? (
-                            <img src={g.image_url} className="w-10 h-10 rounded object-cover" />
+                            <img src={g.image_url} alt="" className="w-10 h-10 rounded object-cover" />
                           ) : (
                             <div className="w-10 h-10 rounded bg-muted/20 flex items-center justify-center"><ImageIcon size={12} className="text-muted-foreground" /></div>
                           )}

@@ -1,9 +1,8 @@
-import { useEffect, useState } from 'react';
-import { Film, Download, RotateCcw, Play, Clock } from 'lucide-react';
+import { useCallback, useEffect, useState } from 'react';
+import { Film, Play, Clock } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { cn } from '@/lib/utils';
 
 interface VideoHistoryItem {
   id: string;
@@ -23,8 +22,13 @@ export default function VideoHistoryPanel() {
   const [items, setItems] = useState<VideoHistoryItem[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    if (!user) { setLoading(false); return; }
+  const fetchItems = useCallback(async () => {
+    if (!user) {
+      setItems([]);
+      setLoading(false);
+      return;
+    }
+
     supabase
       .from('generation_logs')
       .select('id, prompt, video_url, thumbnail_url, duration, status, created_at, model_id')
@@ -37,6 +41,31 @@ export default function VideoHistoryPanel() {
         setLoading(false);
       });
   }, [user]);
+
+  useEffect(() => {
+    fetchItems();
+  }, [fetchItems]);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const channel = supabase
+      .channel('video-generation-history')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'generation_logs', filter: `user_id=eq.${user.id}` },
+        (payload) => {
+          const row = (payload.new || payload.old) as Partial<VideoHistoryItem> & { media_type?: string };
+          if (row.media_type && row.media_type !== 'video') return;
+          fetchItems();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [fetchItems, user]);
 
   if (loading) {
     return (

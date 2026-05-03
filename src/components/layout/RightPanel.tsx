@@ -27,7 +27,7 @@ export function RightPanel() {
   const {
     prompt, setPrompt, selectedTemplate, setSelectedTemplate, selectedStyle, setSelectedStyle,
     aspectRatio, setAspectRatio, selectedQualityTier, setSelectedQualityTier,
-    enhancePrompt, setEnhancePrompt, generate, isGenerating, credits, getCreditCost,
+    generate, isGenerating, credits, getCreditCost,
     availableModels, selectedModelId, setSelectedModelId, selectedModel,
     availableQualityTiers, availableRatios, tierCreditsMap,
   } = useApp();
@@ -88,10 +88,6 @@ export function RightPanel() {
             {prompt.length > 0 && (<button onClick={() => { setPrompt(''); setSelectedTemplate(null); }} className="text-muted-foreground/60 hover:text-foreground transition-colors"><X size={14} /></button>)}
           </div>
           {selectedTemplate && (<div className="mt-2 inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-primary/[0.08] border border-primary/30 text-primary text-[12px]">{t.studio.templateLabel}: {selectedTemplate}<button onClick={() => setSelectedTemplate(null)}><X size={12} /></button></div>)}
-          <div className="flex items-center justify-between mt-3">
-            <div><p className="text-[13px] font-medium text-foreground">{t.studio.enhanceWithAI}</p><p className="text-[11px] text-muted-foreground">{t.studio.enhanceDesc}</p></div>
-            <button onClick={() => setEnhancePrompt(!enhancePrompt)} className={`w-10 h-[22px] rounded-full relative transition-colors duration-200 ${enhancePrompt ? 'bg-primary' : 'bg-surface-border'}`}><div className={`absolute top-[3px] w-4 h-4 rounded-full transition-transform duration-200 ${enhancePrompt ? 'translate-x-[22px] bg-foreground' : 'translate-x-[3px] bg-muted-foreground'}`} /></button>
-          </div>
         </Section>
         <Section title={t.studio.templates} defaultOpen>
           <p className="text-[12px] text-muted-foreground mb-2.5">{t.studio.quickStart}</p>

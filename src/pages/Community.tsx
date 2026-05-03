@@ -7,6 +7,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Sparkles, ArrowRight } from 'lucide-react';
 import { CommunityDetailModal } from '@/components/community/CommunityDetailModal';
 import { CommunityCard } from '@/components/community/CommunityCard';
+import { PageSeo } from '@/components/seo/PageSeo';
 
 export interface CommunityPost {
   id: string;
@@ -95,7 +96,7 @@ export default function Community() {
       setPosts(mapped);
       setLoading(false);
     })();
-  }, []);
+  }, [isAr]);
 
   // Open post from URL param
   useEffect(() => {
@@ -152,26 +153,42 @@ export default function Community() {
 
   if (loading) {
     return (
-      <div className="flex-1 pb-24 md:pb-6" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
-        <section className="text-center px-5 pt-10 pb-6">
-          <div className="h-8 w-48 bg-muted animate-pulse rounded-lg mx-auto mb-2" />
-          <div className="h-4 w-72 bg-muted animate-pulse rounded mx-auto" />
-        </section>
-        <div className="max-w-7xl mx-auto px-3 md:px-6">
-          <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3">
-            {Array.from({ length: 10 }).map((_, i) => (
-              <div key={i} className="mb-3 break-inside-avoid">
-                <div className="rounded-2xl bg-muted animate-pulse" style={{ aspectRatio: i % 3 === 0 ? '3/4' : i % 3 === 1 ? '1/1' : '4/3' }} />
-              </div>
-            ))}
+      <>
+        <PageSeo
+          title={isAr ? 'المجتمع | Takhayal.ai' : 'Community | Takhayal.ai'}
+          description={isAr ? 'إلهام المجتمع داخل تخيّل.' : 'Community inspiration inside Takhayal.'}
+          canonicalPath="/community"
+          pageType="CollectionPage"
+          noIndex
+        />
+        <div className="flex-1 pb-24 md:pb-6" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
+          <section className="text-center px-5 pt-10 pb-6">
+            <div className="h-8 w-48 bg-muted animate-pulse rounded-lg mx-auto mb-2" />
+            <div className="h-4 w-72 bg-muted animate-pulse rounded mx-auto" />
+          </section>
+          <div className="max-w-7xl mx-auto px-3 md:px-6">
+            <div className="columns-2 sm:columns-2 md:columns-3 lg:columns-4 xl:columns-5 gap-3">
+              {Array.from({ length: 10 }).map((_, i) => (
+                <div key={i} className="mb-3 break-inside-avoid">
+                  <div className="rounded-2xl bg-muted animate-pulse" style={{ aspectRatio: i % 3 === 0 ? '3/4' : i % 3 === 1 ? '1/1' : '4/3' }} />
+                </div>
+              ))}
+            </div>
           </div>
         </div>
-      </div>
+      </>
     );
   }
 
   return (
     <>
+      <PageSeo
+        title={isAr ? 'المجتمع | Takhayal.ai' : 'Community | Takhayal.ai'}
+        description={isAr ? 'إلهام المجتمع داخل تخيّل.' : 'Community inspiration inside Takhayal.'}
+        canonicalPath="/community"
+        pageType="CollectionPage"
+        noIndex
+      />
       <div
         ref={scrollRef}
         className="flex-1 overflow-y-auto pb-24 md:pb-6 animate-page-enter"
@@ -199,7 +216,7 @@ export default function Community() {
               </p>
               <button
                 onClick={() => requireAuth(() => navigate('/studio'))}
-                className="mt-5 h-10 px-6 rounded-full bg-primary text-primary-foreground text-[13px] font-semibold inline-flex items-center gap-2 hover:brightness-110 transition-all"
+                className="mt-5 min-h-11 px-6 rounded-full bg-primary text-primary-foreground text-[13px] font-semibold inline-flex items-center gap-2 hover:brightness-110 transition-all"
               >
                 {isAr ? 'ابدأ الإبداع' : 'Start Creating'}
                 <ArrowRight size={14} className={isRTL ? 'rotate-180' : ''} />

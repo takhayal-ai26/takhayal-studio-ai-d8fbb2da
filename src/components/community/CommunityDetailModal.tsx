@@ -99,14 +99,14 @@ export function CommunityDetailModal({
         {backgroundLayer}
         {/* Top bar */}
         <div className="relative z-[1] flex items-center justify-between px-4 py-3 shrink-0">
-          <button onClick={onClose} className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center text-foreground">
+          <button onClick={onClose} className="min-h-11 min-w-11 rounded-full bg-muted/50 flex items-center justify-center text-foreground" aria-label={isAr ? 'إغلاق' : 'Close'}>
             <X size={16} />
           </button>
           <div className="flex items-center gap-2">
-            <button onClick={() => onShare(post)} className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center text-foreground">
+            <button onClick={() => onShare(post)} className="min-h-11 min-w-11 rounded-full bg-muted/50 flex items-center justify-center text-foreground" aria-label={isAr ? 'مشاركة العمل' : 'Share work'}>
               <Share2 size={14} />
             </button>
-            <button onClick={handleDownload} className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center text-foreground">
+            <button onClick={handleDownload} className="min-h-11 min-w-11 rounded-full bg-muted/50 flex items-center justify-center text-foreground" aria-label={isAr ? 'تنزيل العمل' : 'Download work'}>
               <Download size={14} />
             </button>
           </div>
@@ -200,7 +200,8 @@ export function CommunityDetailModal({
       {hasPrev && (
         <button
           onClick={(e) => { e.stopPropagation(); onPrev(); }}
-          className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'right-4' : 'left-4'} w-10 h-10 rounded-full bg-muted/60 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all z-10`}
+          className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'right-4' : 'left-4'} min-h-11 min-w-11 rounded-full bg-muted/60 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all z-10`}
+          aria-label={isAr ? 'العمل السابق' : 'Previous work'}
         >
           {isRTL ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
         </button>
@@ -208,7 +209,8 @@ export function CommunityDetailModal({
       {hasNext && (
         <button
           onClick={(e) => { e.stopPropagation(); onNext(); }}
-          className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-4' : 'right-4'} w-10 h-10 rounded-full bg-muted/60 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all z-10`}
+          className={`absolute top-1/2 -translate-y-1/2 ${isRTL ? 'left-4' : 'right-4'} min-h-11 min-w-11 rounded-full bg-muted/60 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-all z-10`}
+          aria-label={isAr ? 'العمل التالي' : 'Next work'}
         >
           {isRTL ? <ChevronLeft size={20} /> : <ChevronRight size={20} />}
         </button>
@@ -253,7 +255,8 @@ export function CommunityDetailModal({
           </div>
           <button
             onClick={onClose}
-            className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            className="min-h-11 min-w-11 rounded-full bg-muted/50 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+            aria-label={isAr ? 'إغلاق' : 'Close'}
           >
             <X size={14} />
           </button>
@@ -330,14 +333,14 @@ export function CommunityDetailModal({
           <div className="flex gap-2">
             <button
               onClick={() => onShare(post)}
-              className="flex-1 h-9 rounded-xl bg-muted/30 text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 flex items-center justify-center gap-1.5 transition-colors"
+              className="flex-1 min-h-11 rounded-xl bg-muted/30 text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 flex items-center justify-center gap-1.5 transition-colors"
             >
               <Share2 size={12} />
               {isAr ? 'مشاركة' : 'Share'}
             </button>
             <button
               onClick={handleDownload}
-              className="flex-1 h-9 rounded-xl bg-muted/30 text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 flex items-center justify-center gap-1.5 transition-colors"
+              className="flex-1 min-h-11 rounded-xl bg-muted/30 text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 flex items-center justify-center gap-1.5 transition-colors"
             >
               <Download size={12} />
               {isAr ? 'تحميل' : 'Download'}

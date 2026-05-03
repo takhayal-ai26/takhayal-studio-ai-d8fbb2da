@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { LogoMark } from '@/components/Logo';
@@ -11,6 +11,7 @@ import { Eye, EyeOff, ShieldCheck } from 'lucide-react';
 export default function AdminLogin() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -18,6 +19,23 @@ export default function AdminLogin() {
   const [success, setSuccess] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [mode, setMode] = useState<'login' | 'reset'>('login');
+
+  useEffect(() => {
+    const reason = new URLSearchParams(location.search).get('reason');
+    if (reason === 'denied') {
+      setError('This account is signed in, but it does not have admin access.');
+      return;
+    }
+    if (reason === 'check_failed') {
+      setError('We could not verify your admin access right now. Please sign in again.');
+      return;
+    }
+    if (reason === 'signin') {
+      setError('Please sign in with an admin account to continue.');
+      return;
+    }
+    setError('');
+  }, [location.search]);
 
   // If already logged in, check admin and redirect
   useEffect(() => {
@@ -30,7 +48,12 @@ export default function AdminLogin() {
       .eq('user_id', user.id)
       .eq('role', 'admin')
       .maybeSingle()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          setError('We could not verify your admin access right now. Please try again.');
+          return;
+        }
+
         if (data) {
           navigate('/admin', { replace: true });
         }

@@ -107,7 +107,7 @@ export function SizeDropdown({ availableRatios, selectedRatio, anchorRect, onSel
               <button
                 key={r}
                 onClick={() => onSelect(r)}
-                className="w-full flex items-center justify-between transition-colors duration-[120ms]"
+                className="w-full flex items-center justify-between transition-colors duration-150"
                 style={{
                   padding: '10px 14px', height: 44,
                   borderBottom: isLast ? 'none' : `1px solid var(--dropdown-divider)`,

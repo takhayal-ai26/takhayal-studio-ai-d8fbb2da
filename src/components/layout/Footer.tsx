@@ -12,7 +12,6 @@ const XIcon = ({ size = 14, className = '' }: { size?: number; className?: strin
 
 const navLinks = [
   { en: 'Home', ar: 'الرئيسية', to: '/' },
-  { en: 'Studio', ar: 'الاستوديو', to: '/studio' },
   { en: 'Gallery', ar: 'المعرض', to: '/gallery' },
   { en: 'Templates', ar: 'القوالب', to: '/templates' },
   { en: 'Community', ar: 'المجتمع', to: '/community' },
@@ -80,7 +79,7 @@ function ModelAccordion({ title, links, isAr }: { title: string; links: { name: 
 }
 
 export function Footer() {
-  const { lang, setLang, isRTL } = useLanguage();
+  const { lang, isRTL } = useLanguage();
   const isAr = lang === 'ar';
 
   return (
@@ -100,7 +99,7 @@ export function Footer() {
             <div className="flex items-center gap-3 pt-1">
               {socialLinks.map((social) => (
                 <a key={social.label} href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label}
-                  className="w-8 h-8 rounded-lg bg-foreground/[0.04] flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors duration-150">
+                  className="w-11 h-11 rounded-lg bg-foreground/[0.04] flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors duration-150">
                   <social.icon size={14} />
                 </a>
               ))}
@@ -115,7 +114,7 @@ export function Footer() {
             <ul className="space-y-2.5">
               {navLinks.map((link) => (
                 <li key={link.to + link.en}>
-                  <Link to={link.to} className="text-[13px] text-muted-foreground hover:text-primary transition-colors duration-150">
+                  <Link to={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors duration-150">
                     {isAr ? link.ar : link.en}
                   </Link>
                 </li>
@@ -132,11 +131,11 @@ export function Footer() {
               {legalLinks.map((link) => (
                 <li key={link.to}>
                   {link.to.startsWith('mailto:') ? (
-                    <a href={link.to} className="text-[13px] text-muted-foreground hover:text-primary transition-colors duration-150">
+                    <a href={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors duration-150">
                       {isAr ? link.ar : link.en}
                     </a>
                   ) : (
-                    <Link to={link.to} className="text-[13px] text-muted-foreground hover:text-primary transition-colors duration-150">
+                    <Link to={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors duration-150">
                       {isAr ? link.ar : link.en}
                     </Link>
                   )}
@@ -189,7 +188,7 @@ export function Footer() {
             <div className="flex items-center gap-3 pt-1">
               {socialLinks.map((social) => (
                 <a key={social.label} href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label}
-                  className="w-8 h-8 rounded-lg bg-foreground/[0.04] flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors duration-150">
+                  className="w-11 h-11 rounded-lg bg-foreground/[0.04] flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors duration-150">
                   <social.icon size={14} />
                 </a>
               ))}
@@ -202,7 +201,7 @@ export function Footer() {
               <h4 className="text-[11px] uppercase tracking-widest font-semibold mb-3 text-primary">{isAr ? 'التنقل' : 'Navigate'}</h4>
               <ul className="space-y-2">
                 {navLinks.map(link => (
-                  <li key={link.to}><Link to={link.to} className="text-[13px] text-muted-foreground hover:text-primary transition-colors">{isAr ? link.ar : link.en}</Link></li>
+                  <li key={link.to}><Link to={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors">{isAr ? link.ar : link.en}</Link></li>
                 ))}
               </ul>
             </div>
@@ -212,9 +211,9 @@ export function Footer() {
                 {legalLinks.map(link => (
                   <li key={link.to}>
                     {link.to.startsWith('mailto:') ? (
-                      <a href={link.to} className="text-[13px] text-muted-foreground hover:text-primary transition-colors">{isAr ? link.ar : link.en}</a>
+                      <a href={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors">{isAr ? link.ar : link.en}</a>
                     ) : (
-                      <Link to={link.to} className="text-[13px] text-muted-foreground hover:text-primary transition-colors">{isAr ? link.ar : link.en}</Link>
+                      <Link to={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors">{isAr ? link.ar : link.en}</Link>
                     )}
                   </li>
                 ))}
@@ -234,10 +233,6 @@ export function Footer() {
           <p className="text-[12px] text-muted-foreground/50">
             {isAr ? '© 2026 تخيّل. جميع الحقوق محفوظة.' : '© 2026 Takhayal.ai. All rights reserved.'}
           </p>
-          <div className="flex items-center gap-1 p-0.5 rounded-full bg-foreground/[0.04]">
-            <button onClick={() => setLang('en')} className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>EN</button>
-            <button onClick={() => setLang('ar')} className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all ${lang === 'ar' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}>AR</button>
-          </div>
         </div>
       </div>
     </footer>

@@ -318,7 +318,7 @@ export default function AdminUsers({ embedded }: { embedded?: boolean } = {}) {
                 <TableCell>
                   <div className="flex items-center gap-3">
                     <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-[11px] font-bold text-primary shrink-0">
-                      {u.avatar_url ? <img src={u.avatar_url} className="w-8 h-8 rounded-full object-cover" /> : (u.full_name?.[0] || 'U').toUpperCase()}
+                      {u.avatar_url ? <img src={u.avatar_url} alt="" className="w-8 h-8 rounded-full object-cover" /> : (u.full_name?.[0] || 'U').toUpperCase()}
                     </div>
                     <div>
                       <p className="text-[13px] font-medium">{u.full_name}</p>

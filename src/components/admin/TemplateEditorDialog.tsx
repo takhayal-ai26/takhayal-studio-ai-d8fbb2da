@@ -28,6 +28,14 @@ interface DBTemplate {
   show_on_studio: boolean;
   sort_order: number;
   default_model_id: string | null;
+  before_image_url?: string | null;
+  after_image_url?: string | null;
+  example_caption_en?: string | null;
+  example_caption_ar?: string | null;
+  best_results_en?: string | null;
+  best_results_ar?: string | null;
+  input_requirements_en?: string | null;
+  input_requirements_ar?: string | null;
 }
 
 interface Props {
@@ -73,6 +81,14 @@ function emptyTemplate(): DBTemplate {
     show_on_studio: false,
     sort_order: 0,
     default_model_id: null,
+    before_image_url: '',
+    after_image_url: '',
+    example_caption_en: '',
+    example_caption_ar: '',
+    best_results_en: '',
+    best_results_ar: '',
+    input_requirements_en: '',
+    input_requirements_ar: '',
   };
 }
 
@@ -292,6 +308,32 @@ export default function TemplateEditorDialog({ open, onOpenChange, template, onS
             <div className="space-y-1.5">
               <Label className="text-xs">Prompt (Arabic) <span className="text-muted-foreground">— display only, NOT used for generation</span></Label>
               <Textarea dir="rtl" value={form.prompt_ar} onChange={e => set('prompt_ar', e.target.value)} className="bg-muted/30 text-sm border-border/40 min-h-[80px] text-right" placeholder="وصف التوليد بالعربية..." />
+            </div>
+
+            <div className="rounded-xl border border-border/30 p-4 space-y-4">
+              <div>
+                <Label className="text-xs">Before / After Preview URLs</Label>
+                <p className="text-[10px] text-muted-foreground mt-1">Used on the public template detail page. Falls back to cover image if empty.</p>
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Input value={form.before_image_url || ''} onChange={e => set('before_image_url', e.target.value)} className="h-9 text-xs bg-muted/30 border-border/40" placeholder="Before image URL" />
+                <Input value={form.after_image_url || ''} onChange={e => set('after_image_url', e.target.value)} className="h-9 text-xs bg-muted/30 border-border/40" placeholder="After image URL" />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <Textarea value={form.example_caption_en || ''} onChange={e => set('example_caption_en', e.target.value)} className="bg-muted/30 text-xs border-border/40 min-h-[60px]" placeholder="Example caption (English)" />
+                <Textarea dir="rtl" value={form.example_caption_ar || ''} onChange={e => set('example_caption_ar', e.target.value)} className="bg-muted/30 text-xs border-border/40 min-h-[60px] text-right" placeholder="شرح المثال بالعربية" />
+              </div>
+            </div>
+
+            <div className="rounded-xl border border-border/30 p-4 space-y-4">
+              <div>
+                <Label className="text-xs">Best Results & Input Requirements</Label>
+                <p className="text-[10px] text-muted-foreground mt-1">Short guidance shown before generation.</p>
+              </div>
+              <Textarea value={form.best_results_en || ''} onChange={e => set('best_results_en', e.target.value)} className="bg-muted/30 text-xs border-border/40 min-h-[60px]" placeholder="Best results note (English)" />
+              <Textarea dir="rtl" value={form.best_results_ar || ''} onChange={e => set('best_results_ar', e.target.value)} className="bg-muted/30 text-xs border-border/40 min-h-[60px] text-right" placeholder="ملاحظة أفضل النتائج" />
+              <Textarea value={form.input_requirements_en || ''} onChange={e => set('input_requirements_en', e.target.value)} className="bg-muted/30 text-xs border-border/40 min-h-[60px]" placeholder="Input requirements (English)" />
+              <Textarea dir="rtl" value={form.input_requirements_ar || ''} onChange={e => set('input_requirements_ar', e.target.value)} className="bg-muted/30 text-xs border-border/40 min-h-[60px] text-right" placeholder="متطلبات الصورة المدخلة" />
             </div>
 
             {/* Default Model */}

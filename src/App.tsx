@@ -1,16 +1,19 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Navigate, Route, Routes } from "react-router-dom";
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
+import { Toaster as SonnerToaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { AppProvider } from "@/context/AppContext";
 import { AuthProvider } from "@/context/AuthContext";
-import { LanguageProvider, useLanguage } from "@/i18n/LanguageContext";
+import { LanguageProvider } from "@/i18n/LanguageContext";
 import { ThemeProvider } from "@/context/ThemeProvider";
 import { AppThemeProvider } from "@/context/AppThemeContext";
 import { AppLayout } from "@/components/layout/AppLayout";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
-import { Suspense, lazy } from "react";
+import { Suspense, lazy, useEffect } from "react";
 import { PageSkeleton, StudioSkeleton, AdminSkeleton } from "@/components/PageSkeleton";
+import { useLanguage } from "@/i18n/LanguageContext";
+import { localizePath } from "@/lib/localized-routes";
 
 // Lazy-loaded pages
 const PortalHome = lazy(() => import("./pages/PortalHome"));
@@ -36,6 +39,7 @@ const CheckoutSuccess = lazy(() => import("./pages/CheckoutSuccess"));
 const SharePage = lazy(() => import("./pages/SharePage"));
 const ModelDetail = lazy(() => import("./pages/ModelDetail"));
 const ModelsDirectory = lazy(() => import("./pages/ModelsDirectory"));
+const SeoLandingPage = lazy(() => import("./pages/SeoLandingPage"));
 
 // Admin — fully code-split
 const AdminProtectedRoute = lazy(() => import("./components/AdminProtectedRoute").then(m => ({ default: m.AdminProtectedRoute })));
@@ -61,37 +65,126 @@ const queryClient = new QueryClient({
   },
 });
 
+function LanguageUrlSync() {
+  const location = useLocation();
+  const { lang, setLang } = useLanguage();
+
+  useEffect(() => {
+    const urlLang = location.pathname === '/en' || location.pathname.startsWith('/en/')
+      ? 'en'
+      : location.pathname === '/ar' || location.pathname.startsWith('/ar/')
+        ? 'ar'
+        : null;
+    if (urlLang) {
+      try {
+        localStorage.setItem('takhayal-lang', urlLang);
+      } catch {
+        // Ignore blocked storage; URL remains the source of truth.
+      }
+    }
+    if (urlLang && urlLang !== lang) setLang(urlLang);
+  }, [lang, location.pathname, setLang]);
+
+  return null;
+}
+
 const RoutedApp = () => {
   const { lang } = useLanguage();
+  const toLocalized = (path: string) => <Navigate to={localizePath(path, lang)} replace />;
 
   return (
     <AppThemeProvider>
+      <LanguageUrlSync />
       <Suspense fallback={<PageSkeleton />}>
-        <Routes key={lang}>
+        <Routes>
           <Route element={<AppLayout />}>
-            <Route path="/" element={<PortalHome />} />
-            <Route path="/home" element={<Navigate to="/" replace />} />
-            <Route path="/studio" element={<Suspense fallback={<StudioSkeleton />}><Canvas /></Suspense>} />
-            <Route path="/image" element={<ToolsDirectory />} />
-            <Route path="/video" element={<Suspense fallback={<StudioSkeleton />}><Video /></Suspense>} />
-            <Route path="/generate/result" element={<GenerateResult />} />
-            <Route path="/pricing" element={<Pricing />} />
-            <Route path="/tools" element={<ToolsDirectory />} />
-            <Route path="/create" element={<CreateHub />} />
-            <Route path="/gallery" element={<Gallery />} />
-            <Route path="/tools/:toolId" element={<ToolPageRouter />} />
-            <Route path="/community" element={<Community />} />
-            <Route path="/templates" element={<Templates />} />
-            <Route path="/templates/:id" element={<TemplateDetail />} />
-            <Route path="/about" element={<About />} />
-            <Route path="/models" element={<ModelsDirectory />} />
-            <Route path="/models/:slug" element={<ModelDetail />} />
-            <Route path="/contact" element={<Contact />} />
-            <Route path="/terms" element={<LegalPage />} />
-            <Route path="/privacy" element={<LegalPage />} />
-            <Route path="/refund" element={<LegalPage />} />
-            <Route path="/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
-            <Route path="/checkout/success" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
+            <Route path="/" element={toLocalized('/')} />
+            <Route path="/en" element={<PortalHome />} />
+            <Route path="/ar" element={<PortalHome />} />
+            <Route path="/home" element={toLocalized('/')} />
+            <Route path="/en/home" element={<Navigate to="/en" replace />} />
+            <Route path="/ar/home" element={<Navigate to="/ar" replace />} />
+            <Route path="/studio" element={toLocalized('/studio')} />
+            <Route path="/en/studio" element={<Suspense fallback={<StudioSkeleton />}><Canvas /></Suspense>} />
+            <Route path="/ar/studio" element={<Suspense fallback={<StudioSkeleton />}><Canvas /></Suspense>} />
+            <Route path="/image" element={toLocalized('/image')} />
+            <Route path="/en/image" element={<ToolsDirectory />} />
+            <Route path="/ar/image" element={<ToolsDirectory />} />
+            <Route path="/video" element={toLocalized('/video')} />
+            <Route path="/en/video" element={<Suspense fallback={<StudioSkeleton />}><Video /></Suspense>} />
+            <Route path="/ar/video" element={<Suspense fallback={<StudioSkeleton />}><Video /></Suspense>} />
+            <Route path="/generate/result" element={toLocalized('/generate/result')} />
+            <Route path="/en/generate/result" element={<GenerateResult />} />
+            <Route path="/ar/generate/result" element={<GenerateResult />} />
+            <Route path="/pricing" element={toLocalized('/pricing')} />
+            <Route path="/en/pricing" element={<Pricing />} />
+            <Route path="/ar/pricing" element={<Pricing />} />
+            <Route path="/tools" element={toLocalized('/tools')} />
+            <Route path="/en/tools" element={<ToolsDirectory />} />
+            <Route path="/ar/tools" element={<ToolsDirectory />} />
+            <Route path="/create" element={toLocalized('/create')} />
+            <Route path="/en/create" element={<CreateHub />} />
+            <Route path="/ar/create" element={<CreateHub />} />
+            <Route path="/gallery" element={toLocalized('/gallery')} />
+            <Route path="/en/gallery" element={<Gallery />} />
+            <Route path="/ar/gallery" element={<Gallery />} />
+            <Route path="/tools/:toolId" element={toLocalized(location.pathname)} />
+            <Route path="/en/tools/:toolId" element={<ToolPageRouter />} />
+            <Route path="/ar/tools/:toolId" element={<ToolPageRouter />} />
+            <Route path="/community" element={toLocalized('/community')} />
+            <Route path="/en/community" element={<Community />} />
+            <Route path="/ar/community" element={<Community />} />
+            <Route path="/templates" element={toLocalized('/templates')} />
+            <Route path="/en/templates" element={<Templates />} />
+            <Route path="/ar/templates" element={<Templates />} />
+            <Route path="/templates/:templateKey" element={toLocalized(location.pathname)} />
+            <Route path="/en/templates/:templateKey" element={<TemplateDetail />} />
+            <Route path="/ar/templates/:templateKey" element={<TemplateDetail />} />
+            <Route path="/about" element={toLocalized('/about')} />
+            <Route path="/en/about" element={<About />} />
+            <Route path="/ar/about" element={<About />} />
+            <Route path="/models" element={toLocalized('/models')} />
+            <Route path="/en/models" element={<ModelsDirectory />} />
+            <Route path="/ar/models" element={<ModelsDirectory />} />
+            <Route path="/models/:slug" element={toLocalized(location.pathname)} />
+            <Route path="/en/models/:slug" element={<ModelDetail />} />
+            <Route path="/ar/models/:slug" element={<ModelDetail />} />
+            <Route path="/ai-tools-for-arabic-brands" element={toLocalized('/ai-tools-for-arabic-brands')} />
+            <Route path="/en/ai-tools-for-arabic-brands" element={<SeoLandingPage />} />
+            <Route path="/ar/ai-tools-for-arabic-brands" element={<SeoLandingPage />} />
+            <Route path="/ai-image-tools-kuwait" element={toLocalized('/ai-image-tools-kuwait')} />
+            <Route path="/en/ai-image-tools-kuwait" element={<SeoLandingPage />} />
+            <Route path="/ar/ai-image-tools-kuwait" element={<SeoLandingPage />} />
+            <Route path="/arabic-ai-design-tool" element={toLocalized('/arabic-ai-design-tool')} />
+            <Route path="/en/arabic-ai-design-tool" element={<SeoLandingPage />} />
+            <Route path="/ar/arabic-ai-design-tool" element={<SeoLandingPage />} />
+            <Route path="/canva-ai-alternative-gcc" element={toLocalized('/canva-ai-alternative-gcc')} />
+            <Route path="/en/canva-ai-alternative-gcc" element={<SeoLandingPage />} />
+            <Route path="/ar/canva-ai-alternative-gcc" element={<SeoLandingPage />} />
+            <Route path="/canva-ai-alternative" element={toLocalized('/canva-ai-alternative')} />
+            <Route path="/en/canva-ai-alternative" element={<SeoLandingPage />} />
+            <Route path="/ar/canva-ai-alternative" element={<SeoLandingPage />} />
+            <Route path="/midjourney-alternative-arabic-brands" element={toLocalized('/midjourney-alternative-arabic-brands')} />
+            <Route path="/en/midjourney-alternative-arabic-brands" element={<SeoLandingPage />} />
+            <Route path="/ar/midjourney-alternative-arabic-brands" element={<SeoLandingPage />} />
+            <Route path="/contact" element={toLocalized('/contact')} />
+            <Route path="/en/contact" element={<Contact />} />
+            <Route path="/ar/contact" element={<Contact />} />
+            <Route path="/terms" element={toLocalized('/terms')} />
+            <Route path="/en/terms" element={<LegalPage />} />
+            <Route path="/ar/terms" element={<LegalPage />} />
+            <Route path="/privacy" element={toLocalized('/privacy')} />
+            <Route path="/en/privacy" element={<LegalPage />} />
+            <Route path="/ar/privacy" element={<LegalPage />} />
+            <Route path="/refund" element={toLocalized('/refund')} />
+            <Route path="/en/refund" element={<LegalPage />} />
+            <Route path="/ar/refund" element={<LegalPage />} />
+            <Route path="/checkout" element={toLocalized('/checkout')} />
+            <Route path="/en/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+            <Route path="/ar/checkout" element={<ProtectedRoute><Checkout /></ProtectedRoute>} />
+            <Route path="/checkout/success" element={toLocalized('/checkout/success')} />
+            <Route path="/en/checkout/success" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
+            <Route path="/ar/checkout/success" element={<ProtectedRoute><CheckoutSuccess /></ProtectedRoute>} />
           </Route>
 
         <Route path="/share/:publicId" element={<Suspense fallback={<PageSkeleton />}><SharePage /></Suspense>} />
@@ -124,22 +217,8 @@ const RoutedApp = () => {
         <Route path="/admin/support" element={<Navigate to="/admin/settings" replace />} />
         <Route path="/admin/integrations" element={<Navigate to="/admin/settings" replace />} />
 
-          <Route path="/users" element={<Navigate to="/admin/users" replace />} />
-          <Route path="/billing" element={<Navigate to="/admin/users" replace />} />
-          <Route path="/pricing-economics" element={<Navigate to="/admin/pricing" replace />} />
-          <Route path="/models" element={<Navigate to="/admin/models" replace />} />
-          <Route path="/content" element={<Navigate to="/admin/content" replace />} />
-          <Route path="/media" element={<Navigate to="/admin/content" replace />} />
-          <Route path="/analytics" element={<Navigate to="/admin/analytics" replace />} />
-          <Route path="/support" element={<Navigate to="/admin/settings" replace />} />
-          <Route path="/notifications" element={<Navigate to="/admin/settings" replace />} />
-          <Route path="/integrations" element={<Navigate to="/admin/settings" replace />} />
-          <Route path="/roles" element={<Navigate to="/admin/settings" replace />} />
-          <Route path="/settings" element={<Navigate to="/admin/settings" replace />} />
-          <Route path="/translations" element={<Navigate to="/admin/settings" replace />} />
           <Route path="/dashboard/admin" element={<Navigate to="/admin" replace />} />
           <Route path="/admin-panel" element={<Navigate to="/admin" replace />} />
-          <Route path="/internal/*" element={<Navigate to="/admin" replace />} />
           <Route path="/legal/privacy" element={<Navigate to="/privacy" replace />} />
           <Route path="/legal/terms" element={<Navigate to="/terms" replace />} />
           <Route path="/legal/refund" element={<Navigate to="/refund" replace />} />
@@ -160,6 +239,7 @@ const App = () => (
             <AuthProvider>
               <AppProvider>
                 <Toaster />
+                <SonnerToaster position="top-center" richColors />
                 <RoutedApp />
               </AppProvider>
             </AuthProvider>

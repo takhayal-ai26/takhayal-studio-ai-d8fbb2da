@@ -37,7 +37,7 @@ export function ToolPreviewImage({ src, alt, title, subtitle, className }: ToolP
               loading="lazy"
               className={cn(
                 'w-full h-full object-cover',
-                'transition-[transform,filter] duration-[400ms] ease-out',
+                'transition-[transform,filter] duration-500 ease-out',
                 'md:group-hover:scale-[1.04] md:group-hover:brightness-[1.05]',
                 'group-active:scale-[1.01]',
               )}

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { X, Coins, Maximize, Image as ImageIcon, Wand2, ChevronRight, Plus, Loader2, Sparkles } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { X, Maximize, Image as ImageIcon, Wand2, ChevronRight, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
 import { useApp } from '@/context/AppContext';
@@ -17,9 +17,11 @@ import { SizeDropdown } from '@/components/layout/dropdowns/SizeDropdown';
 import { ResolutionDropdown } from '@/components/layout/dropdowns/ResolutionDropdown';
 
 import { BackToImageTools } from '@/components/tools/BackToImageTools';
+import { PageSeo, absoluteUrl } from '@/components/seo/PageSeo';
+import { toDateOnly } from '@/lib/seo-helpers';
+import { GenerateButton, imageSizeError, isOversizedImage } from '@/lib/ux';
 
 const MAX_SLOTS = 14;
-const MAX_BYTES = 10 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp'];
 const FALLBACK_COVER = '/placeholder.svg';
 
@@ -43,7 +45,7 @@ interface ControlsPanelProps {
 function EditControlsPanel({ tool, inSheet = false, onAfterGenerate, uploaded, setUploaded, setResultUrl }: ControlsPanelProps) {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { credits, isAuthenticated, openAuthModal, openUpgradeModal, requireAuth } = useApp();
+  const { credits, isAuthenticated, openUpgradeModal, requireAuth } = useApp();
   const { submitJob } = useGenerationJobs();
   const { t, lang } = useLanguage();
   const isAr = lang === 'ar';
@@ -77,12 +79,14 @@ function EditControlsPanel({ tool, inSheet = false, onAfterGenerate, uploaded, s
     return fromPricing.length > 0 ? fromPricing : currentModel.supported_quality_tiers || ['1K'];
   }, [currentModel, allTiers]);
 
-  const availableRatios = currentModel?.supported_ratios?.length
-    ? currentModel.supported_ratios.filter(r => r !== 'auto')
-    : ['1:1', '16:9', '9:16', '4:5'];
+  const availableRatios = useMemo(
+    () => currentModel?.supported_ratios?.length
+      ? currentModel.supported_ratios.filter(r => r !== 'auto')
+      : ['1:1', '16:9', '9:16', '4:5'],
+    [currentModel]
+  );
 
   const [prompt, setPrompt] = useState('');
-  const [enhance, setEnhance] = useState(false);
   const [resolution, setResolution] = useState<string>('1K');
   const [aspectRatio, setAspectRatio] = useState<string>('1:1');
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
@@ -127,13 +131,12 @@ function EditControlsPanel({ tool, inSheet = false, onAfterGenerate, uploaded, s
   }, [openDropdown, inSheet]);
 
   const uploadOne = useCallback(async (file: File, targetIndex?: number) => {
-    if (!user) { openAuthModal('signup'); return; }
     if (!ALLOWED_TYPES.includes(file.type)) {
       toast.error(isAr ? 'نوع الملف غير مدعوم' : 'Unsupported file type');
       return;
     }
-    if (file.size > MAX_BYTES) {
-      toast.error(isAr ? 'حجم الملف يتجاوز 10 ميغابايت' : 'File exceeds 10MB');
+    if (isOversizedImage(file)) {
+      toast.error(imageSizeError(isAr));
       return;
     }
 
@@ -148,6 +151,12 @@ function EditControlsPanel({ tool, inSheet = false, onAfterGenerate, uploaded, s
       }
       return [...prev, placeholder];
     });
+
+    if (!user) {
+      setUploaded(prev => prev.map(img => img.preview === preview ? { ...img, url: preview } : img));
+      return;
+    }
+
     setIsUploading(true);
 
     try {
@@ -167,10 +176,9 @@ function EditControlsPanel({ tool, inSheet = false, onAfterGenerate, uploaded, s
     } finally {
       setIsUploading(false);
     }
-  }, [user, openAuthModal, isAr, setUploaded]);
+  }, [user, isAr, setUploaded]);
 
   const handleSlotPick = (index: number | null) => {
-    if (!user) { openAuthModal('signup'); return; }
     slotTargetIndex.current = index;
     slotInputRef.current?.click();
   };
@@ -270,16 +278,6 @@ function EditControlsPanel({ tool, inSheet = false, onAfterGenerate, uploaded, s
                   <X size={13} />
                 </button>
               )}
-              <button
-                onClick={() => setEnhance(!enhance)}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-200 ${
-                  enhance
-                    ? 'bg-primary/10 text-primary border border-primary/20'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.06]'
-                }`}
-              >
-                <Sparkles size={11} />{t.studio.enhance}
-              </button>
             </div>
           </div>
           <textarea
@@ -375,29 +373,15 @@ function EditControlsPanel({ tool, inSheet = false, onAfterGenerate, uploaded, s
 
       {/* Generate button */}
       <div className="flex-shrink-0 p-4">
-        <button
+        <GenerateButton
           onClick={handleGenerate}
           disabled={!canGenerate}
-          className={`w-full h-[44px] rounded-xl text-[14px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-            canGenerate
-              ? 'bg-primary text-primary-foreground hover:brightness-110 active:scale-[0.98] shadow-[0_4px_20px_-4px] shadow-primary/25'
-              : 'bg-foreground/[0.04] border border-border/10 text-muted-foreground cursor-not-allowed'
-          }`}
+          loading={submitting}
+          loadingLabel={isAr ? 'جارٍ التعديل...' : 'Editing...'}
+          credits={creditCost}
         >
-          {submitting ? (
-            <span className="flex items-center gap-2">
-              <Loader2 size={14} className="animate-spin" />
-              {isAr ? 'جارٍ التعديل...' : 'Editing...'}
-            </span>
-          ) : (
-            <>
-              {ctaLabel}
-              <span className="flex items-center gap-1 text-[12px] opacity-70">
-                <Coins size={11} />{creditCost}
-              </span>
-            </>
-          )}
-        </button>
+          {ctaLabel}
+        </GenerateButton>
         {!isAuthenticated && (
           <p className="text-[11px] text-muted-foreground text-center mt-2">
             {isAr ? 'يجب تسجيل الدخول للتعديل' : 'Sign in to start editing'}
@@ -444,9 +428,9 @@ interface CoverPanelProps {
 }
 
 function CoverPanel({ tool, coverUrl, uploaded, resultUrl, isAr }: CoverPanelProps) {
-  // Priority: result > first uploaded preview > tool cover image
-  const displayUrl = resultUrl || uploaded[0]?.preview || coverUrl || FALLBACK_COVER;
-  const isCover = !resultUrl && !uploaded[0];
+  // Keep references in the upload strip; the preview side shows the tool cover until a result exists.
+  const displayUrl = resultUrl || coverUrl || FALLBACK_COVER;
+  const isCover = !resultUrl;
   const fallbackTitle = isAr ? 'تعديل الصورة' : 'Edit Image';
   const fallbackSubtitle = isAr ? 'مدعوم بـ Nano Banana 2' : 'Powered by Nano Banana 2';
   const overlayTitle = tool?.heroTitle || tool?.name || fallbackTitle;
@@ -481,16 +465,52 @@ function CoverPanel({ tool, coverUrl, uploaded, resultUrl, isAr }: CoverPanelPro
 
 export default function EditImagePage() {
   const { lang, isRTL } = useLanguage();
+  const [searchParams] = useSearchParams();
   const isAr = lang === 'ar';
   const isMobile = useIsMobile();
   const { tools } = useToolsDB();
 
   const [uploaded, setUploaded] = useState<UploadedImage[]>([]);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
+
+  useEffect(() => {
+    const imageUrl = searchParams.get('imageUrl');
+    if (!imageUrl || uploaded.some(img => img.url === imageUrl)) return;
+    setUploaded([{ preview: imageUrl, url: imageUrl }]);
+  }, [searchParams, uploaded]);
   
 
   const tool = tools.find(t => t.slug === 'edit-image');
   const coverUrl = tool?.image || FALLBACK_COVER;
+  const seoDescription = tool?.description || tool?.shortDesc || (isAr ? 'أداة تعديل صور بالذكاء الاصطناعي داخل تخيّل.' : 'AI image editing tool inside Takhayal.');
+  const dateModified = toDateOnly(tool?.updatedAt);
+  const faqSchema = tool ? {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: [
+      {
+        '@type': 'Question',
+        name: isAr ? `ما الذي تفعله أداة ${tool.name}؟` : `What does the ${tool.name} tool do?`,
+        acceptedAnswer: { '@type': 'Answer', text: seoDescription },
+      },
+      {
+        '@type': 'Question',
+        name: isAr ? 'هل يمكنني رفع أكثر من صورة؟' : 'Can I upload more than one image?',
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: isAr ? 'نعم. الأداة تدعم عدة صور مرجعية حسب قدرات النموذج.' : 'Yes. The tool supports multiple reference images depending on the model capability.',
+        },
+      },
+    ],
+  } : null;
+  const breadcrumbSchema = tool ? {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: isAr ? 'الأدوات' : 'Tools', item: absoluteUrl('/tools') },
+      { '@type': 'ListItem', position: 2, name: tool.name, item: absoluteUrl(`/tools/${tool.slug}`) },
+    ],
+  } : null;
 
   // Mobile: render the creation panel directly, no cover/preview intro
   if (isMobile) {
@@ -500,6 +520,17 @@ export default function EditImagePage() {
         style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}
         dir={isRTL ? 'rtl' : 'ltr'}
       >
+        {tool && (
+          <PageSeo
+            title={`${tool.name} | Takhayal.ai`}
+            description={seoDescription}
+            canonicalPath={`/tools/${tool.slug}`}
+            image={tool.image}
+            pageType="WebPage"
+            dateModified={dateModified}
+            schemas={[breadcrumbSchema, faqSchema].filter(Boolean) as Record<string, unknown>[]}
+          />
+        )}
         <EditControlsPanel
           tool={tool}
           inSheet
@@ -518,6 +549,17 @@ export default function EditImagePage() {
       style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}
       dir={isRTL ? 'rtl' : 'ltr'}
     >
+      {tool && (
+        <PageSeo
+          title={`${tool.name} | Takhayal.ai`}
+          description={seoDescription}
+          canonicalPath={`/tools/${tool.slug}`}
+          image={tool.image}
+          pageType="WebPage"
+          dateModified={dateModified}
+          schemas={[breadcrumbSchema, faqSchema].filter(Boolean) as Record<string, unknown>[]}
+        />
+      )}
       <div className="flex flex-1 min-h-0 relative overflow-visible">
         <EditControlsPanel
           tool={tool}

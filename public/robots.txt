@@ -1,7 +1,66 @@
 User-agent: Googlebot
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /checkout
+Disallow: /checkout/
+Disallow: /generate/
+Disallow: /share/
+Disallow: /dashboard/admin
+Disallow: /admin-panel
+Disallow: /internal/
+Disallow: /users
+Disallow: /billing
+Disallow: /pricing-economics
+Disallow: /content
+Disallow: /media
+Disallow: /analytics
+Disallow: /support
+Disallow: /notifications
+Disallow: /integrations
+Disallow: /roles
+Disallow: /settings
+Disallow: /translations
 
 User-agent: Bingbot
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /checkout
+Disallow: /checkout/
+Disallow: /generate/
+Disallow: /share/
+Disallow: /dashboard/admin
+Disallow: /admin-panel
+Disallow: /internal/
+Disallow: /users
+Disallow: /billing
+Disallow: /pricing-economics
+Disallow: /content
+Disallow: /media
+Disallow: /analytics
+Disallow: /support
+Disallow: /notifications
+Disallow: /integrations
+Disallow: /roles
+Disallow: /settings
+Disallow: /translations
+
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: Google-Extended
 Allow: /
 
 User-agent: Twitterbot
@@ -12,5 +71,27 @@ Allow: /
 
 User-agent: *
 Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /auth/
+Disallow: /checkout
+Disallow: /checkout/
+Disallow: /generate/
+Disallow: /share/
+Disallow: /dashboard/admin
+Disallow: /admin-panel
+Disallow: /internal/
+Disallow: /users
+Disallow: /billing
+Disallow: /pricing-economics
+Disallow: /content
+Disallow: /media
+Disallow: /analytics
+Disallow: /support
+Disallow: /notifications
+Disallow: /integrations
+Disallow: /roles
+Disallow: /settings
+Disallow: /translations
 
 Sitemap: https://takhayal.ai/sitemap.xml

@@ -1,12 +1,14 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { GenerationJob } from '@/hooks/useGenerationJobs';
 import { useModels } from '@/hooks/useModels';
 import { Drawer, DrawerContent, DrawerClose } from '@/components/ui/drawer';
-import { Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw, Calendar, Cpu, Ratio, Sparkles, Share2, Trash2, Copy, Check, LayoutTemplate, ChevronDown, Wrench, Image as ImageLucide } from 'lucide-react';
+import { Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw, Calendar, Cpu, Ratio, Sparkles, Share2, Trash2, Copy, Check, LayoutTemplate, ChevronDown, Wrench, Image as ImageLucide, Film, Wand2, ArrowUpCircle } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { toast } from 'sonner';
 import { isToolJob, getToolName, getToolAction } from '@/hooks/useToolInfo';
+import { generationHandoffUrl } from '@/lib/ux';
 
 interface Props {
   job: GenerationJob | null;
@@ -51,6 +53,7 @@ async function downloadImage(url: string, filename: string) {
 
 export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShare, onDelete, templateTitle }: Props) {
   const { lang } = useLanguage();
+  const navigate = useNavigate();
   const isAr = lang === 'ar';
   const { models } = useModels();
   const [downloading, setDownloading] = useState(false);
@@ -103,6 +106,12 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
     onClose();
   };
 
+  const navigateWithImage = (path: string) => {
+    if (!job.image_url) return;
+    navigate(generationHandoffUrl(path, job.image_url, { sourceJobId: job.id, modelId: job.model_id }));
+    onClose();
+  };
+
   const dateStr = formatDate(job.created_at, isAr);
 
   return (
@@ -113,7 +122,7 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
           {/* Close button */}
           <div className={`flex ${isAr ? 'justify-start' : 'justify-end'} px-4 pt-1 pb-0`}>
             <DrawerClose asChild>
-              <button className="w-8 h-8 rounded-full bg-muted/40 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer">
+              <button className="min-h-11 min-w-11 rounded-full bg-muted/40 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors cursor-pointer" aria-label={isAr ? 'إغلاق التفاصيل' : 'Close details'}>
                 <ChevronDown size={16} />
               </button>
             </DrawerClose>
@@ -145,28 +154,49 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
           {/* Action buttons */}
           <div className="px-4 pb-4 space-y-2.5">
             {isCompleted && (
-              <div className="flex gap-2">
+              <div className="grid grid-cols-2 gap-2">
                 <button
                   onClick={handleDownload}
                   disabled={downloading}
-                  className="flex-1 h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-semibold flex items-center justify-center gap-2 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50"
+                  className="h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-semibold flex items-center justify-center gap-2 hover:brightness-110 transition-all cursor-pointer disabled:opacity-50"
                 >
                   {downloading ? <Loader2 size={14} className="animate-spin" /> : <Download size={14} />}
                   {downloading ? '...' : (isAr ? 'تحميل' : 'Download')}
                 </button>
                 <button
                   onClick={handleReuseClick}
-                  className="h-11 px-4 rounded-xl bg-muted/30 text-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-muted/50 transition-colors cursor-pointer"
+                  className="h-11 rounded-xl bg-muted/30 text-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-muted/50 transition-colors cursor-pointer"
                 >
                   <RefreshCw size={14} />
                   {isTool ? (isAr ? 'استخدام الأداة' : 'Use Tool') : (isAr ? 'إعادة' : 'Reuse')}
                 </button>
                 <button
                   onClick={handleShareClick}
-                  className="flex-1 h-11 rounded-xl bg-muted/30 text-foreground text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-muted/50 transition-all cursor-pointer"
+                  className="h-11 rounded-xl bg-muted/30 text-foreground text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-muted/50 transition-all cursor-pointer"
                 >
                   <Share2 size={14} />
                   {isAr ? 'مشاركة' : 'Share'}
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigateWithImage('/video'); }}
+                  className="h-11 rounded-xl bg-muted/30 text-foreground text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-muted/50 transition-all cursor-pointer"
+                >
+                  <Film size={14} />
+                  {isAr ? 'تحريك' : 'Animate'}
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigateWithImage('/tools/edit-image'); }}
+                  className="h-11 rounded-xl bg-muted/30 text-foreground text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-muted/50 transition-all cursor-pointer"
+                >
+                  <Wand2 size={14} />
+                  {isAr ? 'تعديل' : 'Edit'}
+                </button>
+                <button
+                  onClick={(e) => { e.stopPropagation(); navigateWithImage('/tools/upscale'); }}
+                  className="h-11 rounded-xl bg-muted/30 text-foreground text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-muted/50 transition-all cursor-pointer"
+                >
+                  <ArrowUpCircle size={14} />
+                  {isAr ? 'تكبير' : 'Upscale'}
                 </button>
               </div>
             )}
@@ -228,7 +258,8 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
                       </div>
                       <button
                         onClick={handleCopyPrompt}
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/50 hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all cursor-pointer"
+                        className="min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground/50 hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all cursor-pointer"
+                        aria-label={isAr ? 'نسخ التعليمة' : 'Copy prompt'}
                       >
                         {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}
                       </button>
@@ -279,7 +310,7 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
             {isCompleted && onDelete && (
               <button
                 onClick={(e) => { e.stopPropagation(); onDelete(job.id); }}
-                className="w-full h-10 rounded-xl text-destructive/60 text-[12px] font-medium flex items-center justify-center gap-1.5 hover:text-destructive hover:bg-destructive/5 transition-colors cursor-pointer"
+                className="w-full min-h-11 rounded-xl text-destructive/60 text-[12px] font-medium flex items-center justify-center gap-1.5 hover:text-destructive hover:bg-destructive/5 transition-colors cursor-pointer"
               >
                 <Trash2 size={13} />
                 {isAr ? 'حذف الصورة' : 'Delete Image'}

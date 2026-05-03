@@ -9,7 +9,7 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (!loading && !user) {
-      sessionStorage.setItem('redirectAfterLogin', window.location.pathname);
+      sessionStorage.setItem('redirectAfterLogin', `${window.location.pathname}${window.location.search}`);
       navigate('/?auth=login', { replace: true });
     }
   }, [user, loading, navigate]);

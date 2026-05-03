@@ -29,8 +29,8 @@ const CREDIT_COST_DATA = [
 ];
 
 const FAQ_DATA = [
-  { q_en: 'What is a credit?', q_ar: 'ما هو الرصيد؟', a_en: '1 credit = $0.01. Credits are deducted per generation based on the model and resolution you choose. You always see the credit cost before generating.', a_ar: 'رصيد واحد = 0.01 دولار. يتم خصم الأرصدة لكل عملية توليد بناءً على النموذج والدقة التي تختارها.' },
-  { q_en: 'Do credits expire?', q_ar: 'هل تنتهي صلاحية الأرصدة؟', a_en: 'Subscription credits reset monthly. Top-up credits never expire.', a_ar: 'أرصدة الاشتراك تتجدد شهرياً. أرصدة الشحن لا تنتهي صلاحيتها.' },
+  { q_en: 'What is a credit?', q_ar: 'ما هو الرصيد؟', a_en: 'Credits are deducted per generation based on the model, duration, and resolution you choose. You always see the cost before generating.', a_ar: 'يتم خصم الأرصدة لكل عملية توليد بناءً على النموذج والمدة والدقة التي تختارها، وتظهر التكلفة قبل الإنشاء.' },
+  { q_en: 'How should I choose a top-up?', q_ar: 'كيف أختار باقة الشحن؟', a_en: 'Pick Starter for occasional image edits, Creator or Pro for weekly image campaigns, and Studio or Power when video generation is part of your workflow.', a_ar: 'اختر مبتدئ للاستخدام الخفيف، وصانع محتوى أو محترف للحملات الأسبوعية، واستوديو أو مكثف عندما يكون الفيديو جزءاً من عملك.' },
   { q_en: 'Can I change my plan?', q_ar: 'هل يمكنني تغيير خطتي؟', a_en: 'Yes, upgrade or downgrade anytime. Changes take effect immediately.', a_ar: 'نعم، يمكنك الترقية أو التخفيض في أي وقت. التغييرات تسري فوراً.' },
   { q_en: 'What payment methods are accepted?', q_ar: 'ما طرق الدفع المقبولة؟', a_en: 'We accept Visa, Mastercard, KNET, Mada, and Apple Pay.', a_ar: 'نقبل Visa و Mastercard و KNET و مدى و Apple Pay.' },
   { q_en: 'Is there a free trial?', q_ar: 'هل يوجد تجربة مجانية؟', a_en: 'Yes — sign up free and get 15 credits instantly. No card required.', a_ar: 'نعم — سجل مجاناً واحصل على 15 رصيداً فوراً. لا حاجة لبطاقة.' },
@@ -596,7 +596,7 @@ const Pricing = () => {
       <section className="max-w-5xl mx-auto px-6 pb-20">
         <div className="text-center mb-8">
           <h2 className="typo-heading-section">{isAr ? 'اشحن في أي وقت' : 'Top up anytime'}</h2>
-          <p className="text-sm text-muted-foreground mt-2">{isAr ? 'الأرصدة لا تنتهي صلاحيتها. اشترِ المزيد متى احتجت.' : 'Credits never expire. Buy more whenever you need them.'}</p>
+          <p className="text-sm text-muted-foreground mt-2">{isAr ? 'اختر باقة تناسب وتيرة الصور والفيديو لديك.' : 'Choose a package that matches your image and video pace.'}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

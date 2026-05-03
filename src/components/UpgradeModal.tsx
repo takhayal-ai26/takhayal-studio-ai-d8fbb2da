@@ -25,7 +25,7 @@ interface UpgradeModalProps {
 }
 
 export function UpgradeModal({ trigger = 'generic', modelName }: UpgradeModalProps) {
-  const { upgradeModalOpen, closeUpgradeModal } = useApp();
+  const { upgradeModalOpen, closeUpgradeModal, setActivePage } = useApp();
   const { lang } = useLanguage();
   const navigate = useNavigate();
   const isAr = lang === 'ar';
@@ -90,7 +90,7 @@ export function UpgradeModal({ trigger = 'generic', modelName }: UpgradeModalPro
         </div>
 
         <div className="px-6 pb-5 text-center">
-          <button onClick={() => { closeUpgradeModal(); navigate('/credits'); }} className="text-xs text-primary hover:underline">
+          <button onClick={() => { closeUpgradeModal(); setActivePage('credits'); navigate('/studio'); }} className="text-xs text-primary hover:underline">
             {isAr ? 'أو أضف رصيداً بدلاً من ذلك →' : 'Or top up credits instead →'}
           </button>
         </div>

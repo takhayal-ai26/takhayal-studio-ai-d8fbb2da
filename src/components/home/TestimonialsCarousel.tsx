@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
-import { Quote } from 'lucide-react';
 
 export function TestimonialsCarousel() {
   const { lang, isRTL } = useLanguage();
@@ -50,11 +49,10 @@ export function TestimonialsCarousel() {
       <div className="flex justify-center">
         <article
           key={`${t.id}-${activeIdx}`}
-          className="animate-page-enter relative w-full max-w-[680px] rounded-[20px] bg-card/70 backdrop-blur-xl border border-border/10 p-6 md:p-8"
-          style={{ boxShadow: '0 8px 32px rgba(0,0,0,0.12)' }}
+          className="animate-page-enter relative w-full max-w-[680px] rounded-xl bg-card/70 backdrop-blur-xl border border-border/10 p-5 md:p-8"
+          style={{ boxShadow: '0 8px 28px rgba(0,0,0,0.08)' }}
         >
-          <Quote size={28} className="text-primary/20 absolute top-5 right-5" style={{ transform: isAr ? 'scaleX(-1)' : undefined }} />
-          <p className="text-base md:text-lg leading-7 md:leading-8 text-foreground/90 mb-6" style={{ minHeight: 56 }}>
+          <p className="text-[15px] md:text-lg leading-7 md:leading-8 text-foreground/90 mb-6" style={{ minHeight: 56 }}>
             "{quote}"
           </p>
           <div className="flex items-center gap-3">

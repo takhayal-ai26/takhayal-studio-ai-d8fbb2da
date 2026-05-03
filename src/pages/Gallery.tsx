@@ -16,6 +16,7 @@ import { useTemplateInfo, isTemplateJob, getTemplateTitle } from '@/hooks/useTem
 import { formatDate } from '@/lib/utils';
 import { isToolJob, getToolRoute } from '@/hooks/useToolInfo';
 import { DeleteConfirmDialog } from '@/components/gallery/DeleteConfirmDialog';
+import { PageSeo } from '@/components/seo/PageSeo';
 
 type FilterKey = 'all' | 'today' | 'yesterday' | 'edited';
 type MediaFilter = 'all' | 'images' | 'videos';
@@ -88,7 +89,7 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
     return map[r] || '1/1';
   })();
 
-  const shellClassName = `rounded-2xl overflow-hidden bg-card/60 w-full text-start cursor-pointer active:scale-[0.98] transition-all ${
+  const shellClassName = `rounded-2xl overflow-hidden bg-card/60 w-full text-start cursor-pointer active:scale-[0.98] transition-all focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 ${
     isHighlighted
       ? 'ring-2 ring-primary/35 shadow-lg shadow-primary/10'
       : 'hover:shadow-lg hover:shadow-black/8'
@@ -124,10 +125,25 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
     onShare(job);
   };
 
+  const handleCardKeyDown = (e: React.KeyboardEvent) => {
+    if (e.target !== e.currentTarget) return;
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    e.preventDefault();
+    onTap(job);
+  };
+
+  const cardInteractionProps = {
+    role: 'button',
+    tabIndex: 0,
+    onClick: () => onTap(job),
+    onKeyDown: handleCardKeyDown,
+    'aria-label': templateTitle || job.prompt || (isAr ? 'فتح العمل' : 'Open work'),
+  };
+
   if (isProcessing) {
     return (
-      <button
-        onClick={() => onTap(job)}
+      <div
+        {...cardInteractionProps}
         className={shellClassName}
       >
         <div className="relative overflow-hidden bg-gradient-to-br from-primary/5 via-muted/10 to-background" style={{ aspectRatio: cssRatio }}>
@@ -144,14 +160,14 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
             </p>
           </div>
         </div>
-      </button>
+      </div>
     );
   }
 
   if (isFailed) {
     return (
-      <button
-        onClick={() => onTap(job)}
+      <div
+        {...cardInteractionProps}
         className={shellClassName}
       >
         <div className="flex flex-col items-center justify-center gap-4 p-6 text-center" style={{ aspectRatio: cssRatio }}>
@@ -164,35 +180,36 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
           <p className="max-w-[220px] text-xs leading-5 text-muted-foreground">
             {getFailureMessage()}
           </p>
-          <span
+          <button
+            type="button"
             onClick={handleRetry}
-            className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors"
+            className="flex min-h-11 items-center gap-1.5 px-4 py-2 rounded-full bg-primary/10 text-primary text-xs font-semibold hover:bg-primary/20 transition-colors"
           >
             <RotateCcw size={13} />
             {isAr ? 'إعادة المحاولة' : 'Retry'}
-          </span>
+          </button>
         </div>
-      </button>
+      </div>
     );
   }
 
   // Completed with valid image
   return (
-    <button
-      onClick={() => onTap(job)}
+    <div
+      {...cardInteractionProps}
       className={`${shellClassName} group relative animate-in fade-in zoom-in-95 duration-300 hover:shadow-xl hover:shadow-black/10`}
     >
       <img src={job.image_url!} alt={job.prompt || ''} className="w-full block" loading="lazy" />
       {/* Hover overlay - desktop shows all actions; mobile shows share icon */}
-      <div className={`absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent ${isMobile ? 'opacity-0' : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-200 flex flex-col justify-between p-3`}>
+      <div className={`absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-black/10 ${isMobile ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'} transition-opacity duration-200 flex flex-col justify-between p-3`}>
         {/* Top-right actions */}
         <div className={`flex ${isAr ? 'justify-start' : 'justify-end'} gap-1.5`}>
-          <span onClick={handleShare} className="w-8 h-8 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white/90 hover:bg-white/25 hover:text-primary transition-all cursor-pointer" title={isAr ? 'مشاركة' : 'Share'}>
+          <button type="button" onClick={handleShare} className="min-h-11 min-w-11 rounded-full bg-white/90 dark:bg-black/55 flex items-center justify-center text-zinc-900 dark:text-white hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer shadow-sm" aria-label={isAr ? 'مشاركة' : 'Share'}>
             <Share2 size={14} />
-          </span>
-          <span onClick={handleDownload} className="w-8 h-8 rounded-full bg-white/15 backdrop-blur-sm flex items-center justify-center text-white/90 hover:bg-white/25 hover:text-primary transition-all cursor-pointer" title={isAr ? 'تحميل' : 'Download'}>
+          </button>
+          <button type="button" onClick={handleDownload} className="min-h-11 min-w-11 rounded-full bg-white/90 dark:bg-black/55 flex items-center justify-center text-zinc-900 dark:text-white hover:bg-primary hover:text-primary-foreground transition-all cursor-pointer shadow-sm" aria-label={isAr ? 'تحميل' : 'Download'}>
             <Download size={14} />
-          </span>
+          </button>
         </div>
         {/* Bottom info */}
         <div>
@@ -212,14 +229,16 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
       </div>
       {/* Mobile share icon always visible */}
       {isMobile && (
-        <span
+        <button
+          type="button"
           onClick={handleShare}
-          className={`absolute top-2 ${isAr ? 'left-2' : 'right-2'} w-7 h-7 rounded-full bg-black/30 backdrop-blur-sm flex items-center justify-center text-white/80`}
+          className={`absolute top-2 ${isAr ? 'left-2' : 'right-2'} min-h-11 min-w-11 rounded-full bg-black/40 flex items-center justify-center text-white/90`}
+          aria-label={isAr ? 'مشاركة' : 'Share'}
         >
           <Share2 size={12} />
-        </span>
+        </button>
       )}
-    </button>
+    </div>
   );
 }
 
@@ -357,40 +376,74 @@ export default function Gallery() {
   // ── Auth gate ──
   if (!user) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] animate-page-enter" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
-        <ImageIcon size={56} className="text-muted-foreground/15 mb-4" />
-        <h2 className="typo-heading-section">{isAr ? 'سجل الدخول لعرض معرضك' : 'Sign in to view your gallery'}</h2>
-        <button onClick={() => openAuthModal('signup')} className="mt-6 h-10 px-6 bg-primary hover:brightness-110 text-primary-foreground rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all">
-          {isAr ? 'جرب مجاناً' : 'Try Free'}
-        </button>
-      </div>
+      <>
+        <PageSeo
+          title={isAr ? 'المعرض | Takhayal.ai' : 'Gallery | Takhayal.ai'}
+          description={isAr ? 'معرضك الشخصي داخل تخيّل.' : 'Your personal Takhayal gallery.'}
+          canonicalPath="/gallery"
+          pageType="WebPage"
+          noIndex
+        />
+        <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] animate-page-enter" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
+          <ImageIcon size={56} className="text-muted-foreground/15 mb-4" />
+          <h2 className="typo-heading-section">{isAr ? 'سجل الدخول لعرض معرضك' : 'Sign in to view your gallery'}</h2>
+          <button onClick={() => openAuthModal('signup')} className="mt-6 min-h-11 px-6 bg-primary hover:brightness-110 text-primary-foreground rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all">
+            {isAr ? 'جرب مجاناً' : 'Try Free'}
+          </button>
+        </div>
+      </>
     );
   }
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center min-h-[60vh]" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
-        <Loader2 size={32} className="text-primary animate-spin" />
-      </div>
+      <>
+        <PageSeo
+          title={isAr ? 'المعرض | Takhayal.ai' : 'Gallery | Takhayal.ai'}
+          description={isAr ? 'معرضك الشخصي داخل تخيّل.' : 'Your personal Takhayal gallery.'}
+          canonicalPath="/gallery"
+          pageType="WebPage"
+          noIndex
+        />
+        <div className="flex-1 flex items-center justify-center min-h-[60vh]" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
+          <Loader2 size={32} className="text-primary animate-spin" />
+        </div>
+      </>
     );
   }
 
   if (jobs.length === 0) {
     return (
-      <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] animate-page-enter" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
-        <ImageIcon size={56} className="text-muted-foreground/15 mb-4" />
-        <h2 className="typo-heading-section">{g.noImagesYet || (isAr ? 'لا توجد صور بعد' : 'No images yet')}</h2>
-        <p className="text-sm text-muted-foreground/50 mt-2">{g.startCreatingStudio || (isAr ? 'ابدأ الإبداع' : 'Start creating')}</p>
-        <button onClick={() => navigate('/image')} className="mt-6 h-10 px-6 bg-primary hover:brightness-110 text-primary-foreground rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all">
-          {g.goToStudio || (isAr ? 'صورة' : 'Go to Image')}
-          <ArrowRight size={15} className={isRTL ? 'rotate-180' : ''} />
-        </button>
-      </div>
+      <>
+        <PageSeo
+          title={isAr ? 'المعرض | Takhayal.ai' : 'Gallery | Takhayal.ai'}
+          description={isAr ? 'معرضك الشخصي داخل تخيّل.' : 'Your personal Takhayal gallery.'}
+          canonicalPath="/gallery"
+          pageType="WebPage"
+          noIndex
+        />
+        <div className="flex-1 flex flex-col items-center justify-center min-h-[60vh] animate-page-enter" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
+          <ImageIcon size={56} className="text-muted-foreground/15 mb-4" />
+          <h2 className="typo-heading-section">{g.noImagesYet || (isAr ? 'لا توجد صور بعد' : 'No images yet')}</h2>
+          <p className="text-sm text-muted-foreground/50 mt-2">{g.startCreatingStudio || (isAr ? 'ابدأ الإبداع' : 'Start creating')}</p>
+          <button onClick={() => navigate('/image')} className="mt-6 min-h-11 px-6 bg-primary hover:brightness-110 text-primary-foreground rounded-full text-[13px] font-semibold flex items-center gap-2 transition-all">
+            {g.goToStudio || (isAr ? 'صورة' : 'Go to Image')}
+            <ArrowRight size={15} className={isRTL ? 'rotate-180' : ''} />
+          </button>
+        </div>
+      </>
     );
   }
 
   return (
     <>
+      <PageSeo
+        title={isAr ? 'المعرض | Takhayal.ai' : 'Gallery | Takhayal.ai'}
+        description={isAr ? 'معرضك الشخصي داخل تخيّل.' : 'Your personal Takhayal gallery.'}
+        canonicalPath="/gallery"
+        pageType="WebPage"
+        noIndex
+      />
       <div
         ref={scrollerRef}
         className="flex-1 overflow-y-auto pb-24 md:pb-6 animate-page-enter"
@@ -414,13 +467,14 @@ export default function Gallery() {
                   value={search}
                   onChange={e => setSearch(e.target.value)}
                   placeholder={g.searchPlaceholder}
-                  className={`h-9 w-52 rounded-xl bg-muted/30 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${isRTL ? 'pr-9 pl-3' : 'pl-9 pr-3'}`}
+                  aria-label={g.searchPlaceholder}
+                  className={`min-h-11 w-52 rounded-xl bg-muted/30 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${isRTL ? 'pr-9 pl-3' : 'pl-9 pr-3'}`}
                 />
               </div>
               {/* Sort */}
               <button
                 onClick={() => setSort(s => s === 'newest' ? 'oldest' : 'newest')}
-                className="h-9 px-3 rounded-xl bg-muted/30 flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
+                className="min-h-11 px-3 rounded-xl bg-muted/30 flex items-center gap-1.5 text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 transition-colors"
               >
                 {sort === 'newest' ? <SortDesc size={14} /> : <SortAsc size={14} />}
                 {sort === 'newest' ? g.newest : g.oldest}
@@ -435,7 +489,7 @@ export default function Gallery() {
               { key: 'images' as MediaFilter, label: isAr ? 'صور' : 'Images' },
               { key: 'videos' as MediaFilter, label: isAr ? 'فيديو' : 'Videos' },
             ]).map(f => (
-              <button key={f.key} onClick={() => setMediaFilter(f.key)} className={`px-4 py-2 rounded-full text-[12px] font-medium transition-all ${mediaFilter === f.key ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}>
+              <button key={f.key} onClick={() => setMediaFilter(f.key)} className={`min-h-11 px-4 py-2 rounded-full text-[12px] font-medium transition-all ${mediaFilter === f.key ? 'bg-primary text-primary-foreground shadow-sm' : 'bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}>
                 {f.label}
               </button>
             ))}
@@ -444,7 +498,7 @@ export default function Gallery() {
           {/* ── Date filter row (desktop) ── */}
           <div className="hidden md:flex gap-1.5 mb-6">
             {filters.map(f => (
-              <button key={f.key} onClick={() => setFilter(f.key)} className={`px-4 py-2 rounded-full text-[12px] font-medium transition-all ${filter === f.key ? 'bg-foreground/10 text-foreground' : 'bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}>
+              <button key={f.key} onClick={() => setFilter(f.key)} className={`min-h-11 px-4 py-2 rounded-full text-[12px] font-medium transition-all ${filter === f.key ? 'bg-foreground/10 text-foreground' : 'bg-muted/30 text-muted-foreground hover:bg-muted/50 hover:text-foreground'}`}>
                 {f.label}
               </button>
             ))}
@@ -458,7 +512,8 @@ export default function Gallery() {
                 value={search}
                 onChange={e => setSearch(e.target.value)}
                 placeholder={g.searchPlaceholder}
-                className={`h-9 w-full rounded-xl bg-muted/30 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${isRTL ? 'pr-9 pl-3' : 'pl-9 pr-3'}`}
+                aria-label={g.searchPlaceholder}
+                className={`min-h-11 w-full rounded-xl bg-muted/30 text-sm text-foreground placeholder:text-muted-foreground/40 focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all ${isRTL ? 'pr-9 pl-3' : 'pl-9 pr-3'}`}
               />
             </div>
           </div>

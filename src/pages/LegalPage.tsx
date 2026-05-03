@@ -6,6 +6,7 @@ import { LogoMark } from '@/components/Logo';
 import { ArrowLeft } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { PageSeo } from '@/components/seo/PageSeo';
+import { stripLocalePrefix, localizePath } from '@/lib/localized-routes';
 
 const TITLES: Record<string, { en: string; ar: string }> = {
   terms: { en: 'Terms & Conditions', ar: 'الشروط والأحكام' },
@@ -13,9 +14,24 @@ const TITLES: Record<string, { en: string; ar: string }> = {
   refund: { en: 'Refund Policy', ar: 'سياسة الاسترجاع' },
 };
 
+const FALLBACK_CONTENT: Record<string, { en: string; ar: string }> = {
+  privacy: {
+    en: '<h2>Privacy Policy</h2><p>Takhayal.ai collects account, usage, billing, and generation data needed to provide the service, protect accounts, process payments, and improve the product. We do not sell personal information.</p><h2>Data We Process</h2><p>We may process profile details, uploaded inputs, generated outputs, support messages, payment records, device metadata, and analytics events.</p><h2>Your Choices</h2><p>You can contact support to request account, privacy, or data assistance.</p>',
+    ar: '<h2>سياسة الخصوصية</h2><p>تجمع تخيّل بيانات الحساب والاستخدام والفوترة والتوليد اللازمة لتقديم الخدمة وحماية الحسابات ومعالجة المدفوعات وتحسين المنتج. نحن لا نبيع المعلومات الشخصية.</p><h2>البيانات التي نعالجها</h2><p>قد نعالج بيانات الملف الشخصي، المدخلات المرفوعة، النتائج المولدة، رسائل الدعم، سجلات الدفع، بيانات الجهاز، وأحداث التحليلات.</p><h2>اختياراتك</h2><p>يمكنك التواصل مع الدعم لطلب المساعدة المتعلقة بالحساب أو الخصوصية أو البيانات.</p>',
+  },
+  terms: {
+    en: '<h2>Terms & Conditions</h2><p>By using Takhayal.ai, you agree to use the platform lawfully, respect third-party rights, and keep your account credentials secure.</p><h2>Generated Content</h2><p>You are responsible for prompts, uploaded assets, and how generated outputs are used. Availability, model behavior, and credit costs may vary by provider and feature.</p><h2>Payments</h2><p>Paid plans and credit purchases are handled through the checkout flow shown at purchase time.</p>',
+    ar: '<h2>الشروط والأحكام</h2><p>باستخدام تخيّل، توافق على استخدام المنصة بشكل قانوني، واحترام حقوق الأطراف الأخرى، والحفاظ على بيانات حسابك آمنة.</p><h2>المحتوى المولّد</h2><p>أنت مسؤول عن التعليمات والأصول المرفوعة وكيفية استخدام النتائج المولدة. قد تختلف الإتاحة وسلوك النماذج وتكاليف الرصيد حسب المزود والميزة.</p><h2>المدفوعات</h2><p>تتم معالجة الخطط المدفوعة ومشتريات الرصيد من خلال مسار الدفع المعروض وقت الشراء.</p>',
+  },
+  refund: {
+    en: '<h2>Refund Policy</h2><p>Refund eligibility depends on the purchase type, usage, and payment status. Contact support with your account email and payment reference for review.</p><h2>Credits</h2><p>Credits consumed by completed generation jobs are generally not refundable unless there is a verified platform or billing error.</p>',
+    ar: '<h2>سياسة الاسترجاع</h2><p>تعتمد أهلية الاسترجاع على نوع الشراء والاستخدام وحالة الدفع. تواصل مع الدعم باستخدام بريد حسابك ومرجع الدفع للمراجعة.</p><h2>الأرصدة</h2><p>الأرصدة المستخدمة في مهام توليد مكتملة لا تكون قابلة للاسترجاع عادة إلا عند وجود خطأ مؤكد في المنصة أو الفوترة.</p>',
+  },
+};
+
 export default function LegalPage() {
   const location = useLocation();
-  const type = location.pathname.replace('/', ''); // "terms" | "privacy" | "refund"
+  const type = stripLocalePrefix(location.pathname).replace('/', '') || 'terms';
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
   const [content, setContent] = useState('');
@@ -34,9 +50,11 @@ export default function LegalPage() {
       .then(({ data }) => {
         if (data) {
           const text = isAr && data.content_ar ? data.content_ar : data.content_en;
-          setContent(text);
+          setContent(text || FALLBACK_CONTENT[type]?.[isAr ? 'ar' : 'en'] || '');
           setLastUpdatedIso(data.last_updated || '');
           setLastUpdated(formatDate(data.last_updated, isAr));
+        } else {
+          setContent(FALLBACK_CONTENT[type]?.[isAr ? 'ar' : 'en'] || '');
         }
         setLoading(false);
       });
@@ -67,12 +85,11 @@ export default function LegalPage() {
       />
       {/* Simple nav */}
       <nav className="h-14 border-b border-border flex items-center px-6 sticky top-0 bg-background/95 backdrop-blur-sm z-50">
-        <Link to="/" className="flex items-center gap-2">
+        <Link to={localizePath('/', lang)} className="flex items-center gap-2">
           <LogoMark size={22} />
-          <span className="text-sm font-medium text-foreground">Takhayal<span className="text-primary">.ai</span></span>
         </Link>
-        <Link to="/" className="ml-auto flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors">
-          <ArrowLeft size={14} />
+        <Link to={localizePath('/', lang)} className="ml-auto inline-flex h-9 items-center gap-1.5 rounded-full bg-muted/40 px-3 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-colors">
+          <ArrowLeft size={14} className={isAr ? 'rotate-180' : ''} />
           {isAr ? 'العودة' : 'Back'}
         </Link>
       </nav>

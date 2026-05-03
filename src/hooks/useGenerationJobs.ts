@@ -29,6 +29,42 @@ export interface GenerationJob {
 const JOB_COLUMNS = 'id, status, prompt, image_url, error_message, ratio, resolution, quality_tier, model_id, credits_used, created_at, tool_id, media_type, video_url, thumbnail_url, duration, source_mode, used_image_input, input_image_urls';
 const IN_PROGRESS_STATUSES: JobStatus[] = ['queued', 'generating', 'processing'];
 
+type SupabaseFunctionError = {
+  name?: string;
+  message?: string;
+  context?: Response | unknown;
+};
+
+async function getFunctionErrorMessage(error: unknown): Promise<string> {
+  if (!error || typeof error !== 'object') {
+    return 'Unknown generation error';
+  }
+
+  const fnError = error as SupabaseFunctionError;
+
+  if (fnError.name === 'FunctionsHttpError' && fnError.context instanceof Response) {
+    const status = fnError.context.status;
+    const body = await fnError.context.clone().json().catch(async () => {
+      const text = await fnError.context.clone().text().catch(() => '');
+      return text ? { error: text } : null;
+    });
+
+    const bodyMessage = typeof body?.error === 'string'
+      ? body.error
+      : typeof body?.message === 'string'
+        ? body.message
+        : null;
+
+    return bodyMessage ? `${bodyMessage} (${status})` : `${fnError.message || 'Edge Function failed'} (${status})`;
+  }
+
+  return !!error
+    && 'message' in error
+    && typeof fnError.message === 'string'
+    ? fnError.message
+    : 'Unknown generation error';
+}
+
 function normalizeStatus(status: string | null | undefined): JobStatus {
   if (status === 'queued' || status === 'generating' || status === 'processing' || status === 'failed') {
     return status;
@@ -38,7 +74,7 @@ function normalizeStatus(status: string | null | undefined): JobStatus {
 }
 
 export function useGenerationJobs() {
-  const { user } = useAuth();
+  const { user, refreshProfile } = useAuth();
   const [jobs, setJobs] = useState<GenerationJob[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -318,14 +354,17 @@ export function useGenerationJobs() {
 
       if (error) {
         console.error('Generation invoke error:', error);
-        await markJobFailed(jobId, error.message);
+        await markJobFailed(jobId, await getFunctionErrorMessage(error));
+        await refreshProfile();
+        return;
       }
+      await refreshProfile();
     } catch (err) {
       console.error('Generation call failed:', err);
-      const message = err instanceof Error ? err.message : 'Unknown generation error';
-      await markJobFailed(jobId, message);
+      await markJobFailed(jobId, await getFunctionErrorMessage(err));
+      await refreshProfile();
     }
-  }, [markJobFailed]);
+  }, [markJobFailed, refreshProfile]);
 
   const submitJob = useCallback(async (params: {
     prompt: string;
@@ -455,13 +494,15 @@ export function useGenerationJobs() {
         console.error('Video generation invoke error:', invokeError);
         await markJobFailed(jobId);
       }
+      await refreshProfile();
     } catch (err) {
       console.error('Video generation call failed:', err);
       await markJobFailed(jobId);
+      await refreshProfile();
     }
 
     return jobId;
-  }, [user, markJobFailed]);
+  }, [user, markJobFailed, refreshProfile]);
 
   return { jobs, loading, createJob, startGeneration, submitJob, submitVideoJob, retryJob, refetch: fetchJobs };
 }

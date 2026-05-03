@@ -78,6 +78,7 @@ export interface ToolView {
   requiresUpload: boolean;
   autoRun: boolean;
   promptHidden: boolean;
+  updatedAt: string;
 }
 
 export function useToolsDB() {
@@ -125,6 +126,7 @@ export function useToolsDB() {
     requiresUpload: t.requires_upload ?? false,
     autoRun: t.auto_run ?? false,
     promptHidden: t.prompt_hidden ?? false,
+    updatedAt: t.updated_at,
   });
 
   const tools: ToolView[] = rawTools.filter(t => t.active).map(mapToolView);

@@ -13,7 +13,7 @@ export function AdminProtectedRoute({ children }: { children: React.ReactNode })
     if (loading) return;
 
     if (!user) {
-      navigate('/admin/login', { replace: true });
+      navigate('/admin/login?reason=signin', { replace: true });
       return;
     }
 
@@ -24,12 +24,18 @@ export function AdminProtectedRoute({ children }: { children: React.ReactNode })
       .eq('user_id', user.id)
       .eq('role', 'admin')
       .maybeSingle()
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          setIsAdmin(false);
+          navigate('/admin/login?reason=check_failed', { replace: true });
+          return;
+        }
+
         if (data) {
           setIsAdmin(true);
         } else {
           setIsAdmin(false);
-          navigate('/', { replace: true });
+          navigate('/admin/login?reason=denied', { replace: true });
         }
       });
   }, [user, loading, navigate]);

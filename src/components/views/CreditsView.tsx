@@ -1,12 +1,13 @@
-import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 
 const PACKAGES = [
-  { credits: 100, price: 1.60, label: 'Starter', labelAr: 'مبتدئ', images: 50, badge: null },
-  { credits: 500, price: 8.00, label: 'Popular', labelAr: 'شائع', images: 250, badge: 'mostPopular' },
-  { credits: 1000, price: 16.00, label: 'Pro', labelAr: 'محترف', images: 500, badge: null },
+  { credits: 100, price: 1.60, label: 'Starter', labelAr: 'مبتدئ', images: 50, videos: '2 short clips', videosAr: 'مقطعين قصيرين', badge: null },
+  { credits: 300, price: 4.80, label: 'Creator', labelAr: 'صانع محتوى', images: 150, videos: '6 short clips', videosAr: '6 مقاطع قصيرة', badge: null },
+  { credits: 750, price: 12.00, label: 'Pro', labelAr: 'محترف', images: 375, videos: '15 short clips', videosAr: '15 مقطع قصير', badge: 'mostPopular' },
+  { credits: 1500, price: 24.00, label: 'Studio', labelAr: 'استوديو', images: 750, videos: '30 short clips', videosAr: '30 مقطع قصير', badge: null },
+  { credits: 3000, price: 48.00, label: 'Power', labelAr: 'مكثف', images: 1500, videos: '60 short clips', videosAr: '60 مقطع قصير', badge: null },
 ];
 
 export function CreditsView() {
@@ -14,15 +15,12 @@ export function CreditsView() {
   const { lang } = useLanguage();
   const navigate = useNavigate();
   const isAr = lang === 'ar';
-  const [customCredits, setCustomCredits] = useState('');
-  const customNum = parseInt(customCredits, 10) || 0;
-  const customPrice = customNum * 0.016;
 
   return (
     <div className="flex-1 p-4 md:p-6 overflow-y-auto pb-20 md:pb-6 max-w-4xl">
       <h1 className="typo-heading-page mb-2">{isAr ? 'إضافة رصيد' : 'Top up credits'}</h1>
       <p className="text-sm text-muted-foreground mb-6">
-        {isAr ? '1 رصيد = $0.016 · الأرصدة لا تنتهي صلاحيتها' : '1 credit = $0.016 · Credits never expire'}
+        {isAr ? 'اختر باقة جاهزة تناسب الصور والفيديو.' : 'Choose a ready-made package for images and videos.'}
       </p>
 
       {/* Balance card */}
@@ -33,7 +31,7 @@ export function CreditsView() {
       </div>
 
       {/* Packages */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4 mb-6">
         {PACKAGES.map(pkg => (
           <div key={pkg.credits} className={`bg-card rounded-xl p-6 border relative ${pkg.badge ? 'border-primary' : 'border-border'}`}>
             {pkg.badge && (
@@ -44,37 +42,18 @@ export function CreditsView() {
             <p className="text-2xl font-medium text-foreground">{pkg.credits}</p>
             <p className="text-[11px] text-muted-foreground">{isAr ? 'رصيد' : 'credits'}</p>
             <p className="text-base font-light text-muted-foreground mt-2">${pkg.price.toFixed(2)}</p>
-            <p className="text-xs text-muted-foreground">≈ {pkg.images} {isAr ? 'صورة' : 'images'}</p>
+            <p className="text-xs text-muted-foreground">≈ {pkg.images} {isAr ? 'صورة قياسية' : 'standard images'}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {isAr ? `أو ${pkg.videosAr} حسب النموذج والمدة` : `Or ${pkg.videos} depending on model and duration`}
+            </p>
             <button
-              onClick={() => navigate(`/checkout?credits=${pkg.credits}`)}
+              onClick={() => navigate(`/checkout?credits=${pkg.credits}&price=${pkg.price}`)}
               className={`w-full h-10 rounded-lg text-[13px] font-medium mt-4 transition-colors ${pkg.badge ? 'bg-primary text-primary-foreground hover:brightness-90' : 'border border-border text-foreground hover:bg-muted'}`}
             >
               {isAr ? 'اشترِ الآن' : 'Buy Now'}
             </button>
           </div>
         ))}
-      </div>
-
-      {/* Custom */}
-      <div className="bg-card rounded-xl border border-border p-6 mb-8">
-        <p className="text-sm font-medium text-foreground mb-3">{isAr ? 'أدخل عدداً مخصصاً' : 'Need more? Enter custom amount'}</p>
-        <div className="flex gap-3">
-          <input
-            type="number"
-            value={customCredits}
-            onChange={e => setCustomCredits(e.target.value)}
-            placeholder={isAr ? 'عدد الأرصدة' : 'Credits'}
-            min={10}
-            className="flex-1 h-10 rounded-lg border border-border bg-background px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none"
-          />
-          <button
-            onClick={() => customNum >= 10 && navigate(`/checkout?credits=${customNum}`)}
-            disabled={customNum < 10}
-            className="h-10 px-6 rounded-lg bg-primary text-primary-foreground text-sm font-medium hover:brightness-90 transition-all disabled:opacity-40"
-          >
-            {customNum >= 10 ? `${isAr ? 'اشترِ' : 'Buy'} · $${customPrice.toFixed(2)}` : (isAr ? 'اشترِ أرصدة' : 'Buy Credits')}
-          </button>
-        </div>
       </div>
 
       {/* Legal */}

@@ -1,8 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { X, Download, Maximize2, Clock, RefreshCw, Share2, ChevronDown, Copy, Trash2, AlertCircle, Loader2 } from 'lucide-react';
+import { X, Download, Maximize2, Clock, RefreshCw, Share2, ChevronDown, Copy, Trash2, AlertCircle, Loader2, Film, Wand2, ArrowUpCircle } from 'lucide-react';
 import { useApp, GeneratedImage, GenerationCard, CardState } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { toast } from '@/hooks/use-toast';
+import { generationHandoffUrl } from '@/lib/ux';
 
 function ratioToCSS(ratio: string): string {
   const map: Record<string, string> = {
@@ -87,7 +88,7 @@ export function GenerationGrid() {
 
     prevGeneratingRef.current = isGenerating;
     prevImagesRef.current = generatedImages;
-  }, [isGenerating, generatedImages, prompt, aspectRatio, quality, lastGenerationMeta, selectedQualityTier]);
+  }, [isGenerating, generatedImages, prompt, aspectRatio, quality, lastGenerationMeta, selectedQualityTier, setCards]);
 
   useEffect(() => {
     if (gridRef.current) gridRef.current.scrollTo({ top: 0, behavior: 'smooth' });
@@ -100,7 +101,7 @@ export function GenerationGrid() {
 
   const handleDeleteCard = useCallback((cardId: string) => {
     setCards(prev => prev.filter(c => c.id !== cardId));
-  }, []);
+  }, [setCards]);
 
   const handleCopyPrompt = useCallback((promptText: string) => {
     navigator.clipboard.writeText(promptText);
@@ -118,7 +119,11 @@ export function GenerationGrid() {
   const handleRetry = useCallback((cardId: string) => {
     setCards(prev => prev.filter(c => c.id !== cardId));
     setTimeout(() => generate(), 100);
-  }, [generate]);
+  }, [generate, setCards]);
+
+  const openHandoff = useCallback((path: string, image: GeneratedImage) => {
+    window.location.assign(generationHandoffUrl(path, image.url));
+  }, []);
 
   return (
     <div className="flex-1 flex flex-col overflow-hidden">
@@ -132,6 +137,9 @@ export function GenerationGrid() {
                 onDelete={() => handleDeleteCard(card.id)}
                 onCopyPrompt={() => handleCopyPrompt(card.prompt)}
                 onDownload={() => card.image && handleDownloadCard(card.image.url, card.prompt)}
+                onAnimate={() => card.image && openHandoff('/video', card.image)}
+                onEdit={() => card.image && openHandoff('/tools/edit-image', card.image)}
+                onUpscale={() => card.image && openHandoff('/tools/upscale', card.image)}
                 onRetry={() => handleRetry(card.id)}
               />
             </div>
@@ -206,7 +214,10 @@ export function GenerationGrid() {
               </div>
 
               <div className="flex flex-col gap-2 mt-auto">
-                <button className="h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:brightness-90 transition-all active:scale-[0.98]">
+                <button
+                  onClick={() => selectedCard.image && handleDownloadCard(selectedCard.image.url, selectedCard.prompt)}
+                  className="h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:brightness-90 transition-all active:scale-[0.98]"
+                >
                   <Download size={15} />{t.studio.download}
                 </button>
                 <div className="grid grid-cols-3 gap-2">
@@ -224,6 +235,26 @@ export function GenerationGrid() {
                   </button>
                   <button className="h-10 rounded-xl border border-border/15 bg-card/60 text-foreground/80 text-[12px] font-medium flex items-center justify-center gap-1.5 hover:bg-card hover:border-border/30 transition-all">
                     <Share2 size={13} />Share
+                  </button>
+                </div>
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={() => openHandoff('/video', selectedCard.image!)}
+                    className="h-10 rounded-xl border border-border/15 bg-card/60 text-foreground/80 text-[12px] font-medium flex items-center justify-center gap-1.5 hover:bg-card hover:border-border/30 transition-all"
+                  >
+                    <Film size={13} />Animate
+                  </button>
+                  <button
+                    onClick={() => openHandoff('/tools/edit-image', selectedCard.image!)}
+                    className="h-10 rounded-xl border border-border/15 bg-card/60 text-foreground/80 text-[12px] font-medium flex items-center justify-center gap-1.5 hover:bg-card hover:border-border/30 transition-all"
+                  >
+                    <Wand2 size={13} />Edit
+                  </button>
+                  <button
+                    onClick={() => openHandoff('/tools/upscale', selectedCard.image!)}
+                    className="h-10 rounded-xl border border-border/15 bg-card/60 text-foreground/80 text-[12px] font-medium flex items-center justify-center gap-1.5 hover:bg-card hover:border-border/30 transition-all"
+                  >
+                    <ArrowUpCircle size={13} />Upscale
                   </button>
                 </div>
               </div>
@@ -244,12 +275,15 @@ function DetailRow({ label, value }: { label: string; value: string }) {
   );
 }
 
-function GridCardItem({ card, onClick, onDelete, onCopyPrompt, onDownload, onRetry }: {
+function GridCardItem({ card, onClick, onDelete, onCopyPrompt, onDownload, onAnimate, onEdit, onUpscale, onRetry }: {
   card: GenerationCard;
   onClick: () => void;
   onDelete: () => void;
   onCopyPrompt: () => void;
   onDownload: () => void;
+  onAnimate: () => void;
+  onEdit: () => void;
+  onUpscale: () => void;
   onRetry: () => void;
 }) {
   const { t } = useLanguage();
@@ -350,6 +384,9 @@ function GridCardItem({ card, onClick, onDelete, onCopyPrompt, onDownload, onRet
       <div className={`quick-actions absolute right-2.5 top-1/2 -translate-y-1/2 flex flex-col gap-2 transition-all duration-300 ${showActions ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-2 pointer-events-none'}`}>
         <QuickActionButton icon={<Copy size={14} />} onClick={onCopyPrompt} label="Copy prompt" />
         <QuickActionButton icon={<Download size={14} />} onClick={onDownload} label="Download" />
+        <QuickActionButton icon={<Film size={14} />} onClick={onAnimate} label="Animate" />
+        <QuickActionButton icon={<Wand2 size={14} />} onClick={onEdit} label="Edit" />
+        <QuickActionButton icon={<ArrowUpCircle size={14} />} onClick={onUpscale} label="Upscale" />
         <QuickActionButton icon={<Trash2 size={14} />} onClick={onDelete} label="Delete" />
       </div>
 

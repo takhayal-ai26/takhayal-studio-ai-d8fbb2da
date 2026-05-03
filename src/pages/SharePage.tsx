@@ -4,6 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Loader2, Sparkles, Download, ArrowRight } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { Logo } from '@/components/Logo';
+import { PageSeo } from '@/components/seo/PageSeo';
 
 interface SharedImage {
   prompt: string | null;
@@ -36,19 +37,37 @@ export default function SharePage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <Loader2 size={32} className="text-primary animate-spin" />
-      </div>
+      <>
+        <PageSeo
+          title="Shared Image | Takhayal.ai"
+          description="Publicly shared generation result from Takhayal.ai."
+          canonicalPath={`/share/${publicId}`}
+          pageType="WebPage"
+          noIndex
+        />
+        <div className="min-h-screen bg-background flex items-center justify-center">
+          <Loader2 size={32} className="text-primary animate-spin" />
+        </div>
+      </>
     );
   }
 
   if (notFound || !image) {
     return (
-      <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 p-6">
-        <Sparkles size={48} className="text-muted-foreground/20" />
-        <h1 className="text-xl font-semibold text-foreground">Image not found</h1>
-        <Link to="/" className="text-primary text-sm hover:underline">Go to Takhayal.ai</Link>
-      </div>
+      <>
+        <PageSeo
+          title="Shared Image | Takhayal.ai"
+          description="Publicly shared generation result from Takhayal.ai."
+          canonicalPath={`/share/${publicId}`}
+          pageType="WebPage"
+          noIndex
+        />
+        <div className="min-h-screen bg-background flex flex-col items-center justify-center gap-4 p-6">
+          <Sparkles size={48} className="text-muted-foreground/20" />
+          <h1 className="text-xl font-semibold text-foreground">Image not found</h1>
+          <Link to="/" className="text-primary text-sm hover:underline">Go to Takhayal.ai</Link>
+        </div>
+      </>
     );
   }
 
@@ -63,6 +82,13 @@ export default function SharePage() {
 
   return (
     <div className="min-h-screen bg-background">
+      <PageSeo
+        title="Shared Image | Takhayal.ai"
+        description="Publicly shared generation result from Takhayal.ai."
+        canonicalPath={`/share/${publicId}`}
+        pageType="WebPage"
+        noIndex
+      />
       {/* Navbar */}
       <nav className="h-14 flex items-center justify-between px-5 border-b border-border/10">
         <Logo />

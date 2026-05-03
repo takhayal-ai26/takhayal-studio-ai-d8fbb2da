@@ -7,6 +7,8 @@ import { useState, useRef, useEffect } from 'react';
 import { LanguageToggle } from '@/components/LanguageToggle';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { useAppTheme } from '@/context/AppThemeContext';
+import { localizePath, switchPathLanguage } from '@/lib/localized-routes';
+import type { Language } from '@/i18n/translations';
 
 
 const navItemDefs: { id: string; labelKey: string; route: string; studioPage?: NavPage }[] = [
@@ -27,7 +29,8 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
   const { isAdmin, mode, toggleMode } = useAppTheme();
   const navigate = useNavigate();
   const location = useLocation();
-  const isHeroPage = location.pathname === '/' || location.pathname === '/home';
+  const normalizedPath = location.pathname.replace(/^\/(en|ar)(?=\/|$)/, '') || '/';
+  const isHeroPage = normalizedPath === '/' || normalizedPath === '/home';
   const [scrolled, setScrolled] = useState(false);
 
   useEffect(() => {
@@ -44,6 +47,11 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
   const mobileAvatarRef = useRef<HTMLDivElement>(null);
 
   const lowCredits = credits <= 5 && credits > 0;
+  const go = (route: string) => navigate(localizePath(route, lang));
+  const switchLanguage = (nextLang: Language) => {
+    setLang(nextLang);
+    navigate(`${switchPathLanguage(location.pathname, nextLang)}${location.search}${location.hash}`);
+  };
 
   const navLabels: Record<string, string> = {
     home: t.nav.home,
@@ -107,26 +115,27 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
   };
 
   const isActive = (item: typeof navItemDefs[0]) => {
-    if (item.route === '/home') return location.pathname === '/' || location.pathname === '/home';
+    const path = location.pathname.replace(/^\/(en|ar)(?=\/|$)/, '') || '/';
+    if (item.route === '/home') return path === '/' || path === '/home';
     if (item.route === '/image') {
       return (
-        location.pathname === '/image' ||
-        location.pathname.startsWith('/image/') ||
-        location.pathname.startsWith('/tools') ||
-        location.pathname.startsWith('/studio') ||
-        location.pathname.startsWith('/models')
+        path === '/image' ||
+        path.startsWith('/image/') ||
+        path.startsWith('/tools') ||
+        path.startsWith('/studio') ||
+        path.startsWith('/models')
       );
     }
-    return location.pathname === item.route || (item.route !== '/' && location.pathname.startsWith(item.route));
+    return path === item.route || (item.route !== '/' && path.startsWith(item.route));
   };
 
   const handleNav = (item: typeof navItemDefs[0]) => {
-    navigate(item.route);
+    go(item.route);
   };
 
   return (
     <>
-      <nav dir={isRTL ? 'rtl' : 'ltr'} className={`fixed left-0 right-0 z-50 h-14 md:h-11 flex items-center px-5 md:px-5 transition-[top,background,backdrop-filter] duration-300 ${bannerOffset ? 'top-[40px]' : 'top-0'} ${isHeroPage && !scrolled ? 'bg-transparent' : 'bg-background/80 backdrop-blur-xl'}`} data-hero-transparent={isHeroPage && !scrolled ? 'true' : undefined}>
+      <nav dir={isRTL ? 'rtl' : 'ltr'} className={`fixed left-0 right-0 z-50 h-14 md:h-11 flex items-center px-5 md:px-5 transition-[top,background,backdrop-filter] duration-300 ${bannerOffset ? 'top-[40px]' : 'top-0'} ${isHeroPage && !scrolled ? 'bg-transparent' : 'bg-background/90 backdrop-blur-md'}`} data-hero-transparent={isHeroPage && !scrolled ? 'true' : undefined}>
         <div className="flex-shrink-0 whitespace-nowrap">
           <Logo />
         </div>
@@ -151,11 +160,11 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
         {/* Right: Desktop controls */}
         <div className="hidden md:flex items-center gap-2 flex-shrink-0">
           {!isAdmin && <ThemeToggle />}
-          <LanguageToggle />
+          <LanguageToggle forceLight={isHeroPage && !scrolled} />
           {isAuthenticated ? (
             <>
               <button
-                onClick={() => { setActivePage('credits'); navigate('/studio'); }}
+                onClick={() => { setActivePage('credits'); go('/studio'); }}
                 title={t.common.viewCredits}
                 className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full transition-all duration-200 ${
                   lowCredits
@@ -169,7 +178,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
 
               {plan === 'free' ? (
                 <button
-                  onClick={() => navigate('/pricing')}
+                  onClick={() => go('/pricing')}
                   className="h-8 px-4 rounded-full bg-primary text-primary-foreground text-[12px] font-semibold hover:brightness-110 hover:shadow-lg hover:shadow-primary/20 transition-all duration-200"
                 >
                   {t.nav.upgrade}
@@ -193,7 +202,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
 
                 {avatarOpen && (
                   <div
-                    className={`fixed ${isRTL ? 'left-auto right-auto' : ''} w-56 bg-popover/95 backdrop-blur-xl rounded-2xl p-2 shadow-xl shadow-black/20 animate-fade-in`}
+                    className={`fixed ${isRTL ? 'left-auto right-auto' : ''} w-56 bg-popover/95 backdrop-blur-md rounded-2xl p-2 shadow-xl shadow-black/20 animate-fade-in`}
                     style={getAvatarMenuStyle(desktopAvatarRef)}
                   >
                     {/* User info */}
@@ -206,21 +215,21 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
 
                     {/* Menu items */}
                     <button
-                      onClick={() => { setAvatarOpen(false); setActivePage('credits'); navigate('/studio'); }}
+                      onClick={() => { setAvatarOpen(false); setActivePage('credits'); go('/studio'); }}
                       className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-foreground hover:bg-foreground/[0.05] transition-colors"
                     >
                       <CreditCard size={15} className="text-muted-foreground" />
                       {t.avatar.billingCredits}
                     </button>
                     <button
-                      onClick={() => { setAvatarOpen(false); setActivePage('settings'); navigate('/studio'); }}
+                      onClick={() => { setAvatarOpen(false); setActivePage('settings'); go('/studio'); }}
                       className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-foreground hover:bg-foreground/[0.05] transition-colors"
                     >
                       <Settings size={15} className="text-muted-foreground" />
                       {t.avatar.settings}
                     </button>
                     <button
-                      onClick={() => { setAvatarOpen(false); navigate('/contact'); }}
+                      onClick={() => { setAvatarOpen(false); go('/contact'); }}
                       className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-foreground hover:bg-foreground/[0.05] transition-colors"
                     >
                       <Mail size={15} className="text-muted-foreground" />
@@ -230,8 +239,8 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
                     {/* Language & Theme */}
                     <div className="flex items-center justify-between px-3 py-2.5">
                       <div className="flex items-center gap-0.5 p-0.5 rounded-full bg-foreground/[0.05]">
-                        <button onClick={() => setLang('en')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>EN</button>
-                        <button onClick={() => setLang('ar')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'ar' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>AR</button>
+                        <button onClick={() => switchLanguage('en')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>EN</button>
+                        <button onClick={() => switchLanguage('ar')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'ar' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>AR</button>
                       </div>
                       <button onClick={toggleMode} className="w-11 h-11 rounded-full bg-foreground/[0.05] flex items-center justify-center hover:bg-foreground/[0.08] transition-colors">
                         {mode === 'dark' ? <Sun size={14} className="text-muted-foreground" /> : <Moon size={14} className="text-muted-foreground" />}
@@ -243,7 +252,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
                     {/* Upgrade CTA */}
                     {plan === 'free' && (
                       <button
-                        onClick={() => { setAvatarOpen(false); navigate('/pricing'); }}
+                        onClick={() => { setAvatarOpen(false); go('/pricing'); }}
                         className="w-full mt-1 mb-1 flex min-h-11 items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-[13px] font-semibold bg-primary text-primary-foreground transition-all hover:brightness-110 hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98]"
                       >
                         <Crown size={14} />
@@ -273,7 +282,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
               </button>
               <button
                 onClick={() => openAuthModal('signup')}
-                className="h-9 px-5 rounded-full bg-primary text-primary-foreground text-[13px] font-semibold hover:shadow-lg hover:shadow-primary/20 transition-all duration-200"
+                className="h-9 px-5 rounded-full bg-primary text-primary-foreground text-[13px] font-bold shadow-lg shadow-primary/20 hover:shadow-xl hover:shadow-primary/30 hover:brightness-110 transition-all duration-200"
               >
                 {t.nav.signup}
               </button>
@@ -287,7 +296,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
             <>
               {/* Credits pill */}
               <button
-                onClick={() => { setActivePage('credits'); navigate('/studio'); }}
+                onClick={() => { setActivePage('credits'); go('/studio'); }}
                 className={`flex min-h-11 items-center gap-1.5 px-3.5 py-2 rounded-full text-[12px] font-medium ${
                   lowCredits
                     ? 'bg-primary/10 text-primary'
@@ -312,7 +321,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
                 </button>
                 {avatarOpen && (
                   <div
-                    className={`fixed w-56 bg-popover/95 backdrop-blur-xl rounded-2xl p-2 shadow-xl shadow-black/20 animate-fade-in`}
+                    className={`fixed w-56 bg-popover/95 backdrop-blur-md rounded-2xl p-2 shadow-xl shadow-black/20 animate-fade-in`}
                     style={getAvatarMenuStyle(mobileAvatarRef)}
                   >
                     {/* User info */}
@@ -325,21 +334,21 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
 
                     {/* Menu items */}
                     <button
-                      onClick={() => { setAvatarOpen(false); setActivePage('credits'); navigate('/studio'); }}
+                      onClick={() => { setAvatarOpen(false); setActivePage('credits'); go('/studio'); }}
                       className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-foreground hover:bg-foreground/[0.05] transition-colors"
                     >
                       <CreditCard size={15} className="text-muted-foreground" />
                       {t.avatar.billingCredits}
                     </button>
                     <button
-                      onClick={() => { setAvatarOpen(false); setActivePage('settings'); navigate('/studio'); }}
+                      onClick={() => { setAvatarOpen(false); setActivePage('settings'); go('/studio'); }}
                       className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-foreground hover:bg-foreground/[0.05] transition-colors"
                     >
                       <Settings size={15} className="text-muted-foreground" />
                       {t.avatar.settings}
                     </button>
                     <button
-                      onClick={() => { setAvatarOpen(false); navigate('/contact'); }}
+                      onClick={() => { setAvatarOpen(false); go('/contact'); }}
                       className="w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-[13px] text-foreground hover:bg-foreground/[0.05] transition-colors"
                     >
                       <Mail size={15} className="text-muted-foreground" />
@@ -349,8 +358,8 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
                     {/* Language & Theme */}
                     <div className="flex items-center justify-between px-3 py-2.5">
                       <div className="flex items-center gap-0.5 p-0.5 rounded-full bg-foreground/[0.05]">
-                        <button onClick={() => setLang('en')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>EN</button>
-                        <button onClick={() => setLang('ar')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'ar' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>AR</button>
+                        <button onClick={() => switchLanguage('en')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>EN</button>
+                        <button onClick={() => switchLanguage('ar')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'ar' ? 'bg-primary text-primary-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>AR</button>
                       </div>
                       <button onClick={toggleMode} className="w-11 h-11 rounded-full bg-foreground/[0.05] flex items-center justify-center hover:bg-foreground/[0.08] transition-colors">
                         {mode === 'dark' ? <Sun size={14} className="text-muted-foreground" /> : <Moon size={14} className="text-muted-foreground" />}
@@ -362,7 +371,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
                     {/* Upgrade CTA - gradient button */}
                     {plan === 'free' && (
                       <button
-                        onClick={() => { setAvatarOpen(false); navigate('/pricing'); }}
+                        onClick={() => { setAvatarOpen(false); go('/pricing'); }}
                         className="w-full mx-auto mt-1 mb-1 flex min-h-11 items-center justify-center gap-2 px-3 py-2.5 rounded-xl text-[13px] font-semibold bg-primary text-primary-foreground transition-all hover:brightness-110 hover:shadow-lg hover:shadow-primary/20 active:scale-[0.98]"
                       >
                         <Crown size={14} />
@@ -396,6 +405,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
               <button
                 onClick={() => setDrawerOpen(true)}
                 className="w-11 h-11 rounded-lg bg-foreground/[0.05] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={isRTL ? 'فتح القائمة' : 'Open menu'}
               >
                 <Menu size={18} />
               </button>
@@ -408,14 +418,14 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
       {drawerOpen && !isAuthenticated && (
         <>
           <div
-            className="fixed inset-0 z-[60] bg-black/40 backdrop-blur-sm animate-fade-in md:hidden"
+            className="fixed inset-0 z-[60] bg-black/40 animate-fade-in md:hidden"
             onClick={() => setDrawerOpen(false)}
           />
           <div dir={isRTL ? 'rtl' : 'ltr'} className={`fixed ${isRTL ? 'left-0' : 'right-0'} top-0 bottom-0 z-[70] w-72 bg-background shadow-2xl flex flex-col animate-slide-in-right md:hidden`}>
             {/* Header */}
             <div className="flex items-center justify-between px-5 pt-5 pb-3">
               <span className="text-[14px] font-semibold text-foreground">{isRTL ? 'القائمة' : 'Menu'}</span>
-              <button onClick={() => setDrawerOpen(false)} className="w-11 h-11 rounded-xl bg-foreground/[0.05] flex items-center justify-center text-muted-foreground">
+              <button onClick={() => setDrawerOpen(false)} className="w-11 h-11 rounded-xl bg-foreground/[0.05] flex items-center justify-center text-muted-foreground" aria-label={isRTL ? 'إغلاق القائمة' : 'Close menu'}>
                 <X size={18} />
               </button>
             </div>
@@ -442,7 +452,7 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
               ].map(item => (
                 <button
                   key={item.route}
-                  onClick={() => { setDrawerOpen(false); navigate(item.route); }}
+                  onClick={() => { setDrawerOpen(false); go(item.route); }}
                   className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] text-foreground hover:bg-foreground/[0.04] transition-colors"
                 >
                   <item.icon size={18} className="text-muted-foreground" />
@@ -454,14 +464,14 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
 
               {/* Pricing */}
               <button
-                onClick={() => { setDrawerOpen(false); navigate('/pricing'); }}
+                onClick={() => { setDrawerOpen(false); go('/pricing'); }}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] text-foreground hover:bg-foreground/[0.04] transition-colors"
               >
                 <CreditCard size={18} className="text-muted-foreground" />
                 {isRTL ? 'الأسعار' : 'Pricing'}
               </button>
               <button
-                onClick={() => { setDrawerOpen(false); navigate('/contact'); }}
+                onClick={() => { setDrawerOpen(false); go('/contact'); }}
                 className="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-[14px] text-foreground hover:bg-foreground/[0.04] transition-colors"
               >
                 <Mail size={18} className="text-muted-foreground" />
@@ -474,13 +484,13 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
               <div className="flex items-center justify-between px-3 py-2">
                 <span className="text-[12px] text-muted-foreground">{isRTL ? 'اللغة' : 'Language'}</span>
                 <div className="flex items-center gap-1 p-0.5 rounded-full bg-foreground/[0.04]">
-                  <button onClick={() => setLang('en')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>EN</button>
-                  <button onClick={() => setLang('ar')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'ar' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>AR</button>
+                  <button onClick={() => switchLanguage('en')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'en' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>EN</button>
+                  <button onClick={() => switchLanguage('ar')} className={`min-h-10 px-3 py-2 rounded-full text-[11px] font-medium transition-all ${lang === 'ar' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground'}`}>AR</button>
                 </div>
               </div>
               <div className="flex items-center justify-between px-3 py-2">
                 <span className="text-[12px] text-muted-foreground">{isRTL ? 'الوضع' : 'Theme'}</span>
-                <button onClick={toggleMode} className="w-11 h-11 rounded-xl bg-foreground/[0.05] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+                <button onClick={toggleMode} className="w-11 h-11 rounded-xl bg-foreground/[0.05] flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" aria-label={mode === 'dark' ? (isRTL ? 'التبديل للوضع الفاتح' : 'Switch to light mode') : (isRTL ? 'التبديل للوضع الداكن' : 'Switch to dark mode')}>
                   {mode === 'dark' ? <Sun size={14} /> : <Moon size={14} />}
                 </button>
               </div>

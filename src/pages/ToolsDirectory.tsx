@@ -5,10 +5,11 @@ import { useToolsDB } from '@/hooks/useToolsDB';
 import { useApp } from '@/context/AppContext';
 import { cn } from '@/lib/utils';
 import { PageSeo, absoluteUrl } from '@/components/seo/PageSeo';
+import { localizePath } from '@/lib/localized-routes';
 
 export default function ToolsDirectory() {
   const navigate = useNavigate();
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL, lang } = useLanguage();
   const { tools } = useToolsDB();
   const { setActivePage } = useApp();
 
@@ -24,7 +25,7 @@ export default function ToolsDirectory() {
     itemListElement: tools.slice(0, 12).map((tool, index) => ({
       '@type': 'ListItem',
       position: index + 1,
-      url: absoluteUrl(tool.route),
+      url: absoluteUrl(localizePath(tool.route, lang)),
       name: tool.name,
       description: tool.shortDesc,
     })),
@@ -63,9 +64,9 @@ export default function ToolsDirectory() {
                   onClick={() => {
                     if (tool.slug === 'generate') {
                       setActivePage('canvas');
-                      navigate('/studio');
+                      navigate(localizePath('/studio', lang));
                     } else {
-                      navigate(`/tools/${tool.slug}`);
+                      navigate(localizePath(`/tools/${tool.slug}`, lang));
                     }
                   }}
                   aria-label={tool.name}
@@ -83,7 +84,7 @@ export default function ToolsDirectory() {
                       <img
                         src={tool.image}
                         alt={tool.name}
-                        className="w-full h-full object-cover transition-transform duration-[600ms] ease-out group-hover:scale-[1.07] group-active:scale-[1.03]"
+                        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-[1.07] group-active:scale-[1.03]"
                         loading="lazy"
                       />
                     ) : (

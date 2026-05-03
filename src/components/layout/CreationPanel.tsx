@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { Upload, ChevronRight, Sparkles, X, Coins, Cpu, Maximize, Image as ImageIcon, Wand2, Zap } from 'lucide-react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { Upload, ChevronRight, X, Cpu, Maximize, Image as ImageIcon, Wand2, Zap } from 'lucide-react';
 import { useApp, TEMPLATE_PROMPTS, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useGenerationJobs } from '@/hooks/useGenerationJobs';
@@ -14,14 +14,18 @@ import { ResolutionDropdown } from './dropdowns/ResolutionDropdown';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { BackToImageTools } from '@/components/tools/BackToImageTools';
+import { GenerateButton, imageSizeError, isOversizedImage } from '@/lib/ux';
+import { localizePath } from '@/lib/localized-routes';
+import { toast } from 'sonner';
 
 const CREDIT_VALUE = CREDIT_VALUE_USD;
 type OpenDropdown = 'model' | 'size' | 'resolution' | null;
 
 export function CreationPanel() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, enhancePrompt, setEnhancePrompt, isGenerating, credits, getCreditCost, isAuthenticated, openAuthModal, openUpgradeModal, selectedModelId: contextModelId, setSelectedModelId: setContextModelId } = useApp();
+  const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, isGenerating, credits, getCreditCost, isAuthenticated, openAuthModal, openUpgradeModal, selectedModelId: contextModelId, setSelectedModelId: setContextModelId } = useApp();
   const { submitJob } = useGenerationJobs();
   const [localGenerating, setLocalGenerating] = useState(false);
   const { t, lang: language } = useLanguage();
@@ -32,7 +36,10 @@ export function CreationPanel() {
   // Use AppContext's selectedModelId to sync with model detail page navigation
   const [localModelId, setLocalModelId] = useState<string>('');
   const selectedModelId = localModelId || contextModelId || '';
-  const setSelectedModelId = (id: string) => { setLocalModelId(id); setContextModelId(id); };
+  const setSelectedModelId = useCallback((id: string) => {
+    setLocalModelId(id);
+    setContextModelId(id);
+  }, [setContextModelId]);
 
   const [selectedResolution, setSelectedResolution] = useState<string>('1K');
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
@@ -70,12 +77,23 @@ export function CreationPanel() {
     if (contextModelId && activeModels.some(m => m.id === contextModelId)) {
       setLocalModelId(contextModelId);
     }
-  }, [contextModelId, activeModels]);
+  }, [contextModelId, activeModels, setSelectedModelId]);
+
+  useEffect(() => {
+    const modelId = searchParams.get('modelId');
+    if (modelId && activeModels.some(m => m.id === modelId)) setSelectedModelId(modelId);
+  }, [activeModels, searchParams, setSelectedModelId]);
+
+  useEffect(() => {
+    const imageUrl = searchParams.get('imageUrl');
+    if (!imageUrl || uploadedImages.some(img => img.url === imageUrl)) return;
+    setUploadedImages([{ preview: imageUrl, url: imageUrl }]);
+  }, [searchParams, uploadedImages]);
 
   useEffect(() => {
     if (defaultModel && !selectedModelId) setSelectedModelId(defaultModel.id);
     else if (activeModels.length > 0 && !selectedModelId) setSelectedModelId(activeModels[0].id);
-  }, [defaultModel, activeModels, selectedModelId]);
+  }, [defaultModel, activeModels, selectedModelId, setSelectedModelId]);
 
   useEffect(() => {
     if (currentModel && !modelQualityTiers.includes(selectedResolution))
@@ -99,14 +117,22 @@ export function CreationPanel() {
   }, [supportsImageInput, uploadedImages.length]);
 
   const handleFileUpload = useCallback(async (file: File) => {
-    if (!user) { openAuthModal('signup'); return; }
     if (!file.type.startsWith('image/')) return;
-    if (file.size > 10 * 1024 * 1024) return;
+    if (isOversizedImage(file)) {
+      toast.error(imageSizeError(language === 'ar'));
+      return;
+    }
     if (uploadedImages.length >= maxImages) return;
 
     const preview = URL.createObjectURL(file);
     const newEntry = { preview, url: null as string | null };
     setUploadedImages(prev => [...prev, newEntry]);
+
+    if (!user) {
+      setUploadedImages(prev => prev.map(img => img.preview === preview ? { ...img, url: preview } : img));
+      return;
+    }
+
     setIsUploading(true);
 
     try {
@@ -125,7 +151,7 @@ export function CreationPanel() {
     } finally {
       setIsUploading(false);
     }
-  }, [user, openAuthModal, uploadedImages.length, maxImages]);
+  }, [user, uploadedImages.length, maxImages, language]);
 
   const removeImage = useCallback((index: number) => {
     setUploadedImages(prev => prev.filter((_, i) => i !== index));
@@ -138,7 +164,7 @@ export function CreationPanel() {
   }, []);
 
   const pendingUploads = uploadedImages.some(img => !img.url);
-  const canGenerate = prompt.trim().length > 0 && !isGenerating && !localGenerating && credits >= cost && !!currentModel && !isUploading && !pendingUploads;
+  const canGenerate = prompt.trim().length > 0 && !isGenerating && !localGenerating && !!currentModel && !isUploading && !pendingUploads;
   const toggleDropdown = (key: OpenDropdown) => setOpenDropdown(prev => prev === key ? null : key);
 
   useEffect(() => { const handler = (e: MouseEvent) => { if (openDropdown && panelRef.current && !panelRef.current.contains(e.target as Node)) { const target = e.target as HTMLElement; if (target.closest('[data-dropdown-portal]')) return; setOpenDropdown(null); } }; document.addEventListener('mousedown', handler); return () => document.removeEventListener('mousedown', handler); }, [openDropdown]);
@@ -178,8 +204,14 @@ export function CreationPanel() {
       return;
     }
 
-    navigate(`/gallery?highlight=${jobId}`);
-  }, [canGenerate, isAuthenticated, credits, cost, prompt, selectedTemplate, aspectRatio, selectedResolution, currentModel, submitJob, navigate, openAuthModal, openUpgradeModal, uploadedImages]);
+    sessionStorage.setItem('takhayal:studio:recentJobId', jobId);
+    window.dispatchEvent(new CustomEvent('takhayal:studio:recent-job', { detail: { jobId } }));
+    setLocalGenerating(false);
+
+    if (window.matchMedia('(max-width: 767px)').matches) {
+      navigate(`${localizePath('/gallery', language)}?highlight=${encodeURIComponent(jobId)}`);
+    }
+  }, [canGenerate, isAuthenticated, credits, cost, prompt, selectedTemplate, aspectRatio, selectedResolution, currentModel, submitJob, openAuthModal, openUpgradeModal, uploadedImages, navigate, language]);
 
   useEffect(() => { const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenDropdown(null); if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); handleGenerate(); } }; window.addEventListener('keydown', handler); return () => window.removeEventListener('keydown', handler); }, [handleGenerate]);
 
@@ -197,7 +229,7 @@ export function CreationPanel() {
 
   return (
     <aside ref={panelRef} className="w-full md:w-[380px] xl:w-[420px] flex flex-col bg-background flex-shrink-0 overflow-visible relative z-30">
-      <div className="flex-1 overflow-y-auto overflow-x-visible p-4 space-y-2 scrollbar-thin">
+      <div className="md:flex-1 overflow-visible md:overflow-y-auto overflow-x-visible px-4 pt-4 pb-4 md:p-4 space-y-2 scrollbar-thin">
         {/* Back to Image Tools — keeps Generate Image consistent with all other tool pages */}
         <BackToImageTools className="mb-2" />
         {/* Prompt */}
@@ -207,27 +239,22 @@ export function CreationPanel() {
               <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Wand2 size={12} className="text-primary" />
               </div>
-              <label className="typo-label-strong text-[14px]">{t.studio.prompt}</label>
+              <label htmlFor="studio-prompt" className="typo-label-strong text-[14px]">{t.studio.prompt}</label>
             </div>
             <div className="flex items-center gap-1.5">
               {prompt.length > 0 && (
-                <button onClick={() => { setPrompt(''); setSelectedTemplate(null); }} className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/[0.06] transition-all">
+                <button
+                  onClick={() => { setPrompt(''); setSelectedTemplate(null); }}
+                  className="min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-foreground/[0.06] transition-all"
+                  aria-label={language === 'ar' ? 'مسح الوصف' : 'Clear prompt'}
+                >
                   <X size={13} />
                 </button>
               )}
-              <button
-                onClick={() => setEnhancePrompt(!enhancePrompt)}
-                className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg text-[11px] font-medium transition-all duration-200 ${
-                  enhancePrompt
-                    ? 'bg-primary/10 text-primary border border-primary/20'
-                    : 'text-muted-foreground hover:text-foreground hover:bg-foreground/[0.06]'
-                }`}
-              >
-                <Sparkles size={11} />{t.studio.enhance}
-              </button>
             </div>
           </div>
           <textarea
+            id="studio-prompt"
             value={prompt}
             onChange={e => setPrompt(e.target.value.slice(0, 500))}
             placeholder={t.studio.describeCreate}
@@ -250,6 +277,7 @@ export function CreationPanel() {
             onDrop={handleDrop}
           >
             <input
+              aria-label={language === 'ar' ? 'رفع صور مرجعية' : 'Upload reference images'}
               ref={fileInputRef}
               type="file"
               accept="image/jpeg,image/png,image/webp"
@@ -258,6 +286,7 @@ export function CreationPanel() {
               onChange={e => {
                 const files = Array.from(e.target.files || []);
                 files.forEach(f => handleFileUpload(f));
+                e.currentTarget.value = '';
               }}
             />
             {uploadedImages.length > 0 ? (
@@ -273,7 +302,8 @@ export function CreationPanel() {
                       )}
                       <button
                         onClick={() => removeImage(i)}
-                        className="absolute top-1 right-1 w-6 h-6 rounded-md bg-background/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                        className="absolute top-1 right-1 min-h-11 min-w-11 rounded-md bg-background/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                        aria-label={language === 'ar' ? `إزالة الصورة ${i + 1}` : `Remove image ${i + 1}`}
                       >
                         <X size={12} />
                       </button>
@@ -287,7 +317,7 @@ export function CreationPanel() {
                   {uploadedImages.length < maxImages && (
                     <button
                       onClick={() => fileInputRef.current?.click()}
-                      className="text-[10px] text-primary/60 hover:text-primary font-medium transition-colors"
+                      className="min-h-11 rounded-lg px-3 text-[12px] text-primary/70 hover:text-primary font-medium transition-colors"
                     >
                       + {language === 'ar' ? 'إضافة المزيد' : 'Add more'}
                     </button>
@@ -298,6 +328,7 @@ export function CreationPanel() {
               <button
                 onClick={() => fileInputRef.current?.click()}
                 className="w-full rounded-2xl bg-foreground/[0.03] border border-dashed border-border/30 p-4 flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground/80 hover:border-primary/20 hover:bg-primary/[0.02] transition-all duration-300 group"
+                aria-label={language === 'ar' ? 'رفع صور مرجعية' : 'Upload reference images'}
               >
                 <div className="w-9 h-9 rounded-xl bg-foreground/[0.04] flex items-center justify-center group-hover:bg-primary/10 transition-colors">
                   <Upload size={16} className="group-hover:text-primary/70 transition-colors" />
@@ -323,6 +354,8 @@ export function CreationPanel() {
             key={item.key}
             ref={item.ref}
             onClick={() => toggleDropdown(item.key)}
+            aria-expanded={openDropdown === item.key}
+            aria-haspopup="listbox"
             className={`w-full flex items-center justify-between h-[46px] px-3.5 rounded-xl bg-card/40 border transition-all duration-200 ${
               openDropdown === item.key ? 'border-primary/30 bg-card/60' : 'border-border/20 hover:border-border/30'
             }`}
@@ -337,34 +370,20 @@ export function CreationPanel() {
             </div>
           </button>
         ))}
-      </div>
 
-      {/* Generate button */}
-      <div className="flex-shrink-0 p-4">
-        <button
-          onClick={handleGenerate}
-          disabled={!canGenerate}
-          className={`w-full h-[44px] rounded-xl text-[14px] font-semibold transition-all duration-200 flex items-center justify-center gap-2 ${
-            canGenerate
-              ? 'bg-primary text-primary-foreground hover:brightness-110 active:scale-[0.98] shadow-[0_4px_20px_-4px] shadow-primary/25'
-              : 'bg-foreground/[0.04] border border-border/10 text-muted-foreground cursor-not-allowed'
-          }`}
-        >
-          {(isGenerating || localGenerating) ? (
-            <span className="flex items-center gap-2">
-              <span className="w-4 h-4 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
-              {t.studio.generating}
-            </span>
-          ) : (
-            <>
-              {uploadedImages.length > 0 ? (language === 'ar' ? 'تعديل الصورة' : 'Edit Image') : t.toolPage.generate}
-              <span className="flex items-center gap-1 text-[12px] opacity-70">
-                <Coins size={11} />{cost}
-              </span>
-            </>
-          )}
-        </button>
-        <p className="text-[11px] text-muted-foreground text-center mt-2">⌘ Enter</p>
+        {/* Generate button */}
+        <div className="pt-2">
+          <GenerateButton
+            onClick={handleGenerate}
+            disabled={!canGenerate}
+            loading={isGenerating || localGenerating}
+            loadingLabel={t.studio.generating}
+            credits={cost}
+            className="h-[52px]"
+          >
+            {uploadedImages.length > 0 ? (language === 'ar' ? 'تعديل الصورة' : 'Edit Image') : t.toolPage.generate}
+          </GenerateButton>
+        </div>
       </div>
 
       {openDropdown === 'model' && (

@@ -19,18 +19,18 @@ const PRESETS: Record<string, { label: string; colors: ThemeColors }> = {
   midnight: {
     label: 'Midnight Blue',
     colors: {
-      'cta-primary': '#2563EB', 'cta-primary-hover': '#1D4ED8', 'cta-primary-text': '#FFFFFF',
+      'cta-primary': '#2563EB', 'cta-primary-hover': '#1D4ED8', 'cta-primary-text': '#FAFAF9',
       'cta-secondary': '#1E293B', 'cta-secondary-hover': '#334155', 'cta-secondary-text': '#F8FAFC',
       accent: '#2563EB', 'accent-muted': 'rgba(37,99,235,0.12)', 'accent-border': 'rgba(37,99,235,0.4)',
       'nav-active': '#2563EB', 'nav-active-bg': 'rgba(37,99,235,0.08)',
       'sidebar-bg': '#0F172A', 'panel-bg': '#1E293B', 'card-bg': '#1E293B', border: 'rgba(255,255,255,0.08)',
-      'text-primary': '#F8FAFC', 'text-secondary': '#64748B', 'text-muted': '#475569',
+      'text-primary': '#F8FAFC', 'text-secondary': '#94A3B8', 'text-muted': '#CBD5E1',
     },
   },
   forest: {
     label: 'Forest Studio',
     colors: {
-      'cta-primary': '#16A34A', 'cta-primary-hover': '#15803D', 'cta-primary-text': '#FFFFFF',
+      'cta-primary': '#16A34A', 'cta-primary-hover': '#15803D', 'cta-primary-text': '#FAFAF9',
       'cta-secondary': '#14532D', 'cta-secondary-hover': '#166534', 'cta-secondary-text': '#F0FDF4',
       accent: '#16A34A', 'accent-muted': 'rgba(22,163,74,0.12)', 'accent-border': 'rgba(22,163,74,0.4)',
       'nav-active': '#16A34A', 'nav-active-bg': 'rgba(22,163,74,0.08)',
@@ -39,20 +39,20 @@ const PRESETS: Record<string, { label: string; colors: ThemeColors }> = {
     },
   },
   pure: {
-    label: 'Pure Black',
+    label: 'Ink Black',
     colors: {
-      'cta-primary': '#FFFFFF', 'cta-primary-hover': '#E5E5E5', 'cta-primary-text': '#000000',
-      'cta-secondary': '#111111', 'cta-secondary-hover': '#1A1A1A', 'cta-secondary-text': '#FFFFFF',
-      accent: '#FFFFFF', 'accent-muted': 'rgba(255,255,255,0.08)', 'accent-border': 'rgba(255,255,255,0.2)',
-      'nav-active': '#FFFFFF', 'nav-active-bg': 'rgba(255,255,255,0.06)',
-      'sidebar-bg': '#000000', 'panel-bg': '#0A0A0A', 'card-bg': '#111111', border: 'rgba(255,255,255,0.08)',
-      'text-primary': '#FFFFFF', 'text-secondary': '#555555', 'text-muted': '#333333',
+      'cta-primary': '#FAF7F2', 'cta-primary-hover': '#E8E1D8', 'cta-primary-text': '#070605',
+      'cta-secondary': '#141211', 'cta-secondary-hover': '#201D1B', 'cta-secondary-text': '#FAF7F2',
+      accent: '#FAF7F2', 'accent-muted': 'rgba(250,247,242,0.08)', 'accent-border': 'rgba(250,247,242,0.2)',
+      'nav-active': '#FAF7F2', 'nav-active-bg': 'rgba(250,247,242,0.06)',
+      'sidebar-bg': '#070605', 'panel-bg': '#100E0D', 'card-bg': '#171412', border: 'rgba(250,247,242,0.08)',
+      'text-primary': '#FAF7F2', 'text-secondary': '#A39C96', 'text-muted': '#8A837D',
     },
   },
   sand: {
     label: 'Warm Sand',
     colors: {
-      'cta-primary': '#B45309', 'cta-primary-hover': '#92400E', 'cta-primary-text': '#FFFFFF',
+      'cta-primary': '#B45309', 'cta-primary-hover': '#92400E', 'cta-primary-text': '#FAFAF9',
       'cta-secondary': '#292524', 'cta-secondary-hover': '#44403C', 'cta-secondary-text': '#FAFAF9',
       accent: '#B45309', 'accent-muted': 'rgba(180,83,9,0.12)', 'accent-border': 'rgba(180,83,9,0.4)',
       'nav-active': '#B45309', 'nav-active-bg': 'rgba(180,83,9,0.08)',
@@ -186,7 +186,7 @@ export default function BrandThemeTab() {
   useEffect(() => {
     setDraft({ ...liveColors });
     setSavedColors({ ...liveColors });
-  }, []);
+  }, [liveColors]);
 
   const updateColor = useCallback((key: keyof ThemeColors, value: string) => {
     setDraft(prev => {

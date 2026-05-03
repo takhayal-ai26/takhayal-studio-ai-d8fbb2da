@@ -2,6 +2,8 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { cn } from '@/lib/utils';
+import { localizePath } from '@/lib/localized-routes';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 interface BackToImageToolsProps {
   className?: string;
@@ -13,13 +15,15 @@ interface BackToImageToolsProps {
  */
 export function BackToImageTools({ className }: BackToImageToolsProps) {
   const navigate = useNavigate();
-  const { t, isRTL } = useLanguage();
+  const { t, lang, isRTL } = useLanguage();
+  const isMobile = useIsMobile();
   const Arrow = isRTL ? ArrowRight : ArrowLeft;
+  const targetPath = isMobile ? '/create' : '/image';
 
   return (
     <button
       type="button"
-      onClick={() => navigate('/image')}
+      onClick={() => navigate(localizePath(targetPath, lang))}
       aria-label={t.toolPage.backToImageTools}
       className={cn(
         'group inline-flex items-center gap-2 h-9 ps-2 pe-3.5 -ms-2 mb-6 rounded-full',

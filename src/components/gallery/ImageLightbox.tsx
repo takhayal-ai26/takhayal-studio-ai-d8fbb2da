@@ -1,15 +1,17 @@
 import { useEffect, useCallback, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useModels } from '@/hooks/useModels';
 import { GenerationJob } from '@/hooks/useGenerationJobs';
 import {
   Download, RefreshCw, X, Loader2, AlertCircle, RotateCcw,
   Calendar, Cpu, Ratio, Sparkles, Share2, Trash2,
-  ChevronLeft, ChevronRight, Copy, Check, LayoutTemplate, Wrench
+  ChevronLeft, ChevronRight, Copy, Check, LayoutTemplate, Wrench, Film, Wand2, ArrowUpCircle
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { formatDate } from '@/lib/utils';
 import { isToolJob, getToolName, getToolAction } from '@/hooks/useToolInfo';
+import { generationHandoffUrl } from '@/lib/ux';
 
 interface Props {
   job: GenerationJob | null;
@@ -61,6 +63,7 @@ export function ImageLightbox({
   onPrev, onNext, hasPrev, hasNext, templateTitle
 }: Props) {
   const { lang } = useLanguage();
+  const navigate = useNavigate();
   const isAr = lang === 'ar';
   const { models } = useModels();
   const [copied, setCopied] = useState(false);
@@ -144,6 +147,14 @@ export function ImageLightbox({
     onClose();
   };
 
+  const navigateWithImage = (e: React.MouseEvent, path: string) => {
+    e.stopPropagation();
+    e.preventDefault();
+    if (!job.image_url) return;
+    navigate(generationHandoffUrl(path, job.image_url, { sourceJobId: job.id, modelId: job.model_id }));
+    onClose();
+  };
+
   const handleCloseClick = (e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
@@ -167,14 +178,15 @@ export function ImageLightbox({
   return (
     <div className="fixed inset-0 z-[90]" role="dialog" aria-modal="true">
       <div
-        className="absolute inset-0 bg-background/90 backdrop-blur-2xl cursor-pointer"
+        className="absolute inset-0 bg-background/95 backdrop-blur-md cursor-pointer"
         onClick={handleCloseClick}
       />
 
       {hasPrev && (
         <button
           onClick={handlePrevClick}
-          className={`absolute top-1/2 -translate-y-1/2 z-[95] w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-all shadow-md cursor-pointer ${isAr ? 'right-5' : 'left-5'}`}
+          className={`absolute top-1/2 -translate-y-1/2 z-[95] min-h-11 min-w-11 rounded-full bg-card/90 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-all shadow-md cursor-pointer ${isAr ? 'right-5' : 'left-5'}`}
+          aria-label={isAr ? 'الصورة السابقة' : 'Previous image'}
         >
           <ChevronLeft size={18} />
         </button>
@@ -182,7 +194,8 @@ export function ImageLightbox({
       {hasNext && (
         <button
           onClick={handleNextClick}
-          className={`absolute top-1/2 -translate-y-1/2 z-[95] w-10 h-10 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-all shadow-md cursor-pointer ${isAr ? 'left-5' : 'right-5'}`}
+          className={`absolute top-1/2 -translate-y-1/2 z-[95] min-h-11 min-w-11 rounded-full bg-card/90 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-all shadow-md cursor-pointer ${isAr ? 'left-5' : 'right-5'}`}
+          aria-label={isAr ? 'الصورة التالية' : 'Next image'}
         >
           <ChevronRight size={18} />
         </button>
@@ -190,7 +203,8 @@ export function ImageLightbox({
 
       <button
         onClick={handleCloseClick}
-        className={`absolute top-5 z-[95] w-9 h-9 rounded-full bg-card/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-colors shadow-md cursor-pointer ${isAr ? 'left-[360px] xl:left-[400px]' : 'right-[360px] xl:right-[400px]'}`}
+        className={`absolute top-5 z-[95] min-h-11 min-w-11 rounded-full bg-card/90 flex items-center justify-center text-muted-foreground hover:text-foreground hover:bg-card transition-colors shadow-md cursor-pointer ${isAr ? 'left-[360px] xl:left-[400px]' : 'right-[360px] xl:right-[400px]'}`}
+        aria-label={isAr ? 'إغلاق المعرض' : 'Close lightbox'}
       >
         <X size={15} />
       </button>
@@ -221,7 +235,7 @@ export function ImageLightbox({
         </div>
 
         <div
-          className="w-[340px] xl:w-[380px] flex-shrink-0 bg-card/60 backdrop-blur-xl border-s border-border/10 overflow-y-auto"
+          className="w-[340px] xl:w-[380px] flex-shrink-0 bg-card/95 backdrop-blur-md border-s border-border/10 overflow-y-auto"
           onClick={e => e.stopPropagation()}
         >
           <div className="p-6 xl:p-7 space-y-6 pt-16">
@@ -241,7 +255,7 @@ export function ImageLightbox({
                 {isCompleted && (
                   <button
                     onClick={handleReuseClick}
-                    className="flex-1 h-10 rounded-xl bg-muted/50 text-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-muted/70 active:scale-[0.98] transition-all cursor-pointer"
+                    className="flex-1 min-h-11 rounded-xl bg-muted/50 text-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-muted/70 active:scale-[0.98] transition-all cursor-pointer"
                   >
                     <RefreshCw size={13} />
                     {isTool ? (isAr ? 'استخدام الأداة' : 'Use Tool') : (isAr ? 'إعادة استخدام' : 'Reuse')}
@@ -250,17 +264,42 @@ export function ImageLightbox({
                 {isCompleted && (
                   <button
                     onClick={handleShareClick}
-                    className="flex-1 h-10 rounded-xl bg-muted/50 text-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-muted/70 active:scale-[0.98] transition-all cursor-pointer"
+                    className="flex-1 min-h-11 rounded-xl bg-muted/50 text-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:bg-muted/70 active:scale-[0.98] transition-all cursor-pointer"
                   >
                     <Share2 size={13} />
                     {isAr ? 'مشاركة' : 'Share'}
                   </button>
                 )}
               </div>
+              {isCompleted && job.image_url && (
+                <div className="grid grid-cols-3 gap-2">
+                  <button
+                    onClick={(e) => navigateWithImage(e, '/video')}
+                    className="min-h-11 rounded-xl bg-muted/50 text-foreground text-[12px] font-medium flex items-center justify-center gap-1.5 hover:bg-muted/70 active:scale-[0.98] transition-all cursor-pointer"
+                  >
+                    <Film size={13} />
+                    {isAr ? 'تحريك' : 'Animate'}
+                  </button>
+                  <button
+                    onClick={(e) => navigateWithImage(e, '/tools/edit-image')}
+                    className="min-h-11 rounded-xl bg-muted/50 text-foreground text-[12px] font-medium flex items-center justify-center gap-1.5 hover:bg-muted/70 active:scale-[0.98] transition-all cursor-pointer"
+                  >
+                    <Wand2 size={13} />
+                    {isAr ? 'تعديل' : 'Edit'}
+                  </button>
+                  <button
+                    onClick={(e) => navigateWithImage(e, '/tools/upscale')}
+                    className="min-h-11 rounded-xl bg-muted/50 text-foreground text-[12px] font-medium flex items-center justify-center gap-1.5 hover:bg-muted/70 active:scale-[0.98] transition-all cursor-pointer"
+                  >
+                    <ArrowUpCircle size={13} />
+                    {isAr ? 'تكبير' : 'Upscale'}
+                  </button>
+                </div>
+              )}
               {isCompleted && onDelete && (
                 <button
                   onClick={handleDeleteClick}
-                  className="w-full h-10 rounded-xl border border-destructive/25 bg-destructive/10 text-destructive text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-destructive/15 active:scale-[0.98] transition-all cursor-pointer"
+                  className="w-full min-h-11 rounded-xl border border-destructive/25 bg-destructive/10 text-destructive text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-destructive/15 active:scale-[0.98] transition-all cursor-pointer"
                 >
                   <Trash2 size={14} />
                   {isAr ? 'حذف الصورة' : 'Delete Image'}
@@ -323,7 +362,7 @@ export function ImageLightbox({
                       </span>
                       <button
                         onClick={handleCopyPrompt}
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-muted-foreground/30 hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all cursor-pointer"
+                        className="min-h-11 min-w-11 rounded-lg flex items-center justify-center text-muted-foreground/50 hover:text-foreground hover:bg-muted/30 active:scale-95 transition-all cursor-pointer"
                         title={isAr ? 'نسخ' : 'Copy'}
                       >
                         {copied ? <Check size={12} className="text-green-500" /> : <Copy size={12} />}

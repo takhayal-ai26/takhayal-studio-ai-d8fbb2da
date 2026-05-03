@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { X, Mail, Loader2 } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
@@ -30,6 +30,15 @@ export function AuthModal() {
   const [sheetVisible, setSheetVisible] = useState(false);
   const authRedirectUrl = `${window.location.origin}/auth/callback`;
 
+  const handleClose = useCallback(() => {
+    if (isMobile) {
+      setSheetVisible(false);
+      setTimeout(closeAuthModal, 300);
+    } else {
+      closeAuthModal();
+    }
+  }, [closeAuthModal, isMobile]);
+
   useEffect(() => { setTab(authModalTab); }, [authModalTab]);
   useEffect(() => {
     if (authModalOpen) {
@@ -47,7 +56,7 @@ export function AuthModal() {
     const handleKey = (e: KeyboardEvent) => { if (e.key === 'Escape') handleClose(); };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
-  }, [authModalOpen]);
+  }, [authModalOpen, handleClose]);
 
   useEffect(() => {
     if (user && authModalOpen) {
@@ -59,15 +68,6 @@ export function AuthModal() {
   }, [user, authModalOpen, closeAuthModal, navigate]);
 
   if (!authModalOpen) return null;
-
-  const handleClose = () => {
-    if (isMobile) {
-      setSheetVisible(false);
-      setTimeout(closeAuthModal, 300);
-    } else {
-      closeAuthModal();
-    }
-  };
 
   const handleGoogle = async () => {
     setLoading(true); setError('');
@@ -129,7 +129,7 @@ export function AuthModal() {
     setSuccessMessage('Password reset link sent. Check your email.');
   };
 
-  const inputClass = 'w-full h-12 bg-background border border-border/50 rounded-xl px-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none transition-colors';
+  const inputClass = 'w-full h-12 rounded-xl border border-border/70 bg-background/95 px-4 text-sm text-foreground shadow-inner shadow-black/5 placeholder:text-muted-foreground/80 transition-colors focus:border-primary focus:bg-background focus:outline-none dark:border-white/[0.12] dark:bg-white/[0.09] dark:text-white dark:placeholder:text-white/45 dark:focus:bg-white/[0.12]';
 
   const isRTL = lang === 'ar';
 
@@ -174,7 +174,7 @@ export function AuthModal() {
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <Logo size="small" />
-              <button onClick={handleClose} className="w-8 h-8 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground">
+              <button onClick={handleClose} className="min-h-11 min-w-11 rounded-full bg-muted/60 flex items-center justify-center text-muted-foreground" aria-label={isRTL ? 'إغلاق' : 'Close'}>
                 <X size={16} />
               </button>
             </div>
@@ -205,8 +205,8 @@ export function AuthModal() {
                   {t.auth.backToOptions}
                 </button>
                 <div>
-                  <label className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.email}</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t.auth.emailPlaceholder} className={inputClass} />
+                  <label htmlFor="auth-reset-email" className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.email}</label>
+                  <input id="auth-reset-email" type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t.auth.emailPlaceholder} className={inputClass} />
                 </div>
                 {error && <p className="text-[12px] text-destructive">{error}</p>}
                 <button type="submit" disabled={loading} className="w-full h-[52px] bg-primary text-primary-foreground rounded-2xl text-[15px] font-semibold transition-all active:scale-[0.97] disabled:opacity-50 flex items-center justify-center gap-2">
@@ -220,22 +220,22 @@ export function AuthModal() {
                 </button>
                 {tab === 'signup' && (
                   <div>
-                    <label className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.name}</label>
-                    <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t.auth.yourName} className={inputClass} />
+                    <label htmlFor="auth-name" className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.name}</label>
+                    <input id="auth-name" type="text" autoComplete="name" value={name} onChange={e => setName(e.target.value)} placeholder={t.auth.yourName} className={inputClass} />
                   </div>
                 )}
                 <div>
-                  <label className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.email}</label>
-                  <input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t.auth.emailPlaceholder} className={inputClass} />
+                  <label htmlFor="auth-email" className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.email}</label>
+                  <input id="auth-email" type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t.auth.emailPlaceholder} className={inputClass} />
                 </div>
                 <div>
-                  <label className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.password}</label>
-                  <input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className={inputClass} />
+                  <label htmlFor="auth-password" className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.password}</label>
+                  <input id="auth-password" type="password" autoComplete={tab === 'signup' ? 'new-password' : 'current-password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className={inputClass} />
                 </div>
                 {tab === 'signup' && (
                   <div>
-                    <label className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.confirmPassword}</label>
-                    <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="••••••••" className={inputClass} />
+                    <label htmlFor="auth-confirm-password" className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.confirmPassword}</label>
+                    <input id="auth-confirm-password" type="password" autoComplete="new-password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="••••••••" className={inputClass} />
                   </div>
                 )}
                 {error && <p className="text-[12px] text-destructive">{error}</p>}
@@ -255,7 +255,7 @@ export function AuthModal() {
                 <button
                   onClick={handleGoogle}
                   disabled={loading}
-                  className="w-full h-[56px] rounded-2xl border border-border/40 bg-card text-foreground text-[15px] font-semibold flex items-center justify-center gap-3 shadow-[0_10px_30px_-24px_hsl(var(--shadow-color))] hover:bg-muted/40 active:scale-[0.97] transition-all disabled:opacity-50"
+                  className="w-full h-[58px] rounded-2xl border border-border/40 bg-background text-foreground text-[15px] font-bold flex items-center justify-center gap-3 shadow-sm hover:border-primary/30 hover:bg-primary/5 active:scale-[0.97] transition-all disabled:opacity-50"
                 >
                   {loading ? <Loader2 size={18} className="animate-spin text-muted-foreground" /> : (
                     <>{googleIcon}{t.auth.continueWithGoogle}</>
@@ -272,7 +272,7 @@ export function AuthModal() {
                 {/* Email — TERTIARY */}
                 <button
                   onClick={() => { setShowEmailForm(true); setError(''); }}
-                  className="w-full h-[52px] rounded-2xl border border-border/40 bg-transparent text-foreground text-[14px] font-medium flex items-center justify-center gap-2.5 active:scale-[0.97] transition-all"
+                  className="w-full h-[54px] rounded-2xl border border-border/40 bg-muted/20 text-foreground text-[14px] font-semibold flex items-center justify-center gap-2.5 hover:bg-muted/40 active:scale-[0.97] transition-all"
                 >
                   <Mail size={17} className="text-muted-foreground" />
                   {t.auth.continueWithEmail}
@@ -305,7 +305,7 @@ export function AuthModal() {
     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
       <div className="absolute inset-0 bg-black/50 dark:bg-black/65 animate-fade-in" onClick={closeAuthModal} />
       <div className="relative w-full max-w-[1040px] h-[660px] max-h-[90vh] rounded-3xl overflow-hidden flex animate-scale-in bg-card">
-        <button onClick={closeAuthModal} className="absolute top-5 right-5 z-10 w-8 h-8 rounded-full bg-black/30 dark:bg-black/50 flex items-center justify-center text-foreground/60 hover:text-foreground transition-colors"><X size={16} /></button>
+        <button onClick={closeAuthModal} className="absolute top-5 right-5 z-10 min-h-11 min-w-11 rounded-full bg-black/30 dark:bg-black/50 flex items-center justify-center text-foreground/60 hover:text-foreground transition-colors" aria-label={isRTL ? 'إغلاق' : 'Close'}><X size={16} /></button>
         <div className="w-full lg:w-[46%] flex flex-col p-8 lg:p-10 overflow-y-auto bg-card">
           <div className="flex items-center gap-2.5 mb-10"><LogoMark size={28} /><span className="text-[17px] font-medium text-foreground tracking-tight">Takhayal<span className="text-primary">.ai</span></span></div>
           <div className="mb-8">
@@ -329,7 +329,7 @@ export function AuthModal() {
           ) : showForgotPassword ? (
             <form onSubmit={handleForgotPassword} className="space-y-3.5 flex-1">
               <button type="button" onClick={() => { setShowForgotPassword(false); setError(''); }} className="text-[12px] text-muted-foreground hover:text-foreground transition-colors mb-1">{t.auth.backToOptions}</button>
-              <div><label className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.email}</label><input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t.auth.emailPlaceholder} className={inputClass} /></div>
+              <div><label htmlFor="auth-desktop-reset-email" className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.email}</label><input id="auth-desktop-reset-email" type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t.auth.emailPlaceholder} className={inputClass} /></div>
               {error && <p className="text-[12px] text-red-400">{error}</p>}
               <button type="submit" disabled={loading} className="w-full h-[52px] bg-primary hover:brightness-90 text-primary-foreground rounded-[14px] text-[15px] font-medium transition-all duration-150 active:scale-[0.98] mt-2 disabled:opacity-50 flex items-center justify-center gap-2">
                 {loading ? <Loader2 size={16} className="animate-spin" /> : 'Send reset link'}
@@ -337,23 +337,23 @@ export function AuthModal() {
             </form>
           ) : !showEmailForm ? (
             <div className="space-y-3 flex-1">
-              <button onClick={handleGoogle} disabled={loading} className="w-full h-[52px] rounded-[14px] border border-border/40 bg-card text-foreground text-sm font-medium flex items-center justify-center gap-3 hover:bg-muted/50 hover:border-border transition-all duration-150 disabled:opacity-50">
+              <button onClick={handleGoogle} disabled={loading} className="w-full h-[56px] rounded-2xl border border-border/40 bg-background text-foreground text-sm font-bold flex items-center justify-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all duration-150 disabled:opacity-50">
                 {loading ? <Loader2 size={16} className="animate-spin" /> : (<>{googleIcon}{t.auth.continueWithGoogle}</>)}
               </button>
-              <button onClick={handleApple} disabled={loading} className="w-full h-[52px] rounded-[14px] border border-border/40 bg-card text-foreground text-sm font-medium flex items-center justify-center gap-3 hover:bg-muted/50 hover:border-border transition-all duration-150 disabled:opacity-50">
+              <button onClick={handleApple} disabled={loading} className="w-full h-[56px] rounded-2xl border border-border/40 bg-background text-foreground text-sm font-bold flex items-center justify-center gap-3 hover:border-primary/30 hover:bg-primary/5 transition-all duration-150 disabled:opacity-50">
                 {appleIcon}{t.auth.continueWithApple}
               </button>
               <div className="flex items-center gap-4 py-2"><div className="flex-1 h-px bg-border" /><span className="text-[11px] text-muted-foreground uppercase tracking-wider">{t.auth.or}</span><div className="flex-1 h-px bg-border" /></div>
-              <button onClick={() => { setShowEmailForm(true); setError(''); }} className="w-full h-[52px] rounded-[14px] border border-border/40 bg-transparent text-foreground text-sm font-medium flex items-center justify-center gap-3 hover:bg-muted/50 hover:border-border transition-all duration-150"><Mail size={17} />{t.auth.continueWithEmail}</button>
+              <button onClick={() => { setShowEmailForm(true); setError(''); }} className="w-full h-[54px] rounded-2xl border border-border/40 bg-muted/20 text-foreground text-sm font-semibold flex items-center justify-center gap-3 hover:bg-muted/50 hover:border-primary/30 transition-all duration-150"><Mail size={17} />{t.auth.continueWithEmail}</button>
               {error && <p className="text-[12px] text-red-400 text-center">{error}</p>}
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-3.5 flex-1">
               <button type="button" onClick={() => { setShowEmailForm(false); setError(''); }} className="text-[12px] text-muted-foreground hover:text-foreground transition-colors mb-1">{t.auth.backToOptions}</button>
-              {tab === 'signup' && (<div><label className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.name}</label><input type="text" value={name} onChange={e => setName(e.target.value)} placeholder={t.auth.yourName} className={inputClass} /></div>)}
-              <div><label className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.email}</label><input type="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t.auth.emailPlaceholder} className={inputClass} /></div>
-              <div><label className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.password}</label><input type="password" value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className={inputClass} /></div>
-              {tab === 'signup' && (<div><label className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.confirmPassword}</label><input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="••••••••" className={inputClass} /></div>)}
+              {tab === 'signup' && (<div><label htmlFor="auth-desktop-name" className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.name}</label><input id="auth-desktop-name" type="text" autoComplete="name" value={name} onChange={e => setName(e.target.value)} placeholder={t.auth.yourName} className={inputClass} /></div>)}
+              <div><label htmlFor="auth-desktop-email" className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.email}</label><input id="auth-desktop-email" type="email" autoComplete="email" value={email} onChange={e => setEmail(e.target.value)} placeholder={t.auth.emailPlaceholder} className={inputClass} /></div>
+              <div><label htmlFor="auth-desktop-password" className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.password}</label><input id="auth-desktop-password" type="password" autoComplete={tab === 'signup' ? 'new-password' : 'current-password'} value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className={inputClass} /></div>
+              {tab === 'signup' && (<div><label htmlFor="auth-desktop-confirm-password" className="text-[12px] font-medium text-foreground/80 block mb-1.5">{t.auth.confirmPassword}</label><input id="auth-desktop-confirm-password" type="password" autoComplete="new-password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="••••••••" className={inputClass} /></div>)}
               {error && <p className="text-[12px] text-red-400">{error}</p>}
               <button type="submit" disabled={loading} className="w-full h-[52px] bg-primary hover:brightness-90 text-primary-foreground rounded-[14px] text-[15px] font-medium transition-all duration-150 active:scale-[0.98] mt-2 disabled:opacity-50 flex items-center justify-center gap-2">
                 {loading ? <Loader2 size={16} className="animate-spin" /> : (tab === 'login' ? t.auth.logIn : t.auth.createAccount)}

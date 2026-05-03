@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, supabaseConfigMissing } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { useAppTheme } from '@/context/AppThemeContext';
 import heroPoster768 from '@/assets/landing/hero-video-poster-768.avif';
@@ -40,6 +40,13 @@ const DEFAULTS: Record<string, string> = {
 
 const CACHE_KEY = 'video_hero_config_cache';
 
+type NavigatorWithConnection = Navigator & {
+  connection?: {
+    effectiveType?: string;
+    saveData?: boolean;
+  };
+};
+
 function readCache(): Record<string, string> {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
@@ -50,13 +57,24 @@ function readCache(): Record<string, string> {
   }
 }
 
+function canAutoplayHeroVideo() {
+  if (typeof window === 'undefined') return false;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return false;
+
+  const connection = (navigator as NavigatorWithConnection).connection;
+  if (connection?.saveData) return false;
+  if (connection?.effectiveType && /(^|-)2g$/.test(connection.effectiveType)) return false;
+
+  return true;
+}
+
 export function DashboardHero() {
   const { lang } = useLanguage();
   const { mode } = useAppTheme();
   const isLight = mode === 'light';
   const isAr = lang === 'ar';
   const [initial] = useState(() => readCache());
-  const [shouldLoadVideo, setShouldLoadVideo] = useState(true);
+  const [shouldLoadVideo] = useState(() => canAutoplayHeroVideo());
   const [videoFailed, setVideoFailed] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
 
@@ -73,11 +91,12 @@ export function DashboardHero() {
     },
     placeholderData: initial,
     staleTime: 30000,
+    enabled: !supabaseConfigMissing,
   });
 
   useEffect(() => {
     if (config) {
-      try { localStorage.setItem(CACHE_KEY, JSON.stringify(config)); } catch {}
+      try { localStorage.setItem(CACHE_KEY, JSON.stringify(config)); } catch { return; }
     }
   }, [config]);
 
@@ -162,7 +181,6 @@ export function DashboardHero() {
           src={fallbackPoster}
           alt=""
           loading="eager"
-          fetchPriority="high"
           className="absolute inset-0 w-full h-full object-cover"
           style={{ zIndex: 0 }}
         />
@@ -174,7 +192,6 @@ export function DashboardHero() {
             src={heroPosterFallback}
             alt=""
             loading="eager"
-            fetchPriority="high"
             className="absolute inset-0 w-full h-full object-cover"
             style={{ zIndex: 0 }}
           />
@@ -190,8 +207,7 @@ export function DashboardHero() {
           loop
           playsInline
           preload="metadata"
-          x-webkit-airplay="deny"
-          webkit-playsinline="true"
+          disablePictureInPicture
           poster={fallbackPoster}
           className="absolute inset-0 w-full h-full object-cover"
           style={{ zIndex: 0 }}
@@ -223,9 +239,9 @@ export function DashboardHero() {
         <h1
           className="tracking-tight drop-shadow-2xl"
           style={{
-            fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
+            fontFamily: isAr ? "'Noto Kufi Arabic', 'IBM Plex Sans Arabic', 'Cairo', sans-serif" : undefined,
             fontSize: isAr ? 'clamp(52px, 12vw, 110px)' : 'clamp(56px, 13vw, 130px)',
-            lineHeight: isAr ? 1.1 : 0.95,
+            lineHeight: isAr ? 1.12 : 0.95,
             letterSpacing: isAr ? 0 : '-0.04em',
             fontWeight: 900,
           }}
@@ -235,6 +251,7 @@ export function DashboardHero() {
             className="block"
             style={{
               color: 'hsl(var(--primary))',
+              marginTop: isAr ? '0.03em' : undefined,
               textShadow: '0 10px 30px rgba(240, 62, 27, 0.24)',
             }}
           >
@@ -249,8 +266,8 @@ export function DashboardHero() {
               fontSize: isAr ? 'clamp(15px, 2vw, 19px)' : 'clamp(14px, 1.8vw, 18px)',
               lineHeight: isAr ? 1.8 : 1.7,
               color: 'rgba(255,255,255,0.7)',
-              fontFamily: isAr ? "'Cairo', sans-serif" : undefined,
-              fontWeight: 400,
+              fontFamily: isAr ? "'IBM Plex Sans Arabic', 'Cairo', sans-serif" : undefined,
+              fontWeight: isAr ? 500 : 400,
             }}
           >
             {subtitle}

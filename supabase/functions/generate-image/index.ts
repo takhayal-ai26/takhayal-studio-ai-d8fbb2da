@@ -7,6 +7,25 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+function jsonResponse(body: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+type SupabaseClientInstance = ReturnType<typeof createClient>;
+type GenerationJobRow = {
+  id: string;
+  user_id: string | null;
+  status: string | null;
+  credits_charged_at?: string | null;
+};
+type DeductCreditsResult = {
+  success?: boolean;
+  error?: string;
+};
+
 // ===== CENTRALIZED COST ENGINE =====
 const CREDIT_VALUE_USD = 0.016;
 
@@ -19,6 +38,20 @@ const BASE_DIMS: Record<string, { w: number; h: number }> = {
 
 const GPT_IMAGE_2_MAX_EDGE = 3840;
 const GPT_IMAGE_2_MAX_PIXELS = 8_294_400;
+const GPT_IMAGE_2_MIN_PIXELS = 655_360;
+
+function isGptImage2Endpoint(endpoint: string) {
+  return endpoint === "fal-ai/gpt-image-2"
+    || endpoint === "openai/gpt-image-2"
+    || endpoint === "fal-ai/gpt-image-2/edit"
+    || endpoint === "openai/gpt-image-2/edit";
+}
+
+function normalizeGptImage2Endpoint(endpoint: string) {
+  if (endpoint === "fal-ai/gpt-image-2") return "openai/gpt-image-2";
+  if (endpoint === "fal-ai/gpt-image-2/edit") return "openai/gpt-image-2/edit";
+  return endpoint;
+}
 
 function getQualityScale(q: string): number {
   return q === "4K" ? 4 : q === "3K" ? 3 : q === "2K" ? 2 : 1;
@@ -36,6 +69,8 @@ const VERIFIED: Record<string, { type: string; cost1k: number; cost2k?: number; 
   "fal-ai/qwen-image":      { type: "per_megapixel", cost1k: 0.02 },
   "fal-ai/gpt-image-1.5":   { type: "size_locked", cost1k: 0.009 },
   "fal-ai/gpt-image-2":     { type: "quality_tier", cost1k: 0.04, cost2k: 0.08 },
+  "openai/gpt-image-2":     { type: "quality_tier", cost1k: 0.04, cost2k: 0.08 },
+  "fal-ai/gpt-image-2/edit": { type: "quality_tier", cost1k: 0.04, cost2k: 0.08 },
   "openai/gpt-image-2/edit": { type: "quality_tier", cost1k: 0.04, cost2k: 0.08 },
   "fal-ai/ideogram/v3":     { type: "quality_tier", cost1k: 0.03, cost2k: 0.06, cost4k: 0.09 },
   "fal-ai/imagen4/preview": { type: "flat_per_image", cost1k: 0.04, cost2k: 0.08 },
@@ -88,10 +123,14 @@ function clampGptImage2Dims(ratio: string, quality: string) {
     height = Math.floor((height * scaleByPixels) / 16) * 16;
   }
 
-  return {
-    width: Math.max(width, 1024),
-    height: Math.max(height, 1024),
-  };
+  const pixelsAfterClamp = width * height;
+  if (pixelsAfterClamp < GPT_IMAGE_2_MIN_PIXELS) {
+    const scaleByMinPixels = Math.sqrt(GPT_IMAGE_2_MIN_PIXELS / pixelsAfterClamp);
+    width = Math.ceil((width * scaleByMinPixels) / 16) * 16;
+    height = Math.ceil((height * scaleByMinPixels) / 16) * 16;
+  }
+
+  return { width, height };
 }
 
 // ===== RESOLUTION PAYLOAD RESOLVERS =====
@@ -110,14 +149,14 @@ function resolvePayload(endpoint: string, ratio: string, quality: string, inputT
   }
 
   // GPT Image 2 — text and edit use separate endpoints but share native image_size + quality controls
-  if (endpoint === "fal-ai/gpt-image-2" || endpoint === "openai/gpt-image-2/edit") {
+  if (isGptImage2Endpoint(endpoint)) {
     const qualityMap: Record<string, string> = { "1K": "low", "2K": "medium", "4K": "high" };
     const dims = clampGptImage2Dims(ratio, quality);
     const base: Record<string, unknown> = {
       quality: qualityMap[quality] || "high",
       image_size: { width: dims.width, height: dims.height },
     };
-    if (endpoint === "openai/gpt-image-2/edit" && allImageUrls.length > 0) {
+    if (endpoint.endsWith("/edit") && allImageUrls.length > 0) {
       base.image_urls = allImageUrls;
     }
     return base;
@@ -232,6 +271,45 @@ async function falQueueRun(endpoint: string, payload: Record<string, unknown>, f
   return await falPollUntilDone(sub.submit, falHeaders, { maxAttempts: 60, intervalMs: 2000, label: endpoint });
 }
 
+async function falQueueSubmit(endpoint: string, payload: Record<string, unknown>, falHeaders: Record<string, string>, webhookUrl: string): Promise<{ data: any; error?: string }> {
+  const submitRes = await fetch(`https://queue.fal.run/${endpoint}?fal_webhook=${encodeURIComponent(webhookUrl)}`, {
+    method: "POST",
+    headers: falHeaders,
+    body: JSON.stringify(payload),
+  });
+
+  if (!submitRes.ok) {
+    const errorText = await submitRes.text();
+    console.error(`fal.ai queue submit error for ${endpoint}:`, submitRes.status, errorText);
+    return { data: null, error: `fal.ai API error ${submitRes.status}: ${errorText}` };
+  }
+
+  return { data: await submitRes.json() };
+}
+
+function getImageResultUrl(resultData: any): string | null {
+  return resultData?.images?.[0]?.url
+    || resultData?.image?.url
+    || resultData?.output?.url
+    || (typeof resultData?.output === 'string' ? resultData.output : null)
+    || (Array.isArray(resultData?.output) ? resultData.output[0]?.url || resultData.output[0] : null)
+    || null;
+}
+
+function deferTask(task: () => Promise<unknown>) {
+  const edgeRuntime = (globalThis as any).EdgeRuntime;
+  const deferred = (async () => {
+    await Promise.resolve();
+    await task();
+  })();
+
+  if (edgeRuntime?.waitUntil) {
+    edgeRuntime.waitUntil(deferred);
+  } else {
+    deferred.catch((error) => console.error("[deferred] task failed:", error));
+  }
+}
+
 // ===== UPSCALE WITH CLARITY UPSCALER =====
 async function upscaleWithClarity(imageUrl: string, falHeaders: Record<string, string>): Promise<{ url: string; cost: number } | null> {
   console.log("[upscale] Using Clarity Upscaler for 2K/4K pipeline");
@@ -259,16 +337,41 @@ serve(async (req) => {
 
   const SUPABASE_URL = Deno.env.get("SUPABASE_URL");
   const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+  let chargedUserId: string | null = null;
+  let chargedCredits = 0;
+
+  const refundChargedCredits = async (supabase: SupabaseClientInstance) => {
+    if (!chargedUserId || chargedCredits <= 0) return;
+    await supabase.rpc("refund_credits", { p_user_id: chargedUserId, p_amount: chargedCredits });
+    chargedUserId = null;
+    chargedCredits = 0;
+  };
 
   try {
     const FAL_AI_API_KEY = Deno.env.get("FAL_AI_API_KEY");
     if (!FAL_AI_API_KEY) throw new Error("FAL_AI_API_KEY is not configured");
+    if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+      throw new Error("SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY is not configured");
+    }
+
+    const authHeader = req.headers.get("Authorization") || "";
+    const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY");
+    if (!authHeader || !supabaseAnonKey) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
+    }
+
+    const userClient = createClient(SUPABASE_URL, supabaseAnonKey, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
+    }
 
     const { prompt, model_endpoint, aspect_ratio, num_images, input_type, quality_tier, model_id, job_id, image_url, image_urls } = await req.json();
 
     if (!prompt || typeof prompt !== "string") {
-      return new Response(JSON.stringify({ error: "prompt is required" }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      return jsonResponse({ error: "prompt is required" }, 400);
     }
 
     let endpoint = model_endpoint || "fal-ai/flux/schnell";
@@ -281,42 +384,38 @@ serve(async (req) => {
     let editEndpoint: string | null = null;
     let supportsImageInput = false;
 
-    const supabase = (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY)
-      ? createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY)
-      : null;
+    const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
 
-    if (supabase) {
-      try {
-        let modelQuery = supabase.from("models").select("*");
-        if (model_id) modelQuery = modelQuery.eq("id", model_id);
-        else if (model_endpoint) modelQuery = modelQuery.eq("endpoint_id", model_endpoint);
-        else modelQuery = modelQuery.eq("is_active", true).eq("is_default", true);
+    try {
+      let modelQuery = supabase.from("models").select("*");
+      if (model_id) modelQuery = modelQuery.eq("id", model_id);
+      else if (model_endpoint) modelQuery = modelQuery.eq("endpoint_id", model_endpoint);
+      else modelQuery = modelQuery.eq("is_active", true).eq("is_default", true);
 
-        const { data: modelData } = await modelQuery.single();
-        if (modelData) {
-          endpoint = modelData.endpoint_id;
-          modelInputType = modelData.input_type;
-          resolvedModelId = modelData.id;
-          dbBaseCost = modelData.cost_per_run ? Number(modelData.cost_per_run) : 0;
-          creditsUsed = modelData.credits_per_generation || 2;
-          pricingMode = modelData.pricing_mode || "flat_per_image";
-          upscaleStrategy = modelData.upscale_strategy || "clarity";
-          editEndpoint = modelData.edit_endpoint_id || null;
-          supportsImageInput = modelData.supports_image_input || false;
-        }
-
-        if (resolvedModelId && quality_tier) {
-          const { data: tierData } = await supabase
-            .from("model_pricing_tiers")
-            .select("credits_charged, cost_per_run")
-            .eq("model_id", resolvedModelId)
-            .eq("quality_level", quality_tier)
-            .single();
-          if (tierData) creditsUsed = tierData.credits_charged;
-        }
-      } catch (e) {
-        console.log("DB lookup error (non-fatal):", e);
+      const { data: modelData } = await modelQuery.single();
+      if (modelData) {
+        endpoint = modelData.endpoint_id;
+        modelInputType = modelData.input_type;
+        resolvedModelId = modelData.id;
+        dbBaseCost = modelData.cost_per_run ? Number(modelData.cost_per_run) : 0;
+        creditsUsed = modelData.credits_per_generation || 2;
+        pricingMode = modelData.pricing_mode || "flat_per_image";
+        upscaleStrategy = modelData.upscale_strategy || "clarity";
+        editEndpoint = modelData.edit_endpoint_id || null;
+        supportsImageInput = modelData.supports_image_input || false;
       }
+
+      if (resolvedModelId && quality_tier) {
+        const { data: tierData } = await supabase
+          .from("model_pricing_tiers")
+          .select("credits_charged, cost_per_run")
+          .eq("model_id", resolvedModelId)
+          .eq("quality_level", quality_tier)
+          .single();
+        if (tierData) creditsUsed = tierData.credits_charged;
+      }
+    } catch (e) {
+      console.log("DB lookup error (non-fatal):", e);
     }
 
     // Determine if this is an image-to-image request
@@ -331,14 +430,13 @@ serve(async (req) => {
     // Hard block silent fallback: if user sent refs but model doesn't support them, fail loudly.
     if (hasImageInput && !supportsImageInput) {
       const message = "The selected model does not support reference images. Please choose a different model or remove the uploaded images.";
-      if (supabase && job_id) await supabase.from("generation_logs").update({ status: "failed", error_message: message }).eq("id", job_id);
-      return new Response(JSON.stringify({ error: message }),
-        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } });
+      if (job_id) await supabase.from("generation_logs").update({ status: "failed", error_message: message }).eq("id", job_id);
+      return jsonResponse({ error: message }, 400);
     }
 
     // Route: prefer edit_endpoint when ref images are provided; fallback to main endpoint for models where same endpoint handles both (Nano Banana, GPT Image).
     const isImageToImage = hasImageInput && supportsImageInput;
-    const activeEndpoint = isImageToImage ? (editEndpoint || endpoint) : endpoint;
+    const activeEndpoint = normalizeGptImage2Endpoint(isImageToImage ? (editEndpoint || endpoint) : endpoint);
 
     console.log(`[generate-image] mode=${isImageToImage ? 'image-to-image' : 'text-to-image'} endpoint=${activeEndpoint} refs=${allInputUrls.length} ratio=${aspect_ratio || '1:1'} quality=${quality_tier || '1K'} job_id=${job_id || 'none'}`);
 
@@ -348,6 +446,56 @@ serve(async (req) => {
 
     const actualApiCost = calculateProviderCost(activeEndpoint, selectedRatio, selectedQuality, dbBaseCost, pricingMode);
     const dims = getResolutionDims(selectedRatio, selectedQuality);
+
+    let existingJob: GenerationJobRow | null = null;
+    if (job_id) {
+      const { data: jobData, error: jobError } = await supabase
+        .from("generation_logs")
+        .select("id, user_id, status, credits_charged_at")
+        .eq("id", job_id)
+        .single();
+
+      if (jobError || !jobData) {
+        return jsonResponse({ error: "Generation job not found" }, 404);
+      }
+      if (jobData.user_id !== user.id) {
+        return jsonResponse({ error: "Forbidden" }, 403);
+      }
+      if (jobData.status === "completed") {
+        return jsonResponse({ error: "Generation job already completed" }, 409);
+      }
+      existingJob = jobData as GenerationJobRow;
+    }
+
+    if (!existingJob?.credits_charged_at) {
+      const { data: deductResult } = await supabase.rpc("deduct_credits", {
+        p_user_id: user.id,
+        p_amount: creditsUsed,
+        p_model_id: resolvedModelId,
+        p_resolution: selectedQuality,
+      });
+
+      const deductData = deductResult as DeductCreditsResult | null;
+      if (!deductData?.success) {
+        if (job_id) {
+          await supabase.from("generation_logs").update({
+            status: "failed",
+            error_message: deductData?.error || "Credit deduction failed",
+          }).eq("id", job_id);
+        }
+        return jsonResponse({ error: deductData?.error || "Credit deduction failed" }, 400);
+      }
+
+      chargedUserId = user.id;
+      chargedCredits = creditsUsed;
+
+      if (job_id) {
+        await supabase.from("generation_logs").update({
+          credits_charged_at: new Date().toISOString(),
+          credits_used: creditsUsed,
+        }).eq("id", job_id);
+      }
+    }
 
     // Skip clarity upscale for image-to-image (it would lose the subject). Also skip when endpoint natively supports the requested tier.
     const needsUpscale = (selectedQuality === "2K" || selectedQuality === "4K") && upscaleStrategy === "clarity" && !isImageToImage;
@@ -364,9 +512,14 @@ serve(async (req) => {
     const payload: Record<string, unknown> = {
       prompt,
       num_images: num_images || 1,
-      enable_safety_checker: true,
       ...payloadParams,
     };
+
+    if (!isGptImage2Endpoint(activeEndpoint)) {
+      payload.enable_safety_checker = true;
+    } else {
+      payload.output_format = "png";
+    }
 
     // Flux redux doesn't use prompt — it uses the image as the base
     if (activeEndpoint.includes("/redux")) {
@@ -380,7 +533,8 @@ serve(async (req) => {
     // Helper that runs after fal returns: handle upscale, write economics, update the job row.
     const finalizeJob = async (genResult: { data: any; error?: string }) => {
       if (genResult.error) {
-        if (supabase && job_id) {
+        await refundChargedCredits(supabase);
+        if (job_id) {
           await supabase.from("generation_logs").update({ status: "failed", error_message: genResult.error }).eq("id", job_id);
         }
         return { ok: false as const, error: genResult.error };
@@ -419,59 +573,59 @@ serve(async (req) => {
       const revenueUsd = creditsUsed * CREDIT_VALUE_USD;
       const profitUsd = revenueUsd - totalCost;
       const marginPct = revenueUsd > 0 ? (profitUsd / revenueUsd) * 100 : 0;
-
-      const imageResultUrl = resultData?.images?.[0]?.url
-        || resultData?.image?.url
-        || resultData?.output?.url
-        || (typeof resultData?.output === 'string' ? resultData.output : null)
-        || (Array.isArray(resultData?.output) ? resultData.output[0]?.url || resultData.output[0] : null)
-        || null;
+      const imageResultUrl = getImageResultUrl(resultData);
 
       if (!imageResultUrl) {
         console.log(`[generate-image] WARNING: No image URL in provider response. Keys: ${Object.keys(resultData || {}).join(', ')}`);
         console.log(`[generate-image] Response snippet: ${JSON.stringify(resultData).slice(0, 500)}`);
+        await refundChargedCredits(supabase);
       }
 
-      if (supabase) {
-        try {
-          const logData = {
-            model_id: resolvedModelId,
-            prompt: prompt.slice(0, 500),
-            ratio: selectedRatio,
-            resolution: selectedQuality,
-            quality_tier: selectedQuality,
-            credits_used: creditsUsed,
-            provider_cost: totalCost,
-            revenue: revenueUsd,
-            margin: profitUsd,
-            requested_ratio: selectedRatio,
-            requested_quality_tier: selectedQuality,
-            actual_api_cost: totalCost,
-            generation_cost: actualApiCost,
-            upscale_cost: upscaleCost,
-            revenue_usd: revenueUsd,
-            profit_usd: profitUsd,
-            margin_pct: marginPct,
-            was_upscaled: wasUpscaled,
-            used_upscale_pipeline: wasUpscaled,
-            upscale_model: upscaleModel,
-            actual_output_width: finalWidth,
-            actual_output_height: finalHeight,
-            image_url: imageResultUrl,
-            error_message: imageResultUrl ? null : 'No image URL found in provider response.',
-            status: imageResultUrl ? "completed" : "failed",
-            used_image_input: isImageToImage,
-            input_image_urls: isImageToImage ? allInputUrls : [],
-            source_mode: isImageToImage ? 'image-to-image' : 'text-to-image',
-          };
-          if (job_id) {
-            await supabase.from("generation_logs").update(logData).eq("id", job_id);
-          } else {
-            await supabase.from("generation_logs").insert(logData);
-          }
-        } catch (e) {
-          console.log("Generation log error (non-fatal):", e);
+      try {
+        const logData = {
+          user_id: user.id,
+          model_id: resolvedModelId,
+          prompt: prompt.slice(0, 500),
+          ratio: selectedRatio,
+          resolution: selectedQuality,
+          quality_tier: selectedQuality,
+          credits_used: creditsUsed,
+          credits_charged_at: existingJob?.credits_charged_at || new Date().toISOString(),
+          provider_cost: totalCost,
+          revenue: revenueUsd,
+          margin: profitUsd,
+          requested_ratio: selectedRatio,
+          requested_quality_tier: selectedQuality,
+          actual_api_cost: totalCost,
+          generation_cost: actualApiCost,
+          upscale_cost: upscaleCost,
+          revenue_usd: revenueUsd,
+          profit_usd: profitUsd,
+          margin_pct: marginPct,
+          was_upscaled: wasUpscaled,
+          used_upscale_pipeline: wasUpscaled,
+          upscale_model: upscaleModel,
+          actual_output_width: finalWidth,
+          actual_output_height: finalHeight,
+          image_url: imageResultUrl,
+          error_message: imageResultUrl ? null : 'No image URL found in provider response.',
+          status: imageResultUrl ? "completed" : "failed",
+          used_image_input: isImageToImage,
+          input_image_urls: isImageToImage ? allInputUrls : [],
+          source_mode: isImageToImage ? 'image-to-image' : 'text-to-image',
+        };
+
+        if (job_id) {
+          await supabase.from("generation_logs").update(logData).eq("id", job_id);
+        } else {
+          await supabase.from("generation_logs").insert(logData);
         }
+      } catch (e) {
+        console.log("Generation log error (non-fatal):", e);
+      }
+
+      if (!imageResultUrl) {
+        return { ok: false as const, error: 'No image URL found in provider response.' };
       }
 
       console.log(`[generate-image] Done. job_id=${job_id || 'none'} mode=${isImageToImage ? 'i2i' : 't2i'} genCost=$${actualApiCost.toFixed(4)} total=$${totalCost.toFixed(4)} margin=${marginPct.toFixed(1)}%`);
@@ -497,19 +651,70 @@ serve(async (req) => {
       };
     };
 
-    // ===== ASYNC PATH for slow endpoints (GPT Image 2 etc.) =====
-    // Submit to fal, then keep finalizing in the background after returning the response.
+    // GPT Image 2 uses fal webhooks so the edge function can return immediately.
+    if (job_id && isGptImage2Endpoint(activeEndpoint)) {
+      const webhookSecret = Deno.env.get("FAL_WEBHOOK_SECRET");
+      if (!webhookSecret || !SUPABASE_URL) {
+        const message = "FAL_WEBHOOK_SECRET or SUPABASE_URL is not configured";
+        await refundChargedCredits(supabase);
+        await supabase.from("generation_logs").update({ status: "failed", error_message: message }).eq("id", job_id);
+        return jsonResponse({ error: message }, 500);
+      }
+
+      await supabase.from("generation_logs").update({
+        status: "processing",
+        error_message: null,
+        model_id: resolvedModelId,
+        prompt: prompt.slice(0, 500),
+        ratio: selectedRatio,
+        resolution: selectedQuality,
+        quality_tier: selectedQuality,
+        requested_ratio: selectedRatio,
+        requested_quality_tier: selectedQuality,
+        credits_used: creditsUsed,
+        actual_api_cost: actualApiCost,
+        generation_cost: actualApiCost,
+        used_image_input: isImageToImage,
+        input_image_urls: isImageToImage ? allInputUrls : [],
+        source_mode: isImageToImage ? 'image-to-image' : 'text-to-image',
+      }).eq("id", job_id);
+
+      const webhookUrl = `${SUPABASE_URL}/functions/v1/fal-webhook?job_id=${encodeURIComponent(job_id)}&secret=${encodeURIComponent(webhookSecret)}`;
+      deferTask(async () => {
+        const submitResult = await falQueueSubmit(activeEndpoint, payload, falHeaders, webhookUrl);
+        if (submitResult.error) {
+          await refundChargedCredits(supabase);
+          await supabase.from("generation_logs").update({
+            status: "failed",
+            error_message: submitResult.error,
+          }).eq("id", job_id);
+        }
+      });
+
+      return new Response(JSON.stringify({
+        queued: true,
+        model_used: activeEndpoint,
+        credits_used: creditsUsed,
+        requested_ratio: selectedRatio,
+        requested_quality: selectedQuality,
+        job_id,
+        is_image_to_image: isImageToImage,
+      }), {
+        status: 202,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    // Submit remaining slow endpoints to fal, then finalize in the background.
     if (SLOW_ENDPOINTS.has(activeEndpoint) && job_id) {
       const sub = await falSubmit(activeEndpoint, payload, falHeaders);
       if (sub.error) {
-        if (supabase) await supabase.from("generation_logs").update({ status: "failed", error_message: sub.error }).eq("id", job_id);
+        await refundChargedCredits(supabase);
+        await supabase.from("generation_logs").update({ status: "failed", error_message: sub.error }).eq("id", job_id);
         return new Response(JSON.stringify({ error: sub.error }), { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } });
       }
 
-      // Mark the job as actively generating now that fal accepted the submission.
-      if (supabase) {
-        await supabase.from("generation_logs").update({ status: "generating" }).eq("id", job_id);
-      }
+      await supabase.from("generation_logs").update({ status: "generating" }).eq("id", job_id);
 
       const backgroundWork = (async () => {
         try {
@@ -517,18 +722,19 @@ serve(async (req) => {
           await finalizeJob(polled);
         } catch (e) {
           console.error(`[generate-image] background finalize failed for job ${job_id}:`, e);
-          if (supabase) {
-            await supabase.from("generation_logs").update({
-              status: "failed",
-              error_message: e instanceof Error ? e.message : "Background finalize error",
-            }).eq("id", job_id);
-          }
+          await refundChargedCredits(supabase);
+          await supabase.from("generation_logs").update({
+            status: "failed",
+            error_message: e instanceof Error ? e.message : "Background finalize error",
+          }).eq("id", job_id);
         }
       })();
 
       // Keep the function alive until background work completes, even after we respond.
-      // @ts-ignore EdgeRuntime is provided by Supabase Edge runtime
-      try { (globalThis as any).EdgeRuntime?.waitUntil?.(backgroundWork); } catch (_) {}
+      const edgeRuntime = (globalThis as { EdgeRuntime?: { waitUntil?: (promise: Promise<unknown>) => void } }).EdgeRuntime;
+      try { edgeRuntime?.waitUntil?.(backgroundWork); } catch (error) {
+        console.warn("[generate-image] EdgeRuntime.waitUntil unavailable:", error);
+      }
 
       return new Response(JSON.stringify({
         status: "queued",
@@ -552,9 +758,10 @@ serve(async (req) => {
     console.error("generate-image error:", error);
     if (SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY) {
       try {
+        const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+        await refundChargedCredits(supabase);
         const { job_id } = await req.clone().json();
         if (job_id) {
-          const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
           await supabase
             .from("generation_logs")
             .update({ status: "failed", error_message: error instanceof Error ? error.message : "Unknown error" })

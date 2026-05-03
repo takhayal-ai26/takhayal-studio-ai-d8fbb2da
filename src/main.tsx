@@ -1,6 +1,7 @@
 import { createRoot } from "react-dom/client";
 import App from "./App.tsx";
 import { AppLoader } from "./components/AppLoader";
+import { AppErrorBoundary } from "./components/AppErrorBoundary";
 import "./index.css";
 
 function clearCorruptLocalStorage() {
@@ -31,8 +32,15 @@ function clearCorruptLocalStorage() {
 
 clearCorruptLocalStorage();
 
+const prerenderedSeoContent = document.getElementById("seo-static-content");
+if (prerenderedSeoContent) {
+  prerenderedSeoContent.remove();
+}
+
 createRoot(document.getElementById("root")!).render(
-  <AppLoader>
-    <App />
-  </AppLoader>
+  <AppErrorBoundary>
+    <AppLoader>
+      <App />
+    </AppLoader>
+  </AppErrorBoundary>
 );

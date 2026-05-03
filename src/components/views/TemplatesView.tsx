@@ -5,6 +5,8 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowRight } from 'lucide-react';
 import { useTemplates, FrontendTemplate } from '@/hooks/useTemplates';
 import { PageSeo, absoluteUrl } from '@/components/seo/PageSeo';
+import { buildTemplatePath } from '@/lib/seo-helpers';
+import { localizePath } from '@/lib/localized-routes';
 
 function ratioToNumber(ratio: string): number {
   const [w, h] = ratio.split(':').map(Number);
@@ -14,13 +16,13 @@ function ratioToNumber(ratio: string): number {
 
 export function TemplatesView() {
   const { setPrompt, setSelectedTemplate, setActivePage } = useApp();
-  const { t, isRTL } = useLanguage();
+  const { t, isRTL, lang } = useLanguage();
   const navigate = useNavigate();
   const { templates, categories, categoryNames, loading } = useTemplates();
   const [activeCategory, setActiveCategory] = useState('All');
 
   const handleUse = (tpl: FrontendTemplate) => {
-    navigate(`/templates/${tpl.id}`);
+    navigate(localizePath(buildTemplatePath(tpl.id, tpl.titleEn || tpl.name), lang));
   };
 
   // Map displayed category name back to English name_en for DB filtering
@@ -42,7 +44,7 @@ export function TemplatesView() {
     itemListElement: templates.slice(0, 16).map((template, index) => ({
       '@type': 'ListItem',
       position: index + 1,
-      url: absoluteUrl(`/templates/${template.id}`),
+      url: absoluteUrl(localizePath(buildTemplatePath(template.id, template.titleEn || template.name), lang)),
       name: template.name,
       image: template.image,
     })),

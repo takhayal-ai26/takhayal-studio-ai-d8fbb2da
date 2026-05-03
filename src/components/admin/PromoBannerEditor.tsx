@@ -42,7 +42,7 @@ const empty: Omit<PromoBanner, 'id'> = {
   cta_action_type: 'open_signup_modal', cta_url: '', audience: 'logged_out_only',
   active: true, dismissible: true, dismissal_days: 7,
   start_date: null, end_date: null, background_style: 'brand_orange',
-  text_color: '#FFFFFF', sort_order: 0,
+  text_color: '#FAF7F2', sort_order: 0,
 };
 
 export default function PromoBannerEditor() {

@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { X, Film, Clock, ChevronRight, ChevronDown, Image, Check, Diamond, Play, Volume2 } from 'lucide-react';
+import { useState, useEffect, useRef, useMemo, useCallback, useId } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
+import { X, Film, Clock, ChevronRight, ChevronDown, Image, Check, Diamond, Play, Volume2, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useAuth } from '@/context/AuthContext';
@@ -14,6 +14,8 @@ import { Switch } from '@/components/ui/switch';
 import VideoHistoryPanel from '@/components/video/VideoHistoryPanel';
 import VideoHowItWorks from '@/components/video/VideoHowItWorks';
 import { useVideoModels, type VideoModel } from '@/hooks/useVideoModels';
+import { GenerateButton, imageSizeError, isOversizedImage } from '@/lib/ux';
+import { localizePath } from '@/lib/localized-routes';
 
 /* ─── Drop-up Selector ─── */
 function SettingSelector({ label, options, value, onSelect, icon, forceUpward = false, creditInfo }: {
@@ -21,6 +23,7 @@ function SettingSelector({ label, options, value, onSelect, icon, forceUpward = 
 }) {
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
+  const listboxId = useId();
 
   useEffect(() => {
     if (!open) return;
@@ -38,6 +41,9 @@ function SettingSelector({ label, options, value, onSelect, icon, forceUpward = 
     <div ref={ref} className="relative flex-1">
       <button
         onClick={() => setOpen(o => !o)}
+        aria-expanded={open}
+        aria-haspopup="listbox"
+        aria-controls={open ? listboxId : undefined}
         className="w-full flex items-center justify-between gap-2 px-3.5 py-3 rounded-2xl bg-card/60 dark:bg-card/40 active:scale-[0.97] transition-all"
       >
         <div className="flex items-center gap-2 min-w-0">
@@ -52,16 +58,18 @@ function SettingSelector({ label, options, value, onSelect, icon, forceUpward = 
 
       {open && (
         <div className={cn(
-          "absolute left-0 right-0 z-50 rounded-2xl bg-popover/95 backdrop-blur-xl shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] overflow-hidden animate-in fade-in duration-150",
+          "absolute left-0 right-0 z-50 rounded-2xl bg-popover/95 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] overflow-hidden animate-in fade-in duration-150",
           forceUpward
             ? "bottom-full mb-2 slide-in-from-bottom-2"
             : "bottom-full md:bottom-auto md:top-full mb-2 md:mb-0 md:mt-2 slide-in-from-bottom-2 md:slide-in-from-top-2"
         )}>
-          <div className="p-1.5 space-y-0.5">
+          <div id={listboxId} role="listbox" className="p-1.5 space-y-0.5">
             {options.map(opt => (
               <button
                 key={opt.label}
                 onClick={() => { onSelect(opt.label); setOpen(false); }}
+                role="option"
+                aria-selected={opt.label === value}
                 className={cn(
                   "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[13px] font-semibold transition-colors",
                   opt.label === value
@@ -92,21 +100,21 @@ function DesktopModelPanel({ videoModels, selectedModelId, onSelect, onClose, is
   }, [onClose]);
 
   return (
-    <div ref={panelRef} className={cn("absolute top-0 z-50 w-[320px] animate-in fade-in duration-200", isAr ? "right-full mr-3 slide-in-from-right-2" : "left-full ml-3 slide-in-from-left-2")}>
-      <div className="rounded-[20px] overflow-hidden bg-popover/90 backdrop-blur-2xl shadow-[0_8px_40px_-4px_rgba(0,0,0,0.15),0_2px_12px_-2px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_40px_-4px_rgba(0,0,0,0.5),0_2px_12px_-2px_rgba(0,0,0,0.3)]" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
+    <div ref={panelRef} className={cn("absolute top-0 z-50 w-[min(320px,calc(100vw-2rem))] animate-in fade-in duration-200", isAr ? "right-full mr-3 slide-in-from-right-2" : "left-full ml-3 slide-in-from-left-2")}>
+      <div className="rounded-[20px] overflow-hidden bg-popover/95 backdrop-blur-md shadow-[0_8px_40px_-4px_rgba(0,0,0,0.15),0_2px_12px_-2px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_40px_-4px_rgba(0,0,0,0.5),0_2px_12px_-2px_rgba(0,0,0,0.3)]" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
         <div className="px-4 pt-3.5 pb-2">
           <p className="text-[10px] uppercase tracking-[1.5px] font-semibold text-muted-foreground/40">{isAr ? 'نماذج الفيديو' : 'Video models'}</p>
         </div>
-        <div className="overflow-y-auto px-1.5 pb-2" style={{ maxHeight: 'calc(100vh - 12rem)' }}>
+        <div role="listbox" aria-label={isAr ? 'نماذج الفيديو' : 'Video models'} className="overflow-y-auto px-1.5 pb-2" style={{ maxHeight: 'calc(100vh - 12rem)' }}>
           {videoModels.map(model => {
             const isSelected = model.id === selectedModelId;
             return (
               <button key={model.id} onClick={() => onSelect(model.id)} className={cn(
                 "w-full flex items-center gap-3 px-3 py-3 rounded-[14px] transition-all duration-150 text-start group",
                 isSelected ? "bg-primary/[0.08] dark:bg-primary/[0.12]" : "hover:bg-foreground/[0.04] dark:hover:bg-foreground/[0.06]"
-              )}>
+              )} role="option" aria-selected={isSelected}>
                 <div className={cn("w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0 overflow-hidden", isSelected ? "ring-[1.5px] ring-primary/30" : "bg-muted/15 dark:bg-muted/10")}>
-                  {model.preview_image_url ? <img src={model.preview_image_url} alt="" className="w-full h-full object-cover" /> : <Film size={15} className={isSelected ? "text-primary" : "text-muted-foreground/30"} />}
+                  {model.preview_image_url ? <img src={model.preview_image_url} alt={model.display_name} className="w-full h-full object-cover" /> : <Film size={15} className={isSelected ? "text-primary" : "text-muted-foreground/30"} />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
@@ -135,6 +143,7 @@ function DesktopModelPanel({ videoModels, selectedModelId, onSelect, onClose, is
 /* ─── Component ─── */
 export default function Video() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { credits, isAuthenticated, openAuthModal, openUpgradeModal } = useApp();
   const { lang } = useLanguage();
@@ -161,9 +170,23 @@ export default function Video() {
 
   useEffect(() => {
     if (videoModels.length > 0 && !selectedModelId) {
-      setSelectedModelId(videoModels[0].id);
+      const requested = searchParams.get('modelId') || searchParams.get('model');
+      const matched = requested
+        ? videoModels.find(model =>
+            model.id === requested ||
+            model.name === requested ||
+            model.display_name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === requested
+          )
+        : null;
+      setSelectedModelId((matched || videoModels[0]).id);
     }
-  }, [videoModels, selectedModelId]);
+  }, [videoModels, selectedModelId, searchParams]);
+
+  useEffect(() => {
+    const imageUrl = searchParams.get('imageUrl');
+    if (!imageUrl || uploadedImage?.url === imageUrl) return;
+    setUploadedImage({ preview: imageUrl, url: imageUrl });
+  }, [searchParams, uploadedImage?.url]);
 
   const currentModel = videoModels.find(m => m.id === selectedModelId) || videoModels[0];
 
@@ -177,13 +200,14 @@ export default function Video() {
     if (!currentModel.supports_start_frame) setUploadedImage(null);
     if (!currentModel.supports_end_frame) setEndFrameImage(null);
     if (!currentModel.supports_reference_images) setRefImages([null, null, null]);
-  }, [currentModel?.id]);
+  }, [currentModel, selectedDuration, selectedQuality, selectedRatio]);
 
   // Credit calculation
   const creditCostPerSecond = audioEnabled && currentModel?.supports_audio
     ? (currentModel?.credit_cost_per_second_with_audio ?? 0)
     : (currentModel?.credit_cost_per_second_no_audio ?? 5);
   const totalCredits = selectedDuration * creditCostPerSecond;
+  const BackArrow = isAr ? ArrowRight : ArrowLeft;
 
   const getCreditLabel = useCallback((dur: number) => {
     const cps = audioEnabled && currentModel?.supports_audio
@@ -193,6 +217,10 @@ export default function Video() {
   }, [audioEnabled, currentModel]);
 
   const handleUpload = useCallback(async (file: File, type: 'start' | 'end' | 'ref', refIdx?: number) => {
+    if (isOversizedImage(file)) {
+      toast.error(imageSizeError(isAr));
+      return;
+    }
     if (!user) return;
     setIsUploading(true);
     const preview = URL.createObjectURL(file);
@@ -242,7 +270,9 @@ export default function Video() {
         endFrameUrl: endFrameImage?.url || undefined,
         generateAudio: audioEnabled && currentModel.supports_audio,
       });
-      if (jobId) navigate(`/gallery?highlight=${jobId}`);
+      if (jobId) {
+        toast.success(isAr ? 'بدأ توليد الفيديو' : 'Video generation started');
+      }
     } catch {
       toast.error(isAr ? 'فشل في بدء التوليد' : 'Failed to start generation');
     }
@@ -260,7 +290,7 @@ export default function Video() {
           <div className="flex gap-2"><div className="flex-1 rounded-2xl bg-muted/20 animate-pulse h-14" /><div className="flex-1 rounded-2xl bg-muted/20 animate-pulse h-14" /><div className="flex-1 rounded-2xl bg-muted/20 animate-pulse h-14" /></div>
         </div>
         <div className="hidden md:flex w-full px-6 pt-6 gap-6">
-          <div className="w-[400px] flex-shrink-0 space-y-4"><div className="rounded-2xl bg-muted/20 animate-pulse h-48" /><div className="rounded-2xl bg-muted/20 animate-pulse h-32" /><div className="rounded-2xl bg-muted/20 animate-pulse h-14" /></div>
+          <div className="w-[clamp(340px,30vw,400px)] flex-shrink-0 space-y-4"><div className="rounded-2xl bg-muted/20 animate-pulse h-48" /><div className="rounded-2xl bg-muted/20 animate-pulse h-32" /><div className="rounded-2xl bg-muted/20 animate-pulse h-14" /></div>
           <div className="flex-1 rounded-2xl bg-muted/10 animate-pulse h-96" />
         </div>
       </div>
@@ -271,14 +301,17 @@ export default function Video() {
   const FrameCard = ({ type, image, onRemove, onUpload, required }: {
     type: 'start' | 'end'; image: { preview: string; url: string | null } | null; onRemove: () => void; onUpload: () => void; required?: boolean;
   }) => (
-    <button onClick={onUpload} className={cn(
+    <button
+      onClick={onUpload}
+      aria-label={type === 'start' ? (isAr ? 'رفع إطار البداية' : 'Upload start frame') : (isAr ? 'رفع إطار النهاية' : 'Upload end frame')}
+      className={cn(
       "relative rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all overflow-hidden aspect-[4/3]",
       image ? "p-0" : "border border-dashed border-border/20 dark:border-border/10 bg-card/40 dark:bg-card/20 hover:bg-card/60 dark:hover:bg-card/30 active:scale-[0.97]"
     )}>
       {image ? (
         <>
-          <img src={image.preview} alt="" className="w-full h-full object-cover rounded-2xl" />
-          <button onClick={e => { e.stopPropagation(); onRemove(); }} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white active:scale-90 transition-transform"><X size={11} /></button>
+          <img src={image.preview} alt={type === 'start' ? (isAr ? 'إطار البداية' : 'Start frame') : (isAr ? 'إطار النهاية' : 'End frame')} className="w-full h-full object-cover rounded-2xl" />
+          <button onClick={e => { e.stopPropagation(); onRemove(); }} className="absolute top-2 right-2 min-h-11 min-w-11 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white active:scale-90 transition-transform" aria-label={type === 'start' ? (isAr ? 'إزالة إطار البداية' : 'Remove start frame') : (isAr ? 'إزالة إطار النهاية' : 'Remove end frame')}><X size={11} /></button>
           {isUploading && <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-2xl"><div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" /></div>}
         </>
       ) : (
@@ -297,14 +330,17 @@ export default function Video() {
   const RefImageCard = ({ idx }: { idx: number }) => {
     const img = refImages[idx];
     return (
-      <button onClick={() => refImageRefs[idx]?.current?.click()} className={cn(
+      <button
+        onClick={() => refImageRefs[idx]?.current?.click()}
+        aria-label={isAr ? `رفع صورة مرجعية ${idx + 1}` : `Upload reference image ${idx + 1}`}
+        className={cn(
         "relative rounded-xl flex flex-col items-center justify-center gap-1 transition-all overflow-hidden aspect-square",
         img ? "p-0" : "border border-dashed border-border/20 dark:border-border/10 bg-card/40 dark:bg-card/20 hover:bg-card/60 active:scale-[0.97]"
       )}>
         {img ? (
           <>
-            <img src={img.preview} alt="" className="w-full h-full object-cover rounded-xl" />
-            <button onClick={e => { e.stopPropagation(); setRefImages(prev => { const n = [...prev]; n[idx] = null; return n; }); }} className="absolute top-1 right-1 w-5 h-5 rounded-full bg-black/60 flex items-center justify-center text-white"><X size={9} /></button>
+            <img src={img.preview} alt={isAr ? `صورة مرجعية ${idx + 1}` : `Reference image ${idx + 1}`} className="w-full h-full object-cover rounded-xl" />
+            <button onClick={e => { e.stopPropagation(); setRefImages(prev => { const n = [...prev]; n[idx] = null; return n; }); }} className="absolute top-1 right-1 min-h-11 min-w-11 rounded-full bg-black/60 flex items-center justify-center text-white" aria-label={isAr ? `إزالة الصورة المرجعية ${idx + 1}` : `Remove reference image ${idx + 1}`}><X size={9} /></button>
           </>
         ) : (
           <Image size={14} className="text-muted-foreground/25" />
@@ -323,7 +359,7 @@ export default function Video() {
           <Volume2 size={16} className={cn("transition-colors duration-200", audioEnabled ? "text-primary" : "text-muted-foreground/40")} />
           <span className="text-[13px] font-semibold text-foreground">{isAr ? 'صوت' : 'Audio'}</span>
         </div>
-        <Switch checked={audioEnabled} onCheckedChange={setAudioEnabled} />
+        <Switch checked={audioEnabled} onCheckedChange={setAudioEnabled} className="hover:bg-primary/35" />
       </div>
     );
   };
@@ -336,7 +372,7 @@ export default function Video() {
         <div className="w-full rounded-2xl overflow-hidden relative shadow-sm">
           <div className="aspect-[2.4/1] relative">
             {currentModel?.preview_image_url ? (
-              <img src={currentModel.preview_image_url} alt="" className="w-full h-full object-cover" />
+              <img src={currentModel.preview_image_url} alt={currentModel.display_name} className="w-full h-full object-cover" />
             ) : (
               <div className="w-full h-full bg-gradient-to-br from-muted/30 to-muted/10" />
             )}
@@ -351,9 +387,9 @@ export default function Video() {
           </div>
         </div>
       ) : (
-        <button onClick={() => setShowModelPicker(true)} className="w-full rounded-2xl overflow-hidden relative group active:scale-[0.98] transition-transform">
+        <button onClick={() => setShowModelPicker(true)} className="w-full rounded-2xl overflow-hidden relative group active:scale-[0.98] transition-transform" aria-label={isAr ? 'اختيار نموذج الفيديو' : 'Choose video model'}>
           <div className="aspect-[2.8/1] relative">
-            {currentModel?.preview_image_url ? <img src={currentModel.preview_image_url} alt="" className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-br from-muted/30 to-muted/10" />}
+            {currentModel?.preview_image_url ? <img src={currentModel.preview_image_url} alt={currentModel.display_name} className="w-full h-full object-cover" /> : <div className="w-full h-full bg-gradient-to-br from-muted/30 to-muted/10" />}
             <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
           </div>
           <div className="absolute bottom-0 left-0 right-0 p-4">
@@ -370,8 +406,8 @@ export default function Video() {
         <div className={cn("grid gap-2.5", currentModel.supports_end_frame ? "grid-cols-2" : "grid-cols-1")}>
           <FrameCard type="start" image={uploadedImage} onRemove={() => setUploadedImage(null)} onUpload={() => startFrameRef.current?.click()} required={currentModel.start_frame_required} />
           {currentModel.supports_end_frame && <FrameCard type="end" image={endFrameImage} onRemove={() => setEndFrameImage(null)} onUpload={() => endFrameRef.current?.click()} />}
-          <input ref={startFrameRef} type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], 'start'); }} />
-          {currentModel.supports_end_frame && <input ref={endFrameRef} type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], 'end'); }} />}
+          <input ref={startFrameRef} type="file" accept="image/*" className="hidden" aria-label={isAr ? 'رفع إطار البداية' : 'Upload start frame'} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], 'start'); }} />
+          {currentModel.supports_end_frame && <input ref={endFrameRef} type="file" accept="image/*" className="hidden" aria-label={isAr ? 'رفع إطار النهاية' : 'Upload end frame'} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], 'end'); }} />}
         </div>
       )}
 
@@ -382,13 +418,15 @@ export default function Video() {
           <div className="grid grid-cols-3 gap-2">
             {[0, 1, 2].map(i => <RefImageCard key={i} idx={i} />)}
           </div>
-          {[0, 1, 2].map(i => <input key={i} ref={refImageRefs[i]} type="file" accept="image/*" className="hidden" onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], 'ref', i); }} />)}
+          {[0, 1, 2].map(i => <input key={i} ref={refImageRefs[i]} type="file" accept="image/*" className="hidden" aria-label={isAr ? `رفع صورة مرجعية ${i + 1}` : `Upload reference image ${i + 1}`} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], 'ref', i); }} />)}
         </div>
       )}
 
       {/* Prompt */}
       <div className="rounded-2xl bg-card/50 dark:bg-card/30 overflow-hidden focus-within:ring-1 focus-within:ring-primary/20 transition-shadow shadow-sm">
         <textarea
+          id="video-prompt"
+          aria-label={isAr ? 'وصف الفيديو' : 'Video prompt'}
           value={prompt} onChange={e => setPrompt(e.target.value)}
           placeholder={isAr ? 'صف الفيديو الذي تريده...' : 'Describe your video...'}
           rows={isDesktop ? 4 : 4}
@@ -401,10 +439,10 @@ export default function Video() {
 
       {/* Desktop Model Selector — below prompt */}
       {isDesktop && (
-        <button onClick={() => setShowModelPicker(p => !p)} className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-card/50 dark:bg-card/30 hover:bg-card/70 dark:hover:bg-card/40 transition-colors group active:scale-[0.98] shadow-sm">
+        <button onClick={() => setShowModelPicker(p => !p)} className="w-full flex items-center justify-between px-4 py-3.5 rounded-2xl bg-card/50 dark:bg-card/30 hover:bg-card/70 dark:hover:bg-card/40 transition-colors group active:scale-[0.98] shadow-sm" aria-expanded={showModelPicker} aria-haspopup="listbox" aria-label={isAr ? 'اختيار نموذج الفيديو' : 'Choose video model'}>
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-xl overflow-hidden bg-muted/20 dark:bg-muted/10 flex items-center justify-center flex-shrink-0">
-              {currentModel?.preview_image_url ? <img src={currentModel.preview_image_url} alt="" className="w-full h-full object-cover" /> : <Film size={14} className="text-muted-foreground/30" />}
+              {currentModel?.preview_image_url ? <img src={currentModel.preview_image_url} alt={currentModel.display_name} className="w-full h-full object-cover" /> : <Film size={14} className="text-muted-foreground/30" />}
             </div>
             <div className="text-start">
               <p className="text-[10px] text-muted-foreground/60 font-medium leading-none mb-0.5">{isAr ? 'النموذج' : 'Model'}</p>
@@ -424,7 +462,6 @@ export default function Video() {
           onSelect={v => setSelectedDuration(parseInt(v))}
           icon={<Clock size={13} className="text-muted-foreground/40 flex-shrink-0" />}
           forceUpward={isDesktop}
-          creditInfo={v => getCreditLabel(parseInt(v))}
         />
         <SettingSelector
           label={isAr ? 'النسبة' : 'Ratio'}
@@ -445,10 +482,10 @@ export default function Video() {
 
       {/* Mobile model selector */}
       {!isDesktop && (
-        <button onClick={() => setShowModelPicker(true)} className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-card/50 transition-colors group active:scale-[0.98]">
+        <button onClick={() => setShowModelPicker(true)} className="w-full flex items-center justify-between px-4 py-3 rounded-2xl bg-card/50 transition-colors group active:scale-[0.98]" aria-haspopup="listbox" aria-label={isAr ? 'اختيار نموذج الفيديو' : 'Choose video model'}>
           <div className="flex items-center gap-3">
             <div className="w-8 h-8 rounded-xl overflow-hidden bg-muted/20 flex items-center justify-center flex-shrink-0">
-              {currentModel?.preview_image_url ? <img src={currentModel.preview_image_url} alt="" className="w-full h-full object-cover" /> : <Film size={14} className="text-muted-foreground/30" />}
+              {currentModel?.preview_image_url ? <img src={currentModel.preview_image_url} alt={currentModel.display_name} className="w-full h-full object-cover" /> : <Film size={14} className="text-muted-foreground/30" />}
             </div>
             <div className="text-start">
               <p className="text-[10px] text-muted-foreground/60 font-medium leading-none mb-0.5">{isAr ? 'النموذج' : 'Model'}</p>
@@ -461,14 +498,9 @@ export default function Video() {
 
       {/* Generate Button (desktop) */}
       {isDesktop && (
-        <button onClick={handleGenerate} disabled={!canGenerate} className={cn(
-          "w-full h-[52px] rounded-2xl text-[15px] font-bold flex items-center justify-center gap-2.5 transition-all active:scale-[0.97]",
-          !canGenerate ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-primary text-primary-foreground shadow-[0_0_30px_rgba(var(--primary-rgb,240,62,27),0.3)] hover:shadow-[0_0_40px_rgba(var(--primary-rgb,240,62,27),0.4)] hover:brightness-110"
-        )}>
-          {isGenerating ? <div className="w-5 h-5 border-2 border-primary-foreground/40 border-t-primary-foreground rounded-full animate-spin" /> : (
-            <>{isAr ? 'توليد الفيديو' : 'Generate Video'}<span className="text-[13px] font-semibold opacity-90">✨ {totalCredits}</span></>
-          )}
-        </button>
+        <GenerateButton onClick={handleGenerate} disabled={!canGenerate} loading={isGenerating} credits={totalCredits}>
+          {isAr ? 'توليد الفيديو' : 'Generate Video'}
+        </GenerateButton>
       )}
     </div>
   );
@@ -477,19 +509,32 @@ export default function Video() {
   if (isMobile) {
     return (
       <div className="flex-1 flex flex-col min-h-0" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
-        <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(4.5rem + 4rem + env(safe-area-inset-bottom, 0px))' }}>
-          <div className="max-w-lg mx-auto px-4 pt-4 space-y-3">{renderCreationPanel()}</div>
-        </div>
-        <div className="fixed left-0 right-0 z-40 px-4 py-3 bg-background/95 backdrop-blur-md" style={{ bottom: 'calc(4rem + env(safe-area-inset-bottom, 0px))' }}>
-          <div className="max-w-lg mx-auto">
-            <button onClick={handleGenerate} disabled={!canGenerate} className={cn(
-              "w-full h-[52px] rounded-2xl text-[16px] font-bold flex items-center justify-center gap-2.5 transition-all active:scale-[0.97]",
-              !canGenerate ? "bg-muted text-muted-foreground cursor-not-allowed" : "bg-primary text-primary-foreground shadow-[0_0_30px_rgba(var(--primary-rgb,240,62,27),0.3)]"
-            )}>
-              {isGenerating ? <div className="w-5 h-5 border-2 border-primary-foreground/40 border-t-primary-foreground rounded-full animate-spin" /> : (
-                <>{isAr ? 'توليد' : 'Generate'}<span className="text-[13px] font-semibold opacity-90">✨ {totalCredits}</span></>
+        <div className="flex-1 overflow-y-auto" style={{ paddingBottom: 'calc(120px + env(safe-area-inset-bottom, 0px))' }}>
+          <div className="max-w-lg mx-auto px-4 pt-4 space-y-3">
+            <button
+              type="button"
+              onClick={() => navigate(localizePath('/create', lang))}
+              className={cn(
+                'group inline-flex items-center gap-2 h-9 ps-2 pe-3.5 -ms-2 mb-1 rounded-full',
+                'text-[13px] font-medium text-muted-foreground',
+                'hover:text-foreground hover:bg-muted/40 active:scale-[0.97] active:bg-muted/60',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background',
+                'transition-all duration-200 cursor-pointer'
               )}
+            >
+              <span className="flex items-center justify-center w-6 h-6 rounded-full bg-muted/30 group-hover:bg-muted/60 transition-colors">
+                <BackArrow size={13} />
+              </span>
+              <span>{isAr ? 'العودة إلى الإنشاء' : 'Back to Create'}</span>
             </button>
+            {renderCreationPanel()}
+          </div>
+        </div>
+        <div className="fixed left-0 right-0 z-40 px-4 py-3 bg-background/95 backdrop-blur-md" style={{ bottom: 'calc(58px + env(safe-area-inset-bottom, 0px))' }}>
+          <div className="max-w-lg mx-auto">
+            <GenerateButton onClick={handleGenerate} disabled={!canGenerate} loading={isGenerating} credits={totalCredits}>
+              {isAr ? 'توليد' : 'Generate'}
+            </GenerateButton>
           </div>
         </div>
         {showModelPicker && <ModelPickerSheet videoModels={videoModels} selectedModelId={selectedModelId} onSelect={id => { setSelectedModelId(id); setShowModelPicker(false); }} onClose={() => setShowModelPicker(false)} isAr={isAr} />}
@@ -502,12 +547,12 @@ export default function Video() {
     <div className="flex-1 flex flex-col" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
       <div className="flex-1 overflow-y-auto">
         <div className="flex w-full">
-          <div className="w-[400px] flex-shrink-0 relative">
+          <div className="w-[clamp(340px,30vw,400px)] flex-shrink-0 relative">
             <div className="sticky px-5 py-5 overflow-y-auto" style={{ top: 'calc(3.5rem + var(--banner-h, 0px))', height: 'calc(100vh - 3.5rem - var(--banner-h, 0px))' }}>
               {renderCreationPanel(true)}
             </div>
             {showModelPicker && (
-              <div className="fixed z-50" style={{ top: 'calc(3.5rem + var(--banner-h, 0px) + 1.25rem)', ...(isAr ? { right: '420px' } : { left: '420px' }) }}>
+              <div className="fixed z-50" style={{ top: 'calc(3.5rem + var(--banner-h, 0px) + 1.25rem)', ...(isAr ? { right: 'clamp(360px, calc(30vw + 1.25rem), 420px)' } : { left: 'clamp(360px, calc(30vw + 1.25rem), 420px)' }) }}>
                 <DesktopModelPanel videoModels={videoModels} selectedModelId={selectedModelId} onSelect={id => { setSelectedModelId(id); setShowModelPicker(false); }} onClose={() => setShowModelPicker(false)} isAr={isAr} />
               </div>
             )}
@@ -539,20 +584,20 @@ function ModelPickerSheet({ videoModels, selectedModelId, onSelect, onClose, isA
   useEffect(() => { document.body.style.overflow = 'hidden'; return () => { document.body.style.overflow = ''; }; }, []);
   return (
     <div className="fixed inset-0 z-[60]" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm animate-in fade-in duration-150" />
+      <div className="absolute inset-0 bg-black/50 animate-in fade-in duration-150" />
       <div className="absolute bottom-0 left-0 right-0 rounded-t-3xl bg-popover flex flex-col shadow-[0_-10px_40px_rgba(0,0,0,0.3)] animate-in slide-in-from-bottom duration-200" style={{ maxHeight: '70vh' }} onClick={e => e.stopPropagation()}>
         <div className="flex-shrink-0 pt-3 pb-2"><div className="w-10 h-1 rounded-full bg-muted-foreground/20 mx-auto" /></div>
         <div className="flex-shrink-0 px-5 pb-3 pt-1"><h3 className="text-[15px] font-bold text-foreground">{isAr ? 'اختر النموذج' : 'Choose Model'}</h3></div>
-        <div className="flex-1 overflow-y-auto overscroll-contain px-3 space-y-0.5 pb-6" style={{ WebkitOverflowScrolling: 'touch' }}>
+        <div role="listbox" aria-label={isAr ? 'نماذج الفيديو' : 'Video models'} className="flex-1 overflow-y-auto overscroll-contain px-3 space-y-0.5 pb-6" style={{ WebkitOverflowScrolling: 'touch' }}>
           {videoModels.map(model => {
             const isSelected = model.id === selectedModelId;
             return (
               <button key={model.id} onClick={() => onSelect(model.id)} className={cn(
                 "w-full flex items-center gap-3 px-3 py-3 rounded-xl transition-all text-start active:scale-[0.98]",
                 isSelected ? "bg-primary/10" : "hover:bg-accent/40"
-              )}>
+              )} role="option" aria-selected={isSelected}>
                 <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 overflow-hidden", isSelected ? "ring-2 ring-primary/30" : "bg-muted/30 dark:bg-muted/10")}>
-                  {model.preview_image_url ? <img src={model.preview_image_url} alt="" className="w-full h-full object-cover" /> : <Film size={16} className={isSelected ? "text-primary" : "text-muted-foreground/40"} />}
+                  {model.preview_image_url ? <img src={model.preview_image_url} alt={model.display_name} className="w-full h-full object-cover" /> : <Film size={16} className={isSelected ? "text-primary" : "text-muted-foreground/40"} />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">

@@ -2,27 +2,40 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useModelGuides } from '@/hooks/useModelGuides';
+import { useVideoModels } from '@/hooks/useVideoModels';
 import { Cpu, Film, Sparkles } from 'lucide-react';
 import { Footer } from '@/components/layout/Footer';
 import { PageSeo, absoluteUrl } from '@/components/seo/PageSeo';
+import { localizePath } from '@/lib/localized-routes';
 
 type FilterType = 'all' | 'image' | 'video';
 
-function ModelCard({ guide, isAr }: { guide: any; isAr: boolean }) {
+function ModelCard({ guide, isAr, lang }: { guide: any; isAr: boolean; lang: 'ar' | 'en' }) {
   const navigate = useNavigate();
   const name = isAr ? guide.name_ar || guide.name_en : guide.name_en;
   const title = isAr ? guide.title_ar || guide.title_en : guide.title_en;
+  const bestFor = isAr ? guide.best_for_line_ar || guide.short_description_ar : guide.best_for_line_en || guide.short_description_en;
   const isVideo = guide.type === 'video';
+  const imageUrl = guide.display_image_url || guide.main_image_url;
+  const openDetails = () => navigate(localizePath(`/models/${guide.slug}`, lang));
+  const startCreating = () => {
+    const target = isVideo
+      ? `/video?modelId=${encodeURIComponent(guide.linked_model_id || guide.slug)}`
+      : `/studio${guide.linked_model_id ? `?modelId=${encodeURIComponent(guide.linked_model_id)}` : ''}`;
+    navigate(localizePath(target, lang));
+  };
 
   return (
-    <button
-      onClick={() => navigate(`/models/${guide.slug}`)}
-      className="group relative rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:scale-[1.02] text-start w-full"
-    >
-      <div className="aspect-video relative bg-zinc-900">
-        {guide.main_image_url ? (
+    <div className="group relative rounded-2xl overflow-hidden bg-card/60 hover:shadow-xl hover:shadow-primary/10 transition-all duration-300 hover:scale-[1.02] text-start w-full">
+      <button
+        onClick={openDetails}
+        className="block w-full text-start"
+        aria-label={isAr ? `تفاصيل ${name}` : `${name} details`}
+      >
+        <div className="aspect-video relative bg-zinc-900">
+        {imageUrl ? (
           <img
-            src={guide.main_image_url}
+            src={imageUrl}
             alt={name}
             className="absolute inset-0 w-full h-full object-cover"
             loading="lazy"
@@ -38,9 +51,25 @@ function ModelCard({ guide, isAr }: { guide: any; isAr: boolean }) {
         <div className="absolute bottom-0 left-0 right-0 p-5">
           <h3 className="text-white font-bold text-lg md:text-xl leading-tight">{name}</h3>
           {title && <p className="text-white/50 text-[13px] mt-1 line-clamp-1">{title}</p>}
+          {bestFor && <p className="text-white/65 text-[12px] mt-2 line-clamp-2">{bestFor}</p>}
         </div>
+        </div>
+      </button>
+      <div className="flex items-center gap-2 p-3">
+        <button
+          onClick={startCreating}
+          className="h-9 flex-1 rounded-lg bg-primary px-3 text-[12px] font-bold text-primary-foreground hover:brightness-110 transition-all"
+        >
+          {isAr ? 'ابدأ الآن' : 'Create Now'}
+        </button>
+        <button
+          onClick={openDetails}
+          className="h-9 rounded-lg bg-muted/40 px-3 text-[12px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/60 transition-all"
+        >
+          {isAr ? 'التفاصيل' : 'Details'}
+        </button>
       </div>
-    </button>
+    </div>
   );
 }
 
@@ -48,8 +77,31 @@ export default function ModelsDirectory() {
   const { lang, isRTL } = useLanguage();
   const isAr = lang === 'ar';
   const { imageGuides, videoGuides, loading } = useModelGuides();
+  const { models: videoModels, loading: videoModelsLoading } = useVideoModels(true);
   const [filter, setFilter] = useState<FilterType>('all');
-  const allGuides = [...imageGuides, ...videoGuides];
+
+  const slugify = (value: string) =>
+    value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+
+  const videoPreviewByKey = new Map<string, string>();
+  videoModels.forEach(model => {
+    if (!model.preview_image_url) return;
+    videoPreviewByKey.set(model.id, model.preview_image_url);
+    if (model.name) videoPreviewByKey.set(slugify(model.name), model.preview_image_url);
+    if (model.display_name) videoPreviewByKey.set(slugify(model.display_name), model.preview_image_url);
+  });
+
+  const displayVideoGuides = videoGuides.map(guide => ({
+    ...guide,
+    display_image_url:
+      guide.main_image_url ||
+      (guide.linked_model_id ? videoPreviewByKey.get(guide.linked_model_id) : '') ||
+      videoPreviewByKey.get(guide.slug) ||
+      videoPreviewByKey.get(slugify(guide.name_en || '')) ||
+      '',
+  }));
+
+  const allGuides = [...imageGuides, ...displayVideoGuides];
 
   const filters: { key: FilterType; label: string }[] = [
     { key: 'all', label: isAr ? 'الكل' : 'All' },
@@ -70,7 +122,7 @@ export default function ModelsDirectory() {
     itemListElement: allGuides.slice(0, 20).map((guide, index) => ({
       '@type': 'ListItem',
       position: index + 1,
-      url: absoluteUrl(`/models/${guide.slug}`),
+      url: absoluteUrl(localizePath(`/models/${guide.slug}`, lang)),
       name: isAr ? guide.name_ar || guide.name_en : guide.name_en,
       description: isAr ? guide.short_description_ar || guide.short_description_en : guide.short_description_en,
     })),
@@ -132,7 +184,7 @@ export default function ModelsDirectory() {
           ))}
         </div>
 
-        {loading ? (
+        {loading || videoModelsLoading ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="aspect-video rounded-2xl bg-muted animate-pulse" />
@@ -148,7 +200,7 @@ export default function ModelsDirectory() {
                 </p>
                 {imageGuides.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {imageGuides.map(g => <ModelCard key={g.id} guide={g} isAr={isAr} />)}
+                    {imageGuides.map(g => <ModelCard key={g.id} guide={g} isAr={isAr} lang={lang} />)}
                   </div>
                 ) : (
                   <p className="text-muted-foreground text-sm py-8 text-center">{isAr ? 'قريبًا' : 'Coming soon'}</p>
@@ -162,9 +214,9 @@ export default function ModelsDirectory() {
                 <p className="text-[12px] uppercase tracking-widest font-semibold text-primary mb-5">
                   {isAr ? 'توليد الفيديو' : 'VIDEO GENERATION'}
                 </p>
-                {videoGuides.length > 0 ? (
+                {displayVideoGuides.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {videoGuides.map(g => <ModelCard key={g.id} guide={g} isAr={isAr} />)}
+                    {displayVideoGuides.map(g => <ModelCard key={g.id} guide={g} isAr={isAr} lang={lang} />)}
                   </div>
                 ) : (
                   <p className="text-muted-foreground text-sm py-8 text-center">{isAr ? 'قريبًا' : 'Coming soon'}</p>

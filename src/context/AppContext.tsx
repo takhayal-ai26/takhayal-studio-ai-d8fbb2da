@@ -137,7 +137,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const userEmail = auth.profile?.email || auth.user?.email || '';
   const userAvatarUrl = auth.profile?.avatar_url || auth.user?.user_metadata?.avatar_url || null;
   const [activePage, setActivePage] = useState<NavPage>('canvas');
-  const credits = auth.profile?.credits ?? 10;
+  const credits = auth.profile?.credits ?? (isAuthenticated ? 0 : 10);
   const plan: UserPlan = (auth.profile?.plan as UserPlan) || 'free';
   const [prompt, setPrompt] = useState('');
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
@@ -198,8 +198,8 @@ export function AppProvider({ children }: { children: ReactNode }) {
         }));
         setAvailableModels(models);
         const defaultModel = models.find(m => m.is_default) || models[0];
-        if (defaultModel && !selectedModelId) {
-          setSelectedModelId(defaultModel.id);
+        if (defaultModel) {
+          setSelectedModelId(current => current || defaultModel.id);
         }
       }
     };
@@ -207,8 +207,14 @@ export function AppProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const selectedModel = availableModels.find(m => m.id === selectedModelId) || null;
-  const availableQualityTiers = selectedModel?.supported_quality_tiers || ['1K'];
-  const availableRatios = selectedModel?.supported_ratios || ['1:1', '16:9', '9:16', '4:5'];
+  const availableQualityTiers = useMemo(
+    () => selectedModel?.supported_quality_tiers || ['1K'],
+    [selectedModel]
+  );
+  const availableRatios = useMemo(
+    () => selectedModel?.supported_ratios || ['1:1', '16:9', '9:16', '4:5'],
+    [selectedModel]
+  );
 
   // When model changes, reset quality tier if current tier is not supported
   useEffect(() => {
@@ -222,7 +228,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         setAspectRatio(firstRatio);
       }
     }
-  }, [selectedModelId, selectedModel]);
+  }, [aspectRatio, selectedModel, selectedModelId, selectedQualityTier]);
 
   // Fetch tier credits when model changes — only available tiers
   useEffect(() => {
@@ -363,7 +369,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
     } finally {
       setIsGenerating(false);
     }
-  }, [prompt, isGenerating, isAuthenticated, credits, quality, selectedTemplate, selectedStyle, aspectRatio, selectedModelId, selectedQualityTier, getCreditCost, getGenerationErrorMessage]);
+  }, [prompt, isGenerating, isAuthenticated, credits, quality, selectedTemplate, selectedStyle, aspectRatio, selectedModelId, selectedQualityTier, availableModels, getCreditCost, getGenerationErrorMessage]);
 
   const contextValue = useMemo(() => ({
     isAuthenticated, userName, userEmail, userAvatarUrl, activePage, credits, plan,

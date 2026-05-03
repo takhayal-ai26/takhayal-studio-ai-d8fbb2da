@@ -6,6 +6,7 @@ import { Sparkles, Film } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { PageSeo } from '@/components/seo/PageSeo';
+import { localizePath } from '@/lib/localized-routes';
 import heroPoster from '@/assets/landing/hero-video-poster-960.avif';
 
 type Tab = 'image' | 'video';
@@ -24,10 +25,10 @@ export default function CreateHub() {
   const handleToolClick = (tool: typeof tools[0]) => {
     if (tool.slug === 'generate') {
       setActivePage('canvas');
-      navigate('/studio');
+      navigate(localizePath('/studio', lang));
       return;
     }
-    navigate(`/tools/${tool.slug}`);
+    navigate(localizePath(`/tools/${tool.slug}`, lang));
   };
 
   return (
@@ -147,7 +148,7 @@ export default function CreateHub() {
         {/* Video Tab */}
         <div className={cn('transition-opacity duration-200', tab === 'video' ? 'opacity-100' : 'opacity-0 hidden')}>
           <button
-            onClick={() => navigate('/video')}
+            onClick={() => navigate(localizePath('/video', lang))}
             className="w-full rounded-3xl overflow-hidden relative group focus:outline-none active:scale-[0.98] transition-transform shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
             style={{ textAlign: isAr ? 'right' : 'left' }}
           >

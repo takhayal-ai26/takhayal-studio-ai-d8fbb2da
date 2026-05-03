@@ -7,6 +7,25 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+function jsonResponse(body: Record<string, unknown>, status = 200) {
+  return new Response(JSON.stringify(body), {
+    status,
+    headers: { ...corsHeaders, "Content-Type": "application/json" },
+  });
+}
+
+type SupabaseClientInstance = ReturnType<typeof createClient>;
+type GenerationJobRow = {
+  id: string;
+  user_id: string | null;
+  status: string | null;
+  credits_charged_at?: string | null;
+};
+type DeductCreditsResult = {
+  success?: boolean;
+  error?: string;
+};
+
 async function falQueueRun(
   endpoint: string,
   payload: Record<string, unknown>,
@@ -45,29 +64,42 @@ async function falQueueRun(
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
+  let chargedUserId: string | null = null;
+  let chargedCredits = 0;
+
+  const refundChargedCredits = async (supabase: SupabaseClientInstance) => {
+    if (!chargedUserId || chargedCredits <= 0) return;
+    await supabase.rpc("refund_credits", { p_user_id: chargedUserId, p_amount: chargedCredits });
+    chargedUserId = null;
+    chargedCredits = 0;
+  };
+
   try {
     const FAL_AI_API_KEY = Deno.env.get("FAL_AI_API_KEY");
     if (!FAL_AI_API_KEY) throw new Error("FAL_AI_API_KEY is not configured");
 
     const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+    const SUPABASE_ANON_KEY = Deno.env.get("SUPABASE_ANON_KEY")!;
     const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY);
+    const authHeader = req.headers.get("Authorization") || "";
+    if (!authHeader || !SUPABASE_ANON_KEY) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
+    }
+
+    const userClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      global: { headers: { Authorization: authHeader } },
+    });
+    const { data: { user }, error: authError } = await userClient.auth.getUser();
+    if (authError || !user) {
+      return jsonResponse({ error: "Unauthorized" }, 401);
+    }
 
     const body = await req.json();
     const { tool_slug, prompt, image_url, options, job_id } = body;
 
     if (!tool_slug) {
-      return new Response(JSON.stringify({ error: "tool_slug is required" }), {
-        status: 400,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
-
-    // If a job_id is provided, update generation_logs status to 'generating'
-    if (job_id) {
-      await supabase.from("generation_logs").update({
-        status: "generating",
-      }).eq("id", job_id);
+      return jsonResponse({ error: "tool_slug is required" }, 400);
     }
 
     // Load tool config from DB
@@ -82,10 +114,7 @@ serve(async (req) => {
       if (job_id) {
         await supabase.from("generation_logs").update({ status: "failed" }).eq("id", job_id);
       }
-      return new Response(JSON.stringify({ error: "Tool not found or inactive" }), {
-        status: 404,
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return jsonResponse({ error: "Tool not found or inactive" }, 404);
     }
 
     const falHeaders = {
@@ -95,8 +124,8 @@ serve(async (req) => {
 
     // ── RESOLVE PROVIDER ──
     let endpoint = tool.provider_endpoint;
-    let creditCost = tool.default_credit_cost;
-    let actualCost = Number(tool.internal_provider_cost_estimate);
+    let creditCost = Number(tool.default_credit_cost ?? 0);
+    let actualCost = Number(tool.internal_provider_cost_estimate ?? 0);
     const creditValueUsd = 0.016;
 
     const requestedEndpoint = options?.provider_endpoint;
@@ -112,8 +141,8 @@ serve(async (req) => {
 
       if (provider) {
         endpoint = provider.provider_endpoint;
-        creditCost = provider.credit_cost;
-        actualCost = Number(provider.internal_cost_usd);
+        creditCost = Number(provider.credit_cost ?? creditCost);
+        actualCost = Number(provider.internal_cost_usd ?? actualCost);
         console.log(`[run-tool] Using provider: ${provider.display_name} (${endpoint}) — ${creditCost} credits`);
       } else {
         console.warn(`[run-tool] Requested endpoint ${requestedEndpoint} not found in tool_providers, using tool default`);
@@ -129,14 +158,69 @@ serve(async (req) => {
 
       if (defaultProvider) {
         endpoint = defaultProvider.provider_endpoint;
-        creditCost = defaultProvider.credit_cost;
-        actualCost = Number(defaultProvider.internal_cost_usd);
+        creditCost = Number(defaultProvider.credit_cost ?? creditCost);
+        actualCost = Number(defaultProvider.internal_cost_usd ?? actualCost);
         console.log(`[run-tool] Using default provider: ${defaultProvider.display_name} (${endpoint})`);
       }
     }
 
+    let existingJob: GenerationJobRow | null = null;
+    if (job_id) {
+      const { data: jobData, error: jobError } = await supabase
+        .from("generation_logs")
+        .select("id, user_id, status, credits_charged_at")
+        .eq("id", job_id)
+        .single();
+
+      if (jobError || !jobData) {
+        return jsonResponse({ error: "Generation job not found" }, 404);
+      }
+      if (jobData.user_id !== user.id) {
+        return jsonResponse({ error: "Forbidden" }, 403);
+      }
+      if (jobData.status === "completed") {
+        return jsonResponse({ error: "Generation job already completed" }, 409);
+      }
+      existingJob = jobData as GenerationJobRow;
+    }
+
+    if (!existingJob?.credits_charged_at) {
+      const { data: deductResult } = await supabase.rpc("deduct_credits", {
+        p_user_id: user.id,
+        p_amount: creditCost,
+        p_model_id: null,
+        p_resolution: options?.ratio || "1K",
+        p_tool_id: tool_slug,
+      });
+
+      const deductData = deductResult as DeductCreditsResult | null;
+      if (!deductData?.success) {
+        if (job_id) {
+          await supabase.from("generation_logs").update({
+            status: "failed",
+            error_message: deductData?.error || "Credit deduction failed",
+          }).eq("id", job_id);
+        }
+        return jsonResponse({ error: deductData?.error || "Credit deduction failed" }, 400);
+      }
+
+      chargedUserId = user.id;
+      chargedCredits = creditCost;
+
+      if (job_id) {
+        await supabase.from("generation_logs").update({
+          status: "generating",
+          credits_used: creditCost,
+          credits_charged_at: new Date().toISOString(),
+        }).eq("id", job_id);
+      }
+    } else {
+      await supabase.from("generation_logs").update({ status: "generating" }).eq("id", job_id);
+    }
+
     // Create tool_run record as "processing"
     const { data: runRecord } = await supabase.from("tool_runs").insert({
+      user_id: user.id,
       tool_id: tool.id,
       tool_slug: tool.slug,
       provider_name: tool.provider_name,
@@ -282,6 +366,7 @@ serve(async (req) => {
           status: "completed",
           image_url: outputUrl,
           credits_used: creditCost,
+          credits_charged_at: existingJob?.credits_charged_at || new Date().toISOString(),
           provider_cost: actualCost,
           revenue: revenue,
           revenue_usd: revenue,
@@ -308,6 +393,7 @@ serve(async (req) => {
 
     } catch (toolError) {
       const errorMsg = toolError instanceof Error ? toolError.message : "Unknown error";
+      await refundChargedCredits(supabase);
 
       if (runId) {
         await supabase.from("tool_runs").update({

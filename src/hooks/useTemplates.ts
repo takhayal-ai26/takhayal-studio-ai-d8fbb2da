@@ -5,6 +5,8 @@ import { useLanguage } from '@/i18n/LanguageContext';
 export interface FrontendTemplate {
   id: string;
   name: string;
+  titleEn: string;
+  titleAr: string;
   prompt: string;
   prompt_en: string;
   image: string;
@@ -12,6 +14,7 @@ export interface FrontendTemplate {
   ratio: string;
   featured: boolean;
   default_model_id: string | null;
+  updatedAt: string;
 }
 
 export interface TemplateCategory {
@@ -40,6 +43,8 @@ export function useTemplates() {
         setTemplates((tplRes.data as any[]).map(t => ({
           id: t.id,
           name: isAr && t.title_ar ? t.title_ar : t.title_en,
+          titleEn: t.title_en || '',
+          titleAr: t.title_ar || '',
           prompt: isAr && t.prompt_ar ? t.prompt_ar : (t.prompt || ''),
           prompt_en: t.prompt || '',
           image: t.cover_image_url || `https://picsum.photos/seed/tpl-${t.id}/600/400`,
@@ -47,6 +52,7 @@ export function useTemplates() {
           ratio: t.ratio || '1:1',
           featured: t.featured,
           default_model_id: t.default_model_id || null,
+          updatedAt: t.updated_at || t.created_at || new Date().toISOString(),
         })));
       }
 
@@ -63,7 +69,7 @@ export function useTemplates() {
     fetch();
   }, [lang, isAr]);
 
-  const othersNames = ['Others', 'أخرى'];
+  const othersNames = ['Others', 'Other', 'أخرى'];
   const sorted = [...categories].sort((a, b) => {
     const aIsOthers = othersNames.includes(a.name_en) || othersNames.includes(a.name);
     const bIsOthers = othersNames.includes(b.name_en) || othersNames.includes(b.name);
@@ -73,5 +79,5 @@ export function useTemplates() {
   });
   const categoryNames = ['All', ...sorted.map(c => c.name)];
 
-  return { templates, categories, categoryNames, loading };
+  return { templates, categories: sorted, categoryNames, loading };
 }

@@ -29,7 +29,7 @@ export function AppLayout() {
       <PromoBannerStrip />
       <TopNavbar bannerOffset={bannerVisible} />
       <AuthModal />
-      <div className="flex-1 min-h-0 pb-[72px] md:pb-0">
+      <div className="flex-1 min-h-0 pb-[calc(58px+env(safe-area-inset-bottom,0px))] md:pb-0">
         <Outlet />
       </div>
       <BottomNav />

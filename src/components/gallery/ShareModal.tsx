@@ -29,25 +29,26 @@ export function ShareModal({ job, open, onClose }: ShareModalProps) {
   const [showConfirm, setShowConfirm] = useState(false);
   const [submittingCommunity, setSubmittingCommunity] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const jobId = job?.id;
 
   useEffect(() => { setMounted(true); }, []);
 
   // Check if already submitted to community
   useEffect(() => {
-    if (!open || !job) return;
+    if (!open || !jobId) return;
     setCommunityStatus('none');
     setShowConfirm(false);
     (async () => {
       const { data } = await supabase
         .from('community_posts')
         .select('status')
-        .eq('source_generation_id', job.id)
+        .eq('source_generation_id', jobId)
         .limit(1);
       if (data && data.length > 0) {
         setCommunityStatus((data[0] as any).status as any);
       }
     })();
-  }, [open, job?.id]);
+  }, [open, jobId]);
 
   if (!mounted || !open || !job) return null;
 
@@ -215,7 +216,7 @@ export function ShareModal({ job, open, onClose }: ShareModalProps) {
 
   const modal = (
     <div className="fixed inset-0 z-[100] flex items-end md:items-center justify-center animate-fade-in" onClick={onClose}>
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+      <div className="absolute inset-0 bg-black/50" />
       <div
         dir={isRTL ? 'rtl' : 'ltr'}
         className="relative w-full max-w-md mx-auto bg-popover rounded-t-3xl md:rounded-2xl p-5 pb-8 md:pb-5 shadow-2xl animate-in slide-in-from-bottom-4 md:slide-in-from-bottom-0 md:zoom-in-95 duration-300"
@@ -228,13 +229,13 @@ export function ShareModal({ job, open, onClose }: ShareModalProps) {
               <h3 className="text-base font-semibold text-foreground">
                 {isRTL ? 'مشاركة في المجتمع؟' : 'Share to Community?'}
               </h3>
-              <button onClick={() => setShowConfirm(false)} className="w-8 h-8 rounded-full bg-muted/40 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+              <button onClick={() => setShowConfirm(false)} className="min-h-11 min-w-11 rounded-full bg-muted/40 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" aria-label={isRTL ? 'إغلاق التأكيد' : 'Close confirmation'}>
                 <X size={16} />
               </button>
             </div>
             {job.image_url && (
               <div className="rounded-xl overflow-hidden">
-                <img src={job.image_url} alt="" className="w-full h-40 object-cover" />
+                <img src={job.image_url} alt={job.prompt || (isRTL ? 'صورة للمشاركة' : 'Image to share')} className="w-full h-40 object-cover" />
               </div>
             )}
             <p className="text-sm text-muted-foreground leading-relaxed">
@@ -264,13 +265,13 @@ export function ShareModal({ job, open, onClose }: ShareModalProps) {
           <>
             <div className="flex items-center justify-between mb-5">
               <h3 className="text-base font-semibold text-foreground">{s.shareImage}</h3>
-              <button onClick={onClose} className="w-8 h-8 rounded-full bg-muted/40 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors">
+              <button onClick={onClose} className="min-h-11 min-w-11 rounded-full bg-muted/40 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors" aria-label={isRTL ? 'إغلاق المشاركة' : 'Close share dialog'}>
                 <X size={16} />
               </button>
             </div>
             {job.image_url && (
               <div className="mb-4 rounded-xl overflow-hidden">
-                <img src={job.image_url} alt="" className="w-full h-32 object-cover" />
+                <img src={job.image_url} alt={job.prompt || (isRTL ? 'صورة للمشاركة' : 'Image to share')} className="w-full h-32 object-cover" />
               </div>
             )}
             <div className="space-y-2">

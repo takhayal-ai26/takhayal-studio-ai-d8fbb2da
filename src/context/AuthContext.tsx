@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase, supabaseConfigMissing } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import type { User, Session } from '@supabase/supabase-js';
@@ -36,6 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const { toast } = useToast();
 
   const fetchProfile = useCallback(async (userId: string) => {
+    if (supabaseConfigMissing) return;
     const { data } = await supabase
       .from('profiles')
       .select('full_name, first_name, last_name, email, avatar_url, credits, plan, language, theme_preference, username, birthday, country')
@@ -51,7 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [user, fetchProfile]);
 
   const signOut = useCallback(async () => {
-    await supabase.auth.signOut();
+    if (!supabaseConfigMissing) {
+      await supabase.auth.signOut();
+    }
     setUser(null);
     setSession(null);
     setProfile(null);
@@ -60,6 +63,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [toast]);
 
   useEffect(() => {
+    if (supabaseConfigMissing) {
+      setLoading(false);
+      return;
+    }
+
     // Set up auth state listener FIRST
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, newSession) => {
@@ -100,7 +108,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   // Realtime subscription for credit balance updates
   useEffect(() => {
-    if (!user) return;
+    if (!user || supabaseConfigMissing) return;
     const channel = supabase
       .channel('profile-credits')
       .on(

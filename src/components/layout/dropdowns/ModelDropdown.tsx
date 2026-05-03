@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react';
 import { createPortal } from 'react-dom';
-import { Check } from 'lucide-react';
+import { Check, Cpu } from 'lucide-react';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { MobileBottomSheet } from './MobileBottomSheet';
@@ -19,18 +19,28 @@ interface Props {
 
 function ModelCard({ model, isActive, language, onSelect }: { model: ModelRecord; isActive: boolean; language: string; onSelect: (id: string) => void }) {
   const bestFor = language === 'ar' ? (model.best_for_ar || model.best_for) : model.best_for;
+  const tags = [model.provider_name, ...(model.supported_quality_tiers || []).slice(0, 3)].filter(Boolean);
   return (
     <button
       key={model.id}
       data-selected={isActive}
       onClick={(e) => { e.stopPropagation(); onSelect(model.id); }}
-      className={`w-full flex items-center gap-3 text-start rounded-2xl mx-4 mb-2 p-4 transition-all duration-200 ${
+      className={`w-full flex items-center gap-3 text-start rounded-2xl mx-4 mb-2 p-3 transition-all duration-200 ${
         isActive
           ? 'bg-primary/10 ring-1 ring-primary/25 shadow-[0_2px_12px_-2px] shadow-primary/15'
           : 'bg-foreground/[0.03] hover:bg-foreground/[0.06] active:scale-[0.98]'
       }`}
       style={{ width: 'calc(100% - 32px)' }}
     >
+      <div className="h-16 w-16 overflow-hidden rounded-xl bg-muted/30 flex-shrink-0">
+        {model.preview_image_url ? (
+          <img src={model.preview_image_url} alt="" className="h-full w-full object-cover" />
+        ) : (
+          <div className="flex h-full w-full items-center justify-center">
+            <Cpu size={20} className="text-muted-foreground/40" />
+          </div>
+        )}
+      </div>
       <div className="flex-1 min-w-0">
         <p className={`text-[15px] font-semibold leading-tight ${isActive ? 'text-primary' : 'text-foreground'}`}>
           {model.model_name}
@@ -38,6 +48,13 @@ function ModelCard({ model, isActive, language, onSelect }: { model: ModelRecord
         {bestFor && (
           <p className="text-[12px] mt-1 text-muted-foreground/70 line-clamp-2">{bestFor}</p>
         )}
+        <div className="mt-2 flex flex-wrap gap-1">
+          {tags.map(tag => (
+            <span key={tag} className="rounded-md bg-foreground/[0.05] px-1.5 py-0.5 text-[9px] font-semibold text-muted-foreground">
+              {tag}
+            </span>
+          ))}
+        </div>
       </div>
       {isActive && (
         <div className="w-6 h-6 rounded-full bg-primary flex items-center justify-center flex-shrink-0">
@@ -112,6 +129,15 @@ export function ModelDropdown({ models, selectedModelId, language, anchorRect, o
                       : 'hover:bg-muted/50'
                   }`}
                 >
+                  <div className="h-12 w-12 overflow-hidden rounded-xl bg-muted/30 flex-shrink-0">
+                    {m.preview_image_url ? (
+                      <img src={m.preview_image_url} alt="" className="h-full w-full object-cover" />
+                    ) : (
+                      <div className="flex h-full w-full items-center justify-center">
+                        <Cpu size={16} className="text-muted-foreground/40" />
+                      </div>
+                    )}
+                  </div>
                   <div className="flex-1 min-w-0">
                     <p className={`text-[14px] font-semibold leading-snug ${isActive ? 'text-primary' : 'text-foreground'}`}>{m.model_name}</p>
                     {bestFor && <p className="text-[12px] mt-0.5 text-muted-foreground/70 truncate">{bestFor}</p>}

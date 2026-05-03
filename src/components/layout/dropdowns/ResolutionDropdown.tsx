@@ -93,7 +93,7 @@ export function ResolutionDropdown({ tiers, selectedResolution, anchorRect, onSe
               <button
                 key={tierKey}
                 onClick={() => onSelect(tierKey)}
-                className="w-full text-left transition-colors duration-[120ms]"
+                className="w-full text-left transition-colors duration-150"
                 style={{
                   padding: '10px 14px', height: 44,
                   borderBottom: isLast ? 'none' : `1px solid var(--dropdown-divider)`,

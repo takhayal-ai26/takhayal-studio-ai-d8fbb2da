@@ -17,6 +17,7 @@ import { ExploreModels } from '@/components/home/ExploreModels';
 import { QuickActions } from '@/components/home/QuickActions';
 import { Footer } from '@/components/layout/Footer';
 import { PageSeo } from '@/components/seo/PageSeo';
+import { localizePath } from '@/lib/localized-routes';
 import heroPoster from '@/assets/landing/hero-video-poster-960.avif';
 
 const TestimonialsCarousel = lazy(() => import('@/components/home/TestimonialsCarousel').then(m => ({ default: m.TestimonialsCarousel })));
@@ -69,17 +70,25 @@ export default function PortalHome() {
     ...dbCategories.map(c => ({ key: c.name_en, label: c.name })),
   ];
 
+  const go = (path: string) => navigate(localizePath(path, lang));
+
   const goToTemplateDetail = (tplId: string) => {
-    navigate(`/templates/${tplId}`);
+    go(`/templates/${tplId}`);
   };
 
   const featuredTemplates = dbTemplates.filter(tpl => tpl.featured);
   const filteredTemplates = activeCategory === 'All'
     ? featuredTemplates
     : featuredTemplates.filter(tpl => tpl.category === activeCategory);
+  const toolOrder = ['generate', 'logo', 'upscale', 'remove-bg', 'restore', 'photo-restoration'];
+  const sortedTools = [...toolsData].sort((a, b) => {
+    const ai = toolOrder.findIndex(key => a.id === key);
+    const bi = toolOrder.findIndex(key => b.id === key);
+    return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
+  });
 
   return (
-    <div className="flex-1 overflow-y-auto animate-page-enter">
+    <div className="flex-1 overflow-y-auto animate-page-enter" data-home-surface>
       <PageSeo
         title={isAr ? 'تخيّل | استوديو ذكاء اصطناعي عربي أولاً' : 'Takhayal.ai | Arabic-first AI creative studio'}
         description={isAr
@@ -114,7 +123,7 @@ export default function PortalHome() {
                       <span className="text-primary font-light">{t.portal.createToday}</span>
                     </h2>
                     <p className="text-[13px] text-muted-foreground mt-4 leading-relaxed max-w-[240px]">{t.portal.toolsIntro}</p>
-                    <button onClick={() => navigate('/tools')} className="mt-6 inline-flex items-center gap-2 h-11 md:h-10 px-5 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:brightness-110 transition-all group">
+                    <button onClick={() => go('/tools')} className="mt-6 inline-flex items-center gap-2 h-11 md:h-10 px-5 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:brightness-110 transition-all group">
                       {t.portal.exploreAllTools}
                       <ArrowRight size={14} className={`group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
                     </button>
@@ -122,8 +131,8 @@ export default function PortalHome() {
                 </div>
                 <div className="flex-1 overflow-x-auto scrollbar-hide">
                   <div className="flex gap-3 p-4 lg:p-5 min-w-max">
-                    {toolsData.map(tool => (
-                      <button key={tool.id} onClick={() => navigate(tool.route)} className="group relative flex-shrink-0 w-[220px] md:w-[260px] aspect-[3/4] rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-black/20 transition-shadow duration-400">
+                    {sortedTools.map(tool => (
+                      <button key={tool.id} onClick={() => go(tool.route)} className="group relative flex-shrink-0 w-[220px] md:w-[260px] aspect-[3/4] rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-black/20 transition-shadow duration-300">
                         <img src={tool.image} alt={tool.name} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" width={260} height={347} />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                         <div className="absolute inset-0 bg-primary/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -135,7 +144,7 @@ export default function PortalHome() {
                       </button>
                     ))}
                     {/* Generate Video card */}
-                    <button onClick={() => navigate('/video')} className="group relative flex-shrink-0 w-[220px] md:w-[260px] aspect-[3/4] rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-black/20 transition-shadow duration-400">
+                    <button onClick={() => go('/video')} className="group relative flex-shrink-0 w-[220px] md:w-[260px] aspect-[3/4] rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-black/20 transition-shadow duration-300">
                       <img src={heroPoster} alt={isAr ? 'إنشاء فيديو' : 'Generate Video'} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" width={260} height={347} />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
                       <div className="absolute inset-0 bg-primary/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -163,7 +172,7 @@ export default function PortalHome() {
               <h2 className="typo-heading-section font-extrabold text-4xl">{t.portal.startFromPowerful}</h2>
               <p className="text-[13px] text-muted-foreground mt-1.5">{t.portal.readyMadePrompts}</p>
             </div>
-            <button onClick={() => navigate('/templates')} className="hidden md:flex items-center gap-1.5 text-[12px] text-primary font-medium hover:underline group">
+            <button onClick={() => go('/templates')} className="hidden md:flex items-center gap-1.5 text-[12px] text-primary font-medium hover:underline group">
               {t.portal.exploreAllTemplates} <ArrowRight size={12} className={`group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
             </button>
           </div>
@@ -190,10 +199,14 @@ export default function PortalHome() {
               </button>
             ))}
           </div>
+          <button onClick={() => go('/templates')} className="mt-4 flex md:hidden w-full h-11 items-center justify-center gap-2 rounded-xl bg-primary text-primary-foreground text-[13px] font-semibold">
+            {t.portal.exploreAllTemplates}
+            <ArrowRight size={14} className={isRTL ? 'rotate-180' : ''} />
+          </button>
 
           <div className="text-center mt-8">
             <p className="text-[13px] text-muted-foreground mb-3">{t.portal.needMoreInspiration}</p>
-            <button onClick={() => navigate('/templates')} className="h-11 md:h-10 px-6 rounded-full border border-border/30 text-foreground text-[13px] font-medium hover:border-primary/40 hover:text-primary transition-all group inline-flex items-center gap-2">
+            <button onClick={() => go('/templates')} className="h-11 md:h-10 px-6 rounded-full border border-border/30 text-foreground text-[13px] font-medium hover:border-primary/40 hover:text-primary transition-all group inline-flex items-center gap-2">
               {t.portal.exploreTemplates}
               <ArrowRight size={14} className={`group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
             </button>
@@ -211,37 +224,42 @@ export default function PortalHome() {
         )}
 
         {/* ── Community (both, but optional for logged-in) ── */}
-        {communityPosts.length > 0 && (
-          <section className="mt-6 mb-14">
+        <section className="mt-6 mb-14">
             <div className="flex items-end justify-between mb-5">
               <div>
                 <h2 className="typo-heading-section text-4xl">{t.portal.communityWorks}</h2>
                 <p className="text-[13px] text-muted-foreground mt-1">{t.portal.seeWhatCreators}</p>
               </div>
-              <button onClick={() => navigate('/community')} className="text-[12px] text-primary font-medium hover:underline flex items-center gap-1 group">
+              <button onClick={() => go('/community')} className="min-h-11 text-[12px] text-primary font-medium hover:underline flex items-center gap-1 group">
                 {t.portal.exploreCommunity} <ArrowRight size={12} className={`group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
               </button>
             </div>
-            <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
-              {communityPosts.map((item, i) => (
-                <button key={i} onClick={() => navigate('/community')} className="group relative w-full rounded-2xl overflow-hidden break-inside-avoid block hover:shadow-lg hover:shadow-black/10 transition-shadow duration-300">
-                  <img src={item.image_url} alt={item.prompt || ''} className="w-full object-cover" loading="lazy" decoding="async" width={400} height={500} />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <p className="text-[11px] text-white/80 line-clamp-1">{item.prompt}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
+            {communityPosts.length > 0 ? (
+              <div className="columns-2 md:columns-3 lg:columns-4 gap-3 space-y-3">
+                {communityPosts.map((item, i) => (
+                  <button key={i} onClick={() => go('/community')} className="group relative w-full rounded-2xl overflow-hidden break-inside-avoid block hover:shadow-lg hover:shadow-black/10 transition-shadow duration-300">
+                    <img src={item.image_url} alt={item.prompt || ''} className="w-full object-cover" loading="lazy" decoding="async" width={400} height={500} />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                    <div className="absolute bottom-0 left-0 right-0 p-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <p className="text-[11px] text-white/80 line-clamp-1">{item.prompt}</p>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <button onClick={() => go('/community')} className="w-full rounded-2xl border border-dashed border-border/40 bg-card/35 px-6 py-10 text-center hover:border-primary/40 transition-colors">
+                <span className="block text-base font-semibold text-foreground">{isAr ? 'اكتشف مجتمع تخيّل' : 'Explore the Takhayal community'}</span>
+                <span className="mt-2 block text-sm text-muted-foreground">{isAr ? 'شاهد أعمال المبدعين وشارك إلهامك.' : 'Browse creator work and share your own inspiration.'}</span>
+              </button>
+            )}
             <div className="text-center mt-8">
               <p className="text-[13px] text-muted-foreground mb-4">{t.portal.exploreMoreCommunity}</p>
-              <button onClick={() => navigate('/community')} className="h-11 md:h-10 px-6 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:brightness-110 transition-all group inline-flex items-center gap-2">
+              <button onClick={() => go('/community')} className="h-11 md:h-10 px-6 rounded-lg bg-primary text-primary-foreground text-[13px] font-medium hover:brightness-110 transition-all group inline-flex items-center gap-2">
                 {t.portal.goToCommunity}
                 <ArrowRight size={14} className={`group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
               </button>
             </div>
           </section>
-        )}
 
         {/* ═══ LOGGED-OUT: Pricing Preview ═══ */}
         {!isLoggedIn && (
