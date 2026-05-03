@@ -50,7 +50,6 @@ export default function VideoHowItWorks() {
             <img src="/video-cover.jpg" alt="" className="h-full w-full object-cover" />
             <div className="absolute inset-0 bg-gradient-to-t from-background/50 via-transparent to-primary/10" />
             <div className="absolute inset-2 rounded-lg border border-primary/40" />
-            <div className="absolute end-3 top-3 h-7 w-12 rounded-full border border-primary/35 bg-primary/15 backdrop-blur" />
           </div>
           <div className="flex aspect-[4/3] min-w-0 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-foreground/30 bg-background/35 px-3 text-center">
             <CloudUpload size={25} className="text-muted-foreground/75" />
@@ -132,8 +131,8 @@ export default function VideoHowItWorks() {
       </div>
 
       <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-[0_16px_48px_hsl(var(--shadow-color))] dark:bg-card/25">
-        <div className="absolute inset-y-0 start-0 w-52 bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.24),transparent_66%)]" />
-        <div className="relative grid items-center gap-5 px-6 py-5 lg:grid-cols-[132px_minmax(0,1fr)]">
+        <div className="absolute inset-y-0 start-0 w-48 bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.24),transparent_66%)]" />
+        <div className="relative grid items-center gap-5 px-6 py-5 lg:grid-cols-[92px_230px_minmax(0,1fr)]">
           <div className="flex items-center gap-4 lg:justify-center">
             <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary shadow-[0_0_42px_hsl(var(--primary)/0.24)]">
               <Lightbulb size={30} strokeWidth={1.8} />
@@ -143,25 +142,24 @@ export default function VideoHowItWorks() {
             </h4>
           </div>
 
-          <div className="min-w-0">
-            <h4 className="mb-4 hidden text-sm font-bold text-foreground lg:block">
-              {isAr ? 'نصائح لنتائج أفضل' : 'Pro tips for better results'}
-            </h4>
-            <div className="grid gap-4 lg:grid-cols-4">
-              {tips.map((tip, i) => (
-                <div
-                  key={i}
-                  className="flex min-w-0 items-center gap-3 rounded-xl border-border/60 py-1 lg:border-s lg:px-5 lg:first:border-s-0"
-                >
-                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-[0_0_22px_hsl(var(--primary)/0.13)]">
-                    {tip.icon}
-                  </span>
-                  <span className="text-[13px] font-medium leading-snug text-muted-foreground lg:max-w-[150px]">
-                    {tip.text}
-                  </span>
-                </div>
-              ))}
-            </div>
+          <h4 className="hidden text-sm font-bold text-foreground lg:block">
+            {isAr ? 'نصائح لنتائج أفضل' : 'Pro tips for better results'}
+          </h4>
+
+          <div className="grid min-w-0 gap-4 md:grid-cols-2 lg:grid-cols-4 lg:gap-0">
+            {tips.map((tip, i) => (
+              <div
+                key={i}
+                className="flex min-w-0 items-center gap-3 py-1 lg:border-s lg:border-border/70 lg:px-5 lg:first:border-s-0"
+              >
+                <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary shadow-[0_0_22px_hsl(var(--primary)/0.12)]">
+                  {tip.icon}
+                </span>
+                <span className="text-[13px] font-medium leading-snug text-muted-foreground">
+                  {tip.text}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
       </div>
