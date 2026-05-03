@@ -45,17 +45,15 @@ export default function VideoHowItWorks() {
   const renderPreview = (type: string) => {
     if (type === 'image') {
       return (
-        <div className="grid grid-cols-[1.1fr_0.9fr] gap-3">
-          <div className="relative min-h-[138px] overflow-hidden rounded-xl border border-primary/30 bg-[radial-gradient(circle_at_68%_24%,hsl(var(--primary)/0.24),transparent_34%),linear-gradient(135deg,hsl(var(--foreground)/0.14),hsl(var(--muted)/0.44))] shadow-inner">
-            <div className="absolute inset-x-0 bottom-0 h-16 bg-gradient-to-t from-background/70 to-transparent" />
-            <div className="absolute bottom-5 start-5 h-10 w-24 rounded-full bg-primary/55 blur-2xl" />
-            <div className="absolute bottom-7 start-8 h-8 w-24 rounded-[999px_999px_10px_10px] bg-foreground/75 shadow-[0_12px_34px_hsl(var(--primary)/0.18)]" />
-            <div className="absolute bottom-4 start-12 h-6 w-6 rounded-full border-4 border-background bg-foreground/80" />
-            <div className="absolute bottom-4 start-[7.5rem] h-6 w-6 rounded-full border-4 border-background bg-foreground/80" />
-            <div className="absolute end-3 top-3 h-6 w-10 rounded-full border border-primary/40 bg-primary/15" />
+        <div className="grid grid-cols-[1.15fr_0.85fr] gap-3">
+          <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-primary/35 bg-muted shadow-[0_18px_34px_hsl(var(--primary)/0.12)]">
+            <img src="/video-cover.jpg" alt="" className="h-full w-full object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-t from-background/50 via-transparent to-primary/10" />
+            <div className="absolute inset-2 rounded-lg border border-primary/40" />
+            <div className="absolute end-3 top-3 h-7 w-12 rounded-full border border-primary/35 bg-primary/15 backdrop-blur" />
           </div>
-          <div className="flex min-h-[138px] flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/80 bg-background/35 px-3 text-center">
-            <CloudUpload size={26} className="text-muted-foreground/70" />
+          <div className="flex aspect-[4/3] min-w-0 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-foreground/30 bg-background/35 px-3 text-center">
+            <CloudUpload size={25} className="text-muted-foreground/75" />
             <span className="text-[12px] font-semibold text-foreground">
               {isAr ? 'ارفع صورة' : 'Upload image'}
             </span>
@@ -69,8 +67,8 @@ export default function VideoHowItWorks() {
 
     if (type === 'prompt') {
       return (
-        <div className="rounded-xl border border-border/70 bg-background/35 p-4 shadow-inner">
-          <p className="min-h-[92px] text-[13px] leading-relaxed text-foreground/80">
+        <div className="rounded-xl border border-foreground/25 bg-background/35 p-4 shadow-inner">
+          <p className="min-h-[76px] text-[13px] leading-relaxed text-foreground/80">
             {isAr
               ? 'لقطة سينمائية بطائرة درون، الكاميرا تقترب ببطء، إضاءة ذهبية منخفضة، وغبار يتحرك في الهواء...'
               : 'Cinematic drone shot, camera pushes in from wide to close, low angle, golden hour lighting, dust particles in the air...'}
@@ -84,14 +82,12 @@ export default function VideoHowItWorks() {
     }
 
     return (
-      <div className="relative min-h-[148px] overflow-hidden rounded-xl border border-border/70 bg-[radial-gradient(circle_at_76%_20%,hsl(var(--primary)/0.24),transparent_34%),linear-gradient(135deg,hsl(var(--foreground)/0.12),hsl(var(--muted)/0.48))] shadow-inner">
-        <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-background/80 to-transparent" />
-        <div className="absolute bottom-9 start-14 h-8 w-28 rounded-[999px_999px_10px_10px] bg-foreground/75" />
-        <div className="absolute bottom-6 start-[4.5rem] h-6 w-6 rounded-full border-4 border-background bg-foreground/80" />
-        <div className="absolute bottom-6 start-[9.4rem] h-6 w-6 rounded-full border-4 border-background bg-foreground/80" />
+      <div className="relative aspect-video overflow-hidden rounded-xl border border-foreground/25 bg-muted shadow-[0_18px_34px_hsl(var(--primary)/0.12)]">
+        <img src="/video-cover.jpg" alt="" className="h-full w-full object-cover" />
+        <div className="absolute inset-0 bg-gradient-to-t from-background/75 via-background/5 to-primary/10" />
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-background/80 text-foreground shadow-lg backdrop-blur">
-            <Play size={18} fill="currentColor" />
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-background/80 text-foreground shadow-[0_12px_36px_rgba(0,0,0,0.35)] backdrop-blur">
+            <Play size={18} fill="currentColor" className="ms-0.5" />
           </span>
         </div>
         <div className="absolute bottom-4 start-4 end-4">
@@ -108,20 +104,20 @@ export default function VideoHowItWorks() {
   };
 
   return (
-    <div className="px-1 py-8 space-y-7">
+    <div className="px-1 py-8 space-y-6">
       <div className="relative grid grid-cols-1 gap-5 lg:grid-cols-3 xl:gap-6">
         {steps.map((step, i) => (
           <div
             key={i}
-            className="group relative overflow-hidden rounded-2xl border border-border/70 bg-card/75 p-5 shadow-[0_18px_44px_hsl(var(--shadow-color))] transition-all hover:-translate-y-0.5 hover:border-primary/20 dark:bg-card/30"
+            className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card/80 p-5 shadow-[0_18px_44px_hsl(var(--shadow-color))] transition-all hover:-translate-y-0.5 hover:border-primary/25 dark:bg-card/30"
           >
             <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/18 to-transparent" />
-            <div className="mb-5 flex items-start gap-4">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-base font-black text-primary shadow-[0_0_24px_hsl(var(--primary)/0.14)]">
+            <div className="mb-4 flex items-start gap-4">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-base font-black text-primary shadow-[0_0_28px_hsl(var(--primary)/0.18)]">
                 {i + 1}
               </span>
               <div className="min-w-0">
-                <h4 className="text-[15px] font-bold text-foreground">{step.title}</h4>
+                <h4 className="text-[16px] font-bold leading-tight text-foreground">{step.title}</h4>
                 <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">{step.desc}</p>
               </div>
             </div>
@@ -135,11 +131,11 @@ export default function VideoHowItWorks() {
         ))}
       </div>
 
-      <div className="relative overflow-hidden rounded-2xl border border-border/60 bg-card/45 dark:bg-card/25 shadow-[0_16px_48px_rgba(0,0,0,0.18)]">
-        <div className="absolute inset-y-0 start-0 w-44 bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.22),transparent_66%)]" />
-        <div className="relative grid items-center gap-5 px-5 py-5 lg:grid-cols-[116px_minmax(0,1fr)] xl:px-6">
-          <div className="flex items-center gap-4">
-            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary shadow-[0_0_38px_hsl(var(--primary)/0.22)]">
+      <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-[0_16px_48px_hsl(var(--shadow-color))] dark:bg-card/25">
+        <div className="absolute inset-y-0 start-0 w-52 bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.24),transparent_66%)]" />
+        <div className="relative grid items-center gap-5 px-6 py-5 lg:grid-cols-[132px_minmax(0,1fr)]">
+          <div className="flex items-center gap-4 lg:justify-center">
+            <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary shadow-[0_0_42px_hsl(var(--primary)/0.24)]">
               <Lightbulb size={30} strokeWidth={1.8} />
             </div>
             <h4 className="text-sm font-bold text-foreground lg:hidden">
@@ -151,16 +147,16 @@ export default function VideoHowItWorks() {
             <h4 className="mb-4 hidden text-sm font-bold text-foreground lg:block">
               {isAr ? 'نصائح لنتائج أفضل' : 'Pro tips for better results'}
             </h4>
-            <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-4 lg:grid-cols-4">
               {tips.map((tip, i) => (
                 <div
                   key={i}
-                  className="flex min-w-0 items-center gap-3 rounded-xl border-border/50 px-0 py-1 xl:border-s xl:px-5 xl:first:border-s-0"
+                  className="flex min-w-0 items-center gap-3 rounded-xl border-border/60 py-1 lg:border-s lg:px-5 lg:first:border-s-0"
                 >
-                  <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary shadow-[0_0_22px_hsl(var(--primary)/0.13)]">
                     {tip.icon}
                   </span>
-                  <span className="text-[13px] font-medium leading-snug text-muted-foreground">
+                  <span className="text-[13px] font-medium leading-snug text-muted-foreground lg:max-w-[150px]">
                     {tip.text}
                   </span>
                 </div>
