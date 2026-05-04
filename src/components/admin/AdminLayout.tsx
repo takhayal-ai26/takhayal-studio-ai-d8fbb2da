@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Palette, ShoppingCart, Layers,
-  BarChart3, Settings, ChevronLeft, ChevronRight, LogOut
+  BarChart3, Settings, ChevronLeft, ChevronRight, LogOut, CreditCard
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -12,6 +12,7 @@ const NAV_ITEMS = [
   { label: 'Dashboard', icon: LayoutDashboard, path: '/admin' },
   { label: 'Users', icon: Users, path: '/admin/users' },
   { label: 'Pricing', icon: ShoppingCart, path: '/admin/pricing' },
+  { label: 'Billing', icon: CreditCard, path: '/admin/billing' },
   { label: 'Models', icon: Palette, path: '/admin/models' },
   { label: 'Tools', icon: Layers, path: '/admin/tools' },
   { label: 'Templates', icon: Layers, path: '/admin/templates' },

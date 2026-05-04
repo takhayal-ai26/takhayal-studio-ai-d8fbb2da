@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Input } from '@/components/ui/input';
 import { Switch } from '@/components/ui/switch';
-import { Search, Plus, Edit, BarChart3, Eye, Zap, ArrowUpRight, Trash2, Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2, Image, Palette, Layers, Loader2 } from 'lucide-react';
+import { Search, Plus, Edit, BarChart3, Eye, Zap, ArrowUpRight, Trash2, Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2, Image, Palette, Layers, Film, Clapperboard, Loader2 } from 'lucide-react';
 import { useToolsDB, ToolRecord } from '@/hooks/useToolsDB';
 import { useToolProviders } from '@/hooks/useToolProviders';
 import AdminToolEditorDialog from '@/components/admin/AdminToolEditorDialog';
@@ -13,9 +13,10 @@ import { toast } from '@/hooks/use-toast';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import type { LucideIcon } from 'lucide-react';
+import { getToolMediaType } from '@/lib/tool-routing';
 
 const iconLookup: Record<string, LucideIcon> = {
-  Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2, Image, Palette, Layers,
+  Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2, Image, Palette, Layers, Film, Clapperboard,
 };
 
 export default function AdminTools({ embedded }: { embedded?: boolean } = {}) {
@@ -130,6 +131,7 @@ export default function AdminTools({ embedded }: { embedded?: boolean } = {}) {
           <TableHeader>
             <TableRow className="border-border/40 hover:bg-transparent">
               <TableHead className="text-[11px] uppercase text-muted-foreground">Tool</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Media</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Mode</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Arabic</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Credits</TableHead>
@@ -137,13 +139,14 @@ export default function AdminTools({ embedded }: { embedded?: boolean } = {}) {
               <TableHead className="text-[11px] uppercase text-muted-foreground">Default Model</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Runs</TableHead>
               <TableHead className="text-[11px] uppercase text-muted-foreground">Active</TableHead>
-              <TableHead className="text-[11px] uppercase text-muted-foreground">Featured</TableHead>
+              <TableHead className="text-[11px] uppercase text-muted-foreground">Home Section</TableHead>
               <TableHead className="w-20" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {filtered.map(tool => {
               const Icon = iconLookup[tool.icon_name] || Sparkles;
+              const mediaType = getToolMediaType(tool);
               return (
                 <TableRow key={tool.id} className="border-border/20 hover:bg-muted/20 cursor-pointer" onClick={() => openEdit(tool)}>
                   <TableCell>
@@ -156,8 +159,13 @@ export default function AdminTools({ embedded }: { embedded?: boolean } = {}) {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <Badge variant="outline" className={`text-[9px] ${tool.tool_mode === 'guided_image' ? 'border-primary/30 text-primary' : 'border-border/40 text-muted-foreground'}`}>
-                      {tool.tool_mode === 'guided_image' ? 'Guided' : 'Standard'}
+                    <Badge variant="outline" className={`text-[9px] ${mediaType === 'video' ? 'border-amber-500/30 text-amber-500' : 'border-primary/30 text-primary'}`}>
+                      {mediaType === 'video' ? 'Video' : 'Image'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={`text-[9px] ${tool.tool_mode === 'guided_image' || tool.tool_mode === 'video' ? 'border-primary/30 text-primary' : 'border-border/40 text-muted-foreground'}`}>
+                      {tool.tool_mode === 'guided_image' ? 'Guided' : tool.tool_mode === 'video' ? 'Video' : 'Standard'}
                     </Badge>
                   </TableCell>
                   <TableCell>
@@ -169,6 +177,9 @@ export default function AdminTools({ embedded }: { embedded?: boolean } = {}) {
                   </TableCell>
                   <TableCell>
                     <span className="text-[12px] text-muted-foreground">{getDefaultProviderName(tool.id)}</span>
+                  </TableCell>
+                  <TableCell>
+                    <span className="text-[12px] text-muted-foreground">{getToolRunCount(tool.slug).toLocaleString()}</span>
                   </TableCell>
                   <TableCell onClick={e => e.stopPropagation()}>
                     <Switch checked={tool.active} onCheckedChange={() => handleToggleActive(tool)} className="scale-75" />
@@ -189,7 +200,7 @@ export default function AdminTools({ embedded }: { embedded?: boolean } = {}) {
             })}
             {filtered.length === 0 && (
               <TableRow>
-                <TableCell colSpan={10} className="text-center text-sm text-muted-foreground py-8">
+                <TableCell colSpan={11} className="text-center text-sm text-muted-foreground py-8">
                   No tools found
                 </TableCell>
               </TableRow>

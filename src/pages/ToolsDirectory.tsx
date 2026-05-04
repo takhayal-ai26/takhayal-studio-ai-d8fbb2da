@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom';
+import { useEffect } from 'react';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { ArrowRight, ArrowLeft } from 'lucide-react';
 import { useToolsDB } from '@/hooks/useToolsDB';
@@ -6,26 +7,41 @@ import { useApp } from '@/context/AppContext';
 import { cn } from '@/lib/utils';
 import { PageSeo, absoluteUrl } from '@/components/seo/PageSeo';
 import { localizePath } from '@/lib/localized-routes';
+import { filterToolsByMedia, getToolRoute, type ToolMediaType } from '@/lib/tool-routing';
 
-export default function ToolsDirectory() {
+interface ToolsDirectoryProps {
+  mediaType?: ToolMediaType;
+}
+
+export default function ToolsDirectory({ mediaType = 'image' }: ToolsDirectoryProps = {}) {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const { t, isRTL, lang } = useLanguage();
   const { tools } = useToolsDB();
   const { setActivePage } = useApp();
 
-  const filtered = [...tools].sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
-  const seoTitle = t.toolsDir.findNewWays;
+  const isVideo = mediaType === 'video';
+  const filtered = filterToolsByMedia(tools, mediaType).sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
+  const seoTitle = isVideo ? (isRTL ? 'أدوات الفيديو' : 'Video tools') : t.toolsDir.findNewWays;
   const seoDescription = isRTL
-    ? 'استكشف أدوات تخيّل للصور والفيديو والتصميم والتحرير بالذكاء الاصطناعي.'
-    : 'Explore Takhayal AI tools for image generation, editing, video creation, and creative workflows.';
+    ? (isVideo ? 'استكشف أدوات تخيّل لإنشاء الفيديو بالذكاء الاصطناعي.' : 'استكشف أدوات تخيّل للصور والتصميم والتحرير بالذكاء الاصطناعي.')
+    : (isVideo ? 'Explore Takhayal AI video tools for text-to-video and image-to-video creation.' : 'Explore Takhayal AI image tools for generation, editing, and creative workflows.');
+
+  useEffect(() => {
+    if (!isVideo || searchParams.size === 0) return;
+    const hasGeneratorIntent = ['modelId', 'model', 'imageUrl', 'sourceJobId'].some(key => searchParams.has(key));
+    if (!hasGeneratorIntent) return;
+    navigate(`${localizePath('/video/generate-video', lang)}?${searchParams.toString()}`, { replace: true });
+  }, [isVideo, lang, navigate, searchParams]);
+
   const toolSchema = {
     '@context': 'https://schema.org',
     '@type': 'ItemList',
     name: seoTitle,
-    itemListElement: tools.slice(0, 12).map((tool, index) => ({
+    itemListElement: filtered.slice(0, 12).map((tool, index) => ({
       '@type': 'ListItem',
       position: index + 1,
-      url: absoluteUrl(localizePath(tool.route, lang)),
+      url: absoluteUrl(localizePath(getToolRoute(tool), lang)),
       name: tool.name,
       description: tool.shortDesc,
     })),
@@ -36,7 +52,7 @@ export default function ToolsDirectory() {
       <PageSeo
         title={`${seoTitle} | Takhayal.ai`}
         description={seoDescription}
-        canonicalPath="/tools"
+        canonicalPath={isVideo ? '/video' : '/tools'}
         pageType="CollectionPage"
         schemas={[toolSchema]}
       />
@@ -50,7 +66,9 @@ export default function ToolsDirectory() {
       <section className="max-w-6xl mx-auto px-5 md:px-8 pb-16">
         {filtered.length === 0 ? (
           <div className="py-20 text-center">
-            <p className="text-muted-foreground/50 text-[14px]">{t.toolsDir.noToolsMatch}</p>
+            <p className="text-muted-foreground/50 text-[14px]">
+              {isVideo ? (isRTL ? 'لا توجد أدوات فيديو نشطة حالياً' : 'No active video tools yet') : t.toolsDir.noToolsMatch}
+            </p>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -62,11 +80,11 @@ export default function ToolsDirectory() {
                 <button
                   key={tool.id}
                   onClick={() => {
-                    if (tool.slug === 'generate') {
+                    if (!isVideo && tool.slug === 'generate') {
                       setActivePage('canvas');
                       navigate(localizePath('/tools/generate', lang));
                     } else {
-                      navigate(localizePath(`/tools/${tool.slug}`, lang));
+                      navigate(localizePath(getToolRoute(tool), lang));
                     }
                   }}
                   aria-label={tool.name}

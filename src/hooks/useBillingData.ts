@@ -168,7 +168,10 @@ export function useSavePlan() {
       }
       return planId;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['pricing-plans'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['pricing-plans'] });
+      qc.invalidateQueries({ queryKey: ['pricing-plans-preview'] });
+    },
   });
 }
 
@@ -179,7 +182,10 @@ export function useDeletePlan() {
       const { error } = await supabase.from('pricing_plans' as any).delete().eq('id', id);
       if (error) throw error;
     },
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['pricing-plans'] }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['pricing-plans'] });
+      qc.invalidateQueries({ queryKey: ['pricing-plans-preview'] });
+    },
   });
 }
 

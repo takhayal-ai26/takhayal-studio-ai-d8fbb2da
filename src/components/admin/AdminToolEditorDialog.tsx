@@ -16,6 +16,8 @@ import { useToolProviders, ToolProvider } from '@/hooks/useToolProviders';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { useModels } from '@/hooks/useModels';
+import { useVideoModels } from '@/hooks/useVideoModels';
+import type { ToolMediaType } from '@/lib/tool-routing';
 
 interface Props {
   open: boolean;
@@ -23,7 +25,7 @@ interface Props {
   tool: ToolRecord | null;
 }
 
-const ICON_OPTIONS = ['Sparkles', 'ArrowUpCircle', 'Hexagon', 'Scissors', 'Wand2', 'Image', 'Palette', 'Layers'];
+const ICON_OPTIONS = ['Sparkles', 'ArrowUpCircle', 'Hexagon', 'Scissors', 'Wand2', 'Image', 'Palette', 'Layers', 'Film', 'Clapperboard'];
 const ACCEPTED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
 const MAX_SIZE = 10 * 1024 * 1024;
 const TIER_COLORS: Record<string, string> = {
@@ -35,19 +37,30 @@ const TIER_COLORS: Record<string, string> = {
 
 function emptyTool(): Partial<ToolRecord> {
   return {
-    slug: '', route: '/tools/', input_type: 'upload', icon_name: 'Sparkles',
+    slug: '', route: '/tools/', input_type: 'upload', media_type: 'image', icon_name: 'Sparkles',
     active: true, featured: false, title_en: '', title_ar: '',
     description_en: '', description_ar: '', short_desc_en: '', short_desc_ar: '',
     hero_title_en: '', hero_title_ar: '', hero_subtitle_en: '', hero_subtitle_ar: '',
     cover_image_url: '', provider_name: 'fal.ai', provider_endpoint: '',
     default_credit_cost: 2, internal_provider_cost_estimate: 0, result_type: 'image', sort_order: 0,
-    tool_mode: 'standard', selected_model_id: null,
+    tool_mode: 'standard', selected_model_id: null, selected_video_model_id: null,
     default_prompt_en: '', default_prompt_ar: '',
     cta_label_en: 'Generate', cta_label_ar: 'إنشاء',
     upload_label_en: 'Upload Image', upload_label_ar: 'رفع صورة',
     upload_helper_en: 'JPG, PNG up to 10MB', upload_helper_ar: 'JPG، PNG حتى 10 ميغابايت',
     requires_upload: false, auto_run: false, prompt_hidden: false,
   };
+}
+
+function defaultRouteFor(mediaType: ToolMediaType, slug?: string) {
+  const cleanSlug = slug?.trim();
+  if (!cleanSlug) return mediaType === 'video' ? '/video/' : '/tools/';
+  return mediaType === 'video' ? `/video/${cleanSlug}` : `/tools/${cleanSlug}`;
+}
+
+function shouldRefreshRoute(route?: string) {
+  if (!route) return true;
+  return route === '/tools/' || route === '/video/' || route.startsWith('/tools/') || route.startsWith('/video/');
 }
 
 // ── Provider Card ──
@@ -308,6 +321,7 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
   const { updateTool, addTool } = useToolsDB();
   const { providers, updateProvider, deleteProvider, setDefault } = useToolProviders(tool?.id);
   const { activeModels } = useModels();
+  const { models: videoModels } = useVideoModels(true);
   const isEdit = !!tool;
 
   useEffect(() => {
@@ -319,6 +333,29 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
   }, [open, tool]);
 
   const set = (key: keyof ToolRecord, value: any) => setForm(p => ({ ...p, [key]: value }));
+  const mediaType = (form.media_type || 'image') as ToolMediaType;
+
+  const setMediaType = (value: ToolMediaType) => {
+    setForm(p => ({
+      ...p,
+      media_type: value,
+      result_type: value === 'video' ? 'video' : (p.result_type === 'video' ? 'image' : p.result_type),
+      tool_mode: value === 'video' ? 'video' : (p.tool_mode === 'video' ? 'standard' : p.tool_mode),
+      input_type: value === 'video' ? 'prompt' : p.input_type,
+      icon_name: value === 'video' && p.icon_name === 'Sparkles' ? 'Film' : p.icon_name,
+      route: shouldRefreshRoute(p.route) ? defaultRouteFor(value, p.slug) : p.route,
+      selected_model_id: value === 'video' ? null : p.selected_model_id,
+      selected_video_model_id: value === 'image' ? null : p.selected_video_model_id,
+    }));
+  };
+
+  const setSlug = (slug: string) => {
+    setForm(p => ({
+      ...p,
+      slug,
+      route: shouldRefreshRoute(p.route) ? defaultRouteFor((p.media_type || 'image') as ToolMediaType, slug) : p.route,
+    }));
+  };
 
   const missingArabic = ['title_ar', 'description_ar', 'short_desc_ar', 'hero_title_ar', 'hero_subtitle_ar']
     .filter(k => !form[k as keyof ToolRecord]);
@@ -350,16 +387,30 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
 
   const handleSave = async () => {
     if (!form.title_en?.trim()) { toast({ title: 'Validation', description: 'English title is required', variant: 'destructive' }); return; }
+    if (!form.slug?.trim()) { toast({ title: 'Validation', description: 'Slug is required', variant: 'destructive' }); return; }
     setSaving(true);
     try {
+      const normalizedMediaType = (form.media_type || 'image') as ToolMediaType;
+      const normalizedForm = {
+        ...form,
+        slug: form.slug.trim(),
+        media_type: normalizedMediaType,
+        result_type: normalizedMediaType === 'video' ? 'video' : (form.result_type || 'image'),
+        tool_mode: normalizedMediaType === 'video' ? 'video' : (form.tool_mode || 'standard'),
+        route: form.route?.trim() && !['/tools/', '/video/'].includes(form.route.trim())
+          ? form.route.trim()
+          : defaultRouteFor(normalizedMediaType, form.slug),
+        selected_model_id: normalizedMediaType === 'video' ? null : form.selected_model_id,
+        selected_video_model_id: normalizedMediaType === 'image' ? null : form.selected_video_model_id,
+      };
       if (isEdit && tool) {
-        const { id, created_at, updated_at, ...updates } = form as ToolRecord;
+        const { id, created_at, updated_at, ...updates } = normalizedForm as ToolRecord;
         await updateTool.mutateAsync({ id: tool.id, updates });
       } else {
-        await addTool.mutateAsync(form);
+        await addTool.mutateAsync(normalizedForm);
       }
       onOpenChange(false);
-      toast({ title: isEdit ? 'Tool updated' : 'Tool added', description: `"${form.title_en}" saved.` });
+      toast({ title: isEdit ? 'Tool updated' : 'Tool added', description: `"${normalizedForm.title_en}" saved.` });
     } catch (e) {
       toast({ title: 'Error', description: e instanceof Error ? e.message : 'Save failed', variant: 'destructive' });
     }
@@ -476,17 +527,54 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
             <TabsContent value="guided" className="space-y-4 pb-4">
               <div className="space-y-1.5">
                 <Label className="text-xs">Tool Mode</Label>
-                <Select value={form.tool_mode || 'standard'} onValueChange={v => set('tool_mode', v)}>
+                <Select value={mediaType === 'video' ? 'video' : (form.tool_mode || 'standard')} onValueChange={v => set('tool_mode', v)}>
                   <SelectTrigger className="h-9 text-xs bg-muted/30 border-border/40"><SelectValue /></SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="standard">Standard (existing behavior)</SelectItem>
-                    <SelectItem value="guided_image">Guided Image (upload → generate)</SelectItem>
+                    {mediaType === 'video' ? (
+                      <SelectItem value="video">Video Tool (opens video generator)</SelectItem>
+                    ) : (
+                      <>
+                        <SelectItem value="standard">Standard (existing behavior)</SelectItem>
+                        <SelectItem value="guided_image">Guided Image (upload → generate)</SelectItem>
+                      </>
+                    )}
                   </SelectContent>
                 </Select>
-                <p className="text-[10px] text-muted-foreground">Guided tools use a hidden prompt + admin-selected model</p>
+                <p className="text-[10px] text-muted-foreground">
+                  {mediaType === 'video' ? 'Video tools can preselect a video model and optional hidden prompt' : 'Guided tools use a hidden prompt + admin-selected model'}
+                </p>
               </div>
 
-              {form.tool_mode === 'guided_image' && (
+              {mediaType === 'video' ? (
+                <>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs">Default Video Model</Label>
+                    <Select value={form.selected_video_model_id || ''} onValueChange={v => set('selected_video_model_id', v || null)}>
+                      <SelectTrigger className="h-9 text-xs bg-muted/30 border-border/40"><SelectValue placeholder="Use first active video model..." /></SelectTrigger>
+                      <SelectContent>
+                        {videoModels.map(m => (
+                          <SelectItem key={m.id} value={m.id}>{m.display_name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <p className="text-[10px] text-muted-foreground">Leave empty to use the first active model on the video page</p>
+                  </div>
+
+                  <BiField label="Default Prompt" enKey="default_prompt_en" arKey="default_prompt_ar" textarea />
+                  <BiField label="CTA Button Label" enKey="cta_label_en" arKey="cta_label_ar" />
+                  <BiField label="Upload Label" enKey="upload_label_en" arKey="upload_label_ar" />
+                  <BiField label="Upload Helper Text" enKey="upload_helper_en" arKey="upload_helper_ar" />
+
+                  <div className="flex items-center justify-between py-2 border-t border-border/20">
+                    <div><Label className="text-xs">Requires Start Image</Label><p className="text-[10px] text-muted-foreground">User must upload an image before generating</p></div>
+                    <Switch checked={form.requires_upload ?? false} onCheckedChange={v => set('requires_upload', v)} />
+                  </div>
+                  <div className="flex items-center justify-between py-2 border-t border-border/20">
+                    <div><Label className="text-xs">Hide Prompt</Label><p className="text-[10px] text-muted-foreground">Use only the admin prompt on this video tool</p></div>
+                    <Switch checked={form.prompt_hidden ?? false} onCheckedChange={v => set('prompt_hidden', v)} />
+                  </div>
+                </>
+              ) : form.tool_mode === 'guided_image' && (
                 <>
                   <div className="space-y-1.5">
                     <Label className="text-xs">AI Model</Label>
@@ -533,8 +621,18 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
 
             {/* Settings Tab */}
             <TabsContent value="settings" className="space-y-4 pb-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs">Media Type</Label>
+                <Select value={mediaType} onValueChange={v => setMediaType(v as ToolMediaType)}>
+                  <SelectTrigger className="h-9 text-xs bg-muted/30 border-border/40"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="image">Image Tool</SelectItem>
+                    <SelectItem value="video">Video Tool</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
               <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1.5"><Label className="text-xs">Slug</Label><Input value={form.slug || ''} onChange={e => set('slug', e.target.value)} className="h-9 text-xs bg-muted/30 border-border/40 font-mono" /></div>
+                <div className="space-y-1.5"><Label className="text-xs">Slug</Label><Input value={form.slug || ''} onChange={e => setSlug(e.target.value)} className="h-9 text-xs bg-muted/30 border-border/40 font-mono" /></div>
                 <div className="space-y-1.5"><Label className="text-xs">Route</Label><Input value={form.route || ''} onChange={e => set('route', e.target.value)} className="h-9 text-xs bg-muted/30 border-border/40 font-mono" /></div>
               </div>
               <div className="grid grid-cols-2 gap-4">
@@ -559,7 +657,7 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
                   <Label className="text-xs">Result Type</Label>
                   <Select value={form.result_type || 'image'} onValueChange={v => set('result_type', v)}>
                     <SelectTrigger className="h-9 text-xs bg-muted/30 border-border/40"><SelectValue /></SelectTrigger>
-                    <SelectContent><SelectItem value="image">Image</SelectItem><SelectItem value="images">Multiple Images</SelectItem><SelectItem value="file">File</SelectItem></SelectContent>
+                    <SelectContent><SelectItem value="image">Image</SelectItem><SelectItem value="images">Multiple Images</SelectItem><SelectItem value="video">Video</SelectItem><SelectItem value="file">File</SelectItem></SelectContent>
                   </Select>
                 </div>
               </div>
@@ -568,42 +666,56 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
                 <Switch checked={form.active ?? true} onCheckedChange={v => set('active', v)} />
               </div>
               <div className="flex items-center justify-between py-2 border-t border-border/20">
-                <div><Label className="text-xs">Featured</Label><p className="text-[10px] text-muted-foreground">Show on homepage</p></div>
+                <div>
+                  <Label className="text-xs">Show in “What will you create today?”</Label>
+                  <p className="text-[10px] text-muted-foreground">Controls the homepage tools carousel</p>
+                </div>
                 <Switch checked={form.featured ?? false} onCheckedChange={v => set('featured', v)} />
               </div>
             </TabsContent>
 
             {/* Providers Tab */}
             <TabsContent value="provider" className="space-y-4 pb-4">
-              <div className="flex items-center justify-between">
-                <p className="text-xs font-semibold text-muted-foreground">AI Providers for this tool</p>
-                {isEdit && !showAddProvider && (
-                  <Button variant="outline" size="sm" className="text-xs h-7 gap-1" onClick={() => setShowAddProvider(true)}>
-                    <Plus size={12} /> Add Provider
-                  </Button>
-                )}
-              </div>
-
-              {showAddProvider && tool && (
-                <AddProviderForm toolId={tool.id} onDone={() => setShowAddProvider(false)} />
-              )}
-
-              {isEdit ? (
-                providers.length > 0 ? (
-                  <div className="space-y-3">
-                    {providers.map(p => (
-                      <ProviderCard key={p.id} provider={p} onUpdate={handleProviderUpdate} onDelete={handleProviderDelete} onSetDefault={handleSetDefault} />
-                    ))}
-                  </div>
-                ) : (
-                  <div className="text-center py-8 text-sm text-muted-foreground">No providers configured. Add one above.</div>
-                )
+              {mediaType === 'video' ? (
+                <div className="rounded-xl border border-border/30 bg-muted/10 p-4">
+                  <p className="text-xs font-semibold">Video model connection</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">
+                    Video tools use the selected video model. Manage video provider endpoints, durations, ratios, and credits in the Video Models tab.
+                  </p>
+                </div>
               ) : (
-                <div className="text-center py-8 text-sm text-muted-foreground">Save the tool first, then add providers.</div>
+                <>
+                  <div className="flex items-center justify-between">
+                    <p className="text-xs font-semibold text-muted-foreground">AI Providers for this tool</p>
+                    {isEdit && !showAddProvider && (
+                      <Button variant="outline" size="sm" className="text-xs h-7 gap-1" onClick={() => setShowAddProvider(true)}>
+                        <Plus size={12} /> Add Provider
+                      </Button>
+                    )}
+                  </div>
+
+                  {showAddProvider && tool && (
+                    <AddProviderForm toolId={tool.id} onDone={() => setShowAddProvider(false)} />
+                  )}
+
+                  {isEdit ? (
+                    providers.length > 0 ? (
+                      <div className="space-y-3">
+                        {providers.map(p => (
+                          <ProviderCard key={p.id} provider={p} onUpdate={handleProviderUpdate} onDelete={handleProviderDelete} onSetDefault={handleSetDefault} />
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-center py-8 text-sm text-muted-foreground">No providers configured. Add one above.</div>
+                    )
+                  ) : (
+                    <div className="text-center py-8 text-sm text-muted-foreground">Save the tool first, then add providers.</div>
+                  )}
+                </>
               )}
 
               {/* Legacy single provider fields */}
-              {isEdit && (
+              {isEdit && mediaType !== 'video' && (
                 <div className="border-t border-border/20 pt-4 mt-4">
                   <p className="text-[10px] text-muted-foreground mb-2">Legacy fallback (used if no providers configured)</p>
                   <div className="grid grid-cols-2 gap-3">

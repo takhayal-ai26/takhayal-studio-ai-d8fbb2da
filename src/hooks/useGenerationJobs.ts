@@ -427,6 +427,7 @@ export function useGenerationJobs() {
     creditCost: number;
     imageUrl?: string;
     endFrameUrl?: string;
+    referenceImageUrls?: string[];
     generateAudio?: boolean;
   }) => {
     if (!user) return null;
@@ -444,7 +445,8 @@ export function useGenerationJobs() {
         model_id: params.modelId,
         media_type: 'video',
         duration: params.duration,
-        source_mode: params.imageUrl ? 'image-to-video' : 'text-to-video',
+        source_mode: params.imageUrl || (params.referenceImageUrls?.length ?? 0) > 0 ? 'image-to-video' : 'text-to-video',
+        input_image_urls: params.referenceImageUrls || [],
       })
       .select('id')
       .single();
@@ -472,7 +474,8 @@ export function useGenerationJobs() {
       video_url: null,
       thumbnail_url: null,
       duration: params.duration,
-      source_mode: params.imageUrl ? 'image-to-video' : 'text-to-video',
+      source_mode: params.imageUrl || (params.referenceImageUrls?.length ?? 0) > 0 ? 'image-to-video' : 'text-to-video',
+      input_image_urls: params.referenceImageUrls || [],
     }, ...prev]);
 
     // Fire generation
@@ -487,6 +490,7 @@ export function useGenerationJobs() {
           job_id: jobId,
           image_url: params.imageUrl,
           end_frame_url: params.endFrameUrl,
+          reference_image_urls: params.referenceImageUrls || [],
           generate_audio: params.generateAudio ?? false,
         },
       });

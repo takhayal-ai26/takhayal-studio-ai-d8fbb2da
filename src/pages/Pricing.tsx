@@ -9,10 +9,13 @@ import {
 } from '@/components/ui/accordion';
 import {
   usePricingPlans, useCreditPackages, usePricingFaqs,
+  usePricingPageContent,
 } from '@/hooks/useBillingData';
+import { useModels } from '@/hooks/useModels';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { PageSeo, absoluteUrl } from '@/components/seo/PageSeo';
+import { CmsContentBlocks } from '@/components/cms/CmsContentBlocks';
 
 // Credit cost data for the tool table
 const CREDIT_COST_DATA = [
@@ -409,6 +412,8 @@ const Pricing = () => {
   const { data: plans = [] } = usePricingPlans();
   const { data: packages = [] } = useCreditPackages();
   const { data: dbFaqs = [] } = usePricingFaqs();
+  const { data: pageContent = [] } = usePricingPageContent();
+  const { activeModels } = useModels();
 
   const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
   const [selectedPlanPill, setSelectedPlanPill] = useState('creator');
@@ -419,6 +424,11 @@ const Pricing = () => {
 
   const activePlans = plans.filter((p: any) => p.active).sort((a: any, b: any) => a.sort_order - b.sort_order);
   const activePackages = packages.filter((p: any) => p.active).sort((a: any, b: any) => a.sort_order - b.sort_order);
+  const pageText = useCallback((section: string, field: string, fallback: string) => {
+    const item = pageContent.find((content: any) => content.active !== false && content.section_key === section && content.field_key === field);
+    if (!item) return fallback;
+    return (isAr ? item.value_ar || item.value_en : item.value_en || item.value_ar) || fallback;
+  }, [isAr, pageContent]);
 
   // Use DB FAQs if available, otherwise fallback
   const faqs = dbFaqs.length > 0 ? dbFaqs.filter((f: any) => f.active) : FAQ_DATA.map((f, i) => ({ id: `faq-${i}`, question_en: f.q_en, question_ar: f.q_ar, answer_en: f.a_en, answer_ar: f.a_ar }));
@@ -427,6 +437,17 @@ const Pricing = () => {
     ? 'خطط وأسعار تخيّل مع أرصدة واضحة، شحن إضافي، وأسئلة شائعة للمبدعين والفرق في الخليج.'
     : 'Explore Takhayal pricing plans, credit top-ups, and FAQs for creators and teams building with AI in the Gulf.';
   const selectedPlanCredits = activePlans.find((p: any) => p.slug === selectedPlanPill)?.credits_monthly || 5000;
+  const creditCostData = activeModels.length > 0
+    ? activeModels
+        .filter((model: any) => model.is_active && model.media_type === 'image' && model.credits_per_generation)
+        .map((model: any) => ({
+          model: model.model_name,
+          options: [{
+            label: model.default_resolution || model.max_resolution || model.supported_quality_tiers?.[0] || 'Default',
+            credits: model.credits_per_generation,
+          }],
+        }))
+    : CREDIT_COST_DATA;
 
   const slugOrder = ['free', 'starter', 'creator', 'studio'];
 
@@ -494,9 +515,9 @@ const Pricing = () => {
       {!isAuthenticated && !authLoading && (
         <div className="bg-primary text-primary-foreground text-center py-3 px-4">
           <p className="text-sm font-medium">
-            {isAr ? 'سجل مجاناً واحصل على 15 رصيداً فوراً — لا حاجة لبطاقة' : 'Sign up free and get 15 credits instantly — no card required'}
+            {pageText('banner', 'signup_text', isAr ? 'سجل مجاناً واحصل على 15 رصيداً فوراً — لا حاجة لبطاقة' : 'Sign up free and get 15 credits instantly — no card required')}
             <button onClick={() => openAuthModal('signup')} className="ml-3 min-h-11 px-4 py-2 rounded-full bg-white text-primary text-xs font-semibold hover:bg-white/90 transition-colors">
-              {isAr ? 'ابدأ مجاناً' : 'Get started free'}
+              {pageText('banner', 'signup_cta', isAr ? 'ابدأ مجاناً' : 'Get started free')}
             </button>
           </p>
         </div>
@@ -505,22 +526,23 @@ const Pricing = () => {
       {/* Hero */}
       <section className="pt-20 pb-10 px-6 text-center">
         <h1 className="typo-display-hero">
-          {isAr ? 'أسعار بسيطة وشفافة' : 'Simple, transparent pricing'}
+          {pageText('hero', 'title', isAr ? 'أسعار بسيطة وشفافة' : 'Simple, transparent pricing')}
         </h1>
         <p className="text-[16px] text-muted-foreground mt-4 max-w-md mx-auto font-light">
-          {isAr ? 'ابدأ مجاناً. قم بالترقية عندما تكون جاهزاً.' : 'Start free. Upgrade when you\'re ready.'}
+          {pageText('hero', 'subtitle', isAr ? 'ابدأ مجاناً. قم بالترقية عندما تكون جاهزاً.' : 'Start free. Upgrade when you\'re ready.')}
         </p>
       </section>
+      <CmsContentBlocks location="pricing" className="pb-10" />
 
       {/* Billing toggle */}
       <div className="flex justify-center mb-10">
         <div className="flex p-1 rounded-full bg-muted">
           <button onClick={() => setBilling('monthly')} className={`min-h-11 px-6 py-2.5 rounded-full text-[13px] font-medium transition-all ${billing === 'monthly' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-            {isAr ? 'شهري' : 'Monthly'}
+            {pageText('billing_toggle', 'monthly', isAr ? 'شهري' : 'Monthly')}
           </button>
           <button onClick={() => setBilling('annual')} className={`min-h-11 px-6 py-2.5 rounded-full text-[13px] font-medium transition-all flex items-center gap-2 ${billing === 'annual' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
-            {isAr ? 'سنوي' : 'Annual'}
-            <span className="text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full">{isAr ? 'وفر 20%' : 'Save 20%'}</span>
+            {pageText('billing_toggle', 'annual', isAr ? 'سنوي' : 'Annual')}
+            <span className="text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full">{pageText('billing_toggle', 'annual_badge', isAr ? 'وفر 20%' : 'Save 20%')}</span>
           </button>
         </div>
       </div>
@@ -545,8 +567,8 @@ const Pricing = () => {
       {/* Credit Cost Per Tool */}
       <section className="max-w-5xl mx-auto px-6 pb-20">
         <div className="text-center mb-8">
-          <h2 className="typo-heading-section">{isAr ? 'تكلفة الرصيد لكل أداة' : 'Credit cost per tool'}</h2>
-          <p className="text-sm text-muted-foreground mt-2">{isAr ? 'شاهد إلى أي مدى تصل أرصدتك' : 'See exactly how far your credits go'}</p>
+          <h2 className="typo-heading-section">{pageText('credit_costs', 'title', isAr ? 'تكلفة الرصيد لكل أداة' : 'Credit cost per tool')}</h2>
+          <p className="text-sm text-muted-foreground mt-2">{pageText('credit_costs', 'subtitle', isAr ? 'شاهد إلى أي مدى تصل أرصدتك' : 'See exactly how far your credits go')}</p>
         </div>
 
         {/* Plan pills */}
@@ -569,24 +591,24 @@ const Pricing = () => {
         {/* Credit cost table */}
         <div className="bg-card/72 rounded-2xl overflow-hidden border border-border/40">
           <div className="grid grid-cols-4 text-[11px] uppercase tracking-wider text-muted-foreground font-medium px-6 py-4 bg-muted/20">
-            <span>{isAr ? 'النموذج' : 'Model'}</span>
-            <span>{isAr ? 'الخيار' : 'Option'}</span>
-            <span>{isAr ? 'التكلفة' : 'Cost'}</span>
-            <span className="text-right">~{isAr ? 'الصور' : 'Images'}</span>
+            <span>{pageText('credit_costs', 'model_label', isAr ? 'النموذج' : 'Model')}</span>
+            <span>{pageText('credit_costs', 'option_label', isAr ? 'الخيار' : 'Option')}</span>
+            <span>{pageText('credit_costs', 'cost_label', isAr ? 'التكلفة' : 'Cost')}</span>
+            <span className="text-right">~{pageText('credit_costs', 'images_label', isAr ? 'الصور' : 'Images')}</span>
           </div>
-          {CREDIT_COST_DATA.map((model, mi) => (
+          {creditCostData.map((model, mi) => (
             <div key={model.model}>
               {model.options.map((opt, oi) => (
                 <div key={opt.label} className={`grid grid-cols-4 px-6 py-3.5 hover:bg-muted/10 transition-colors text-sm ${oi > 0 ? 'bg-muted/[0.03]' : ''}`}>
                   <span className={oi === 0 ? 'font-medium text-foreground' : 'text-transparent select-none'}>
                     {model.model}
                   </span>
-                  <span className="text-muted-foreground">{opt.label} resolution</span>
-                  <span className="text-foreground">{opt.credits} {isAr ? 'أرصدة' : 'credits'}</span>
-                  <span className="text-right text-primary font-medium">~{Math.floor(selectedPlanCredits / opt.credits).toLocaleString()} {isAr ? 'صورة' : 'images'}</span>
+                  <span className="text-muted-foreground">{opt.label} {pageText('credit_costs', 'resolution_label', isAr ? 'دقة' : 'resolution')}</span>
+                  <span className="text-foreground">{opt.credits} {pageText('credit_costs', 'credits_label', isAr ? 'أرصدة' : 'credits')}</span>
+                  <span className="text-right text-primary font-medium">~{Math.floor(selectedPlanCredits / opt.credits).toLocaleString()} {pageText('credit_costs', 'image_unit', isAr ? 'صورة' : 'images')}</span>
                 </div>
               ))}
-              {mi < CREDIT_COST_DATA.length - 1 && <div className="h-px bg-gradient-to-r from-transparent via-muted-foreground/[0.06] to-transparent mx-4" />}
+              {mi < creditCostData.length - 1 && <div className="h-px bg-gradient-to-r from-transparent via-muted-foreground/[0.06] to-transparent mx-4" />}
             </div>
           ))}
         </div>
@@ -595,8 +617,8 @@ const Pricing = () => {
       {/* Top-Up Packages */}
       <section className="max-w-5xl mx-auto px-6 pb-20">
         <div className="text-center mb-8">
-          <h2 className="typo-heading-section">{isAr ? 'اشحن في أي وقت' : 'Top up anytime'}</h2>
-          <p className="text-sm text-muted-foreground mt-2">{isAr ? 'اختر باقة تناسب وتيرة الصور والفيديو لديك.' : 'Choose a package that matches your image and video pace.'}</p>
+          <h2 className="typo-heading-section">{pageText('topups', 'title', isAr ? 'اشحن في أي وقت' : 'Top up anytime')}</h2>
+          <p className="text-sm text-muted-foreground mt-2">{pageText('topups', 'subtitle', isAr ? 'اختر باقة تناسب وتيرة الصور والفيديو لديك.' : 'Choose a package that matches your image and video pace.')}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -612,10 +634,10 @@ const Pricing = () => {
                 )}
                 <p className="text-sm font-medium text-foreground mt-1">{name}</p>
                 <p className="text-[32px] font-extralight text-foreground mt-2">{pkg.credits.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">{isAr ? 'أرصدة' : 'credits'}</p>
+                <p className="text-xs text-muted-foreground">{pageText('topups', 'credits_label', isAr ? 'أرصدة' : 'credits')}</p>
                 {pkg.bonus_credits > 0 && (
                   <span className="mt-2 px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary">
-                    +{pkg.bonus_credits} {isAr ? 'مكافأة' : 'bonus'}
+                    +{pkg.bonus_credits} {pageText('topups', 'bonus_label', isAr ? 'مكافأة' : 'bonus')}
                   </span>
                 )}
                 <p className="text-lg font-medium text-foreground mt-3">{fmt(pkg.price)}</p>
@@ -634,7 +656,7 @@ const Pricing = () => {
                       : 'bg-muted/50 text-foreground hover:bg-muted'
                   }`}
                 >
-                  {isAr ? 'شراء أرصدة' : 'Buy Credits'}
+                  {pageText('topups', 'buy_cta', isAr ? 'شراء أرصدة' : 'Buy Credits')}
                 </button>
               </div>
             );
@@ -645,7 +667,7 @@ const Pricing = () => {
       {/* FAQ */}
       <section className="max-w-2xl mx-auto px-6 pb-20">
         <div className="text-center mb-8">
-          <h2 className="typo-heading-section">{isAr ? 'أسئلة شائعة' : 'Common questions'}</h2>
+          <h2 className="typo-heading-section">{pageText('faq', 'title', isAr ? 'أسئلة شائعة' : 'Common questions')}</h2>
         </div>
         <Accordion type="single" collapsible className="space-y-2">
           {faqs.map((faq: any, i: number) => (
@@ -664,10 +686,10 @@ const Pricing = () => {
       {/* Legal */}
       <section className="max-w-2xl mx-auto px-6 pb-16 text-center">
         <p className="text-[12px] text-muted-foreground">
-          {isAr ? 'بالاشتراك أنت توافق على ' : 'By subscribing you agree to our '}
-          <a href="/terms" className="inline-flex min-h-11 items-center hover:text-foreground transition-colors">{isAr ? 'الشروط والأحكام' : 'Terms & Conditions'}</a>
-          {isAr ? ' و' : ' and '}
-          <a href="/privacy" className="inline-flex min-h-11 items-center hover:text-foreground transition-colors">{isAr ? 'سياسة الخصوصية' : 'Privacy Policy'}</a>
+          {pageText('legal', 'prefix', isAr ? 'بالاشتراك أنت توافق على ' : 'By subscribing you agree to our ')}
+          <a href="/terms" className="inline-flex min-h-11 items-center hover:text-foreground transition-colors">{pageText('legal', 'terms', isAr ? 'الشروط والأحكام' : 'Terms & Conditions')}</a>
+          {pageText('legal', 'joiner', isAr ? ' و' : ' and ')}
+          <a href="/privacy" className="inline-flex min-h-11 items-center hover:text-foreground transition-colors">{pageText('legal', 'privacy', isAr ? 'سياسة الخصوصية' : 'Privacy Policy')}</a>
         </p>
       </section>
     </div>

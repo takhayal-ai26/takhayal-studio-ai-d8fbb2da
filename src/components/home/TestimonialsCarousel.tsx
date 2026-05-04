@@ -4,8 +4,9 @@ import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 
 export function TestimonialsCarousel() {
-  const { lang, isRTL } = useLanguage();
+  const { lang, isRTL, t: copyRoot } = useLanguage();
   const isAr = lang === 'ar';
+  const copy = copyRoot.homeSections;
   const [activeIdx, setActiveIdx] = useState(0);
 
   const { data: testimonials = [] } = useQuery({
@@ -40,10 +41,10 @@ export function TestimonialsCarousel() {
   return (
     <section className="my-12 md:my-16" dir={isRTL ? 'rtl' : 'ltr'}>
       <h2 className="typo-heading-section text-center mb-2">
-        {isAr ? 'موثوق من قبل المبدعين في الخليج' : 'Trusted by creators across the GCC'}
+        {copy.testimonialsTitle}
       </h2>
       <p className="text-[13px] text-muted-foreground text-center mb-8">
-        {isAr ? 'اكتشف ما يقوله مستخدمونا' : 'See what our users are saying'}
+        {copy.testimonialsSubtitle}
       </p>
 
       <div className="flex justify-center">

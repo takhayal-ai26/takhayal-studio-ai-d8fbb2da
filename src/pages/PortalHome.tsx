@@ -17,8 +17,8 @@ import { ExploreModels } from '@/components/home/ExploreModels';
 import { QuickActions } from '@/components/home/QuickActions';
 import { Footer } from '@/components/layout/Footer';
 import { PageSeo } from '@/components/seo/PageSeo';
+import { CmsContentBlocks } from '@/components/cms/CmsContentBlocks';
 import { localizePath } from '@/lib/localized-routes';
-import heroPoster from '@/assets/landing/hero-video-poster-960.avif';
 
 const TestimonialsCarousel = lazy(() => import('@/components/home/TestimonialsCarousel').then(m => ({ default: m.TestimonialsCarousel })));
 const PricingPreview = lazy(() => import('@/components/home/PricingPreview').then(m => ({ default: m.PricingPreview })));
@@ -36,7 +36,7 @@ export default function PortalHome() {
   const { t, isRTL, lang } = useLanguage();
   const { user } = useAuth();
   const isAr = lang === 'ar';
-  const { tools: toolsData } = useTools();
+  const { tools: toolsData, featuredTools } = useTools();
   const { templates: dbTemplates, categories: dbCategories } = useTemplates();
   const [activeCategory, setActiveCategory] = useState('All');
   const isLoggedIn = !!user;
@@ -80,8 +80,8 @@ export default function PortalHome() {
   const filteredTemplates = activeCategory === 'All'
     ? featuredTemplates
     : featuredTemplates.filter(tpl => tpl.category === activeCategory);
-  const toolOrder = ['generate', 'logo', 'upscale', 'remove-bg', 'restore', 'photo-restoration'];
-  const sortedTools = [...toolsData].sort((a, b) => {
+  const toolOrder = ['generate', 'logo', 'upscale', 'remove-bg', 'restore', 'photo-restoration', 'generate-video', 'motion-control', 'video-upscale'];
+  const sortedTools = toolsData.filter(tool => featuredTools.includes(tool.id)).sort((a, b) => {
     const ai = toolOrder.findIndex(key => a.id === key);
     const bi = toolOrder.findIndex(key => b.id === key);
     return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
@@ -101,6 +101,7 @@ export default function PortalHome() {
 
       {/* ── Cinematic Video Hero ── */}
       <DashboardHero />
+      <CmsContentBlocks location="home" className="mt-6" />
 
       <div className="max-w-7xl mx-auto px-5 md:px-8">
 
@@ -143,17 +144,6 @@ export default function PortalHome() {
                         </div>
                       </button>
                     ))}
-                    {/* Generate Video card */}
-                    <button onClick={() => go('/video')} className="group relative flex-shrink-0 w-[220px] md:w-[260px] aspect-[3/4] rounded-2xl overflow-hidden hover:shadow-xl hover:shadow-black/20 transition-shadow duration-300">
-                      <img src={heroPoster} alt={isAr ? 'إنشاء فيديو' : 'Generate Video'} className="absolute inset-0 w-full h-full object-cover" loading="lazy" decoding="async" width={260} height={347} />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-black/20 to-transparent" />
-                      <div className="absolute inset-0 bg-primary/[0.06] opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-                      <div className="absolute bottom-0 left-0 right-0 p-4">
-                        <span className="text-white block font-extrabold text-xl">{isAr ? 'إنشاء فيديو' : 'Generate Video'}</span>
-                        <span className="text-[11px] text-white/50 mt-0.5 block">{isAr ? 'أنشئ فيديوهات من نص أو صورة' : 'Generate videos from text or image'}</span>
-                        <ArrowRight size={13} className={`text-primary mt-2 opacity-0 group-hover:opacity-100 group-hover:translate-x-1 transition-all duration-300 ${isRTL ? 'rotate-180' : ''}`} />
-                      </div>
-                    </button>
                   </div>
                 </div>
               </div>
@@ -248,8 +238,8 @@ export default function PortalHome() {
               </div>
             ) : (
               <button onClick={() => go('/community')} className="w-full rounded-2xl border border-dashed border-border/40 bg-card/35 px-6 py-10 text-center hover:border-primary/40 transition-colors">
-                <span className="block text-base font-semibold text-foreground">{isAr ? 'اكتشف مجتمع تخيّل' : 'Explore the Takhayal community'}</span>
-                <span className="mt-2 block text-sm text-muted-foreground">{isAr ? 'شاهد أعمال المبدعين وشارك إلهامك.' : 'Browse creator work and share your own inspiration.'}</span>
+                <span className="block text-base font-semibold text-foreground">{t.portal.exploreCommunityTitle}</span>
+                <span className="mt-2 block text-sm text-muted-foreground">{t.portal.exploreCommunityDesc}</span>
               </button>
             )}
             <div className="text-center mt-8">

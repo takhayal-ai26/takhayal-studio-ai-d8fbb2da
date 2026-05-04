@@ -178,7 +178,7 @@ export function ImageDetailDrawer({ job, open, onClose, onRetry, onReuse, onShar
                   {isAr ? 'مشاركة' : 'Share'}
                 </button>
                 <button
-                  onClick={(e) => { e.stopPropagation(); navigateWithImage('/video'); }}
+                  onClick={(e) => { e.stopPropagation(); navigateWithImage('/video/generate-video'); }}
                   className="h-11 rounded-xl bg-muted/30 text-foreground text-[13px] font-semibold flex items-center justify-center gap-2 hover:bg-muted/50 transition-all cursor-pointer"
                 >
                   <Film size={14} />

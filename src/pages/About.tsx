@@ -37,78 +37,62 @@ function Reveal({ children, className = '', delay = 0 }: { children: React.React
 
 export default function About() {
   const navigate = useNavigate();
-  const { lang, isRTL } = useLanguage();
-  const isAr = lang === 'ar';
+  const { isRTL, t } = useLanguage();
+  const copy = t.about;
 
   const stats = [
-    { value: '14+', label: isAr ? 'نموذج ذكاء اصطناعي' : 'AI Models', icon: Layers },
-    { value: '2', label: isAr ? 'لغات مدعومة' : 'Languages', icon: Globe2 },
-    { value: 'GCC', label: isAr ? 'صُمم للمنطقة' : 'Built for Region', icon: MapPin },
-    { value: '∞', label: isAr ? 'إمكانيات إبداعية' : 'Creative Possibilities', icon: Sparkles },
+    { value: copy.statsModelsValue, label: copy.statsModelsLabel, icon: Layers },
+    { value: copy.statsLanguagesValue, label: copy.statsLanguagesLabel, icon: Globe2 },
+    { value: copy.statsRegionValue, label: copy.statsRegionLabel, icon: MapPin },
+    { value: copy.statsCreativeValue, label: copy.statsCreativeLabel, icon: Sparkles },
   ];
 
   const values = [
     {
       icon: CheckCircle2,
-      title: isAr ? 'عربي أولاً بالتصميم' : 'Arabic-first by design',
-      desc: isAr
-        ? 'ليست فكرة لاحقة. كل أمر وقالب وسير عمل مبني مع المبدعين العرب في الاعتبار منذ اليوم الأول.'
-        : 'Not an afterthought. Every prompt, template, and workflow is built with Arabic creators in mind from day one.',
+      title: copy.valueArabicTitle,
+      desc: copy.valueArabicDesc,
     },
     {
       icon: Paintbrush,
-      title: isAr ? 'واعٍ ثقافياً' : 'Culturally aware',
-      desc: isAr
-        ? 'من حملات رمضان إلى محتوى اليوم الوطني، أدواتنا تفهم ثقافة الخليج، وليس فقط لغة الخليج.'
-        : 'From Ramadan campaigns to national day content, our tools understand Gulf culture, not just Gulf language.',
+      title: copy.valueCultureTitle,
+      desc: copy.valueCultureDesc,
     },
     {
       icon: Star,
-      title: isAr ? 'جودة بلا تنازل' : 'Quality without compromise',
-      desc: isAr
-        ? 'نوجّه كل عملية توليد عبر أفضل نموذج ذكاء اصطناعي متاح للمهمة — لتكون مخرجاتك دائماً الأفضل.'
-        : 'We route every generation through the best available AI model for the task — so your output is always the best it can be.',
+      title: copy.valueQualityTitle,
+      desc: copy.valueQualityDesc,
     },
     {
       icon: Clock,
-      title: isAr ? 'سريع وصادق' : 'Fast and honest',
-      desc: isAr
-        ? 'لا تكاليف مخفية. ترى بالضبط تكلفة التوليد قبل الإنشاء — والنتائج تصل في ثوانٍ.'
-        : 'No hidden costs. You see exactly what a generation costs before you create it — results arrive in seconds.',
+      title: copy.valueSpeedTitle,
+      desc: copy.valueSpeedDesc,
     },
   ];
 
   const timeline = [
     {
       icon: Target,
-      title: isAr ? 'الإحباط' : 'The Frustration',
-      desc: isAr
-        ? 'أقوى أدوات الذكاء الاصطناعي الإبداعية في العالم لم تُبنَ لنا. كانت تفتقر إلى دعم الأوامر العربية وتتجاهل جماليات الخليج.'
-        : 'The most powerful AI creative tools in the world were not built for us. They lacked Arabic prompt support and ignored Gulf aesthetics.',
+      title: copy.timelineFrustrationTitle,
+      desc: copy.timelineFrustrationDesc,
     },
     {
       icon: Zap,
-      title: isAr ? 'الحل' : 'The Solution',
-      desc: isAr
-        ? 'بنينا تخيّل — استوديو يتحدث لغتك ويفهم مناسباتك ويقدم نفس الجودة التي يأخذها المبدعون العالميون كأمر مسلّم.'
-        : 'We built Takhayal — a studio that speaks your language, understands your occasions, and delivers the same quality global creators take for granted.',
+      title: copy.timelineSolutionTitle,
+      desc: copy.timelineSolutionDesc,
     },
     {
       icon: Globe2,
-      title: isAr ? 'الآن' : 'Today',
-      desc: isAr
-        ? 'نحن فريق صغير ومركّز مقره الكويت، نخدم المبدعين في الكويت والسعودية ودول الخليج — وقد بدأنا للتو.'
-        : 'We are a small, focused team based in Kuwait, serving creators across Kuwait, Saudi Arabia, and the wider GCC — and we are just getting started.',
+      title: copy.timelineTodayTitle,
+      desc: copy.timelineTodayDesc,
     },
   ];
 
   return (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden" dir={isRTL ? 'rtl' : 'ltr'}>
       <PageSeo
-        title={isAr ? 'من نحن | تخيّل' : 'About | Takhayal.ai'}
-        description={isAr
-          ? 'تعرّف على قصة تخيّل ورسالتها لبناء استوديو ذكاء اصطناعي عربي أولاً للمبدعين في الخليج.'
-          : 'Learn about Takhayal, the Arabic-first AI creative studio built for creators and brands across the Gulf.'}
+        title={copy.seoTitle}
+        description={copy.seoDescription}
         canonicalPath="/about"
         pageType="AboutPage"
       />
@@ -132,7 +116,7 @@ export default function About() {
             className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full border border-border/40 text-[13px] text-muted-foreground hover:text-foreground hover:border-border/80 hover:bg-card/50 transition-all duration-300"
           >
             <ArrowLeft size={14} className={isRTL ? 'rotate-180' : ''} />
-            {isAr ? 'رجوع' : 'Back'}
+            {copy.back}
           </button>
           <Logo size="small" />
         </div>
@@ -140,19 +124,17 @@ export default function About() {
         {/* Hero content */}
         <span className="relative inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-primary/[0.12] border border-primary/30 text-primary text-[13px] font-medium mb-8 animate-fade-in">
           <Sparkles size={14} />
-          {isAr ? 'من نحن' : 'ABOUT US'}
+          {copy.badge}
         </span>
         <h1 className="relative typo-display-hero max-w-[800px] animate-fade-in" style={{ animationDelay: '100ms' }}>
-          {isAr ? 'صُمم لمبدعي' : 'Built for the'}{' '}
+          {copy.heroTitlePrefix}{' '}
           <br className="hidden md:block" />
           <span className="text-primary font-light">
-            {isAr ? 'الخليج' : 'Gulf creator.'}
+            {copy.heroTitleHighlight}
           </span>
         </h1>
         <p className="relative text-base md:text-lg font-light text-muted-foreground mt-6 max-w-xl animate-fade-in leading-relaxed" style={{ animationDelay: '200ms' }}>
-          {isAr
-            ? 'تخيّل هو استوديو الذكاء الاصطناعي العربي أولاً الذي يحوّل رؤيتك الإبداعية إلى صور ومقاطع فيديو احترافية في ثوانٍ.'
-            : 'Takhayal is the Arabic-first AI creative studio transforming your vision into professional images and videos in seconds.'}
+          {copy.heroSubtitle}
         </p>
       </section>
 
@@ -185,16 +167,14 @@ export default function About() {
           <div className="max-w-4xl mx-auto pt-8">
             <div className="text-center mb-12">
               <span className="text-[11px] font-medium text-primary uppercase tracking-[0.2em] mb-4 block">
-                {isAr ? 'مهمتنا' : 'OUR MISSION'}
+                {copy.missionLabel}
               </span>
             </div>
             <div className="relative">
               <div className={`absolute top-0 bottom-0 ${isRTL ? 'right-0' : 'left-0'} w-[3px] rounded-full bg-gradient-to-b from-primary via-primary/60 to-primary/20`} />
               <blockquote className={`${isRTL ? 'pr-8 md:pr-12' : 'pl-8 md:pl-12'}`}>
                 <p className="text-xl md:text-3xl font-light leading-[1.5] text-foreground">
-                  {isAr
-                    ? 'وضع الذكاء الاصطناعي الإبداعي العالمي في أيدي كل مبدع ومصمم وعلامة تجارية ناطقة بالعربية في الخليج.'
-                    : 'To put world-class creative AI in the hands of every Arabic-speaking creator, designer, and brand in the Gulf.'}
+                  {copy.missionText}
                 </p>
               </blockquote>
             </div>
@@ -209,10 +189,10 @@ export default function About() {
           <div className="max-w-5xl mx-auto pt-8">
             <div className="text-center mb-14">
               <span className="text-[11px] font-medium text-primary uppercase tracking-[0.2em] mb-4 block">
-                {isAr ? 'ما نؤمن به' : 'WHAT WE STAND FOR'}
+                {copy.valuesLabel}
               </span>
               <h2 className="typo-heading-section">
-                {isAr ? 'قيمنا الأساسية' : 'Our Core Values'}
+                {copy.valuesTitle}
               </h2>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -242,10 +222,10 @@ export default function About() {
           <div className="max-w-4xl mx-auto pt-8">
             <div className="text-center mb-14">
               <span className="text-[11px] font-medium text-primary uppercase tracking-[0.2em] mb-4 block">
-                {isAr ? 'قصتنا' : 'OUR STORY'}
+                {copy.storyLabel}
               </span>
               <h2 className="typo-heading-section">
-                {isAr ? 'كيف بدأنا' : 'How it started'}
+                {copy.storyTitle}
               </h2>
             </div>
 
@@ -266,7 +246,7 @@ export default function About() {
                       {/* Content */}
                       <div className="pt-1">
                         <span className="text-[11px] font-semibold text-primary/70 uppercase tracking-[0.15em] mb-2 block">
-                          {isAr ? `الفصل ${i + 1}` : `Chapter ${i + 1}`}
+                          {copy.chapter} {i + 1}
                         </span>
                         <h3 className="text-lg font-medium text-foreground mb-2">{item.title}</h3>
                         <p className="text-[14px] text-muted-foreground leading-[1.8]">{item.desc}</p>
@@ -287,7 +267,7 @@ export default function About() {
           <div className="max-w-4xl mx-auto pt-8">
             <div className="text-center mb-10">
               <span className="text-[11px] font-medium text-primary uppercase tracking-[0.2em] mb-4 block">
-                {isAr ? 'أين نحن' : 'WHERE WE ARE'}
+                {copy.locationLabel}
               </span>
             </div>
             <div className="bg-card/50 border border-border/40 rounded-2xl p-6 md:p-8 flex items-start gap-4">
@@ -296,12 +276,10 @@ export default function About() {
               </div>
               <div>
                 <h3 className="text-base font-medium text-foreground mb-1">
-                  {isAr ? 'الكويت' : 'Kuwait'}
+                  {copy.locationTitle}
                 </h3>
                 <p className="text-[14px] text-muted-foreground leading-relaxed">
-                  {isAr
-                    ? 'المقر الرئيسي وفريق التأسيس. نخدم المبدعين في الكويت والسعودية ودول الخليج.'
-                    : 'Headquarters and founding team. Serving creators across Kuwait, Saudi Arabia, and the wider GCC.'}
+                  {copy.locationDesc}
                 </p>
               </div>
             </div>
@@ -320,18 +298,16 @@ export default function About() {
             <div className="relative">
               <Sparkles size={22} className="text-primary mx-auto mb-6 opacity-45" />
               <h2 className="typo-heading-section mb-4">
-                {isAr ? 'مستعد لإنشاء شيء مذهل؟' : 'Ready to create something?'}
+                {copy.ctaTitle}
               </h2>
               <p className="text-muted-foreground mb-10 text-base max-w-md mx-auto">
-                {isAr
-                  ? 'انضم إلى المبدعين في الخليج الذين يستخدمون تخيّل كل يوم.'
-                  : 'Join creators across the Gulf using Takhayal every day.'}
+                {copy.ctaSubtitle}
               </p>
               <button
                 onClick={() => navigate('/home')}
                 className="group h-14 px-10 rounded-full bg-primary text-primary-foreground text-base font-medium transition-all duration-300 hover:brightness-95 hover:-translate-y-0.5"
               >
-                {isAr ? 'ابدأ الإنشاء مجاناً' : 'Start creating free'}
+                {copy.ctaButton}
                 <ArrowRight size={16} className={`inline ${isRTL ? 'mr-2 rotate-180' : 'ml-2'} group-hover:translate-x-1 transition-transform`} />
               </button>
             </div>

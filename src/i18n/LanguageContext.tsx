@@ -47,6 +47,7 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   });
 
   const overrides = useTranslationOverridesStore((s) => s.overrides);
+  const loadRemoteOverrides = useTranslationOverridesStore((s) => s.loadRemoteOverrides);
 
   const setLang = useCallback((newLang: Language) => {
     // Dispatch event BEFORE state change so consumers can close modals first
@@ -60,6 +61,12 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const isRTL = lang === 'ar';
+
+  useEffect(() => {
+    loadRemoteOverrides().catch((error) => {
+      console.warn('Failed to load translation overrides', error);
+    });
+  }, [loadRemoteOverrides]);
 
   const t = useMemo(() => {
     const langOverrides = overrides[lang] || {};

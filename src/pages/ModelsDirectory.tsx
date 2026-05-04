@@ -20,7 +20,7 @@ function ModelCard({ guide, isAr, lang }: { guide: any; isAr: boolean; lang: 'ar
   const openDetails = () => navigate(localizePath(`/models/${guide.slug}`, lang));
   const startCreating = () => {
     const target = isVideo
-      ? `/video?modelId=${encodeURIComponent(guide.linked_model_id || guide.slug)}`
+      ? `/video/generate-video?modelId=${encodeURIComponent(guide.linked_model_id || guide.slug)}`
       : `/studio${guide.linked_model_id ? `?modelId=${encodeURIComponent(guide.linked_model_id)}` : ''}`;
     navigate(localizePath(target, lang));
   };

@@ -53,6 +53,7 @@ const AdminContentMerged = lazy(() => import("./pages/admin/AdminContentMerged")
 const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
 const AdminSettingsMerged = lazy(() => import("./pages/admin/AdminSettingsMerged"));
 const AdminCommunity = lazy(() => import("./pages/admin/AdminCommunity"));
+const AdminBilling = lazy(() => import("./pages/admin/AdminBilling"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -90,7 +91,7 @@ function LanguageUrlSync() {
 
 const RoutedApp = () => {
   const { lang } = useLanguage();
-  const toLocalized = (path: string) => <Navigate to={localizePath(path, lang)} replace />;
+  const toLocalized = (path: string) => <Navigate to={`${localizePath(path, lang)}${location.search}`} replace />;
 
   return (
     <AppThemeProvider>
@@ -111,8 +112,11 @@ const RoutedApp = () => {
             <Route path="/en/image" element={<ToolsDirectory />} />
             <Route path="/ar/image" element={<ToolsDirectory />} />
             <Route path="/video" element={toLocalized('/video')} />
-            <Route path="/en/video" element={<Suspense fallback={<StudioSkeleton />}><Video /></Suspense>} />
-            <Route path="/ar/video" element={<Suspense fallback={<StudioSkeleton />}><Video /></Suspense>} />
+            <Route path="/video/:toolId" element={toLocalized(location.pathname)} />
+            <Route path="/en/video" element={<ToolsDirectory mediaType="video" />} />
+            <Route path="/ar/video" element={<ToolsDirectory mediaType="video" />} />
+            <Route path="/en/video/:toolId" element={<Suspense fallback={<StudioSkeleton />}><Video /></Suspense>} />
+            <Route path="/ar/video/:toolId" element={<Suspense fallback={<StudioSkeleton />}><Video /></Suspense>} />
             <Route path="/generate/result" element={toLocalized('/generate/result')} />
             <Route path="/en/generate/result" element={<GenerateResult />} />
             <Route path="/ar/generate/result" element={<GenerateResult />} />
@@ -197,6 +201,7 @@ const RoutedApp = () => {
           <Route index element={<AdminDashboard />} />
           <Route path="users" element={<AdminUsersMerged />} />
           <Route path="pricing" element={<AdminCommerce />} />
+          <Route path="billing" element={<AdminBilling />} />
           <Route path="models" element={<AdminStudioConfig />} />
           <Route path="tools" element={<AdminStudioConfig />} />
           <Route path="templates" element={<AdminContentMerged />} />
@@ -208,9 +213,7 @@ const RoutedApp = () => {
 
         <Route path="/admin/studio" element={<Navigate to="/admin/models" replace />} />
         <Route path="/admin/commerce" element={<Navigate to="/admin/pricing" replace />} />
-        <Route path="/admin/billing" element={<Navigate to="/admin/users" replace />} />
         <Route path="/admin/media" element={<Navigate to="/admin/content" replace />} />
-        <Route path="/admin/community" element={<Navigate to="/admin/content" replace />} />
         <Route path="/admin/notifications" element={<Navigate to="/admin/settings" replace />} />
         <Route path="/admin/translations" element={<Navigate to="/admin/settings" replace />} />
         <Route path="/admin/roles" element={<Navigate to="/admin/settings" replace />} />

@@ -274,7 +274,7 @@ export function ImageLightbox({
               {isCompleted && job.image_url && (
                 <div className="grid grid-cols-3 gap-2">
                   <button
-                    onClick={(e) => navigateWithImage(e, '/video')}
+                    onClick={(e) => navigateWithImage(e, '/video/generate-video')}
                     className="min-h-11 rounded-xl bg-muted/50 text-foreground text-[12px] font-medium flex items-center justify-center gap-1.5 hover:bg-muted/70 active:scale-[0.98] transition-all cursor-pointer"
                   >
                     <Film size={13} />

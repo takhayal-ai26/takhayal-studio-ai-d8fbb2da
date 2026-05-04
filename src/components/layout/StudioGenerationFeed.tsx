@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react';
-import { AlertCircle, ArrowUpCircle, Copy, Download, Film, Loader2, RefreshCw, Wand2, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import { AlertCircle, ArrowUpCircle, Copy, Download, Film, Loader2, RefreshCw, Wand2 } from 'lucide-react';
 import { useGenerationJobs, type GenerationJob } from '@/hooks/useGenerationJobs';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { generationHandoffUrl } from '@/lib/ux';
+import { localizePath } from '@/lib/localized-routes';
 import { toast } from '@/hooks/use-toast';
 
 function ratioToCSS(ratio?: string | null): string {
@@ -57,8 +59,8 @@ function StudioJobCard({
   const hasImage = hasGeneratedImage(job);
   const isProcessing = job.status === 'queued' || job.status === 'generating' || job.status === 'processing' || (job.status === 'completed' && !hasImage);
   const isFailed = job.status === 'failed' && !hasImage;
-  const cardSizeClass = featured ? 'w-full min-h-[320px] sm:min-h-[420px] md:h-full md:min-h-0' : 'w-full';
-  const cardStyle = featured ? undefined : { aspectRatio: cssRatio };
+  const cardSizeClass = featured ? 'w-full max-w-[388px]' : 'w-full';
+  const cardStyle = { aspectRatio: featured ? '1/1' : cssRatio };
 
   if (isProcessing) {
     return (
@@ -110,7 +112,13 @@ function StudioJobCard({
       style={cardStyle}
       onClick={() => onOpen(job)}
     >
-      <img src={job.image_url} alt={job.prompt || ''} className="w-full h-full object-cover transition-all duration-500 group-hover:scale-[1.02] animate-fade-in" />
+      <div className={featured ? 'aspect-square w-full' : 'h-full w-full'}>
+        <img
+          src={job.image_url}
+          alt={job.prompt || ''}
+          className={`h-full w-full transition-all duration-500 group-hover:scale-[1.02] animate-fade-in ${featured ? 'object-contain' : 'object-cover'}`}
+        />
+      </div>
       <div className="absolute inset-0 bg-background/0 group-hover:bg-background/10 transition-colors duration-300 pointer-events-none" />
 
       <div className={`quick-actions absolute ${isAr ? 'left-2.5' : 'right-2.5'} top-1/2 -translate-y-1/2 flex flex-col gap-2 opacity-0 translate-x-2 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0 group-hover:pointer-events-auto transition-all duration-300`}>
@@ -119,7 +127,7 @@ function StudioJobCard({
           toast({ title: isAr ? 'تم نسخ الوصف' : 'Prompt copied' });
         }} />
         <QuickActionButton icon={<Download size={14} />} label={isAr ? 'تحميل' : 'Download'} onClick={() => downloadImage(job.image_url!, job.prompt || '')} />
-        <QuickActionButton icon={<Film size={14} />} label={isAr ? 'تحريك' : 'Animate'} onClick={() => handoff('/video', job.image_url!, job.id, job.model_id)} />
+        <QuickActionButton icon={<Film size={14} />} label={isAr ? 'تحريك' : 'Animate'} onClick={() => handoff('/video/generate-video', job.image_url!, job.id, job.model_id)} />
         <QuickActionButton icon={<Wand2 size={14} />} label={isAr ? 'تعديل' : 'Edit'} onClick={() => handoff('/tools/edit-image', job.image_url!, job.id, job.model_id)} />
         <QuickActionButton icon={<ArrowUpCircle size={14} />} label={isAr ? 'رفع الجودة' : 'Upscale'} onClick={() => handoff('/tools/upscale', job.image_url!, job.id, job.model_id)} />
       </div>
@@ -136,7 +144,7 @@ function EmptyRecentSlot({ loading }: { loading: boolean }) {
   const isAr = lang === 'ar';
 
   return (
-    <div className="w-full min-h-[320px] sm:min-h-[420px] md:h-full md:min-h-0 rounded-2xl bg-card/60 border border-border/10 relative overflow-hidden flex items-center justify-center text-center px-8">
+    <div className="aspect-square w-full max-w-[388px] rounded-2xl bg-card/60 border border-border/10 relative overflow-hidden flex items-center justify-center text-center px-8">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,hsl(var(--primary)/0.08),transparent_42%)]" />
       <div className="relative flex flex-col items-center gap-3">
         <div className="w-12 h-12 rounded-full bg-background/60 border border-border/15 flex items-center justify-center">
@@ -176,7 +184,7 @@ type StudioGenerationFeedSection = 'full' | 'featured' | 'history';
 export function StudioGenerationFeed({ section = 'full' }: { section?: StudioGenerationFeedSection }) {
   const { jobs, loading, retryJob } = useGenerationJobs();
   const { lang } = useLanguage();
-  const [selectedJob, setSelectedJob] = useState<GenerationJob | null>(null);
+  const navigate = useNavigate();
   const [recentJobId, setRecentJobId] = useState<string | null>(() => (
     typeof window === 'undefined'
       ? null
@@ -206,19 +214,23 @@ export function StudioGenerationFeed({ section = 'full' }: { section?: StudioGen
   const showFeatured = section !== 'history';
   const showHistory = section !== 'featured';
   const frameClass = section === 'featured'
-    ? 'w-full h-full flex flex-col overflow-visible'
+    ? 'w-full flex flex-col overflow-visible md:pt-[68px]'
     : 'w-full md:flex-1 flex flex-col overflow-visible md:overflow-hidden';
   const contentClass = section === 'featured'
-    ? 'w-full h-full'
-    : 'md:flex-1 overflow-visible md:overflow-y-auto p-4 md:p-5 space-y-5';
+    ? 'w-full'
+    : 'md:flex-1 overflow-visible md:overflow-y-auto px-4 py-5 sm:px-6 lg:px-8 xl:px-10 space-y-5';
+
+  const openGallery = (job: GenerationJob) => {
+    navigate(`${localizePath('/gallery', lang)}?highlight=${encodeURIComponent(job.id)}`);
+  };
 
   return (
     <div className={frameClass}>
       <div className={contentClass}>
         {showFeatured && (
-          <div className="w-full h-full">
+          <div className="flex w-full justify-center">
             {recentJob ? (
-              <StudioJobCard job={recentJob} onRetry={retryJob} onOpen={setSelectedJob} featured />
+              <StudioJobCard job={recentJob} onRetry={retryJob} onOpen={openGallery} featured />
             ) : (
               <EmptyRecentSlot loading={loading} />
             )}
@@ -234,10 +246,10 @@ export function StudioGenerationFeed({ section = 'full' }: { section?: StudioGen
                 </p>
               </div>
             )}
-            <div className="columns-2 md:columns-3 xl:columns-4 gap-4 [column-fill:_balance]">
+            <div className="columns-2 gap-4 sm:columns-3 lg:columns-4 2xl:columns-5 [column-fill:_balance]">
               {olderJobs.map(job => (
                 <div key={job.id} className="mb-4 break-inside-avoid">
-                  <StudioJobCard job={job} onRetry={retryJob} onOpen={setSelectedJob} />
+                  <StudioJobCard job={job} onRetry={retryJob} onOpen={openGallery} />
                 </div>
               ))}
             </div>
@@ -254,77 +266,6 @@ export function StudioGenerationFeed({ section = 'full' }: { section?: StudioGen
         )}
       </div>
 
-      {selectedJob?.image_url && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-background/85 backdrop-blur-xl"
-          onClick={() => setSelectedJob(null)}
-        >
-          <div
-            className="relative w-[90vw] max-w-5xl max-h-[90vh] flex flex-col lg:flex-row gap-6 p-6"
-            onClick={event => event.stopPropagation()}
-          >
-            <button
-              type="button"
-              onClick={() => setSelectedJob(null)}
-              className="absolute -top-2 -right-2 z-10 w-9 h-9 rounded-full bg-card border border-border/20 flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
-              aria-label="Close preview"
-            >
-              <X size={16} />
-            </button>
-
-            <div className="flex-1 flex items-center justify-center min-h-0">
-              <img
-                src={selectedJob.image_url}
-                alt={selectedJob.prompt || ''}
-                className="max-h-[70vh] max-w-full rounded-2xl object-contain"
-                style={{ aspectRatio: ratioToCSS(selectedJob.ratio) }}
-              />
-            </div>
-
-            <div className="lg:w-[280px] flex-shrink-0 flex flex-col gap-5">
-              <div>
-                <p className="text-[11px] text-muted-foreground/50 uppercase tracking-wider font-medium mb-1.5">{t.studio.prompt}</p>
-                <p className="text-[13px] text-foreground/80 leading-relaxed line-clamp-5">
-                  {selectedJob.prompt}
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-2 mt-auto">
-                <button
-                  type="button"
-                  onClick={() => downloadImage(selectedJob.image_url!, selectedJob.prompt || '')}
-                  className="h-11 rounded-xl bg-primary text-primary-foreground text-[13px] font-medium flex items-center justify-center gap-2 hover:brightness-90 transition-all active:scale-[0.98]"
-                >
-                  <Download size={15} />{t.studio.download}
-                </button>
-                <div className="grid grid-cols-3 gap-2">
-                  <button
-                    type="button"
-                    onClick={() => handoff('/video', selectedJob.image_url!, selectedJob.id, selectedJob.model_id)}
-                    className="h-10 rounded-xl border border-border/15 bg-card/60 text-foreground/80 text-[12px] font-medium flex items-center justify-center gap-1.5 hover:bg-card hover:border-border/30 transition-all"
-                  >
-                    <Film size={13} />Animate
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handoff('/tools/edit-image', selectedJob.image_url!, selectedJob.id, selectedJob.model_id)}
-                    className="h-10 rounded-xl border border-border/15 bg-card/60 text-foreground/80 text-[12px] font-medium flex items-center justify-center gap-1.5 hover:bg-card hover:border-border/30 transition-all"
-                  >
-                    <Wand2 size={13} />Edit
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => handoff('/tools/upscale', selectedJob.image_url!, selectedJob.id, selectedJob.model_id)}
-                    className="h-10 rounded-xl border border-border/15 bg-card/60 text-foreground/80 text-[12px] font-medium flex items-center justify-center gap-1.5 hover:bg-card hover:border-border/30 transition-all"
-                  >
-                    <ArrowUpCircle size={13} />Upscale
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
