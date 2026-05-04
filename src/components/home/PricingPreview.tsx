@@ -4,11 +4,13 @@ import { useLanguage } from '@/i18n/LanguageContext';
 import { supabase } from '@/integrations/supabase/client';
 import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Check, Star } from 'lucide-react';
+import { getPlanFeatureBullets } from '@/lib/cms';
 
 export function PricingPreview() {
   const navigate = useNavigate();
-  const { lang, isRTL } = useLanguage();
+  const { lang, isRTL, t } = useLanguage();
   const isAr = lang === 'ar';
+  const copy = t.homeSections;
   const scrollRef = useRef<HTMLDivElement>(null);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
 
@@ -58,10 +60,10 @@ export function PricingPreview() {
   return (
     <section className="my-12 md:my-16" dir={isRTL ? 'rtl' : 'ltr'}>
       <h2 className="typo-heading-section text-center mb-2">
-        {isAr ? 'خطط بسيطة وشفافة' : 'Simple, transparent pricing'}
+        {copy.pricingTitle}
       </h2>
       <p className="text-[13px] text-muted-foreground text-center mb-6">
-        {isAr ? 'ابدأ مجانًا، وقم بالترقية حسب الحاجة' : 'Start free, upgrade as you grow'}
+        {copy.pricingSubtitle}
       </p>
 
       {/* Billing toggle */}
@@ -71,16 +73,16 @@ export function PricingPreview() {
             onClick={() => setBillingPeriod('monthly')}
             className={`min-h-11 px-4 py-2 rounded-full text-[12px] font-medium transition-all ${billingPeriod === 'monthly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
           >
-            {isAr ? 'شهري' : 'Monthly'}
+            {copy.pricingMonthly}
           </button>
           <button
             onClick={() => setBillingPeriod('annual')}
             className={`min-h-11 px-4 py-2 rounded-full text-[12px] font-medium transition-all flex items-center gap-1.5 ${billingPeriod === 'annual' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
           >
-            {isAr ? 'سنوي' : 'Annual'}
+            {copy.pricingAnnual}
             {plans.some(p => p.annual_discount_percent > 0) && (
               <span className={`text-[10px] px-1.5 py-0.5 rounded-full ${billingPeriod === 'annual' ? 'bg-white/20' : 'bg-primary/15 text-primary'}`}>
-                {isAr ? 'وفّر' : 'Save'} {plans.find(p => p.annual_discount_percent > 0)?.annual_discount_percent}%
+                {copy.pricingSave} {plans.find(p => p.annual_discount_percent > 0)?.annual_discount_percent}%
               </span>
             )}
           </button>
@@ -99,7 +101,7 @@ export function PricingPreview() {
           const badge = isAr ? plan.badge_ar : plan.badge_en;
           const cta = isAr ? plan.cta_label_ar : plan.cta_label_en;
           const price = billingPeriod === 'annual' ? plan.price_annual_monthly_equivalent : plan.price_monthly_usd;
-          const features = planFeatures.filter(f => f.plan_id === plan.id);
+          const features = getPlanFeatureBullets(plan, planFeatures);
 
           return (
             <div
@@ -123,15 +125,15 @@ export function PricingPreview() {
               {/* Price */}
               <div className="flex items-baseline gap-1 mb-4">
                 <span className="text-3xl font-extrabold text-foreground">${price}</span>
-                <span className="text-[12px] text-muted-foreground">/{isAr ? 'شهر' : 'mo'}</span>
+                <span className="text-[12px] text-muted-foreground">/{copy.pricingPerMonth}</span>
               </div>
 
               {/* Features */}
               <ul className="space-y-2 mb-5 flex-1">
-                {features.slice(0, 4).map((f) => (
-                  <li key={f.id} className="flex items-start gap-2 text-[13px] text-foreground/80">
+                {features.slice(0, 4).map((f, index) => (
+                  <li key={`${plan.id}-${index}-${f.en}`} className="flex items-start gap-2 text-[13px] text-foreground/80">
                     <Check size={14} className="text-primary mt-0.5 flex-shrink-0" />
-                    <span>{isAr ? f.text_ar : f.text_en}</span>
+                    <span>{isAr ? f.ar : f.en}</span>
                   </li>
                 ))}
               </ul>
@@ -145,7 +147,7 @@ export function PricingPreview() {
                     : 'bg-muted/60 text-foreground hover:bg-muted'
                 }`}
               >
-                {cta || (isAr ? 'عرض التفاصيل' : 'View Details')}
+                {cta || copy.pricingViewDetails}
               </button>
             </div>
           );
@@ -158,7 +160,7 @@ export function PricingPreview() {
           onClick={() => navigate('/pricing')}
           className="inline-flex min-h-11 items-center gap-2 px-3 text-[13px] text-primary font-medium hover:underline group"
         >
-          {isAr ? 'عرض جميع الخطط' : 'View all plans'}
+          {copy.pricingViewAllPlans}
           <ArrowRight size={14} className={`group-hover:translate-x-1 transition-transform ${isRTL ? 'rotate-180' : ''}`} />
         </button>
       </div>

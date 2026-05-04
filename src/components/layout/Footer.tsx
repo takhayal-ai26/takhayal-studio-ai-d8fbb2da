@@ -10,20 +10,6 @@ const XIcon = ({ size = 14, className = '' }: { size?: number; className?: strin
   </svg>
 );
 
-const navLinks = [
-  { en: 'Home', ar: 'الرئيسية', to: '/' },
-  { en: 'Gallery', ar: 'المعرض', to: '/gallery' },
-  { en: 'Templates', ar: 'القوالب', to: '/templates' },
-  { en: 'Community', ar: 'المجتمع', to: '/community' },
-];
-
-const legalLinks = [
-  { en: 'Terms & Conditions', ar: 'الشروط والأحكام', to: '/terms' },
-  { en: 'Privacy Policy', ar: 'سياسة الخصوصية', to: '/privacy' },
-  { en: 'Contact Us', ar: 'تواصل معنا', to: '/contact' },
-  { en: 'Support', ar: 'الدعم', to: 'mailto:support@takhayal.ai' },
-];
-
 const imageModelLinks = [
   { name: 'Nano Banana Pro', slug: 'nano-banana-pro' },
   { name: 'Nano Banana 2', slug: 'nano-banana-2' },
@@ -46,13 +32,7 @@ const videoModelLinks = [
   { name: 'Grok Imagine', slug: 'grok-imagine' },
 ];
 
-const socialLinks = [
-  { icon: Instagram, href: 'https://instagram.com/takhayal.ai', label: 'Instagram' },
-  { icon: XIcon, href: 'https://x.com/takhayal_ai', label: 'X' },
-  { icon: Linkedin, href: 'https://linkedin.com/company/takhayal', label: 'LinkedIn' },
-];
-
-function ModelAccordion({ title, links, isAr }: { title: string; links: { name: string; slug: string }[]; isAr: boolean }) {
+function ModelAccordion({ title, links }: { title: string; links: { name: string; slug: string }[] }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="border-b border-foreground/[0.06] last:border-0">
@@ -79,8 +59,25 @@ function ModelAccordion({ title, links, isAr }: { title: string; links: { name: 
 }
 
 export function Footer() {
-  const { lang, isRTL } = useLanguage();
-  const isAr = lang === 'ar';
+  const { isRTL, t } = useLanguage();
+  const copy = t.footer;
+  const localizedNavLinks = [
+    { label: t.nav.home, to: '/' },
+    { label: t.nav.gallery, to: '/gallery' },
+    { label: t.nav.templates, to: '/templates' },
+    { label: t.nav.community, to: '/community' },
+  ];
+  const localizedLegalLinks = [
+    { label: copy.terms, to: '/terms' },
+    { label: copy.privacy, to: '/privacy' },
+    { label: copy.contact, to: '/contact' },
+    { label: copy.support, to: `mailto:${copy.supportEmail}` },
+  ];
+  const localizedSocialLinks = [
+    { icon: Instagram, href: copy.instagramUrl, label: 'Instagram' },
+    { icon: XIcon, href: copy.xUrl, label: 'X' },
+    { icon: Linkedin, href: copy.linkedinUrl, label: 'LinkedIn' },
+  ];
 
   return (
     <footer dir={isRTL ? 'rtl' : 'ltr'} className="w-full bg-muted/50 mt-12">
@@ -91,13 +88,13 @@ export function Footer() {
           <div className="space-y-4">
             <Logo size="default" />
             <p className="text-[13px] leading-relaxed text-muted-foreground max-w-[280px]">
-              {isAr ? 'أنشئ صورًا مذهلة بالذكاء الاصطناعي خلال ثوانٍ.' : 'Create stunning AI-generated visuals in seconds.'}
+              {copy.brandDescription}
             </p>
             <p className="text-[11px] text-muted-foreground/60">
-              {isAr ? 'مصمم للمبدعين في الشرق الأوسط.' : 'Built for creators in the Middle East.'}
+              {copy.brandSubtext}
             </p>
             <div className="flex items-center gap-3 pt-1">
-              {socialLinks.map((social) => (
+              {localizedSocialLinks.map((social) => (
                 <a key={social.label} href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label}
                   className="w-11 h-11 rounded-lg bg-foreground/[0.04] flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors duration-150">
                   <social.icon size={14} />
@@ -109,13 +106,13 @@ export function Footer() {
           {/* Navigate */}
           <div>
             <h4 className="text-[11px] uppercase tracking-widest font-semibold mb-4 text-primary">
-              {isAr ? 'التنقل' : 'Navigate'}
+              {copy.navigate}
             </h4>
             <ul className="space-y-2.5">
-              {navLinks.map((link) => (
-                <li key={link.to + link.en}>
+              {localizedNavLinks.map((link) => (
+                <li key={link.to + link.label}>
                   <Link to={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors duration-150">
-                    {isAr ? link.ar : link.en}
+                    {link.label}
                   </Link>
                 </li>
               ))}
@@ -125,18 +122,18 @@ export function Footer() {
           {/* Legal */}
           <div>
             <h4 className="text-[11px] uppercase tracking-widest font-semibold mb-4 text-primary">
-              {isAr ? 'قانوني' : 'Legal'}
+              {copy.legal}
             </h4>
             <ul className="space-y-2.5">
-              {legalLinks.map((link) => (
+              {localizedLegalLinks.map((link) => (
                 <li key={link.to}>
                   {link.to.startsWith('mailto:') ? (
                     <a href={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors duration-150">
-                      {isAr ? link.ar : link.en}
+                      {link.label}
                     </a>
                   ) : (
                     <Link to={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors duration-150">
-                      {isAr ? link.ar : link.en}
+                      {link.label}
                     </Link>
                   )}
                 </li>
@@ -147,7 +144,7 @@ export function Footer() {
           {/* Image Models */}
           <div>
             <h4 className="text-[11px] uppercase tracking-widest font-semibold mb-4 text-primary">
-              {isAr ? 'نماذج الصور' : 'Image Models'}
+              {copy.imageModels}
             </h4>
             <ul className="space-y-2">
               {imageModelLinks.map(link => (
@@ -163,7 +160,7 @@ export function Footer() {
           {/* Video Models */}
           <div>
             <h4 className="text-[11px] uppercase tracking-widest font-semibold mb-4 text-primary">
-              {isAr ? 'نماذج الفيديو' : 'Video Models'}
+              {copy.videoModels}
             </h4>
             <ul className="space-y-2">
               {videoModelLinks.map(link => (
@@ -183,10 +180,10 @@ export function Footer() {
           <div className="space-y-4">
             <Logo size="default" />
             <p className="text-[13px] leading-relaxed text-muted-foreground max-w-[280px]">
-              {isAr ? 'أنشئ صورًا مذهلة بالذكاء الاصطناعي خلال ثوانٍ.' : 'Create stunning AI-generated visuals in seconds.'}
+              {copy.brandDescription}
             </p>
             <div className="flex items-center gap-3 pt-1">
-              {socialLinks.map((social) => (
+              {localizedSocialLinks.map((social) => (
                 <a key={social.label} href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label}
                   className="w-11 h-11 rounded-lg bg-foreground/[0.04] flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors duration-150">
                   <social.icon size={14} />
@@ -198,22 +195,22 @@ export function Footer() {
           {/* Nav + Legal inline */}
           <div className="grid grid-cols-2 gap-8">
             <div>
-              <h4 className="text-[11px] uppercase tracking-widest font-semibold mb-3 text-primary">{isAr ? 'التنقل' : 'Navigate'}</h4>
+              <h4 className="text-[11px] uppercase tracking-widest font-semibold mb-3 text-primary">{copy.navigate}</h4>
               <ul className="space-y-2">
-                {navLinks.map(link => (
-                  <li key={link.to}><Link to={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors">{isAr ? link.ar : link.en}</Link></li>
+                {localizedNavLinks.map(link => (
+                  <li key={link.to}><Link to={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors">{link.label}</Link></li>
                 ))}
               </ul>
             </div>
             <div>
-              <h4 className="text-[11px] uppercase tracking-widest font-semibold mb-3 text-primary">{isAr ? 'قانوني' : 'Legal'}</h4>
+              <h4 className="text-[11px] uppercase tracking-widest font-semibold mb-3 text-primary">{copy.legal}</h4>
               <ul className="space-y-2">
-                {legalLinks.map(link => (
+                {localizedLegalLinks.map(link => (
                   <li key={link.to}>
                     {link.to.startsWith('mailto:') ? (
-                      <a href={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors">{isAr ? link.ar : link.en}</a>
+                      <a href={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors">{link.label}</a>
                     ) : (
-                      <Link to={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors">{isAr ? link.ar : link.en}</Link>
+                      <Link to={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors">{link.label}</Link>
                     )}
                   </li>
                 ))}
@@ -223,15 +220,15 @@ export function Footer() {
 
           {/* Model accordions on mobile */}
           <div className="border-t border-foreground/[0.06] pt-4">
-            <ModelAccordion title={isAr ? 'نماذج الصور' : 'Image Models'} links={imageModelLinks} isAr={isAr} />
-            <ModelAccordion title={isAr ? 'نماذج الفيديو' : 'Video Models'} links={videoModelLinks} isAr={isAr} />
+            <ModelAccordion title={copy.imageModels} links={imageModelLinks} />
+            <ModelAccordion title={copy.videoModels} links={videoModelLinks} />
           </div>
         </div>
 
         {/* Bottom row */}
         <div className="mt-12 pt-6 border-t border-foreground/[0.06] flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
           <p className="text-[12px] text-muted-foreground/50">
-            {isAr ? '© 2026 تخيّل. جميع الحقوق محفوظة.' : '© 2026 Takhayal.ai. All rights reserved.'}
+            {copy.copyright}
           </p>
         </div>
       </div>

@@ -137,7 +137,7 @@ export function GenerationGrid() {
                 onDelete={() => handleDeleteCard(card.id)}
                 onCopyPrompt={() => handleCopyPrompt(card.prompt)}
                 onDownload={() => card.image && handleDownloadCard(card.image.url, card.prompt)}
-                onAnimate={() => card.image && openHandoff('/video', card.image)}
+                onAnimate={() => card.image && openHandoff('/video/generate-video', card.image)}
                 onEdit={() => card.image && openHandoff('/tools/edit-image', card.image)}
                 onUpscale={() => card.image && openHandoff('/tools/upscale', card.image)}
                 onRetry={() => handleRetry(card.id)}
@@ -239,7 +239,7 @@ export function GenerationGrid() {
                 </div>
                 <div className="grid grid-cols-3 gap-2">
                   <button
-                    onClick={() => openHandoff('/video', selectedCard.image!)}
+                    onClick={() => openHandoff('/video/generate-video', selectedCard.image!)}
                     className="h-10 rounded-xl border border-border/15 bg-card/60 text-foreground/80 text-[12px] font-medium flex items-center justify-center gap-1.5 hover:bg-card hover:border-border/30 transition-all"
                   >
                     <Film size={13} />Animate

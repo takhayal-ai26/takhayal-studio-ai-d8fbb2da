@@ -212,8 +212,9 @@ function InfiniteModelRow({ models, direction, isAr, lang, speedSeconds = 60 }: 
 /* ------------------------------------------------------------------ */
 export function ExploreModels() {
   const navigate = useNavigate();
-  const { lang, isRTL } = useLanguage();
+  const { lang, isRTL, t } = useLanguage();
   const isAr = lang === 'ar';
+  const copy = t.homeSections;
   const { guides } = useModelGuides();
   const { models: imageModelRows } = useModels();
   const { models: videoModelRows } = useVideoModels(true);
@@ -272,13 +273,11 @@ export function ExploreModels() {
 
       <div className="text-center px-5 md:px-8 mb-10">
         <h2 className="text-center text-4xl md:text-5xl font-bold text-foreground">
-          {isAr ? 'استكشف نماذجنا' : 'Explore Our Models'}
+          {copy.exploreModelsTitle}
         </h2>
         <div className="mx-auto mt-3 w-10 h-0.5 rounded-full bg-primary" />
         <p className="mx-auto mt-4 max-w-xl text-center text-base md:text-lg leading-8 text-muted-foreground">
-          {isAr
-            ? 'محركات الذكاء الاصطناعي التي تشغّل إبداعاتك'
-            : 'Powerful AI engines behind your creations'}
+          {copy.exploreModelsSubtitle}
         </p>
       </div>
 
@@ -294,7 +293,7 @@ export function ExploreModels() {
           onClick={() => navigate(localizePath('/models', lang))}
           className="inline-flex min-h-11 items-center gap-2.5 px-8 py-3.5 rounded-full text-[15px] font-semibold bg-primary text-primary-foreground transition-all duration-200 hover:brightness-110 hover:shadow-[0_8px_24px_hsl(var(--primary)/0.35)] shadow-[0_4px_16px_hsl(var(--primary)/0.2)] active:scale-[0.98]"
         >
-          {isAr ? 'تصفح جميع النماذج' : 'Browse All Models'}
+          {copy.browseAllModels}
           {isRTL ? <ArrowLeft size={16} /> : <ArrowRight size={16} />}
         </button>
       </div>

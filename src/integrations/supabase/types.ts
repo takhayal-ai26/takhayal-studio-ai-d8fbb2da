@@ -1661,6 +1661,7 @@ export type Database = {
           id: string
           input_type: string
           internal_provider_cost_estimate: number
+          media_type: string
           prompt_hidden: boolean
           provider_endpoint: string
           provider_name: string
@@ -1668,6 +1669,7 @@ export type Database = {
           result_type: string
           route: string
           selected_model_id: string | null
+          selected_video_model_id: string | null
           short_desc_ar: string
           short_desc_en: string
           slug: string
@@ -1702,6 +1704,7 @@ export type Database = {
           id?: string
           input_type?: string
           internal_provider_cost_estimate?: number
+          media_type?: string
           prompt_hidden?: boolean
           provider_endpoint?: string
           provider_name?: string
@@ -1709,6 +1712,7 @@ export type Database = {
           result_type?: string
           route: string
           selected_model_id?: string | null
+          selected_video_model_id?: string | null
           short_desc_ar?: string
           short_desc_en?: string
           slug: string
@@ -1743,6 +1747,7 @@ export type Database = {
           id?: string
           input_type?: string
           internal_provider_cost_estimate?: number
+          media_type?: string
           prompt_hidden?: boolean
           provider_endpoint?: string
           provider_name?: string
@@ -1750,6 +1755,7 @@ export type Database = {
           result_type?: string
           route?: string
           selected_model_id?: string | null
+          selected_video_model_id?: string | null
           short_desc_ar?: string
           short_desc_en?: string
           slug?: string
@@ -1769,6 +1775,13 @@ export type Database = {
             columns: ["selected_model_id"]
             isOneToOne: false
             referencedRelation: "models"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tools_selected_video_model_id_fkey"
+            columns: ["selected_video_model_id"]
+            isOneToOne: false
+            referencedRelation: "video_models"
             referencedColumns: ["id"]
           },
         ]

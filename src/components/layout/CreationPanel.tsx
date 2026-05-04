@@ -223,9 +223,9 @@ export function CreationPanel() {
 
   const handleDrop = useCallback((e: React.DragEvent) => {
     e.preventDefault();
-    const file = e.dataTransfer.files[0];
-    if (file) handleFileUpload(file);
-  }, [handleFileUpload]);
+    const files = Array.from(e.dataTransfer.files || []).slice(0, Math.max(0, maxImages - uploadedImages.length));
+    files.forEach(file => handleFileUpload(file));
+  }, [handleFileUpload, maxImages, uploadedImages.length]);
 
   return (
     <aside ref={panelRef} className="w-full md:w-[380px] xl:w-[420px] flex flex-col bg-background flex-shrink-0 overflow-visible relative z-30">
@@ -284,17 +284,17 @@ export function CreationPanel() {
               multiple={maxImages > 1}
               className="hidden"
               onChange={e => {
-                const files = Array.from(e.target.files || []);
+                const files = Array.from(e.target.files || []).slice(0, Math.max(0, maxImages - uploadedImages.length));
                 files.forEach(f => handleFileUpload(f));
                 e.currentTarget.value = '';
               }}
             />
             {uploadedImages.length > 0 ? (
               <div className="space-y-2">
-                <div className={`grid gap-2 ${uploadedImages.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+                <div className="flex max-w-full gap-2 overflow-x-auto pb-1 scrollbar-thin">
                   {uploadedImages.map((img, i) => (
-                    <div key={i} className="relative rounded-xl overflow-hidden border border-primary/20 bg-card/50">
-                      <img src={img.preview} alt={`Reference ${i + 1}`} className="w-full h-24 object-cover" />
+                    <div key={i} className="relative h-16 w-16 flex-none overflow-hidden rounded-xl border border-primary/20 bg-card/50">
+                      <img src={img.preview} alt={`Reference ${i + 1}`} className="h-full w-full object-cover" />
                       {!img.url && (
                         <div className="absolute inset-0 bg-background/60 flex items-center justify-center">
                           <span className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
@@ -309,19 +309,24 @@ export function CreationPanel() {
                       </button>
                     </div>
                   ))}
+                  {uploadedImages.length < maxImages && (
+                    <button
+                      type="button"
+                      onClick={() => fileInputRef.current?.click()}
+                      className="h-16 w-16 flex-none rounded-xl border border-dashed border-border/30 bg-foreground/[0.03] text-muted-foreground transition-all hover:border-primary/20 hover:bg-primary/[0.03] hover:text-primary"
+                      aria-label={language === 'ar' ? 'إضافة صورة مرجعية' : 'Add reference image'}
+                    >
+                      <Upload size={16} className="mx-auto" />
+                    </button>
+                  )}
                 </div>
                 <div className="flex items-center justify-between px-1">
                   <span className="text-[11px] text-muted-foreground">
                     {uploadedImages.length}/{maxImages} {language === 'ar' ? 'صور' : 'images'}
                   </span>
-                  {uploadedImages.length < maxImages && (
-                    <button
-                      onClick={() => fileInputRef.current?.click()}
-                      className="min-h-11 rounded-lg px-3 text-[12px] text-primary/70 hover:text-primary font-medium transition-colors"
-                    >
-                      + {language === 'ar' ? 'إضافة المزيد' : 'Add more'}
-                    </button>
-                  )}
+                  <span className="text-[11px] text-muted-foreground/60">
+                    {language === 'ar' ? 'JPG / PNG حتى 10MB' : 'JPG / PNG up to 10MB'}
+                  </span>
                 </div>
               </div>
             ) : (

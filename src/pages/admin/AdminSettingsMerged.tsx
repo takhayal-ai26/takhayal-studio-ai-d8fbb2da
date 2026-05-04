@@ -192,10 +192,9 @@ function GeneralTab() {
       <Card className="border-border/40 bg-card/50">
         <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Settings size={16} /> Brand Settings</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2"><Label className="text-xs">Platform Name</Label><Input defaultValue="Takhayal.ai" className="h-9 text-sm bg-muted/30" /></div>
-          <div className="space-y-2"><Label className="text-xs">Tagline</Label><Input defaultValue="Arabic-first Creative AI Studio" className="h-9 text-sm bg-muted/30" /></div>
-          <div className="space-y-2"><Label className="text-xs">Support Email</Label><Input defaultValue="support@takhayal.ai" className="h-9 text-sm bg-muted/30" /></div>
-          <Button size="sm" className="text-xs">Save Changes</Button>
+          <div className="space-y-2"><Label className="text-xs">Platform Name</Label><Input value="Takhayal.ai" readOnly className="h-9 text-sm bg-muted/30" /></div>
+          <div className="space-y-2"><Label className="text-xs">Tagline</Label><Input value="Arabic-first Creative AI Studio" readOnly className="h-9 text-sm bg-muted/30" /></div>
+          <div className="space-y-2"><Label className="text-xs">Support Email</Label><Input value="support@takhayal.ai" readOnly className="h-9 text-sm bg-muted/30" /></div>
         </CardContent>
       </Card>
 
@@ -211,7 +210,7 @@ function GeneralTab() {
           ].map(f => (
             <div key={f.name} className="flex items-center justify-between">
               <div><p className="text-[13px] font-medium">{f.name}</p><p className="text-[11px] text-muted-foreground">{f.desc}</p></div>
-              <Switch defaultChecked={f.on} className="scale-75" />
+              <Switch checked={f.on} disabled className="scale-75" />
             </div>
           ))}
         </CardContent>
@@ -220,18 +219,17 @@ function GeneralTab() {
       <Card className="border-border/40 bg-card/50">
         <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><Shield size={16} /> System</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <div className="flex items-center justify-between"><div><p className="text-[13px] font-medium">Maintenance Mode</p><p className="text-[11px] text-muted-foreground">Disable all user-facing features</p></div><Switch className="scale-75" /></div>
-          <div className="space-y-2"><Label className="text-xs">Global Generation Limit (daily)</Label><Input defaultValue="100" type="number" className="h-9 text-sm bg-muted/30 w-24" /></div>
-          <div className="space-y-2"><Label className="text-xs">Default Free Credits</Label><Input defaultValue="20" type="number" className="h-9 text-sm bg-muted/30 w-24" /></div>
+          <div className="flex items-center justify-between"><div><p className="text-[13px] font-medium">Maintenance Mode</p><p className="text-[11px] text-muted-foreground">Disable all user-facing features</p></div><Switch disabled className="scale-75" /></div>
+          <div className="space-y-2"><Label className="text-xs">Global Generation Limit (daily)</Label><Input value="100" readOnly type="number" className="h-9 text-sm bg-muted/30 w-24" /></div>
+          <div className="space-y-2"><Label className="text-xs">Default Free Credits</Label><Input value="20" readOnly type="number" className="h-9 text-sm bg-muted/30 w-24" /></div>
         </CardContent>
       </Card>
 
       <Card className="border-border/40 bg-card/50">
         <CardHeader className="pb-3"><CardTitle className="text-sm font-semibold flex items-center gap-2"><FileText size={16} /> Legal & Policies</CardTitle></CardHeader>
         <CardContent className="space-y-4">
-          <div className="space-y-2"><Label className="text-xs">Privacy Policy URL</Label><Input defaultValue="https://takhayal.ai/privacy" className="h-9 text-sm bg-muted/30" /></div>
-          <div className="space-y-2"><Label className="text-xs">Terms of Service URL</Label><Input defaultValue="https://takhayal.ai/terms" className="h-9 text-sm bg-muted/30" /></div>
-          <Button size="sm" className="text-xs">Save Changes</Button>
+          <div className="space-y-2"><Label className="text-xs">Privacy Policy URL</Label><Input value="https://takhayal.ai/privacy" readOnly className="h-9 text-sm bg-muted/30" /></div>
+          <div className="space-y-2"><Label className="text-xs">Terms of Service URL</Label><Input value="https://takhayal.ai/terms" readOnly className="h-9 text-sm bg-muted/30" /></div>
         </CardContent>
       </Card>
     </div>

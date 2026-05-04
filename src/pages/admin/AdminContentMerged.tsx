@@ -1,11 +1,12 @@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { FileText, Layers, Scale, Home, MessageSquareQuote, Cpu } from 'lucide-react';
+import { FileText, Layers, Scale, Home, MessageSquareQuote, Cpu, Search } from 'lucide-react';
 import AdminTemplates from './AdminTemplates';
 import AdminContent from './AdminContent';
 import AdminLegalPolicies from './AdminLegalPolicies';
 import AdminDashboardHero from './AdminDashboardHero';
 import AdminTestimonials from './AdminTestimonials';
 import AdminModelGuide from './AdminModelGuide';
+import AdminSeoLandingPages from './AdminSeoLandingPages';
 
 export default function AdminContentMerged() {
   return (
@@ -21,6 +22,7 @@ export default function AdminContentMerged() {
           <TabsTrigger value="dashboard-hero" className="text-xs gap-1.5"><Home size={14} /> Dashboard Hero</TabsTrigger>
           <TabsTrigger value="testimonials" className="text-xs gap-1.5"><MessageSquareQuote size={14} /> Testimonials</TabsTrigger>
           <TabsTrigger value="landing" className="text-xs gap-1.5"><Layers size={14} /> Landing Page</TabsTrigger>
+          <TabsTrigger value="seo" className="text-xs gap-1.5"><Search size={14} /> SEO Pages</TabsTrigger>
           <TabsTrigger value="model-guide" className="text-xs gap-1.5"><Cpu size={14} /> Model Guide</TabsTrigger>
           <TabsTrigger value="legal" className="text-xs gap-1.5"><Scale size={14} /> Legal & Policies</TabsTrigger>
         </TabsList>
@@ -39,6 +41,10 @@ export default function AdminContentMerged() {
 
         <TabsContent value="landing">
           <AdminContent embedded />
+        </TabsContent>
+
+        <TabsContent value="seo">
+          <AdminSeoLandingPages />
         </TabsContent>
 
         <TabsContent value="model-guide">

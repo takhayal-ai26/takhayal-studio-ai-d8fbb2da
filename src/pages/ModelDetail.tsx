@@ -242,7 +242,7 @@ export default function ModelDetail() {
         guide.slug.includes(slugify(model.display_name)) ||
         slugify(model.display_name).includes(guide.slug)
       );
-      navigate(`/video?modelId=${matchedVideo?.id || guide.slug}`);
+      navigate(`/video/generate-video?modelId=${matchedVideo?.id || guide.slug}`);
     } else {
       if (guide.linked_model_id) setSelectedModelId(guide.linked_model_id);
       setActivePage('canvas');

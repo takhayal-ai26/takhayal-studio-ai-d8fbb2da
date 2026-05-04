@@ -10,6 +10,8 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+outputs
+Takhayal SEO-AEO-GEO Master Tracker.xlsx
 *.local
 .env
 .env.*

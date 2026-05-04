@@ -8,6 +8,7 @@ import {
   SeoLandingPageKey,
   seoLandingPages,
 } from '@/data/seoLandingPages';
+import { seoRecordToConfig, useSeoLandingPage } from '@/hooks/useCmsData';
 
 const internalLinks = [
   { path: '/tools', ar: 'الأدوات', en: 'Tools' },
@@ -23,14 +24,16 @@ function getPageKey(pathname: string): SeoLandingPageKey | null {
 
 export default function SeoLandingPage() {
   const location = useLocation();
-  const { lang, isRTL } = useLanguage();
+  const { lang, isRTL, t } = useLanguage();
   const pageKey = getPageKey(location.pathname);
+  const { data: dbPage } = useSeoLandingPage(pageKey);
 
   if (!pageKey) {
     return <Navigate to={localizePath('/', lang)} replace />;
   }
 
-  const page = seoLandingPages[pageKey];
+  const page = dbPage ? seoRecordToConfig(dbPage) : seoLandingPages[pageKey];
+  const dateModified = dbPage?.date_modified || SEO_LANDING_LAST_UPDATED;
   const isAr = lang === 'ar';
   const faqSchema = {
     '@context': 'https://schema.org',
@@ -70,7 +73,7 @@ export default function SeoLandingPage() {
         description={page.description[lang]}
         canonicalPath={`/${page.slug}`}
         pageType="WebPage"
-        dateModified={SEO_LANDING_LAST_UPDATED}
+        dateModified={dateModified}
         schemas={[faqSchema, breadcrumbSchema]}
       />
 
@@ -104,7 +107,7 @@ export default function SeoLandingPage() {
         <section className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
           <div className="rounded-[28px] border border-border/45 bg-card/45 p-5 md:p-7">
             <h2 className="mb-5 text-2xl font-semibold tracking-tight">
-              {isAr ? 'مقارنة سريعة' : 'Quick comparison'}
+              {t.seoLanding.quickComparison}
             </h2>
             <div className="overflow-x-auto">
               <table className="w-full min-w-[640px] border-separate border-spacing-0 text-sm">
@@ -135,7 +138,7 @@ export default function SeoLandingPage() {
           <div className="grid gap-6">
             <section className="rounded-[28px] border border-border/45 bg-card/45 p-5 md:p-7">
               <h2 className="mb-4 text-2xl font-semibold tracking-tight">
-                {isAr ? 'أفضل الاستخدامات' : 'Best use cases'}
+                {t.seoLanding.bestUseCases}
               </h2>
               <ul className="space-y-3">
                 {page.useCases[lang].map((item) => (
@@ -148,7 +151,7 @@ export default function SeoLandingPage() {
 
             <section className="rounded-[28px] border border-border/45 bg-card/45 p-5 md:p-7">
               <h2 className="mb-4 text-2xl font-semibold tracking-tight">
-                {isAr ? 'الحدود والمفاضلات' : 'Limitations and tradeoffs'}
+                {t.seoLanding.limitations}
               </h2>
               <ul className="space-y-3">
                 {page.limitations[lang].map((item) => (
@@ -163,7 +166,7 @@ export default function SeoLandingPage() {
 
         <section className="mt-8 rounded-[28px] border border-border/45 bg-card/45 p-5 md:p-7">
           <h2 className="mb-5 text-2xl font-semibold tracking-tight">
-            {isAr ? 'أسئلة شائعة' : 'Frequently asked questions'}
+            {t.seoLanding.faqs}
           </h2>
           <div className="grid gap-3 md:grid-cols-2">
             {page.faqs.map((faq) => (
@@ -179,8 +182,8 @@ export default function SeoLandingPage() {
           </div>
           <p className="mt-6 text-xs text-muted-foreground/75">
             {isAr
-              ? `آخر تحديث ${SEO_LANDING_LAST_UPDATED} · محفوظ بواسطة Takhayal.ai`
-              : `Last updated ${SEO_LANDING_LAST_UPDATED} · Maintained by Takhayal.ai`}
+              ? `${t.seoLanding.lastUpdatedPrefix} ${dateModified} · ${t.seoLanding.maintainedBy}`
+              : `${t.seoLanding.lastUpdatedPrefix} ${dateModified} · ${t.seoLanding.maintainedBy}`}
           </p>
         </section>
       </main>

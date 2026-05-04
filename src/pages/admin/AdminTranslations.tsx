@@ -60,7 +60,7 @@ const PAGE_SIZE = 100;
 export default function AdminTranslations({ embedded }: { embedded?: boolean } = {}) {
   const enFlat = useMemo(() => flattenObj(translations.en), []);
   const arFlat = useMemo(() => flattenObj(translations.ar), []);
-  const { overrides, setBothOverrides, removeOverride, addKey } = useTranslationOverridesStore();
+  const { overrides, setBothOverrides, removeOverride, addKey, loadRemoteOverrides } = useTranslationOverridesStore();
 
   // Merge static + overrides to get effective values
   const allKeys = useMemo(() => {
@@ -125,11 +125,15 @@ export default function AdminTranslations({ embedded }: { embedded?: boolean } =
     setPreviewLang('en');
   }, []);
 
-  const handleSave = useCallback(() => {
+  const handleSave = useCallback(async () => {
     if (!editEntry) return;
-    setBothOverrides(editEntry.key, editEn, editAr);
-    toast({ title: 'Saved', description: `"${editEntry.key}" updated — changes are live.` });
-    setEditEntry(null);
+    try {
+      await setBothOverrides(editEntry.key, editEn, editAr, editEntry.section);
+      toast({ title: 'Saved', description: `"${editEntry.key}" updated — changes are live.` });
+      setEditEntry(null);
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message || 'Failed to save translation', variant: 'destructive' });
+    }
   }, [editEntry, editEn, editAr, setBothOverrides]);
 
   const handleCopyKey = useCallback((key: string) => {
@@ -137,24 +141,33 @@ export default function AdminTranslations({ embedded }: { embedded?: boolean } =
     toast({ title: 'Copied', description: `Key "${key}" copied to clipboard` });
   }, []);
 
-  const handleDelete = useCallback(() => {
+  const handleDelete = useCallback(async () => {
     if (!deleteKey) return;
-    removeOverride(deleteKey);
-    toast({ title: 'Reset', description: `"${deleteKey}" reset to default value` });
-    setDeleteKey(null);
+    try {
+      await removeOverride(deleteKey);
+      toast({ title: 'Reset', description: `"${deleteKey}" reset to default value` });
+      setDeleteKey(null);
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message || 'Failed to reset translation', variant: 'destructive' });
+    }
   }, [deleteKey, removeOverride]);
 
-  const handleAddKey = useCallback(() => {
+  const handleAddKey = useCallback(async () => {
     if (!newKey.trim()) {
       toast({ title: 'Error', description: 'Key is required', variant: 'destructive' });
       return;
     }
-    addKey(newKey.trim(), newEn, newAr);
-    toast({ title: 'Added', description: `Key "${newKey.trim()}" added` });
-    setNewKey('');
-    setNewEn('');
-    setNewAr('');
-    setAddDialogOpen(false);
+    try {
+      const key = newKey.trim();
+      await addKey(key, newEn, newAr, getSectionFromKey(key));
+      toast({ title: 'Added', description: `Key "${key}" added` });
+      setNewKey('');
+      setNewEn('');
+      setNewAr('');
+      setAddDialogOpen(false);
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message || 'Failed to add translation key', variant: 'destructive' });
+    }
   }, [newKey, newEn, newAr, addKey]);
 
   const handleExportCSV = useCallback(() => {
@@ -195,20 +208,22 @@ export default function AdminTranslations({ embedded }: { embedded?: boolean } =
         const text = await file.text();
         const data = JSON.parse(text);
         let count = 0;
+        const saves: Promise<void>[] = [];
         if (data.en && typeof data.en === 'object') {
           const flat = flattenObj(data.en);
           for (const [k, v] of Object.entries(flat)) {
-            setBothOverrides(k, v, overrides.ar[k] ?? arFlat[k] ?? '');
+            saves.push(setBothOverrides(k, v, overrides.ar[k] ?? arFlat[k] ?? '', getSectionFromKey(k)));
             count++;
           }
         }
         if (data.ar && typeof data.ar === 'object') {
           const flat = flattenObj(data.ar);
           for (const [k, v] of Object.entries(flat)) {
-            setBothOverrides(k, overrides.en[k] ?? enFlat[k] ?? '', v);
+            saves.push(setBothOverrides(k, overrides.en[k] ?? enFlat[k] ?? '', v, getSectionFromKey(k)));
             count++;
           }
         }
+        await Promise.all(saves);
         toast({ title: 'Imported', description: `${count} keys imported from JSON` });
       } catch {
         toast({ title: 'Error', description: 'Invalid JSON file', variant: 'destructive' });
@@ -217,9 +232,14 @@ export default function AdminTranslations({ embedded }: { embedded?: boolean } =
     input.click();
   }, [setBothOverrides, overrides, enFlat, arFlat]);
 
-  const handleSync = useCallback(() => {
-    toast({ title: 'Sync Complete', description: `${totalKeys} keys synced from codebase` });
-  }, [totalKeys]);
+  const handleSync = useCallback(async () => {
+    try {
+      await loadRemoteOverrides();
+      toast({ title: 'Sync Complete', description: `${totalKeys} keys synced from codebase and Supabase` });
+    } catch (error: any) {
+      toast({ title: 'Error', description: error.message || 'Failed to sync translations', variant: 'destructive' });
+    }
+  }, [loadRemoteOverrides, totalKeys]);
 
   const statusBadge = (status: string) => {
     if (status === 'complete') return <Badge className="bg-emerald-500/15 text-emerald-400 border-emerald-500/20 text-[11px]">Complete</Badge>;

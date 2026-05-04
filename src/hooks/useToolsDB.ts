@@ -1,10 +1,11 @@
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2, Image, Palette, Layers, type LucideIcon } from 'lucide-react';
+import { Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2, Image, Palette, Layers, Film, Clapperboard, type LucideIcon } from 'lucide-react';
+import { getToolMediaType, type ToolMediaType } from '@/lib/tool-routing';
 
 const iconLookup: Record<string, LucideIcon> = {
-  Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2, Image, Palette, Layers,
+  Sparkles, ArrowUpCircle, Hexagon, Scissors, Wand2, Image, Palette, Layers, Film, Clapperboard,
 };
 
 export interface ToolRecord {
@@ -12,6 +13,7 @@ export interface ToolRecord {
   slug: string;
   route: string;
   input_type: string;
+  media_type?: ToolMediaType;
   icon_name: string;
   active: boolean;
   featured: boolean;
@@ -37,6 +39,7 @@ export interface ToolRecord {
   // Guided image tool fields
   tool_mode: string;
   selected_model_id: string | null;
+  selected_video_model_id?: string | null;
   default_prompt_en: string;
   default_prompt_ar: string;
   cta_label_en: string;
@@ -62,6 +65,7 @@ export interface ToolView {
   route: string;
   icon: LucideIcon;
   inputType: 'prompt' | 'upload' | 'mixed';
+  mediaType: ToolMediaType;
   creditCost: number;
   providerEndpoint: string;
   providerName: string;
@@ -70,6 +74,7 @@ export interface ToolView {
   featured: boolean;
   toolMode: string;
   selectedModelId: string | null;
+  selectedVideoModelId: string | null;
   defaultPromptEn: string;
   defaultPromptAr: string;
   ctaLabel: string;
@@ -110,6 +115,7 @@ export function useToolsDB() {
     route: t.route,
     icon: iconLookup[t.icon_name] || Sparkles,
     inputType: t.input_type as 'prompt' | 'upload' | 'mixed',
+    mediaType: getToolMediaType(t),
     creditCost: t.default_credit_cost,
     providerEndpoint: t.provider_endpoint,
     providerName: t.provider_name,
@@ -118,6 +124,7 @@ export function useToolsDB() {
     featured: t.featured,
     toolMode: t.tool_mode || 'standard',
     selectedModelId: t.selected_model_id,
+    selectedVideoModelId: t.selected_video_model_id || null,
     defaultPromptEn: t.default_prompt_en || '',
     defaultPromptAr: t.default_prompt_ar || '',
     ctaLabel: isAr && t.cta_label_ar ? t.cta_label_ar : t.cta_label_en,
@@ -129,7 +136,47 @@ export function useToolsDB() {
     updatedAt: t.updated_at,
   });
 
-  const tools: ToolView[] = rawTools.filter(t => t.active).map(mapToolView);
+  const defaultVideoTool: ToolView = {
+    id: 'default-generate-video',
+    slug: 'generate-video',
+    name: isAr ? 'توليد فيديو' : 'Generate Video',
+    description: isAr
+      ? 'أنشئ فيديوهات قصيرة بالذكاء الاصطناعي من وصف أو صورة أو لقطات مرجعية.'
+      : 'Create short AI videos from a prompt, image, or reference frames.',
+    shortDesc: isAr ? 'أنشئ فيديو من نص أو صورة' : 'Create videos from text or image',
+    heroTitle: isAr ? 'حوّل فكرتك إلى حركة' : 'Bring your idea into motion',
+    heroSubtitle: isAr
+      ? 'اختر نموذج فيديو، أضف وصفك، وولّد مقطعاً جاهزاً لحملتك.'
+      : 'Choose a video model, add a prompt, and generate a clip ready for your campaign.',
+    image: '/video-cover.jpg',
+    route: '/video/generate-video',
+    icon: Film,
+    inputType: 'prompt',
+    mediaType: 'video',
+    creditCost: 25,
+    providerEndpoint: '',
+    providerName: 'fal.ai',
+    internalCost: 0,
+    active: true,
+    featured: true,
+    toolMode: 'video',
+    selectedModelId: null,
+    selectedVideoModelId: null,
+    defaultPromptEn: '',
+    defaultPromptAr: '',
+    ctaLabel: isAr ? 'توليد الفيديو' : 'Generate Video',
+    uploadLabel: isAr ? 'رفع صورة البداية' : 'Upload start image',
+    uploadHelper: isAr ? 'صورة مرجعية اختيارية' : 'Optional image reference',
+    requiresUpload: false,
+    autoRun: false,
+    promptHidden: false,
+    updatedAt: '',
+  };
+
+  const mappedTools: ToolView[] = rawTools.filter(t => t.active).map(mapToolView);
+  const tools: ToolView[] = mappedTools.some(t => t.mediaType === 'video' && t.slug === 'generate-video')
+    ? mappedTools
+    : [defaultVideoTool, ...mappedTools];
   const allTools = rawTools.map(mapToolView);
 
   const featuredTools = tools.filter(t => t.featured);

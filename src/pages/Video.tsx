@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef, useMemo, useCallback, useId } from 'react';
-import { useNavigate, useSearchParams } from 'react-router-dom';
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { X, Film, Clock, ChevronRight, ChevronDown, Image, Check, Diamond, Play, Volume2, ArrowLeft, ArrowRight } from 'lucide-react';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
@@ -16,6 +16,7 @@ import VideoHowItWorks from '@/components/video/VideoHowItWorks';
 import { useVideoModels, type VideoModel } from '@/hooks/useVideoModels';
 import { GenerateButton, imageSizeError, isOversizedImage } from '@/lib/ux';
 import { localizePath } from '@/lib/localized-routes';
+import { useToolsDB } from '@/hooks/useToolsDB';
 
 /* ─── Drop-up Selector ─── */
 function SettingSelector({ label, options, value, onSelect, icon, forceUpward = false, creditInfo }: {
@@ -143,11 +144,13 @@ function DesktopModelPanel({ videoModels, selectedModelId, onSelect, onClose, is
 /* ─── Component ─── */
 export default function Video() {
   const navigate = useNavigate();
+  const { toolId } = useParams();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { credits, isAuthenticated, openAuthModal, openUpgradeModal } = useApp();
   const { lang } = useLanguage();
   const { models: videoModels, loading: modelsLoading } = useVideoModels(true);
+  const { tools } = useToolsDB();
   const { submitVideoJob } = useGenerationJobs();
   const isAr = lang === 'ar';
   const isMobile = useIsMobile();
@@ -157,20 +160,34 @@ export default function Video() {
   const [selectedRatio, setSelectedRatio] = useState('16:9');
   const [selectedDuration, setSelectedDuration] = useState(5);
   const [selectedQuality, setSelectedQuality] = useState('720p');
+  const [appliedInitialModelKey, setAppliedInitialModelKey] = useState('');
   const [audioEnabled, setAudioEnabled] = useState(false);
   const [uploadedImage, setUploadedImage] = useState<{ preview: string; url: string | null } | null>(null);
   const [endFrameImage, setEndFrameImage] = useState<{ preview: string; url: string | null } | null>(null);
-  const [refImages, setRefImages] = useState<({ preview: string; url: string | null } | null)[]>([null, null, null]);
+  const [refImages, setRefImages] = useState<{ preview: string; url: string | null }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
   const [showModelPicker, setShowModelPicker] = useState(false);
   const startFrameRef = useRef<HTMLInputElement>(null);
   const endFrameRef = useRef<HTMLInputElement>(null);
-  const refImageRefs = [useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null), useRef<HTMLInputElement>(null)];
+  const refImageInputRef = useRef<HTMLInputElement>(null);
+  const maxReferenceImages = 10;
+  const selectedTool = useMemo(
+    () => tools.find(tool => tool.mediaType === 'video' && (tool.slug === toolId || tool.id === toolId)),
+    [toolId, tools]
+  );
+  const toolPrompt = selectedTool
+    ? (lang === 'ar' && selectedTool.defaultPromptAr ? selectedTool.defaultPromptAr : selectedTool.defaultPromptEn)
+    : '';
+  const promptHidden = selectedTool?.promptHidden ?? false;
+  const toolRequiresStartImage = selectedTool?.requiresUpload ?? false;
+  const generateLabel = selectedTool?.ctaLabel || (isAr ? 'توليد الفيديو' : 'Generate Video');
 
   useEffect(() => {
-    if (videoModels.length > 0 && !selectedModelId) {
-      const requested = searchParams.get('modelId') || searchParams.get('model');
+    if (videoModels.length > 0) {
+      const requested = searchParams.get('modelId') || searchParams.get('model') || selectedTool?.selectedVideoModelId || '';
+      const requestedKey = `${toolId || 'default'}:${requested || 'first'}`;
+      if (selectedModelId && appliedInitialModelKey === requestedKey) return;
       const matched = requested
         ? videoModels.find(model =>
             model.id === requested ||
@@ -178,9 +195,17 @@ export default function Video() {
             model.display_name.toLowerCase().replace(/[^a-z0-9]+/g, '-') === requested
           )
         : null;
-      setSelectedModelId((matched || videoModels[0]).id);
+      if (!selectedModelId || requested) {
+        setSelectedModelId((matched || videoModels[0]).id);
+        setAppliedInitialModelKey(requestedKey);
+      }
     }
-  }, [videoModels, selectedModelId, searchParams]);
+  }, [appliedInitialModelKey, selectedModelId, searchParams, selectedTool?.selectedVideoModelId, toolId, videoModels]);
+
+  useEffect(() => {
+    if (!selectedTool || !toolPrompt || prompt) return;
+    setPrompt(toolPrompt);
+  }, [prompt, selectedTool, toolPrompt]);
 
   useEffect(() => {
     const imageUrl = searchParams.get('imageUrl');
@@ -199,7 +224,7 @@ export default function Video() {
     if (!currentModel.supports_audio) setAudioEnabled(false);
     if (!currentModel.supports_start_frame) setUploadedImage(null);
     if (!currentModel.supports_end_frame) setEndFrameImage(null);
-    if (!currentModel.supports_reference_images) setRefImages([null, null, null]);
+    if (!currentModel.supports_reference_images) setRefImages([]);
   }, [currentModel, selectedDuration, selectedQuality, selectedRatio]);
 
   // Credit calculation
@@ -216,18 +241,19 @@ export default function Video() {
     return `${dur * cps} credits`;
   }, [audioEnabled, currentModel]);
 
-  const handleUpload = useCallback(async (file: File, type: 'start' | 'end' | 'ref', refIdx?: number) => {
+  const handleUpload = useCallback(async (file: File, type: 'start' | 'end' | 'ref') => {
     if (isOversizedImage(file)) {
       toast.error(imageSizeError(isAr));
       return;
     }
     if (!user) return;
+    if (type === 'ref' && refImages.length >= maxReferenceImages) return;
     setIsUploading(true);
     const preview = URL.createObjectURL(file);
     if (type === 'start') setUploadedImage({ preview, url: null });
     else if (type === 'end') setEndFrameImage({ preview, url: null });
-    else if (type === 'ref' && refIdx !== undefined) {
-      setRefImages(prev => { const n = [...prev]; n[refIdx] = { preview, url: null }; return n; });
+    else if (type === 'ref') {
+      setRefImages(prev => [...prev, { preview, url: null }].slice(0, maxReferenceImages));
     }
     const path = `${user.id}/video-${type}-${Date.now()}.${file.name.split('.').pop()}`;
     const { error } = await supabase.storage.from('tool-files').upload(path, file);
@@ -235,32 +261,35 @@ export default function Video() {
       toast.error(isAr ? 'فشل رفع الصورة' : 'Upload failed');
       if (type === 'start') setUploadedImage(null);
       else if (type === 'end') setEndFrameImage(null);
-      else if (type === 'ref' && refIdx !== undefined) setRefImages(prev => { const n = [...prev]; n[refIdx] = null; return n; });
+      else if (type === 'ref') setRefImages(prev => prev.filter(img => img.preview !== preview));
     } else {
       const { data: { publicUrl } } = supabase.storage.from('tool-files').getPublicUrl(path);
       if (type === 'start') setUploadedImage({ preview, url: publicUrl });
       else if (type === 'end') setEndFrameImage({ preview, url: publicUrl });
-      else if (type === 'ref' && refIdx !== undefined) setRefImages(prev => { const n = [...prev]; n[refIdx] = { preview, url: publicUrl }; return n; });
+      else if (type === 'ref') setRefImages(prev => prev.map(img => img.preview === preview ? { preview, url: publicUrl } : img));
     }
     setIsUploading(false);
-  }, [user, isAr]);
+  }, [user, isAr, refImages.length]);
 
-  const canGenerate = prompt.trim().length > 0 && !isUploading && !isGenerating &&
-    !(currentModel?.start_frame_required && !uploadedImage?.url);
+  const effectivePrompt = promptHidden ? toolPrompt : prompt.trim();
+  const needsStartImage = toolRequiresStartImage || currentModel?.start_frame_required;
+  const canGenerate = effectivePrompt.trim().length > 0 && !isUploading && !isGenerating &&
+    !(needsStartImage && !uploadedImage?.url);
 
   const handleGenerate = async () => {
-    if (!prompt.trim()) { toast.error(isAr ? 'يرجى إدخال وصف' : 'Please enter a prompt'); return; }
+    if (!effectivePrompt.trim()) { toast.error(isAr ? 'يرجى إدخال وصف' : 'Please enter a prompt'); return; }
     if (!isAuthenticated) { openAuthModal('signup'); return; }
     if (credits < totalCredits) { openUpgradeModal(); return; }
     if (!currentModel) return;
-    if (currentModel.start_frame_required && !uploadedImage?.url) {
-      toast.error(isAr ? 'صورة البداية مطلوبة لهذا النموذج' : 'Start frame is required for this model');
+    if (needsStartImage && !uploadedImage?.url) {
+      toast.error(selectedTool?.uploadLabel || (isAr ? 'صورة البداية مطلوبة لهذا النموذج' : 'Start frame is required for this model'));
       return;
     }
     setIsGenerating(true);
     try {
+      const referenceImageUrls = refImages.map(img => img.url).filter((url): url is string => !!url);
       const jobId = await submitVideoJob({
-        prompt: prompt.trim(),
+        prompt: effectivePrompt.trim(),
         ratio: selectedRatio,
         quality: selectedQuality,
         duration: `${selectedDuration}s`,
@@ -268,6 +297,7 @@ export default function Video() {
         creditCost: totalCredits,
         imageUrl: uploadedImage?.url || undefined,
         endFrameUrl: endFrameImage?.url || undefined,
+        referenceImageUrls,
         generateAudio: audioEnabled && currentModel.supports_audio,
       });
       if (jobId) {
@@ -300,54 +330,84 @@ export default function Video() {
   /* ─── Frame Upload Card ─── */
   const FrameCard = ({ type, image, onRemove, onUpload, required }: {
     type: 'start' | 'end'; image: { preview: string; url: string | null } | null; onRemove: () => void; onUpload: () => void; required?: boolean;
-  }) => (
+  }) => {
+    const label = type === 'start'
+      ? (selectedTool?.uploadLabel || (isAr ? 'إطار البداية' : 'Start frame'))
+      : (isAr ? 'إطار النهاية' : 'End frame');
+    return (
     <button
       onClick={onUpload}
-      aria-label={type === 'start' ? (isAr ? 'رفع إطار البداية' : 'Upload start frame') : (isAr ? 'رفع إطار النهاية' : 'Upload end frame')}
+      aria-label={label}
       className={cn(
-      "relative rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all overflow-hidden aspect-[4/3]",
+      "relative flex-1 min-w-[150px] rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all overflow-hidden aspect-[4/3]",
       image ? "p-0" : "border border-dashed border-border/20 dark:border-border/10 bg-card/40 dark:bg-card/20 hover:bg-card/60 dark:hover:bg-card/30 active:scale-[0.97]"
     )}>
       {image ? (
         <>
-          <img src={image.preview} alt={type === 'start' ? (isAr ? 'إطار البداية' : 'Start frame') : (isAr ? 'إطار النهاية' : 'End frame')} className="w-full h-full object-cover rounded-2xl" />
+          <img src={image.preview} alt={label} className="w-full h-full object-cover rounded-2xl" />
           <button onClick={e => { e.stopPropagation(); onRemove(); }} className="absolute top-2 right-2 min-h-11 min-w-11 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white active:scale-90 transition-transform" aria-label={type === 'start' ? (isAr ? 'إزالة إطار البداية' : 'Remove start frame') : (isAr ? 'إزالة إطار النهاية' : 'Remove end frame')}><X size={11} /></button>
           {isUploading && <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-2xl"><div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" /></div>}
         </>
       ) : (
         <>
           <div className="w-9 h-9 rounded-full bg-muted/20 dark:bg-muted/10 flex items-center justify-center"><Image size={16} className="text-muted-foreground/30" /></div>
-          <span className="text-[11px] text-muted-foreground/50 font-medium">{type === 'start' ? (isAr ? 'إطار البداية' : 'Start frame') : (isAr ? 'إطار النهاية' : 'End frame')}</span>
+          <span className="text-[11px] text-muted-foreground/50 font-medium">{label}</span>
           <span className={cn("text-[9px] font-bold px-2 py-0.5 rounded-full", required ? "bg-destructive/15 text-destructive" : "bg-muted/30 text-muted-foreground/40")}>
             {required ? (isAr ? 'مطلوب' : 'Required') : (isAr ? 'اختياري' : 'Optional')}
           </span>
         </>
       )}
     </button>
-  );
-
-  /* ─── Reference Image Card ─── */
-  const RefImageCard = ({ idx }: { idx: number }) => {
-    const img = refImages[idx];
-    return (
-      <button
-        onClick={() => refImageRefs[idx]?.current?.click()}
-        aria-label={isAr ? `رفع صورة مرجعية ${idx + 1}` : `Upload reference image ${idx + 1}`}
-        className={cn(
-        "relative rounded-xl flex flex-col items-center justify-center gap-1 transition-all overflow-hidden aspect-square",
-        img ? "p-0" : "border border-dashed border-border/20 dark:border-border/10 bg-card/40 dark:bg-card/20 hover:bg-card/60 active:scale-[0.97]"
-      )}>
-        {img ? (
-          <>
-            <img src={img.preview} alt={isAr ? `صورة مرجعية ${idx + 1}` : `Reference image ${idx + 1}`} className="w-full h-full object-cover rounded-xl" />
-            <button onClick={e => { e.stopPropagation(); setRefImages(prev => { const n = [...prev]; n[idx] = null; return n; }); }} className="absolute top-1 right-1 min-h-11 min-w-11 rounded-full bg-black/60 flex items-center justify-center text-white" aria-label={isAr ? `إزالة الصورة المرجعية ${idx + 1}` : `Remove reference image ${idx + 1}`}><X size={9} /></button>
-          </>
-        ) : (
-          <Image size={14} className="text-muted-foreground/25" />
-        )}
-      </button>
     );
   };
+
+  /* ─── Reference Image Card ─── */
+  const ReferenceImageStrip = () => (
+    <div>
+      <div className="mb-1.5 flex items-center justify-between px-1">
+        <p className="text-[10px] text-muted-foreground/50 font-medium">{isAr ? 'صور مرجعية' : 'Reference images'}</p>
+        <span className="text-[10px] text-muted-foreground/40">{refImages.length}/{maxReferenceImages}</span>
+      </div>
+      <div className="flex max-w-full gap-2 overflow-x-auto pb-1 scrollbar-thin">
+        {refImages.map((img, idx) => (
+          <div key={`${img.preview}-${idx}`} className="relative h-16 w-16 flex-none overflow-hidden rounded-xl border border-primary/20 bg-card/50">
+            <img src={img.preview} alt={isAr ? `صورة مرجعية ${idx + 1}` : `Reference image ${idx + 1}`} className="h-full w-full object-cover" />
+            {!img.url && <div className="absolute inset-0 bg-background/60 flex items-center justify-center"><span className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /></div>}
+            <button
+              onClick={() => setRefImages(prev => prev.filter((_, i) => i !== idx))}
+              className="absolute top-1 right-1 min-h-11 min-w-11 rounded-full bg-black/60 flex items-center justify-center text-white"
+              aria-label={isAr ? `إزالة الصورة المرجعية ${idx + 1}` : `Remove reference image ${idx + 1}`}
+            >
+              <X size={9} />
+            </button>
+          </div>
+        ))}
+        {refImages.length < maxReferenceImages && (
+          <button
+            type="button"
+            onClick={() => refImageInputRef.current?.click()}
+            className="h-16 w-16 flex-none rounded-xl border border-dashed border-border/20 bg-card/40 text-muted-foreground/45 transition-all hover:bg-card/60 hover:text-primary active:scale-[0.97]"
+            aria-label={isAr ? 'رفع صورة مرجعية' : 'Upload reference image'}
+          >
+            <Image size={15} className="mx-auto" />
+          </button>
+        )}
+      </div>
+      <input
+        ref={refImageInputRef}
+        type="file"
+        accept="image/*"
+        multiple
+        className="hidden"
+        aria-label={isAr ? 'رفع صور مرجعية' : 'Upload reference images'}
+        onChange={e => {
+          const files = Array.from(e.target.files || []).slice(0, Math.max(0, maxReferenceImages - refImages.length));
+          files.forEach(file => handleUpload(file, 'ref'));
+          e.currentTarget.value = '';
+        }}
+      />
+    </div>
+  );
 
   /* ─── Audio Toggle Row ─── */
   const AudioToggle = () => {
@@ -367,6 +427,13 @@ export default function Video() {
   /* ─── Creation Panel (shared between mobile & desktop) ─── */
   const renderCreationPanel = (isDesktop = false) => (
     <div className={cn("space-y-3", isDesktop && "space-y-3")}>
+      {selectedTool && (
+        <div className="rounded-2xl bg-card/50 dark:bg-card/30 px-4 py-3 shadow-sm">
+          <p className="text-[15px] font-black text-foreground tracking-tight">{selectedTool.name}</p>
+          <p className="text-[12px] text-muted-foreground/65 mt-0.5 leading-relaxed">{selectedTool.shortDesc || selectedTool.description}</p>
+        </div>
+      )}
+
       {/* Hero Model Card */}
       {isDesktop ? (
         <div className="w-full rounded-2xl overflow-hidden relative shadow-sm">
@@ -402,7 +469,7 @@ export default function Video() {
       )}
 
       {/* Frame Upload — conditional on model */}
-      {currentModel?.supports_start_frame && (
+      {(currentModel?.supports_start_frame || toolRequiresStartImage) && (
         <div className={cn("grid gap-2.5", currentModel.supports_end_frame ? "grid-cols-2" : "grid-cols-1")}>
           <FrameCard type="start" image={uploadedImage} onRemove={() => setUploadedImage(null)} onUpload={() => startFrameRef.current?.click()} required={currentModel.start_frame_required} />
           {currentModel.supports_end_frame && <FrameCard type="end" image={endFrameImage} onRemove={() => setEndFrameImage(null)} onUpload={() => endFrameRef.current?.click()} />}
@@ -413,26 +480,22 @@ export default function Video() {
 
       {/* Reference Images */}
       {currentModel?.supports_reference_images && (
-        <div>
-          <p className="text-[10px] text-muted-foreground/50 font-medium mb-1.5 px-1">{isAr ? 'صور مرجعية' : 'Reference images'}</p>
-          <div className="grid grid-cols-3 gap-2">
-            {[0, 1, 2].map(i => <RefImageCard key={i} idx={i} />)}
-          </div>
-          {[0, 1, 2].map(i => <input key={i} ref={refImageRefs[i]} type="file" accept="image/*" className="hidden" aria-label={isAr ? `رفع صورة مرجعية ${i + 1}` : `Upload reference image ${i + 1}`} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], 'ref', i); }} />)}
-        </div>
+        <ReferenceImageStrip />
       )}
 
       {/* Prompt */}
-      <div className="rounded-2xl bg-card/50 dark:bg-card/30 overflow-hidden focus-within:ring-1 focus-within:ring-primary/20 transition-shadow shadow-sm">
-        <textarea
-          id="video-prompt"
-          aria-label={isAr ? 'وصف الفيديو' : 'Video prompt'}
-          value={prompt} onChange={e => setPrompt(e.target.value)}
-          placeholder={isAr ? 'صف الفيديو الذي تريده...' : 'Describe your video...'}
-          rows={isDesktop ? 4 : 4}
-          className="w-full bg-transparent px-4 py-3.5 text-[14px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none resize-none leading-relaxed"
-        />
-      </div>
+      {!promptHidden && (
+        <div className="rounded-2xl bg-card/50 dark:bg-card/30 overflow-hidden focus-within:ring-1 focus-within:ring-primary/20 transition-shadow shadow-sm">
+          <textarea
+            id="video-prompt"
+            aria-label={isAr ? 'وصف الفيديو' : 'Video prompt'}
+            value={prompt} onChange={e => setPrompt(e.target.value)}
+            placeholder={isAr ? 'صف الفيديو الذي تريده...' : 'Describe your video...'}
+            rows={isDesktop ? 4 : 4}
+            className="w-full bg-transparent px-4 py-3.5 text-[14px] text-foreground placeholder:text-muted-foreground/30 focus:outline-none resize-none leading-relaxed"
+          />
+        </div>
+      )}
 
       {/* Audio Toggle */}
       <AudioToggle />
@@ -499,7 +562,7 @@ export default function Video() {
       {/* Generate Button (desktop) */}
       {isDesktop && (
         <GenerateButton onClick={handleGenerate} disabled={!canGenerate} loading={isGenerating} credits={totalCredits}>
-          {isAr ? 'توليد الفيديو' : 'Generate Video'}
+          {generateLabel}
         </GenerateButton>
       )}
     </div>
@@ -513,7 +576,7 @@ export default function Video() {
           <div className="max-w-lg mx-auto px-4 pt-4 space-y-3">
             <button
               type="button"
-              onClick={() => navigate(localizePath('/create', lang))}
+              onClick={() => navigate(localizePath(selectedTool ? '/video' : '/create', lang))}
               className={cn(
                 'group inline-flex items-center gap-2 h-9 ps-2 pe-3.5 -ms-2 mb-1 rounded-full',
                 'text-[13px] font-medium text-muted-foreground',
@@ -525,7 +588,7 @@ export default function Video() {
               <span className="flex items-center justify-center w-6 h-6 rounded-full bg-muted/30 group-hover:bg-muted/60 transition-colors">
                 <BackArrow size={13} />
               </span>
-              <span>{isAr ? 'العودة إلى الإنشاء' : 'Back to Create'}</span>
+              <span>{selectedTool ? (isAr ? 'العودة إلى أدوات الفيديو' : 'Back to Video tools') : (isAr ? 'العودة إلى الإنشاء' : 'Back to Create')}</span>
             </button>
             {renderCreationPanel()}
           </div>
@@ -533,7 +596,7 @@ export default function Video() {
         <div className="fixed left-0 right-0 z-40 px-4 py-3 bg-background/95 backdrop-blur-md" style={{ bottom: 'calc(58px + env(safe-area-inset-bottom, 0px))' }}>
           <div className="max-w-lg mx-auto">
             <GenerateButton onClick={handleGenerate} disabled={!canGenerate} loading={isGenerating} credits={totalCredits}>
-              {isAr ? 'توليد' : 'Generate'}
+              {generateLabel}
             </GenerateButton>
           </div>
         </div>
@@ -546,32 +609,42 @@ export default function Video() {
   return (
     <div className="flex-1 flex flex-col" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
       <div className="flex-1 overflow-y-auto">
-        <div className="flex w-full">
-          <div className="w-[clamp(340px,30vw,400px)] flex-shrink-0 relative">
-            <div className="sticky px-5 py-5 overflow-y-auto" style={{ top: 'calc(3.5rem + var(--banner-h, 0px))', height: 'calc(100vh - 3.5rem - var(--banner-h, 0px))' }}>
-              {renderCreationPanel(true)}
-            </div>
-            {showModelPicker && (
-              <div className="fixed z-50" style={{ top: 'calc(3.5rem + var(--banner-h, 0px) + 1.25rem)', ...(isAr ? { right: 'clamp(360px, calc(30vw + 1.25rem), 420px)' } : { left: 'clamp(360px, calc(30vw + 1.25rem), 420px)' }) }}>
-                <DesktopModelPanel videoModels={videoModels} selectedModelId={selectedModelId} onSelect={id => { setSelectedModelId(id); setShowModelPicker(false); }} onClose={() => setShowModelPicker(false)} isAr={isAr} />
-              </div>
-            )}
-          </div>
-          <div className="flex-1 min-w-0 px-8 py-6">
-            <Tabs defaultValue="history" className="w-full">
-              <TabsList className="bg-card/50 dark:bg-card/30 rounded-2xl p-1 mb-6 w-auto inline-flex">
+        <Tabs defaultValue="generate" className="w-full">
+          <div className="sticky top-0 z-40 bg-background/90 px-5 py-3 backdrop-blur">
+            <div className="flex justify-center">
+              <TabsList className="bg-card/50 dark:bg-card/30 rounded-2xl p-1 w-auto inline-flex">
+                <TabsTrigger value="generate" className="rounded-xl px-5 py-2 text-[13px] font-semibold data-[state=active]:bg-background dark:data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all">
+                  <Play size={14} className={cn(isAr ? "ml-2" : "mr-2")} />{isAr ? 'توليد' : 'Generate'}
+                </TabsTrigger>
                 <TabsTrigger value="history" className="rounded-xl px-5 py-2 text-[13px] font-semibold data-[state=active]:bg-background dark:data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all">
                   <Film size={14} className={cn(isAr ? "ml-2" : "mr-2")} />{isAr ? 'السجل' : 'History'}
                 </TabsTrigger>
-                <TabsTrigger value="howItWorks" className="rounded-xl px-5 py-2 text-[13px] font-semibold data-[state=active]:bg-background dark:data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all">
-                  <Play size={14} className={cn(isAr ? "ml-2" : "mr-2")} />{isAr ? 'كيف يعمل' : 'How it works'}
-                </TabsTrigger>
               </TabsList>
-              <TabsContent value="history" className="mt-0"><VideoHistoryPanel /></TabsContent>
-              <TabsContent value="howItWorks" className="mt-0"><VideoHowItWorks /></TabsContent>
-            </Tabs>
+            </div>
           </div>
-        </div>
+
+          <TabsContent value="generate" className="m-0">
+            <div className="flex w-full" dir="ltr">
+              <div className={cn("w-[clamp(340px,30vw,400px)] flex-shrink-0 relative", isAr ? "order-2" : "order-1")} dir={isAr ? 'rtl' : 'ltr'}>
+                <div className="sticky px-5 py-5 overflow-y-auto" style={{ top: 'calc(6.25rem + var(--banner-h, 0px))', height: 'calc(100vh - 6.25rem - var(--banner-h, 0px))' }}>
+                  {renderCreationPanel(true)}
+                </div>
+                {showModelPicker && (
+                  <div className="fixed z-50" style={{ top: 'calc(6.25rem + var(--banner-h, 0px) + 1.25rem)', ...(isAr ? { right: 'clamp(360px, calc(30vw + 1.25rem), 420px)' } : { left: 'clamp(360px, calc(30vw + 1.25rem), 420px)' }) }}>
+                    <DesktopModelPanel videoModels={videoModels} selectedModelId={selectedModelId} onSelect={id => { setSelectedModelId(id); setShowModelPicker(false); }} onClose={() => setShowModelPicker(false)} isAr={isAr} />
+                  </div>
+                )}
+              </div>
+              <div className={cn("flex-1 min-w-0 px-8 py-6", isAr ? "order-1" : "order-2")} dir={isAr ? 'rtl' : 'ltr'}>
+                <VideoHowItWorks />
+              </div>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="history" className="m-0 px-8 py-6">
+            <VideoHistoryPanel />
+          </TabsContent>
+        </Tabs>
       </div>
     </div>
   );

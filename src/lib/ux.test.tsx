@@ -28,12 +28,12 @@ describe("image upload guards", () => {
 describe("generation handoff URLs", () => {
   it("preserves the source image and only includes defined extras", () => {
     expect(
-      generationHandoffUrl("/video", "https://cdn.example.com/image one.png", {
+      generationHandoffUrl("/video/generate-video", "https://cdn.example.com/image one.png", {
         modelId: "kling",
         empty: "",
         missing: undefined,
       })
-    ).toBe("/video?imageUrl=https%3A%2F%2Fcdn.example.com%2Fimage+one.png&modelId=kling");
+    ).toBe("/video/generate-video?imageUrl=https%3A%2F%2Fcdn.example.com%2Fimage+one.png&modelId=kling");
   });
 });
 

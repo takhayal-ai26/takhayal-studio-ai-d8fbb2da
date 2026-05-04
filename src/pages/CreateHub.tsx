@@ -2,11 +2,12 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useToolsDB } from '@/hooks/useToolsDB';
 import { useApp } from '@/context/AppContext';
-import { Sparkles, Film } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 import { useState } from 'react';
 import { cn } from '@/lib/utils';
 import { PageSeo } from '@/components/seo/PageSeo';
 import { localizePath } from '@/lib/localized-routes';
+import { filterToolsByMedia, getToolRoute } from '@/lib/tool-routing';
 import heroPoster from '@/assets/landing/hero-video-poster-960.avif';
 
 type Tab = 'image' | 'video';
@@ -19,16 +20,20 @@ export default function CreateHub() {
   const isAr = lang === 'ar';
   const [tab, setTab] = useState<Tab>('image');
 
-  const heroTool = tools.find(t => t.slug === 'generate');
-  const quickTools = tools.filter(t => t.slug !== 'generate');
+  const imageTools = filterToolsByMedia(tools, 'image');
+  const videoTools = filterToolsByMedia(tools, 'video');
+  const heroTool = imageTools.find(t => t.slug === 'generate');
+  const quickTools = imageTools.filter(t => t.slug !== 'generate');
+  const primaryVideoTool = videoTools.find(t => t.featured) || videoTools[0];
+  const secondaryVideoTools = videoTools.filter(t => t.id !== primaryVideoTool?.id);
 
   const handleToolClick = (tool: typeof tools[0]) => {
-    if (tool.slug === 'generate') {
+    if (tool.mediaType === 'image' && tool.slug === 'generate') {
       setActivePage('canvas');
       navigate(localizePath('/tools/generate', lang));
       return;
     }
-    navigate(localizePath(`/tools/${tool.slug}`, lang));
+    navigate(localizePath(getToolRoute(tool), lang));
   };
 
   return (
@@ -147,29 +152,57 @@ export default function CreateHub() {
 
         {/* Video Tab */}
         <div className={cn('transition-opacity duration-200', tab === 'video' ? 'opacity-100' : 'opacity-0 hidden')}>
-          <button
-            onClick={() => navigate(localizePath('/video', lang))}
-            className="w-full rounded-3xl overflow-hidden relative group focus:outline-none active:scale-[0.98] transition-transform shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
-            style={{ textAlign: isAr ? 'right' : 'left' }}
-          >
-            <div className="aspect-[2/1] relative">
-              <img src={heroPoster} alt={isAr ? 'إنشاء فيديو' : 'Create Video'} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/5" />
-            </div>
-            <div className="absolute bottom-0 left-0 right-0 p-5">
-              <h2 className="text-xl font-bold text-white">
-                {isAr ? 'إنشاء فيديو' : 'Create Video'}
-              </h2>
-              <p className="text-sm text-white/60 mt-0.5">
-                {isAr ? 'أنشئ فيديوهات من نص أو صورة' : 'Generate videos from text or image'}
-              </p>
-            </div>
-            <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-white/[0.08] group-hover:ring-primary/25 transition-all pointer-events-none" />
-          </button>
+          {primaryVideoTool && (
+            <button
+              onClick={() => handleToolClick(primaryVideoTool)}
+              className="w-full rounded-3xl overflow-hidden relative group focus:outline-none active:scale-[0.98] transition-transform shadow-[0_10px_40px_rgba(0,0,0,0.25)]"
+              style={{ textAlign: isAr ? 'right' : 'left' }}
+            >
+              <div className="aspect-[2/1] relative">
+                <img src={primaryVideoTool.image || heroPoster} alt={primaryVideoTool.name} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/30 to-black/5" />
+              </div>
+              <div className="absolute bottom-0 left-0 right-0 p-5">
+                <h2 className="text-xl font-bold text-white">{primaryVideoTool.name}</h2>
+                <p className="text-sm text-white/60 mt-0.5">{primaryVideoTool.shortDesc}</p>
+              </div>
+              <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-white/[0.08] group-hover:ring-primary/25 transition-all pointer-events-none" />
+            </button>
+          )}
 
-          <p className="text-center text-xs text-muted-foreground/50 mt-6">
-            {isAr ? 'المزيد من أدوات الفيديو قريباً' : 'More video tools coming soon'}
-          </p>
+          {secondaryVideoTools.length > 0 && (
+            <div className="grid grid-cols-2 gap-3 mt-3">
+              {secondaryVideoTools.map(tool => (
+                <button
+                  key={tool.id}
+                  onClick={() => handleToolClick(tool)}
+                  className="rounded-3xl overflow-hidden relative group focus:outline-none active:scale-[0.97] transition-all shadow-[0_4px_20px_rgba(0,0,0,0.2)]"
+                  style={{ textAlign: isAr ? 'right' : 'left' }}
+                >
+                  <div className="aspect-square relative">
+                    <img
+                      src={tool.image || heroPoster}
+                      alt={tool.name}
+                      className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                      loading="lazy"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/35 to-transparent" />
+                  </div>
+                  <div className="absolute bottom-0 left-0 right-0 p-4">
+                    <h3 className="text-[15px] font-bold text-white leading-tight">{tool.name}</h3>
+                    <p className="text-[12px] text-white/55 mt-1 line-clamp-1">{tool.shortDesc}</p>
+                  </div>
+                  <div className="absolute inset-0 rounded-3xl ring-1 ring-inset ring-white/[0.06] group-hover:ring-white/15 transition-all pointer-events-none" />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {!primaryVideoTool && (
+            <p className="text-center text-xs text-muted-foreground/50 mt-6">
+              {isAr ? 'لا توجد أدوات فيديو نشطة حالياً' : 'No active video tools yet'}
+            </p>
+          )}
         </div>
       </div>
     </div>
