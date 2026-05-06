@@ -136,9 +136,14 @@ export function TopNavbar({ bannerOffset = false }: { bannerOffset?: boolean }) 
   return (
     <>
       <nav dir={isRTL ? 'rtl' : 'ltr'} className={`fixed left-0 right-0 z-50 h-14 md:h-11 flex items-center px-5 md:px-5 transition-[top,background,backdrop-filter] duration-300 ${bannerOffset ? 'top-[40px]' : 'top-0'} ${isHeroPage && !scrolled ? 'bg-transparent' : 'bg-background/90 backdrop-blur-md'}`} data-hero-transparent={isHeroPage && !scrolled ? 'true' : undefined}>
-        <div className="flex-shrink-0 whitespace-nowrap">
+        <button
+          type="button"
+          onClick={() => go('/')}
+          className="flex-shrink-0 whitespace-nowrap rounded-md transition-opacity hover:opacity-85 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40 focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+          aria-label={isRTL ? 'العودة إلى الرئيسية' : 'Go to home'}
+        >
           <Logo />
-        </div>
+        </button>
 
         {/* Center: Nav links (desktop) */}
         <div className="hidden md:flex items-center gap-0.5 mx-auto">
