@@ -18,6 +18,12 @@ import { useQuery } from '@tanstack/react-query';
 import { useModels } from '@/hooks/useModels';
 import { useVideoModels } from '@/hooks/useVideoModels';
 import type { ToolMediaType } from '@/lib/tool-routing';
+import {
+  applyToolMediaType,
+  applyToolSlug,
+  normalizeToolFormBeforeSave,
+  validateToolFormBeforeSave,
+} from './toolEditorForm';
 
 interface Props {
   open: boolean;
@@ -50,17 +56,6 @@ function emptyTool(): Partial<ToolRecord> {
     upload_helper_en: 'JPG, PNG up to 10MB', upload_helper_ar: 'JPG، PNG حتى 10 ميغابايت',
     requires_upload: false, auto_run: false, prompt_hidden: false,
   };
-}
-
-function defaultRouteFor(mediaType: ToolMediaType, slug?: string) {
-  const cleanSlug = slug?.trim();
-  if (!cleanSlug) return mediaType === 'video' ? '/video/' : '/tools/';
-  return mediaType === 'video' ? `/video/${cleanSlug}` : `/tools/${cleanSlug}`;
-}
-
-function shouldRefreshRoute(route?: string) {
-  if (!route) return true;
-  return route === '/tools/' || route === '/video/' || route.startsWith('/tools/') || route.startsWith('/video/');
 }
 
 // ── Provider Card ──
@@ -336,25 +331,11 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
   const mediaType = (form.media_type || 'image') as ToolMediaType;
 
   const setMediaType = (value: ToolMediaType) => {
-    setForm(p => ({
-      ...p,
-      media_type: value,
-      result_type: value === 'video' ? 'video' : (p.result_type === 'video' ? 'image' : p.result_type),
-      tool_mode: value === 'video' ? 'video' : (p.tool_mode === 'video' ? 'standard' : p.tool_mode),
-      input_type: value === 'video' ? 'prompt' : p.input_type,
-      icon_name: value === 'video' && p.icon_name === 'Sparkles' ? 'Film' : p.icon_name,
-      route: shouldRefreshRoute(p.route) ? defaultRouteFor(value, p.slug) : p.route,
-      selected_model_id: value === 'video' ? null : p.selected_model_id,
-      selected_video_model_id: value === 'image' ? null : p.selected_video_model_id,
-    }));
+    setForm(p => applyToolMediaType(p, value));
   };
 
   const setSlug = (slug: string) => {
-    setForm(p => ({
-      ...p,
-      slug,
-      route: shouldRefreshRoute(p.route) ? defaultRouteFor((p.media_type || 'image') as ToolMediaType, slug) : p.route,
-    }));
+    setForm(p => applyToolSlug(p, slug));
   };
 
   const missingArabic = ['title_ar', 'description_ar', 'short_desc_ar', 'hero_title_ar', 'hero_subtitle_ar']
@@ -386,23 +367,11 @@ export default function AdminToolEditorDialog({ open, onOpenChange, tool }: Prop
   const handleRemoveImage = () => set('cover_image_url', '');
 
   const handleSave = async () => {
-    if (!form.title_en?.trim()) { toast({ title: 'Validation', description: 'English title is required', variant: 'destructive' }); return; }
-    if (!form.slug?.trim()) { toast({ title: 'Validation', description: 'Slug is required', variant: 'destructive' }); return; }
+    const validationError = validateToolFormBeforeSave(form);
+    if (validationError) { toast(validationError); return; }
     setSaving(true);
     try {
-      const normalizedMediaType = (form.media_type || 'image') as ToolMediaType;
-      const normalizedForm = {
-        ...form,
-        slug: form.slug.trim(),
-        media_type: normalizedMediaType,
-        result_type: normalizedMediaType === 'video' ? 'video' : (form.result_type || 'image'),
-        tool_mode: normalizedMediaType === 'video' ? 'video' : (form.tool_mode || 'standard'),
-        route: form.route?.trim() && !['/tools/', '/video/'].includes(form.route.trim())
-          ? form.route.trim()
-          : defaultRouteFor(normalizedMediaType, form.slug),
-        selected_model_id: normalizedMediaType === 'video' ? null : form.selected_model_id,
-        selected_video_model_id: normalizedMediaType === 'image' ? null : form.selected_video_model_id,
-      };
+      const normalizedForm = normalizeToolFormBeforeSave(form);
       if (isEdit && tool) {
         const { id, created_at, updated_at, ...updates } = normalizedForm as ToolRecord;
         await updateTool.mutateAsync({ id: tool.id, updates });
