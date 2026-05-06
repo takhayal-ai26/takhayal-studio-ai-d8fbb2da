@@ -1,8 +1,9 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { useAuth } from '@/context/AuthContext';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { localizePath } from '@/lib/localized-routes';
 import { Check, Sparkles, ChevronLeft, ChevronRight } from 'lucide-react';
 import {
   Accordion, AccordionContent, AccordionItem, AccordionTrigger,
@@ -462,7 +463,7 @@ const Pricing = () => {
       openAuthModal('signup');
       return;
     }
-    navigate(`/checkout?plan=${slug}&billing=${billing}`);
+    navigate(`${localizePath('/checkout', lang)}?plan=${slug}&billing=${billing}`);
   };
 
   const getPrice = (p: any) => {
@@ -648,7 +649,7 @@ const Pricing = () => {
                       openAuthModal('signup');
                       return;
                     }
-                    navigate(`/checkout?credits=${pkg.credits}&price=${pkg.price}`);
+                    navigate(`${localizePath('/checkout', lang)}?credits=${pkg.credits}&price=${pkg.price}`);
                   }}
                   className={`mt-4 w-full min-h-11 rounded-xl text-[13px] font-medium transition-all ${
                     pkg.is_popular
@@ -687,9 +688,9 @@ const Pricing = () => {
       <section className="max-w-2xl mx-auto px-6 pb-16 text-center">
         <p className="text-[12px] text-muted-foreground">
           {pageText('legal', 'prefix', isAr ? 'بالاشتراك أنت توافق على ' : 'By subscribing you agree to our ')}
-          <a href="/terms" className="inline-flex min-h-11 items-center hover:text-foreground transition-colors">{pageText('legal', 'terms', isAr ? 'الشروط والأحكام' : 'Terms & Conditions')}</a>
+          <Link to={localizePath('/terms', lang)} className="inline-flex min-h-11 items-center hover:text-foreground transition-colors">{pageText('legal', 'terms', isAr ? 'الشروط والأحكام' : 'Terms & Conditions')}</Link>
           {pageText('legal', 'joiner', isAr ? ' و' : ' and ')}
-          <a href="/privacy" className="inline-flex min-h-11 items-center hover:text-foreground transition-colors">{pageText('legal', 'privacy', isAr ? 'سياسة الخصوصية' : 'Privacy Policy')}</a>
+          <Link to={localizePath('/privacy', lang)} className="inline-flex min-h-11 items-center hover:text-foreground transition-colors">{pageText('legal', 'privacy', isAr ? 'سياسة الخصوصية' : 'Privacy Policy')}</Link>
         </p>
       </section>
     </div>
