@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { ArrowRight, ArrowLeft, Cpu, Film } from 'lucide-react';
 import { useModelGuides } from '@/hooks/useModelGuides';
@@ -85,8 +85,8 @@ function ModelCard({ model, isAr, lang }: { model: DisplayModel; isAr: boolean; 
   const href = localizePath(`/models/${model.slug}`, lang);
 
   return (
-    <a
-      href={href}
+    <Link
+      to={href}
       className="group relative block flex-shrink-0 overflow-hidden rounded-2xl border border-border/40 bg-card/30 shadow-[0_4px_18px_-8px_rgba(0,0,0,0.4)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/50 hover:shadow-[0_18px_36px_-12px_hsl(var(--primary)/0.35)] text-start
         w-[200px] sm:w-[230px] md:w-[250px] lg:w-[268px] xl:w-[284px]"
       aria-label={name}
@@ -141,7 +141,7 @@ function ModelCard({ model, isAr, lang }: { model: DisplayModel; isAr: boolean; 
           </h3>
         </div>
       </div>
-    </a>
+    </Link>
   );
 }
 

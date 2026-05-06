@@ -1,15 +1,23 @@
 import { useEffect, useState } from 'react';
 import splashLogo from '@/assets/logo-splash.svg';
 
+const LOAD_HOLD_MS = 520;
+const FADE_MS = 240;
+
 export function AppLoader({ children }: { children: React.ReactNode }) {
   const [phase, setPhase] = useState<'loading' | 'fading' | 'done'>('loading');
 
   useEffect(() => {
-    const timer = setTimeout(() => {
+    let doneTimer: number | undefined;
+    const fadeTimer = window.setTimeout(() => {
       setPhase('fading');
-      setTimeout(() => setPhase('done'), 380);
-    }, 1000);
-    return () => clearTimeout(timer);
+      doneTimer = window.setTimeout(() => setPhase('done'), FADE_MS);
+    }, LOAD_HOLD_MS);
+
+    return () => {
+      window.clearTimeout(fadeTimer);
+      if (doneTimer) window.clearTimeout(doneTimer);
+    };
   }, []);
 
   return (
@@ -26,7 +34,7 @@ export function AppLoader({ children }: { children: React.ReactNode }) {
             alignItems: 'center',
             justifyContent: 'center',
             opacity: phase === 'fading' ? 0 : 1,
-            transition: 'opacity 380ms ease-out',
+            transition: `opacity ${FADE_MS}ms ease-out`,
             pointerEvents: phase === 'fading' ? 'none' : 'auto',
           }}
         >
@@ -42,6 +50,8 @@ export function AppLoader({ children }: { children: React.ReactNode }) {
             <img
               src={splashLogo}
               alt="Takhayal"
+              loading="eager"
+              decoding="async"
               style={{
                 width: 80,
                 height: 80,
@@ -73,9 +83,9 @@ export function AppLoader({ children }: { children: React.ReactNode }) {
         </div>
       )}
 
-      <div style={{ 
+      <div style={{
         opacity: phase === 'loading' ? 0 : 1,
-        transition: phase !== 'loading' ? 'opacity 0.3s ease-out' : 'none',
+        transition: phase !== 'loading' ? `opacity ${FADE_MS}ms ease-out` : 'none',
       }}>
         {children}
       </div>

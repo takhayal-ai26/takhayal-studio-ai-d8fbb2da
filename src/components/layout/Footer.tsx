@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { localizePath } from '@/lib/localized-routes';
 import { Logo } from '@/components/Logo';
-import { Instagram, Linkedin, ChevronDown } from 'lucide-react';
+import { Instagram, Linkedin, ChevronDown, Mail } from 'lucide-react';
 import { useState } from 'react';
+import type { Language } from '@/i18n/translations';
 
 const XIcon = ({ size = 14, className = '' }: { size?: number; className?: string }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
@@ -32,7 +34,7 @@ const videoModelLinks = [
   { name: 'Grok Imagine', slug: 'grok-imagine' },
 ];
 
-function ModelAccordion({ title, links }: { title: string; links: { name: string; slug: string }[] }) {
+function ModelAccordion({ title, links, lang }: { title: string; links: { name: string; slug: string }[]; lang: Language }) {
   const [open, setOpen] = useState(false);
   return (
     <div className="border-b border-foreground/[0.06] last:border-0">
@@ -47,7 +49,7 @@ function ModelAccordion({ title, links }: { title: string; links: { name: string
         <ul className="pb-3 space-y-2">
           {links.map(link => (
             <li key={link.slug}>
-              <Link to={`/models/${link.slug}`} className="text-sm text-muted-foreground hover:text-primary transition-colors duration-150">
+              <Link to={localizePath(`/models/${link.slug}`, lang)} className="text-sm text-muted-foreground hover:text-primary transition-colors duration-150">
                 {link.name}
               </Link>
             </li>
@@ -59,24 +61,24 @@ function ModelAccordion({ title, links }: { title: string; links: { name: string
 }
 
 export function Footer() {
-  const { isRTL, t } = useLanguage();
+  const { isRTL, lang, t } = useLanguage();
   const copy = t.footer;
   const localizedNavLinks = [
     { label: t.nav.home, to: '/' },
     { label: t.nav.gallery, to: '/gallery' },
     { label: t.nav.templates, to: '/templates' },
     { label: t.nav.community, to: '/community' },
+    { label: copy.contact, to: '/contact' },
   ];
   const localizedLegalLinks = [
     { label: copy.terms, to: '/terms' },
     { label: copy.privacy, to: '/privacy' },
-    { label: copy.contact, to: '/contact' },
-    { label: copy.support, to: `mailto:${copy.supportEmail}` },
   ];
   const localizedSocialLinks = [
     { icon: Instagram, href: copy.instagramUrl, label: 'Instagram' },
     { icon: XIcon, href: copy.xUrl, label: 'X' },
     { icon: Linkedin, href: copy.linkedinUrl, label: 'LinkedIn' },
+    { icon: Mail, href: `mailto:${copy.supportEmail}`, label: copy.support },
   ];
 
   return (
@@ -95,7 +97,7 @@ export function Footer() {
             </p>
             <div className="flex items-center gap-3 pt-1">
               {localizedSocialLinks.map((social) => (
-                <a key={social.label} href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label}
+                <a key={social.label} href={social.href} target={social.href.startsWith('mailto:') ? undefined : '_blank'} rel={social.href.startsWith('mailto:') ? undefined : 'noopener noreferrer'} aria-label={social.label}
                   className="w-11 h-11 rounded-lg bg-foreground/[0.04] flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors duration-150">
                   <social.icon size={14} />
                 </a>
@@ -111,7 +113,7 @@ export function Footer() {
             <ul className="space-y-2.5">
               {localizedNavLinks.map((link) => (
                 <li key={link.to + link.label}>
-                  <Link to={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors duration-150">
+                  <Link to={localizePath(link.to, lang)} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors duration-150">
                     {link.label}
                   </Link>
                 </li>
@@ -127,15 +129,9 @@ export function Footer() {
             <ul className="space-y-2.5">
               {localizedLegalLinks.map((link) => (
                 <li key={link.to}>
-                  {link.to.startsWith('mailto:') ? (
-                    <a href={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors duration-150">
-                      {link.label}
-                    </a>
-                  ) : (
-                    <Link to={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors duration-150">
-                      {link.label}
-                    </Link>
-                  )}
+                  <Link to={localizePath(link.to, lang)} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors duration-150">
+                    {link.label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -149,7 +145,7 @@ export function Footer() {
             <ul className="space-y-2">
               {imageModelLinks.map(link => (
                 <li key={link.slug}>
-                  <Link to={`/models/${link.slug}`} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-150">
+                  <Link to={localizePath(`/models/${link.slug}`, lang)} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-150">
                     {link.name}
                   </Link>
                 </li>
@@ -165,7 +161,7 @@ export function Footer() {
             <ul className="space-y-2">
               {videoModelLinks.map(link => (
                 <li key={link.slug}>
-                  <Link to={`/models/${link.slug}`} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-150">
+                  <Link to={localizePath(`/models/${link.slug}`, lang)} className="text-sm text-muted-foreground hover:text-foreground transition-colors duration-150">
                     {link.name}
                   </Link>
                 </li>
@@ -184,7 +180,7 @@ export function Footer() {
             </p>
             <div className="flex items-center gap-3 pt-1">
               {localizedSocialLinks.map((social) => (
-                <a key={social.label} href={social.href} target="_blank" rel="noopener noreferrer" aria-label={social.label}
+                <a key={social.label} href={social.href} target={social.href.startsWith('mailto:') ? undefined : '_blank'} rel={social.href.startsWith('mailto:') ? undefined : 'noopener noreferrer'} aria-label={social.label}
                   className="w-11 h-11 rounded-lg bg-foreground/[0.04] flex items-center justify-center text-muted-foreground hover:text-primary hover:bg-primary/10 transition-colors duration-150">
                   <social.icon size={14} />
                 </a>
@@ -198,7 +194,7 @@ export function Footer() {
               <h4 className="text-[11px] uppercase tracking-widest font-semibold mb-3 text-primary">{copy.navigate}</h4>
               <ul className="space-y-2">
                 {localizedNavLinks.map(link => (
-                  <li key={link.to}><Link to={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors">{link.label}</Link></li>
+                  <li key={link.to}><Link to={localizePath(link.to, lang)} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors">{link.label}</Link></li>
                 ))}
               </ul>
             </div>
@@ -207,11 +203,7 @@ export function Footer() {
               <ul className="space-y-2">
                 {localizedLegalLinks.map(link => (
                   <li key={link.to}>
-                    {link.to.startsWith('mailto:') ? (
-                      <a href={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors">{link.label}</a>
-                    ) : (
-                      <Link to={link.to} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors">{link.label}</Link>
-                    )}
+                    <Link to={localizePath(link.to, lang)} className="inline-flex min-h-11 items-center text-[13px] text-muted-foreground hover:text-primary transition-colors">{link.label}</Link>
                   </li>
                 ))}
               </ul>
@@ -220,8 +212,8 @@ export function Footer() {
 
           {/* Model accordions on mobile */}
           <div className="border-t border-foreground/[0.06] pt-4">
-            <ModelAccordion title={copy.imageModels} links={imageModelLinks} />
-            <ModelAccordion title={copy.videoModels} links={videoModelLinks} />
+            <ModelAccordion title={copy.imageModels} links={imageModelLinks} lang={lang} />
+            <ModelAccordion title={copy.videoModels} links={videoModelLinks} lang={lang} />
           </div>
         </div>
 

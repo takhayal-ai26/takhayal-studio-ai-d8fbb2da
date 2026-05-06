@@ -1,6 +1,7 @@
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useApp } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
+import { localizePath } from '@/lib/localized-routes';
 
 const PACKAGES = [
   { credits: 100, price: 1.60, label: 'Starter', labelAr: 'مبتدئ', images: 50, videos: '2 short clips', videosAr: 'مقطعين قصيرين', badge: null },
@@ -47,7 +48,7 @@ export function CreditsView() {
               {isAr ? `أو ${pkg.videosAr} حسب النموذج والمدة` : `Or ${pkg.videos} depending on model and duration`}
             </p>
             <button
-              onClick={() => navigate(`/checkout?credits=${pkg.credits}&price=${pkg.price}`)}
+              onClick={() => navigate(`${localizePath('/checkout', lang)}?credits=${pkg.credits}&price=${pkg.price}`)}
               className={`w-full h-10 rounded-lg text-[13px] font-medium mt-4 transition-colors ${pkg.badge ? 'bg-primary text-primary-foreground hover:brightness-90' : 'border border-border text-foreground hover:bg-muted'}`}
             >
               {isAr ? 'اشترِ الآن' : 'Buy Now'}
@@ -59,9 +60,9 @@ export function CreditsView() {
       {/* Legal */}
       <div className="text-center">
         <p className="text-[11px] text-muted-foreground">
-          <a href="/terms" className="hover:text-foreground transition-colors">{isAr ? 'الشروط والأحكام' : 'Terms & Conditions'}</a>
+          <Link to={localizePath('/terms', lang)} className="hover:text-foreground transition-colors">{isAr ? 'الشروط والأحكام' : 'Terms & Conditions'}</Link>
           {' · '}
-          <a href="/privacy" className="hover:text-foreground transition-colors">{isAr ? 'سياسة الخصوصية' : 'Privacy Policy'}</a>
+          <Link to={localizePath('/privacy', lang)} className="hover:text-foreground transition-colors">{isAr ? 'سياسة الخصوصية' : 'Privacy Policy'}</Link>
         </p>
       </div>
     </div>
