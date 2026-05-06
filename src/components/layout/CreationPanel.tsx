@@ -1,39 +1,31 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { Upload, ChevronRight, X, Cpu, Maximize, Image as ImageIcon, Wand2, Zap } from 'lucide-react';
-import { useApp, TEMPLATE_PROMPTS, AspectRatio } from '@/context/AppContext';
+import { useApp, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
-import { useGenerationJobs } from '@/hooks/useGenerationJobs';
-import { useModels, ModelRecord } from '@/hooks/useModels';
+import { useModels } from '@/hooks/useModels';
 import { usePricing } from '@/hooks/usePricing';
 import { usePricingTiers } from '@/hooks/usePricingTiers';
-import { CREDIT_VALUE_USD } from '@/lib/pricing-engine';
 import { ModelDropdown } from './dropdowns/ModelDropdown';
 import { SizeDropdown } from './dropdowns/SizeDropdown';
 import { ResolutionDropdown } from './dropdowns/ResolutionDropdown';
-import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/context/AuthContext';
 import { BackToImageTools } from '@/components/tools/BackToImageTools';
-import { GenerateButton, imageSizeError, isOversizedImage } from '@/lib/ux';
-import { localizePath } from '@/lib/localized-routes';
-import { toast } from 'sonner';
-import { isGenerationJobInProgress } from './creationPanelState';
+import { GenerateButton } from '@/lib/ux';
+import { useReferenceImageUploads } from './useReferenceImageUploads';
+import { useStudioGenerationSubmit } from './useStudioGenerationSubmit';
 
-const CREDIT_VALUE = CREDIT_VALUE_USD;
 type OpenDropdown = 'model' | 'size' | 'resolution' | null;
 
 export function CreationPanel() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, isGenerating, credits, getCreditCost, isAuthenticated, openAuthModal, openUpgradeModal, selectedModelId: contextModelId, setSelectedModelId: setContextModelId } = useApp();
-  const { jobs, submitJob } = useGenerationJobs();
-  const [localGenerating, setLocalGenerating] = useState(false);
-  const [activeGenerationJobId, setActiveGenerationJobId] = useState<string | null>(null);
+  const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, setQuality, isGenerating, credits, getCreditCost, isAuthenticated, openAuthModal, openUpgradeModal, selectedModelId: contextModelId, setSelectedModelId: setContextModelId } = useApp();
   const { t, lang: language } = useLanguage();
   const { activeModels, defaultModel } = useModels();
   const { getCreditsForModel } = usePricing();
-  const { getCreditsForModelQuality, getCostForModelQuality, allTiers } = usePricingTiers();
+  const { getCreditsForModelQuality, allTiers } = usePricingTiers();
 
   // Use AppContext's selectedModelId to sync with model detail page navigation
   const [localModelId, setLocalModelId] = useState<string>('');
@@ -45,9 +37,6 @@ export function CreationPanel() {
 
   const [selectedResolution, setSelectedResolution] = useState<string>('1K');
   const [openDropdown, setOpenDropdown] = useState<OpenDropdown>(null);
-  const [uploadedImages, setUploadedImages] = useState<{ preview: string; url: string | null }[]>([]);
-  const [isUploading, setIsUploading] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const modelRowRef = useRef<HTMLButtonElement>(null);
   const sizeRowRef = useRef<HTMLButtonElement>(null);
@@ -74,6 +63,45 @@ export function CreationPanel() {
     return getCreditsForModel(currentModel.id);
   })();
 
+  const {
+    uploadedImages,
+    isUploading,
+    pendingUploads,
+    fileInputRef,
+    handleFileUpload,
+    removeImage,
+    handleDrop,
+  } = useReferenceImageUploads({
+    userId: user?.id,
+    language,
+    maxImages,
+    supportsImageInput,
+    initialImageUrl: searchParams.get('imageUrl'),
+  });
+
+  const {
+    canGenerate,
+    isGenerationBusy,
+    handleGenerate,
+  } = useStudioGenerationSubmit({
+    prompt,
+    selectedTemplate,
+    aspectRatio,
+    selectedResolution,
+    modelId: currentModel?.id,
+    cost,
+    uploadedImages,
+    isUploading,
+    pendingUploads,
+    isGenerating,
+    credits,
+    isAuthenticated,
+    openAuthModal,
+    openUpgradeModal,
+    navigate,
+    language,
+  });
+
   // Sync from context when navigating from model detail page
   useEffect(() => {
     if (contextModelId && activeModels.some(m => m.id === contextModelId)) {
@@ -85,12 +113,6 @@ export function CreationPanel() {
     const modelId = searchParams.get('modelId');
     if (modelId && activeModels.some(m => m.id === modelId)) setSelectedModelId(modelId);
   }, [activeModels, searchParams, setSelectedModelId]);
-
-  useEffect(() => {
-    const imageUrl = searchParams.get('imageUrl');
-    if (!imageUrl || uploadedImages.some(img => img.url === imageUrl)) return;
-    setUploadedImages([{ preview: imageUrl, url: imageUrl }]);
-  }, [searchParams, uploadedImages]);
 
   useEffect(() => {
     if (defaultModel && !selectedModelId) setSelectedModelId(defaultModel.id);
@@ -111,122 +133,9 @@ export function CreationPanel() {
     }
   }, [currentModel, aspectRatio, setAspectRatio]);
 
-  // Clear uploaded images when switching to a model that doesn't support it
-  useEffect(() => {
-    if (!supportsImageInput && uploadedImages.length > 0) {
-      setUploadedImages([]);
-    }
-  }, [supportsImageInput, uploadedImages.length]);
-
-  const handleFileUpload = useCallback(async (file: File) => {
-    if (!file.type.startsWith('image/')) return;
-    if (isOversizedImage(file)) {
-      toast.error(imageSizeError(language === 'ar'));
-      return;
-    }
-    if (uploadedImages.length >= maxImages) return;
-
-    const preview = URL.createObjectURL(file);
-    const newEntry = { preview, url: null as string | null };
-    setUploadedImages(prev => [...prev, newEntry]);
-
-    if (!user) {
-      setUploadedImages(prev => prev.map(img => img.preview === preview ? { ...img, url: preview } : img));
-      return;
-    }
-
-    setIsUploading(true);
-
-    try {
-      const ext = file.name.split('.').pop() || 'png';
-      const path = `${user.id}/input-${Date.now()}.${ext}`;
-      const { error: uploadError } = await supabase.storage
-        .from('tool-files')
-        .upload(path, file, { contentType: file.type, upsert: true });
-      if (uploadError) throw uploadError;
-
-      const { data: urlData } = supabase.storage.from('tool-files').getPublicUrl(path);
-      setUploadedImages(prev => prev.map(img => img.preview === preview ? { ...img, url: urlData.publicUrl } : img));
-    } catch (err) {
-      console.error('Upload failed:', err);
-      setUploadedImages(prev => prev.filter(img => img.preview !== preview));
-    } finally {
-      setIsUploading(false);
-    }
-  }, [user, uploadedImages.length, maxImages, language]);
-
-  const removeImage = useCallback((index: number) => {
-    setUploadedImages(prev => prev.filter((_, i) => i !== index));
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  }, []);
-
-  const clearAllImages = useCallback(() => {
-    setUploadedImages([]);
-    if (fileInputRef.current) fileInputRef.current.value = '';
-  }, []);
-
-  const pendingUploads = uploadedImages.some(img => !img.url);
-  const activeGenerationInProgress = isGenerationJobInProgress(jobs, activeGenerationJobId);
-  const isGenerationBusy = isGenerating || localGenerating || activeGenerationInProgress;
-  const canGenerate = prompt.trim().length > 0 && !isGenerationBusy && !!currentModel && !isUploading && !pendingUploads;
   const toggleDropdown = (key: OpenDropdown) => setOpenDropdown(prev => prev === key ? null : key);
 
   useEffect(() => { const handler = (e: MouseEvent) => { if (openDropdown && panelRef.current && !panelRef.current.contains(e.target as Node)) { const target = e.target as HTMLElement; if (target.closest('[data-dropdown-portal]')) return; setOpenDropdown(null); } }; document.addEventListener('mousedown', handler); return () => document.removeEventListener('mousedown', handler); }, [openDropdown]);
-
-  const handleGenerate = useCallback(async () => {
-    if (!canGenerate) return;
-    if (!isAuthenticated) { openAuthModal('signup'); return; }
-    if (credits < cost) { openUpgradeModal(); return; }
-
-    setLocalGenerating(true);
-    const fullPrompt = selectedTemplate
-      ? `${TEMPLATE_PROMPTS[selectedTemplate] || ''}, ${prompt}`
-      : prompt;
-
-    const imageUrls = uploadedImages.filter(img => img.url).map(img => img.url!);
-
-    // Safety: if user attached refs but none resolved to URLs, block instead of silently falling back.
-    if (uploadedImages.length > 0 && imageUrls.length === 0) {
-      setLocalGenerating(false);
-      console.error('[studio] Aborting: uploaded references have no resolved URLs.');
-      return;
-    }
-
-    const jobId = await submitJob({
-      prompt: fullPrompt,
-      ratio: aspectRatio,
-      qualityTier: selectedResolution,
-      modelId: currentModel?.id || null,
-      creditCost: cost,
-      sourceTag: 'studio',
-      imageUrl: imageUrls.length === 1 ? imageUrls[0] : undefined,
-      imageUrls: imageUrls.length > 1 ? imageUrls : undefined,
-    });
-
-    if (!jobId) {
-      setLocalGenerating(false);
-      return;
-    }
-
-    setActiveGenerationJobId(jobId);
-    sessionStorage.setItem('takhayal:studio:recentJobId', jobId);
-    window.dispatchEvent(new CustomEvent('takhayal:studio:recent-job', {
-      detail: {
-        jobId,
-        prompt: fullPrompt,
-        ratio: aspectRatio,
-        resolution: selectedResolution,
-        qualityTier: selectedResolution,
-        modelId: currentModel?.id || null,
-        creditCost: cost,
-      },
-    }));
-    setLocalGenerating(false);
-
-    if (window.matchMedia('(max-width: 767px)').matches) {
-      navigate(`${localizePath('/gallery', language)}?highlight=${encodeURIComponent(jobId)}`);
-    }
-  }, [canGenerate, isAuthenticated, credits, cost, prompt, selectedTemplate, aspectRatio, selectedResolution, currentModel, submitJob, openAuthModal, openUpgradeModal, uploadedImages, navigate, language]);
 
   useEffect(() => { const handler = (e: KeyboardEvent) => { if (e.key === 'Escape') setOpenDropdown(null); if ((e.metaKey || e.ctrlKey) && e.key === 'Enter') { e.preventDefault(); handleGenerate(); } }; window.addEventListener('keydown', handler); return () => window.removeEventListener('keydown', handler); }, [handleGenerate]);
 
@@ -235,12 +144,6 @@ export function CreationPanel() {
   const getAnchorRect = (ref: React.RefObject<HTMLElement>): DOMRect | null => {
     return ref.current?.getBoundingClientRect() ?? null;
   };
-
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    const files = Array.from(e.dataTransfer.files || []).slice(0, Math.max(0, maxImages - uploadedImages.length));
-    files.forEach(file => handleFileUpload(file));
-  }, [handleFileUpload, maxImages, uploadedImages.length]);
 
   return (
     <aside ref={panelRef} className="w-full md:w-[380px] xl:w-[420px] flex flex-col bg-background flex-shrink-0 overflow-visible relative z-30">
