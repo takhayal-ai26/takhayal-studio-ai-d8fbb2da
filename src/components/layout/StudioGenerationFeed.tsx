@@ -182,7 +182,7 @@ function QuickActionButton({ icon, onClick, label }: { icon: React.ReactNode; on
 type StudioGenerationFeedSection = 'full' | 'featured' | 'history';
 
 export function StudioGenerationFeed({ section = 'full' }: { section?: StudioGenerationFeedSection }) {
-  const { jobs, loading, retryJob } = useGenerationJobs();
+  const { jobs, loading, retryJob, refetch } = useGenerationJobs();
   const { lang } = useLanguage();
   const navigate = useNavigate();
   const [recentJobId, setRecentJobId] = useState<string | null>(() => (
@@ -203,13 +203,16 @@ export function StudioGenerationFeed({ section = 'full' }: { section?: StudioGen
 
   useEffect(() => {
     const handleRecentJob = (event: Event) => {
-      const jobId = (event as CustomEvent<{ jobId?: string }>).detail?.jobId;
-      if (jobId) setRecentJobId(jobId);
+    const jobId = (event as CustomEvent<{ jobId?: string }>).detail?.jobId;
+      if (jobId) {
+        setRecentJobId(jobId);
+        void refetch();
+      }
     };
 
     window.addEventListener('takhayal:studio:recent-job', handleRecentJob);
     return () => window.removeEventListener('takhayal:studio:recent-job', handleRecentJob);
-  }, []);
+  }, [refetch]);
 
   const showFeatured = section !== 'history';
   const showHistory = section !== 'featured';
