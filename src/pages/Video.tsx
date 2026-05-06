@@ -182,6 +182,7 @@ export default function Video() {
     : '';
   const promptHidden = selectedTool?.promptHidden ?? false;
   const toolRequiresStartImage = selectedTool?.requiresUpload ?? false;
+  const currentVideoToolSlug = selectedTool?.slug || toolId || null;
   const generateLabel = selectedTool?.ctaLabel || (isAr ? 'توليد الفيديو' : 'Generate Video');
 
   useEffect(() => {
@@ -762,10 +763,10 @@ export default function Video() {
             <div className="mx-auto w-full max-w-[1760px] px-5 py-6 lg:px-8 xl:px-10" dir={isAr ? 'rtl' : 'ltr'}>
               {renderDesktopCreationPanel()}
               <section className="mt-8">
-                <VideoHowToUse />
+                <VideoHowToUse toolSlug={currentVideoToolSlug} />
               </section>
               <section className="mt-6 pb-8">
-                <VideoProTips />
+                <VideoProTips toolSlug={currentVideoToolSlug} />
               </section>
             </div>
           </TabsContent>

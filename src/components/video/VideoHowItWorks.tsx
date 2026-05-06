@@ -2,28 +2,58 @@ import { Clapperboard, CloudUpload, Expand, Lightbulb, Play, RotateCcw, Sparkles
 import { useLanguage } from '@/i18n/LanguageContext';
 
 type StepPreview = 'image' | 'prompt' | 'video';
+type VideoGuideVariant = 'generic' | 'motion-control';
+type VideoGuideProps = {
+  toolSlug?: string | null;
+};
 
-export function VideoHowToUse() {
+const getGuideVariant = (toolSlug?: string | null): VideoGuideVariant =>
+  toolSlug === 'motion-control' ? 'motion-control' : 'generic';
+
+export function VideoHowToUse({ toolSlug }: VideoGuideProps = {}) {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
+  const variant = getGuideVariant(toolSlug);
 
   const steps: { title: string; desc: string; preview: StepPreview }[] = [
     {
-      title: isAr ? 'أضف صورة' : 'Add an image',
-      desc: isAr ? 'ارفع صورة بداية لتحريكها أو ابدأ من وصف نصي' : 'Upload a starting frame to animate, or begin with a text prompt',
+      title: variant === 'motion-control'
+        ? (isAr ? 'ارفع الصورة الأساسية' : 'Upload the source image')
+        : (isAr ? 'أضف صورة' : 'Add an image'),
+      desc: variant === 'motion-control'
+        ? (isAr ? 'اختر الصورة أو الموضوع الذي تريد تحريكه بحركة دقيقة.' : 'Choose the frame or subject you want to animate with controlled motion.')
+        : (isAr ? 'ارفع صورة بداية لتحريكها أو ابدأ من وصف نصي' : 'Upload a starting frame to animate, or begin with a text prompt'),
       preview: 'image',
     },
     {
-      title: isAr ? 'صف الحركة' : 'Describe the motion',
-      desc: isAr ? 'اكتب وصفاً لحركة الكاميرا والمشهد الذي تريده' : 'Write a prompt describing the camera movement and scene you want',
+      title: variant === 'motion-control'
+        ? (isAr ? 'حدّد حركة الكاميرا' : 'Direct the camera move')
+        : (isAr ? 'صف الحركة' : 'Describe the motion'),
+      desc: variant === 'motion-control'
+        ? (isAr ? 'اكتب حركة واضحة مثل اقتراب، دوران، بان، تلت، أو حركة بسيطة للموضوع.' : 'Describe one clear move: push in, orbit, pan, tilt, zoom, or subtle subject motion.')
+        : (isAr ? 'اكتب وصفاً لحركة الكاميرا والمشهد الذي تريده' : 'Write a prompt describing the camera movement and scene you want'),
       preview: 'prompt',
     },
     {
-      title: isAr ? 'ولّد الفيديو' : 'Generate your video',
-      desc: isAr ? 'اضغط توليد وشاهد الذكاء الاصطناعي يحول وصفك إلى فيديو سينمائي' : 'Click generate and watch AI turn your description into a cinematic video',
+      title: variant === 'motion-control'
+        ? (isAr ? 'ولّد حركة متحكم بها' : 'Generate controlled motion')
+        : (isAr ? 'ولّد الفيديو' : 'Generate your video'),
+      desc: variant === 'motion-control'
+        ? (isAr ? 'حوّل الصورة إلى فيديو قصير بحركة طبيعية واتجاه كاميرا واضح.' : 'Turn the image into a short video with natural motion and a clear camera direction.')
+        : (isAr ? 'اضغط توليد وشاهد الذكاء الاصطناعي يحول وصفك إلى فيديو سينمائي' : 'Click generate and watch AI turn your description into a cinematic video'),
       preview: 'video',
     },
   ];
+
+  const promptExample = variant === 'motion-control'
+    ? {
+      ar: 'حركة كاميرا بطيئة نحو الوجه، التفاتة خفيفة، إضاءة استوديو هادئة، بدون اهتزاز...',
+      en: 'Slow camera push-in toward the face, subtle head turn, steady studio lighting, no shake...',
+    }
+    : {
+      ar: 'لقطة سينمائية بطائرة درون، الكاميرا تقترب ببطء، إضاءة ذهبية منخفضة، وغبار يتحرك في الهواء...',
+      en: 'Cinematic drone shot, camera pushes in from wide to close, low angle, golden hour lighting, dust particles in the air...',
+    };
 
   const renderPreview = (type: StepPreview) => {
     if (type === 'image') {
@@ -51,9 +81,7 @@ export function VideoHowToUse() {
       return (
         <div className="rounded-xl border border-foreground/25 bg-background/35 p-4 shadow-inner">
           <p className="min-h-[76px] text-[13px] leading-relaxed text-foreground/80">
-            {isAr
-              ? 'لقطة سينمائية بطائرة درون، الكاميرا تقترب ببطء، إضاءة ذهبية منخفضة، وغبار يتحرك في الهواء...'
-              : 'Cinematic drone shot, camera pushes in from wide to close, low angle, golden hour lighting, dust particles in the air...'}
+            {isAr ? promptExample.ar : promptExample.en}
           </p>
           <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
             <span>98 / 1000</span>
@@ -114,28 +142,48 @@ export function VideoHowToUse() {
   );
 }
 
-export function VideoProTips() {
+export function VideoProTips({ toolSlug }: VideoGuideProps = {}) {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
+  const variant = getGuideVariant(toolSlug);
 
-  const tips = [
-    {
-      icon: <Video size={17} />,
-      text: isAr ? 'كن محدداً في حركة الكاميرا والزوايا' : 'Be specific about camera movements and angles',
-    },
-    {
-      icon: <Sparkles size={17} />,
-      text: isAr ? 'أضف تفاصيل الإضاءة والمزاج والجو العام' : 'Add details about lighting, mood and atmosphere',
-    },
-    {
-      icon: <Clapperboard size={17} />,
-      text: isAr ? 'اذكر النمط أو الإحساس السينمائي المطلوب' : 'Mention the style or cinematic look you want',
-    },
-    {
-      icon: <RotateCcw size={17} />,
-      text: isAr ? 'الوصف الأقصر غالباً يعطي نتائج أفضل' : 'Shorter prompts often produce better results',
-    },
-  ];
+  const tips = variant === 'motion-control'
+    ? [
+      {
+        icon: <Video size={17} />,
+        text: isAr ? 'استخدم حركة كاميرا واحدة في كل نتيجة' : 'Use one camera move per result',
+      },
+      {
+        icon: <Sparkles size={17} />,
+        text: isAr ? 'حدّد السرعة والاتجاه بوضوح' : 'Name the speed and direction clearly',
+      },
+      {
+        icon: <Clapperboard size={17} />,
+        text: isAr ? 'اجعل حركة الشخص أو المنتج بسيطة وطبيعية' : 'Keep subject motion subtle and natural',
+      },
+      {
+        icon: <RotateCcw size={17} />,
+        text: isAr ? 'تجنّب الخلفيات المزدحمة لنتيجة أنظف' : 'Avoid crowded backgrounds for cleaner motion',
+      },
+    ]
+    : [
+      {
+        icon: <Video size={17} />,
+        text: isAr ? 'كن محدداً في حركة الكاميرا والزوايا' : 'Be specific about camera movements and angles',
+      },
+      {
+        icon: <Sparkles size={17} />,
+        text: isAr ? 'أضف تفاصيل الإضاءة والمزاج والجو العام' : 'Add details about lighting, mood and atmosphere',
+      },
+      {
+        icon: <Clapperboard size={17} />,
+        text: isAr ? 'اذكر النمط أو الإحساس السينمائي المطلوب' : 'Mention the style or cinematic look you want',
+      },
+      {
+        icon: <RotateCcw size={17} />,
+        text: isAr ? 'الوصف الأقصر غالباً يعطي نتائج أفضل' : 'Shorter prompts often produce better results',
+      },
+    ];
 
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-[0_16px_48px_hsl(var(--shadow-color))] dark:bg-card/25">
@@ -170,11 +218,11 @@ export function VideoProTips() {
   );
 }
 
-export default function VideoHowItWorks() {
+export default function VideoHowItWorks({ toolSlug }: VideoGuideProps = {}) {
   return (
     <div className="px-1 py-8 space-y-6">
-      <VideoHowToUse />
-      <VideoProTips />
+      <VideoHowToUse toolSlug={toolSlug} />
+      <VideoProTips toolSlug={toolSlug} />
     </div>
   );
 }
