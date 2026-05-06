@@ -12,7 +12,7 @@ import { useIsMobile } from '@/hooks/use-mobile';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
 import { Switch } from '@/components/ui/switch';
 import VideoHistoryPanel from '@/components/video/VideoHistoryPanel';
-import VideoHowItWorks from '@/components/video/VideoHowItWorks';
+import { VideoHowToUse, VideoProTips } from '@/components/video/VideoHowItWorks';
 import { useVideoModels, type VideoModel } from '@/hooks/useVideoModels';
 import { GenerateButton, imageSizeError, isOversizedImage } from '@/lib/ux';
 import { localizePath } from '@/lib/localized-routes';
@@ -90,10 +90,11 @@ function SettingSelector({ label, options, value, onSelect, icon, forceUpward = 
 }
 
 /* ─── Desktop Model Side Panel ─── */
-function DesktopModelPanel({ videoModels, selectedModelId, onSelect, onClose, isAr }: {
-  videoModels: VideoModel[]; selectedModelId: string; onSelect: (id: string) => void; onClose: () => void; isAr: boolean;
+function DesktopModelPanel({ videoModels, selectedModelId, onSelect, onClose, isAr, placement }: {
+  videoModels: VideoModel[]; selectedModelId: string; onSelect: (id: string) => void; onClose: () => void; isAr: boolean; placement?: 'before' | 'after';
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
+  const panelPlacement = placement || (isAr ? 'before' : 'after');
   useEffect(() => {
     const handler = (e: MouseEvent) => { if (panelRef.current && !panelRef.current.contains(e.target as Node)) onClose(); };
     document.addEventListener('mousedown', handler);
@@ -101,7 +102,7 @@ function DesktopModelPanel({ videoModels, selectedModelId, onSelect, onClose, is
   }, [onClose]);
 
   return (
-    <div ref={panelRef} className={cn("absolute top-0 z-50 w-[min(320px,calc(100vw-2rem))] animate-in fade-in duration-200", isAr ? "right-full mr-3 slide-in-from-right-2" : "left-full ml-3 slide-in-from-left-2")}>
+    <div ref={panelRef} className={cn("absolute top-0 z-50 w-[min(320px,calc(100vw-2rem))] animate-in fade-in duration-200", panelPlacement === 'before' ? "right-full mr-3 slide-in-from-right-2" : "left-full ml-3 slide-in-from-left-2")}>
       <div className="rounded-[20px] overflow-hidden bg-popover/95 backdrop-blur-md shadow-[0_8px_40px_-4px_rgba(0,0,0,0.15),0_2px_12px_-2px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_40px_-4px_rgba(0,0,0,0.5),0_2px_12px_-2px_rgba(0,0,0,0.3)]" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
         <div className="px-4 pt-3.5 pb-2">
           <p className="text-[10px] uppercase tracking-[1.5px] font-semibold text-muted-foreground/40">{isAr ? 'نماذج الفيديو' : 'Video models'}</p>
@@ -319,9 +320,16 @@ export default function Video() {
           <div className="rounded-2xl bg-muted/20 animate-pulse h-28" /><div className="rounded-2xl bg-muted/20 animate-pulse h-14" />
           <div className="flex gap-2"><div className="flex-1 rounded-2xl bg-muted/20 animate-pulse h-14" /><div className="flex-1 rounded-2xl bg-muted/20 animate-pulse h-14" /><div className="flex-1 rounded-2xl bg-muted/20 animate-pulse h-14" /></div>
         </div>
-        <div className="hidden md:flex w-full px-6 pt-6 gap-6">
-          <div className="w-[clamp(340px,30vw,400px)] flex-shrink-0 space-y-4"><div className="rounded-2xl bg-muted/20 animate-pulse h-48" /><div className="rounded-2xl bg-muted/20 animate-pulse h-32" /><div className="rounded-2xl bg-muted/20 animate-pulse h-14" /></div>
-          <div className="flex-1 rounded-2xl bg-muted/10 animate-pulse h-96" />
+        <div className="hidden w-full px-8 pt-6 md:block">
+          <div className="mx-auto max-w-[1760px] space-y-6">
+            <div className="rounded-[28px] bg-muted/15 animate-pulse h-80" />
+            <div className="grid grid-cols-3 gap-5">
+              <div className="rounded-2xl bg-muted/10 animate-pulse h-60" />
+              <div className="rounded-2xl bg-muted/10 animate-pulse h-60" />
+              <div className="rounded-2xl bg-muted/10 animate-pulse h-60" />
+            </div>
+            <div className="rounded-2xl bg-muted/10 animate-pulse h-28" />
+          </div>
         </div>
       </div>
     );
@@ -568,6 +576,133 @@ export default function Video() {
     </div>
   );
 
+  const renderDesktopCreationPanel = () => (
+    <div className="relative overflow-visible rounded-[28px] border border-border/70 bg-card/45 p-5 shadow-[0_20px_60px_hsl(var(--shadow-color))] dark:bg-card/25 xl:p-6">
+      <div className="grid gap-5 xl:grid-cols-[minmax(280px,0.85fr)_minmax(420px,1.15fr)_minmax(300px,0.9fr)] 2xl:gap-6">
+        <div className="space-y-4">
+          {selectedTool && (
+            <div className="rounded-2xl bg-background/45 px-4 py-3 shadow-sm dark:bg-background/20">
+              <p className="text-[16px] font-black tracking-tight text-foreground">{selectedTool.name}</p>
+              <p className="mt-0.5 text-[12px] leading-relaxed text-muted-foreground/70">{selectedTool.shortDesc || selectedTool.description}</p>
+            </div>
+          )}
+
+          <div className="relative w-full overflow-hidden rounded-2xl shadow-sm">
+            <div className="relative aspect-[2.1/1] xl:aspect-[1.75/1] 2xl:aspect-[2/1]">
+              {currentModel?.preview_image_url ? (
+                <img src={currentModel.preview_image_url} alt={currentModel.display_name} className="h-full w-full object-cover" />
+              ) : (
+                <div className="h-full w-full bg-gradient-to-br from-muted/30 to-muted/10" />
+              )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
+            </div>
+            <div className="absolute inset-x-0 bottom-0 p-4">
+              <div className="flex items-center gap-2">
+                <p className="text-[18px] font-black leading-tight tracking-tight text-white">{currentModel?.display_name}</p>
+                {currentModel?.badge && (
+                  <span className={cn("rounded-full px-2 py-0.5 text-[9px] font-bold", currentModel.badge === 'NEW' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300')}>
+                    {currentModel.badge}
+                  </span>
+                )}
+              </div>
+              <p className="mt-0.5 text-[11px] font-medium text-white/60">{currentModel?.provider}</p>
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-4">
+          {(currentModel?.supports_start_frame || toolRequiresStartImage) && (
+            <div className={cn("grid gap-3", currentModel.supports_end_frame ? "grid-cols-2" : "grid-cols-1")}>
+              <FrameCard type="start" image={uploadedImage} onRemove={() => setUploadedImage(null)} onUpload={() => startFrameRef.current?.click()} required={currentModel.start_frame_required} />
+              {currentModel.supports_end_frame && <FrameCard type="end" image={endFrameImage} onRemove={() => setEndFrameImage(null)} onUpload={() => endFrameRef.current?.click()} />}
+              <input ref={startFrameRef} type="file" accept="image/*" className="hidden" aria-label={isAr ? 'رفع إطار البداية' : 'Upload start frame'} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], 'start'); }} />
+              {currentModel.supports_end_frame && <input ref={endFrameRef} type="file" accept="image/*" className="hidden" aria-label={isAr ? 'رفع إطار النهاية' : 'Upload end frame'} onChange={e => { if (e.target.files?.[0]) handleUpload(e.target.files[0], 'end'); }} />}
+            </div>
+          )}
+
+          {currentModel?.supports_reference_images && (
+            <ReferenceImageStrip />
+          )}
+
+          {!promptHidden && (
+            <div className="overflow-hidden rounded-2xl bg-background/45 shadow-sm transition-shadow focus-within:ring-1 focus-within:ring-primary/20 dark:bg-background/20">
+              <textarea
+                id="video-prompt"
+                aria-label={isAr ? 'وصف الفيديو' : 'Video prompt'}
+                value={prompt}
+                onChange={e => setPrompt(e.target.value)}
+                placeholder={isAr ? 'صف الفيديو الذي تريده...' : 'Describe your video...'}
+                rows={7}
+                className="min-h-[180px] w-full resize-none bg-transparent px-4 py-3.5 text-[14px] leading-relaxed text-foreground placeholder:text-muted-foreground/35 focus:outline-none"
+              />
+            </div>
+          )}
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-4">
+          <AudioToggle />
+
+          <div className="relative">
+            <button onClick={() => setShowModelPicker(p => !p)} className="w-full flex items-center justify-between gap-3 px-4 py-3.5 rounded-2xl bg-background/45 dark:bg-background/20 hover:bg-background/60 dark:hover:bg-background/30 transition-colors group active:scale-[0.98] shadow-sm" aria-expanded={showModelPicker} aria-haspopup="listbox" aria-label={isAr ? 'اختيار نموذج الفيديو' : 'Choose video model'}>
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="w-9 h-9 rounded-xl overflow-hidden bg-muted/20 dark:bg-muted/10 flex items-center justify-center flex-shrink-0">
+                  {currentModel?.preview_image_url ? <img src={currentModel.preview_image_url} alt={currentModel.display_name} className="w-full h-full object-cover" /> : <Film size={14} className="text-muted-foreground/30" />}
+                </div>
+                <div className="min-w-0 text-start">
+                  <p className="mb-0.5 text-[10px] font-medium leading-none text-muted-foreground/60">{isAr ? 'النموذج' : 'Model'}</p>
+                  <p className="truncate text-[14px] font-bold text-foreground">{currentModel?.display_name}</p>
+                </div>
+              </div>
+              <ChevronRight size={14} className={cn("flex-shrink-0 text-muted-foreground/40 transition-transform", isAr ? "rotate-180" : "")} />
+            </button>
+            {showModelPicker && (
+              <DesktopModelPanel
+                videoModels={videoModels}
+                selectedModelId={selectedModelId}
+                onSelect={id => { setSelectedModelId(id); setShowModelPicker(false); }}
+                onClose={() => setShowModelPicker(false)}
+                isAr={isAr}
+                placement="before"
+              />
+            )}
+          </div>
+
+          <div className="grid grid-cols-3 gap-2">
+            <SettingSelector
+              label={isAr ? 'المدة' : 'Duration'}
+              options={currentModel?.durations.map(d => ({ label: `${d}s` })) || []}
+              value={`${selectedDuration}s`}
+              onSelect={v => setSelectedDuration(parseInt(v))}
+              icon={<Clock size={13} className="text-muted-foreground/40 flex-shrink-0" />}
+              forceUpward
+            />
+            <SettingSelector
+              label={isAr ? 'النسبة' : 'Ratio'}
+              options={currentModel?.aspect_ratios.map(r => ({ label: r })) || []}
+              value={selectedRatio}
+              onSelect={setSelectedRatio}
+              forceUpward
+            />
+            <SettingSelector
+              label={isAr ? 'الجودة' : 'Quality'}
+              options={currentModel?.resolutions.map(r => ({ label: r })) || []}
+              value={selectedQuality}
+              onSelect={setSelectedQuality}
+              icon={<Diamond size={12} className="text-muted-foreground/40 flex-shrink-0" />}
+              forceUpward
+            />
+          </div>
+
+          <div className="mt-auto pt-1">
+            <GenerateButton onClick={handleGenerate} disabled={!canGenerate} loading={isGenerating} credits={totalCredits}>
+              {generateLabel}
+            </GenerateButton>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+
   /* ─── MOBILE LAYOUT ─── */
   if (isMobile) {
     return (
@@ -624,20 +759,14 @@ export default function Video() {
           </div>
 
           <TabsContent value="generate" className="m-0">
-            <div className="flex w-full" dir="ltr">
-              <div className={cn("w-[clamp(340px,30vw,400px)] flex-shrink-0 relative", isAr ? "order-2" : "order-1")} dir={isAr ? 'rtl' : 'ltr'}>
-                <div className="sticky px-5 py-5 overflow-y-auto" style={{ top: 'calc(6.25rem + var(--banner-h, 0px))', height: 'calc(100vh - 6.25rem - var(--banner-h, 0px))' }}>
-                  {renderCreationPanel(true)}
-                </div>
-                {showModelPicker && (
-                  <div className="fixed z-50" style={{ top: 'calc(6.25rem + var(--banner-h, 0px) + 1.25rem)', ...(isAr ? { right: 'clamp(360px, calc(30vw + 1.25rem), 420px)' } : { left: 'clamp(360px, calc(30vw + 1.25rem), 420px)' }) }}>
-                    <DesktopModelPanel videoModels={videoModels} selectedModelId={selectedModelId} onSelect={id => { setSelectedModelId(id); setShowModelPicker(false); }} onClose={() => setShowModelPicker(false)} isAr={isAr} />
-                  </div>
-                )}
-              </div>
-              <div className={cn("flex-1 min-w-0 px-8 py-6", isAr ? "order-1" : "order-2")} dir={isAr ? 'rtl' : 'ltr'}>
-                <VideoHowItWorks />
-              </div>
+            <div className="mx-auto w-full max-w-[1760px] px-5 py-6 lg:px-8 xl:px-10" dir={isAr ? 'rtl' : 'ltr'}>
+              {renderDesktopCreationPanel()}
+              <section className="mt-8">
+                <VideoHowToUse />
+              </section>
+              <section className="mt-6 pb-8">
+                <VideoProTips />
+              </section>
             </div>
           </TabsContent>
 
