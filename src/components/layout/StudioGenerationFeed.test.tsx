@@ -46,4 +46,21 @@ describe("StudioGenerationFeed", () => {
 
     expect(refetch).toHaveBeenCalledTimes(1);
   });
+
+  it("shows a progress meter immediately for an announced in-progress job", () => {
+    render(<StudioGenerationFeed section="featured" />);
+
+    act(() => {
+      window.dispatchEvent(new CustomEvent("takhayal:studio:recent-job", {
+        detail: {
+          jobId: "job-2",
+          prompt: "new image",
+          ratio: "1:1",
+          resolution: "1K",
+        },
+      }));
+    });
+
+    expect(document.querySelector('[role="progressbar"]')).toBeInTheDocument();
+  });
 });
