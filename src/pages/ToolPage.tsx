@@ -195,7 +195,7 @@ export default function ToolPage() {
       }).format(new Date(dateModified))
     : null;
   const seoDescription = tool.description || tool.shortDesc;
-  const isUpscaleTool = tool.slug === 'upscale';
+  const hasCondensedDetail = tool.slug === 'upscale' || tool.slug === 'logo';
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -300,7 +300,7 @@ export default function ToolPage() {
         image={tool.image}
         pageType="WebPage"
         dateModified={dateModified}
-        schemas={[breadcrumbSchema, softwareSchema, ...(!isUpscaleTool ? [faqSchema] : [])]}
+        schemas={[breadcrumbSchema, softwareSchema, ...(!hasCondensedDetail ? [faqSchema] : [])]}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
@@ -428,7 +428,7 @@ export default function ToolPage() {
           </div>
         </div>
 
-        {!isUpscaleTool && (
+        {!hasCondensedDetail && (
           <section className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
             {facts.map((fact) => (
               <div key={fact.label} className="rounded-2xl bg-card border border-border/40 p-5">
@@ -439,7 +439,7 @@ export default function ToolPage() {
           </section>
         )}
 
-        <section className={`mt-8 ${isUpscaleTool ? '' : 'grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6'}`}>
+        <section className={`mt-8 ${hasCondensedDetail ? '' : 'grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6'}`}>
           <div className="rounded-2xl bg-card border border-border/40 p-6">
             <h2 className="text-xl font-bold">{isRTL ? `ما الذي تفعله ${tool.name}؟` : `What does ${tool.name} do?`}</h2>
             <p className="text-sm text-muted-foreground leading-7 mt-3">{seoDescription}</p>
@@ -450,7 +450,7 @@ export default function ToolPage() {
             </p>
           </div>
 
-          {!isUpscaleTool && (
+          {!hasCondensedDetail && (
             <div className="rounded-2xl bg-card border border-border/40 p-6">
               <h2 className="text-xl font-bold">{isRTL ? 'معلومات التشغيل' : 'Run details'}</h2>
               <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
@@ -462,7 +462,7 @@ export default function ToolPage() {
           )}
         </section>
 
-        {!isUpscaleTool && (
+        {!hasCondensedDetail && (
           <section className="mt-8 rounded-2xl bg-card border border-border/40 p-6">
             <h2 className="text-xl font-bold">{isRTL ? 'أسئلة شائعة' : 'Frequently asked questions'}</h2>
             <Accordion type="single" collapsible className="mt-4">
