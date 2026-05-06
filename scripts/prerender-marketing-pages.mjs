@@ -291,14 +291,32 @@ function isEnglishRoute(route) {
   return route === "/en" || route.startsWith("/en/");
 }
 
-function stripEnPrefix(route) {
+function isArabicRoute(route) {
+  return route === "/ar" || route.startsWith("/ar/");
+}
+
+function stripLocalePrefix(route) {
   if (route === "/en") return "/";
-  return route.startsWith("/en/") ? route.slice(3) || "/" : route;
+  if (route.startsWith("/en/")) return route.slice(3) || "/";
+  if (route === "/ar") return "/";
+  if (route.startsWith("/ar/")) return route.slice(3) || "/";
+  return route || "/";
 }
 
 function withEnPrefix(route) {
-  const clean = stripEnPrefix(route);
+  const clean = stripLocalePrefix(route);
   return clean === "/" ? "/en" : `/en${clean}`;
+}
+
+function withArPrefix(route) {
+  const clean = stripLocalePrefix(route);
+  return clean === "/" ? "/ar" : `/ar${clean}`;
+}
+
+function canonicalRoute(route) {
+  if (route === "/404") return "/404";
+  if (isEnglishRoute(route) || isArabicRoute(route)) return route;
+  return withArPrefix(route);
 }
 
 function slugifySegment(value = "") {
@@ -1284,11 +1302,11 @@ function build404Route() {
 
 function injectMeta(html, config) {
   const languageCode = isEnglishRoute(config.route) ? "en" : "ar";
-  const baseRoute = stripEnPrefix(config.route);
-  const arabicUrl = absoluteUrl(baseRoute);
+  const baseRoute = stripLocalePrefix(config.route);
+  const arabicUrl = absoluteUrl(withArPrefix(baseRoute));
   const englishUrl = absoluteUrl(withEnPrefix(baseRoute));
   const canonicalUrl =
-    config.route === "/404" ? `${SITE_URL}/404` : absoluteUrl(config.route);
+    config.route === "/404" ? `${SITE_URL}/404` : absoluteUrl(canonicalRoute(config.route));
   const imageUrl = config.image || DEFAULT_IMAGE;
   const robotsValue = config.noIndex
     ? "noindex, nofollow"
@@ -1417,8 +1435,15 @@ function injectMeta(html, config) {
 }
 
 function buildSitemap(routes) {
+  const seen = new Set();
   const urls = routes
     .filter((route) => !route.noIndex && route.route !== "/404")
+    .map((route) => ({ ...route, route: canonicalRoute(route.route) }))
+    .filter((route) => {
+      if (seen.has(route.route)) return false;
+      seen.add(route.route);
+      return true;
+    })
     .map(
       (route) => `  <url>
     <loc>${absoluteUrl(route.route)}</loc>
@@ -1440,6 +1465,17 @@ async function main() {
   const rootDir = path.resolve(process.cwd(), "dist");
   const templatePath = path.join(rootDir, "index.html");
   const template = await fs.readFile(templatePath, "utf8");
+
+  async function writeRouteHtml(route, html) {
+    if (route === "/") {
+      await fs.writeFile(templatePath, html, "utf8");
+      return;
+    }
+
+    const routeDir = path.join(rootDir, route.replace(/^\/+/, ""));
+    await fs.mkdir(routeDir, { recursive: true });
+    await fs.writeFile(path.join(routeDir, "index.html"), html, "utf8");
+  }
 
   const [toolsResult, guidesResult, templatesResult] = await Promise.allSettled([
     fetchSupabaseRows(
@@ -1480,15 +1516,14 @@ async function main() {
 
   for (const config of routes) {
     const html = injectMeta(template, config);
+    await writeRouteHtml(config.route, html);
 
-    if (config.route === "/") {
-      await fs.writeFile(templatePath, html, "utf8");
-      continue;
+    if (!config.noIndex && !isEnglishRoute(config.route) && config.route !== "/404") {
+      const canonicalArabicRoute = withArPrefix(config.route);
+      if (canonicalArabicRoute !== config.route) {
+        await writeRouteHtml(canonicalArabicRoute, injectMeta(template, { ...config, route: canonicalArabicRoute }));
+      }
     }
-
-    const routeDir = path.join(rootDir, config.route.replace(/^\/+/, ""));
-    await fs.mkdir(routeDir, { recursive: true });
-    await fs.writeFile(path.join(routeDir, "index.html"), html, "utf8");
   }
 
   const notFoundRoute = build404Route();

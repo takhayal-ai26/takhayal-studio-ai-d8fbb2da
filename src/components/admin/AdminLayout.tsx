@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Outlet, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Users, Palette, ShoppingCart, Layers,
-  BarChart3, Settings, ChevronLeft, ChevronRight, LogOut, CreditCard
+  BarChart3, Settings, ChevronLeft, ChevronRight, LogOut, CreditCard, MessageSquare
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -19,6 +19,7 @@ const NAV_ITEMS = [
   { label: 'Community', icon: Users, path: '/admin/community' },
   { label: 'Content', icon: Layers, path: '/admin/content' },
   { label: 'Analytics', icon: BarChart3, path: '/admin/analytics' },
+  { label: 'Support', icon: MessageSquare, path: '/admin/support' },
   { label: 'Settings', icon: Settings, path: '/admin/settings' },
 ];
 

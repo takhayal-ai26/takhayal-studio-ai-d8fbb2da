@@ -42,10 +42,11 @@ async function getFunctionErrorMessage(error: unknown): Promise<string> {
 
   const fnError = error as SupabaseFunctionError;
 
-  if (fnError.name === 'FunctionsHttpError' && fnError.context instanceof Response) {
-    const status = fnError.context.status;
-    const body = await fnError.context.clone().json().catch(async () => {
-      const text = await fnError.context.clone().text().catch(() => '');
+  const response = fnError.context;
+  if (fnError.name === 'FunctionsHttpError' && response instanceof Response) {
+    const status = response.status;
+    const body = await response.clone().json().catch(async () => {
+      const text = await response.clone().text().catch(() => '');
       return text ? { error: text } : null;
     });
 
