@@ -195,7 +195,8 @@ export default function ToolPage() {
       }).format(new Date(dateModified))
     : null;
   const seoDescription = tool.description || tool.shortDesc;
-  const hasCondensedDetail = tool.slug === 'upscale' || tool.slug === 'logo';
+  const hasCondensedDetail = tool.slug === 'upscale' || tool.slug === 'logo' || tool.slug === 'remove-bg';
+  const shouldMatchPreviewHeight = tool.slug === 'remove-bg';
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -308,11 +309,11 @@ export default function ToolPage() {
         <BackToImageTools />
 
         {/* ══════ 2-Column Desktop / Stacked Mobile ══════ */}
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+        <div className={`flex flex-col lg:flex-row gap-6 lg:gap-10 ${shouldMatchPreviewHeight ? 'lg:items-stretch' : ''}`}>
 
           {/* ── LEFT: Form Panel ── */}
-          <div className="w-full lg:w-[480px] xl:w-[520px] flex-shrink-0">
-            <div className="rounded-2xl bg-card border border-border/50 p-5 sm:p-7 space-y-5">
+          <div className={`w-full lg:w-[480px] xl:w-[520px] flex-shrink-0 ${shouldMatchPreviewHeight ? 'lg:self-stretch' : ''}`}>
+            <div className={`rounded-2xl bg-card border border-border/50 p-5 sm:p-7 ${shouldMatchPreviewHeight ? 'h-full flex flex-col gap-5' : 'space-y-5'}`}>
 
               {/* Header */}
               <div className="flex items-center gap-3">
@@ -327,7 +328,7 @@ export default function ToolPage() {
 
               {/* Upload or Prompt */}
               {isUpload ? (
-                <div>
+                <div className={shouldMatchPreviewHeight ? 'lg:flex-1 lg:flex lg:items-center' : undefined}>
                   {previewUrl ? (
                     <div className="relative rounded-xl overflow-hidden bg-muted/10">
                       <img src={previewUrl} alt={isRTL ? `معاينة ${tool.name}` : `${tool.name} preview`} className="w-full rounded-xl object-contain max-h-[280px]" />
@@ -403,15 +404,17 @@ export default function ToolPage() {
               )}
 
               {/* CTA Button */}
-              <GenerateButton
-                onClick={handleRun}
-                disabled={!canRun}
-                loading={submitting}
-                loadingLabel={t.toolPage.submitting}
-                credits={creditCost}
-              >
-                {isUpload ? (tool.slug === 'upscale' ? t.toolPage.enhance : t.toolPage.uploadProcess) : t.toolPage.generate}
-              </GenerateButton>
+              <div className={shouldMatchPreviewHeight ? 'lg:mt-auto' : undefined}>
+                <GenerateButton
+                  onClick={handleRun}
+                  disabled={!canRun}
+                  loading={submitting}
+                  loadingLabel={t.toolPage.submitting}
+                  credits={creditCost}
+                >
+                  {isUpload ? (tool.slug === 'upscale' ? t.toolPage.enhance : t.toolPage.uploadProcess) : t.toolPage.generate}
+                </GenerateButton>
+              </div>
             </div>
           </div>
 
