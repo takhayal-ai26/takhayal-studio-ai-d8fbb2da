@@ -195,6 +195,7 @@ export default function ToolPage() {
       }).format(new Date(dateModified))
     : null;
   const seoDescription = tool.description || tool.shortDesc;
+  const isUpscaleTool = tool.slug === 'upscale';
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -299,7 +300,7 @@ export default function ToolPage() {
         image={tool.image}
         pageType="WebPage"
         dateModified={dateModified}
-        schemas={[breadcrumbSchema, softwareSchema, faqSchema]}
+        schemas={[breadcrumbSchema, softwareSchema, ...(!isUpscaleTool ? [faqSchema] : [])]}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
@@ -427,16 +428,18 @@ export default function ToolPage() {
           </div>
         </div>
 
-        <section className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-          {facts.map((fact) => (
-            <div key={fact.label} className="rounded-2xl bg-card border border-border/40 p-5">
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70">{fact.label}</p>
-              <p className="text-[15px] font-semibold mt-2">{fact.value}</p>
-            </div>
-          ))}
-        </section>
+        {!isUpscaleTool && (
+          <section className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            {facts.map((fact) => (
+              <div key={fact.label} className="rounded-2xl bg-card border border-border/40 p-5">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70">{fact.label}</p>
+                <p className="text-[15px] font-semibold mt-2">{fact.value}</p>
+              </div>
+            ))}
+          </section>
+        )}
 
-        <section className="mt-8 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6">
+        <section className={`mt-8 ${isUpscaleTool ? '' : 'grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6'}`}>
           <div className="rounded-2xl bg-card border border-border/40 p-6">
             <h2 className="text-xl font-bold">{isRTL ? `ما الذي تفعله ${tool.name}؟` : `What does ${tool.name} do?`}</h2>
             <p className="text-sm text-muted-foreground leading-7 mt-3">{seoDescription}</p>
@@ -447,29 +450,33 @@ export default function ToolPage() {
             </p>
           </div>
 
-          <div className="rounded-2xl bg-card border border-border/40 p-6">
-            <h2 className="text-xl font-bold">{isRTL ? 'معلومات التشغيل' : 'Run details'}</h2>
-            <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
-              <li>{isUpload ? (isRTL ? 'يبدأ من صورة مرفوعة من المستخدم.' : 'Starts from a user-uploaded image.') : (isRTL ? 'يبدأ من وصف أو إعدادات يحددها المستخدم.' : 'Starts from a user-provided prompt or options.')}</li>
-              <li>{isRTL ? `تكلفة التشغيل تبدأ من ${creditCost} رصيد.` : `Runs start from ${creditCost} credits.`}</li>
-              <li>{updatedLabel ? (isRTL ? `آخر تحديث: ${updatedLabel}.` : `Last updated: ${updatedLabel}.`) : null}</li>
-            </ul>
-          </div>
+          {!isUpscaleTool && (
+            <div className="rounded-2xl bg-card border border-border/40 p-6">
+              <h2 className="text-xl font-bold">{isRTL ? 'معلومات التشغيل' : 'Run details'}</h2>
+              <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
+                <li>{isUpload ? (isRTL ? 'يبدأ من صورة مرفوعة من المستخدم.' : 'Starts from a user-uploaded image.') : (isRTL ? 'يبدأ من وصف أو إعدادات يحددها المستخدم.' : 'Starts from a user-provided prompt or options.')}</li>
+                <li>{isRTL ? `تكلفة التشغيل تبدأ من ${creditCost} رصيد.` : `Runs start from ${creditCost} credits.`}</li>
+                <li>{updatedLabel ? (isRTL ? `آخر تحديث: ${updatedLabel}.` : `Last updated: ${updatedLabel}.`) : null}</li>
+              </ul>
+            </div>
+          )}
         </section>
 
-        <section className="mt-8 rounded-2xl bg-card border border-border/40 p-6">
-          <h2 className="text-xl font-bold">{isRTL ? 'أسئلة شائعة' : 'Frequently asked questions'}</h2>
-          <Accordion type="single" collapsible className="mt-4">
-            {faqs.map((item, index) => (
-              <AccordionItem key={item.q} value={`faq-${index}`}>
-                <AccordionTrigger className="text-start font-medium">{item.q}</AccordionTrigger>
-                <AccordionContent className="text-sm text-muted-foreground leading-7">
-                  {item.a}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </section>
+        {!isUpscaleTool && (
+          <section className="mt-8 rounded-2xl bg-card border border-border/40 p-6">
+            <h2 className="text-xl font-bold">{isRTL ? 'أسئلة شائعة' : 'Frequently asked questions'}</h2>
+            <Accordion type="single" collapsible className="mt-4">
+              {faqs.map((item, index) => (
+                <AccordionItem key={item.q} value={`faq-${index}`}>
+                  <AccordionTrigger className="text-start font-medium">{item.q}</AccordionTrigger>
+                  <AccordionContent className="text-sm text-muted-foreground leading-7">
+                    {item.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </section>
+        )}
       </div>
 
       {/* Bottom safe spacing for mobile nav */}
