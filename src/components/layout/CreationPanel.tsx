@@ -146,12 +146,12 @@ export function CreationPanel() {
   };
 
   return (
-    <aside ref={panelRef} className="w-full md:w-[380px] xl:w-[420px] flex flex-col bg-background flex-shrink-0 overflow-visible relative z-30">
-      <div className="md:flex-1 overflow-visible md:overflow-y-auto overflow-x-visible px-4 pt-4 pb-4 md:p-4 space-y-2 scrollbar-thin">
+    <aside ref={panelRef} className="w-full lg:w-full flex flex-col bg-background flex-shrink-0 overflow-visible relative z-30">
+      <div className="md:flex-1 overflow-visible md:overflow-y-auto overflow-x-visible px-4 pt-4 pb-4 md:p-4 lg:p-5 xl:p-6 space-y-2 lg:space-y-3 scrollbar-thin">
         {/* Back to Image Tools — keeps Generate Image consistent with all other tool pages */}
         <BackToImageTools className="mb-2" />
         {/* Prompt */}
-        <div className="rounded-2xl bg-card/50 p-4 border border-border/30 hover:border-border/50 transition-colors">
+        <div className="rounded-2xl bg-card/50 p-4 lg:p-5 border border-border/30 hover:border-border/50 transition-colors">
           <div className="flex items-center justify-between mb-3">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
@@ -176,7 +176,7 @@ export function CreationPanel() {
             value={prompt}
             onChange={e => setPrompt(e.target.value.slice(0, 500))}
             placeholder={t.studio.describeCreate}
-            className="w-full min-h-[120px] bg-foreground/[0.03] border border-border/20 rounded-xl p-3.5 text-[15px] font-medium text-foreground placeholder:text-foreground/40 focus:border-primary/30 focus:bg-foreground/[0.04] focus:outline-none focus:ring-2 focus:ring-primary/10 resize-none leading-relaxed transition-all"
+            className="w-full min-h-[120px] lg:min-h-[150px] xl:min-h-[170px] bg-foreground/[0.03] border border-border/20 rounded-xl p-3.5 lg:p-4 text-[15px] font-medium text-foreground placeholder:text-foreground/40 focus:border-primary/30 focus:bg-foreground/[0.04] focus:outline-none focus:ring-2 focus:ring-primary/10 resize-none leading-relaxed transition-all"
           />
           <div className="flex items-center justify-between mt-1.5 px-0.5">
             <span className="text-[12px] font-medium text-foreground/50 tabular-nums">{prompt.length}/500</span>
@@ -250,7 +250,7 @@ export function CreationPanel() {
             ) : (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full rounded-2xl bg-foreground/[0.03] border border-dashed border-border/30 p-4 flex flex-col items-center justify-center gap-1.5 text-muted-foreground hover:text-foreground/80 hover:border-primary/20 hover:bg-primary/[0.02] transition-all duration-300 group"
+                className="w-full rounded-2xl bg-foreground/[0.03] border border-dashed border-border/30 p-4 lg:min-h-[150px] lg:p-6 flex flex-col items-center justify-center gap-1.5 lg:gap-2 text-muted-foreground hover:text-foreground/80 hover:border-primary/20 hover:bg-primary/[0.02] transition-all duration-300 group"
                 aria-label={language === 'ar' ? 'رفع صور مرجعية' : 'Upload reference images'}
               >
                 <div className="w-9 h-9 rounded-xl bg-foreground/[0.04] flex items-center justify-center group-hover:bg-primary/10 transition-colors">
@@ -279,7 +279,7 @@ export function CreationPanel() {
             onClick={() => toggleDropdown(item.key)}
             aria-expanded={openDropdown === item.key}
             aria-haspopup="listbox"
-            className={`w-full flex items-center justify-between h-[46px] px-3.5 rounded-xl bg-card/40 border transition-all duration-200 ${
+            className={`w-full flex items-center justify-between h-[46px] lg:h-[54px] px-3.5 lg:px-4 rounded-xl bg-card/40 border transition-all duration-200 ${
               openDropdown === item.key ? 'border-primary/30 bg-card/60' : 'border-border/20 hover:border-border/30'
             }`}
           >
@@ -302,7 +302,7 @@ export function CreationPanel() {
             loading={isGenerationBusy}
             loadingLabel={t.studio.generating}
             credits={cost}
-            className="h-[52px]"
+            className="h-[52px] lg:h-[56px]"
           >
             {uploadedImages.length > 0 ? (language === 'ar' ? 'تعديل الصورة' : 'Edit Image') : t.toolPage.generate}
           </GenerateButton>
