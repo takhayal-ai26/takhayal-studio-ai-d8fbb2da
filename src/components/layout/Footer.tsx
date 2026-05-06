@@ -12,6 +12,12 @@ const XIcon = ({ size = 14, className = '' }: { size?: number; className?: strin
   </svg>
 );
 
+const TikTokIcon = ({ size = 14, className = '' }: { size?: number; className?: string }) => (
+  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor" className={className}>
+    <path d="M19.59 6.69a4.84 4.84 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 1 1-2.89-2.89c.31 0 .61.05.88.14V9.4a6.38 6.38 0 0 0-.88-.06 6.34 6.34 0 1 0 6.34 6.33v-7a8.19 8.19 0 0 0 4.77 1.52v-3.5z" />
+  </svg>
+);
+
 const imageModelLinks = [
   { name: 'Nano Banana Pro', slug: 'nano-banana-pro' },
   { name: 'Nano Banana 2', slug: 'nano-banana-2' },
@@ -78,6 +84,7 @@ export function Footer() {
     { icon: Instagram, href: copy.instagramUrl, label: 'Instagram' },
     { icon: XIcon, href: copy.xUrl, label: 'X' },
     { icon: Linkedin, href: copy.linkedinUrl, label: 'LinkedIn' },
+    { icon: TikTokIcon, href: copy.tiktokUrl, label: 'TikTok' },
     { icon: Mail, href: `mailto:${copy.supportEmail}`, label: copy.support },
   ];
 
