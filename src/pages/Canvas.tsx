@@ -20,8 +20,8 @@ export function GenerateImageCanvasPage() {
       <div className="flex flex-1 min-h-0 overflow-visible" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
         <div className="flex flex-col flex-1 min-h-0 relative overflow-y-auto pb-24 md:pb-0">
           <Tabs defaultValue="generate" className="w-full">
-            <div className="sticky top-0 z-20 bg-background/90 px-4 py-3 backdrop-blur md:px-5">
-              <div className="mx-auto flex w-full max-w-[940px] justify-center">
+            <div className="sticky top-0 z-20 bg-background/90 px-4 py-3 backdrop-blur md:px-6 lg:px-8">
+              <div className="mx-auto flex w-full max-w-[1480px] justify-center">
                 <TabsList className="h-11 rounded-2xl bg-card/50 p-1">
                   <TabsTrigger value="generate" className="h-9 rounded-xl px-4 text-[13px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">
                     <Wand2 size={14} className={isAr ? 'ml-2' : 'mr-2'} />
@@ -35,8 +35,8 @@ export function GenerateImageCanvasPage() {
               </div>
             </div>
 
-            <TabsContent value="generate" className="m-0 px-4 pt-3 md:px-5 md:pt-4">
-              <div className="mx-auto grid w-full max-w-[940px] grid-cols-1 items-start justify-center gap-4 md:grid-cols-[minmax(360px,420px)_minmax(360px,420px)] md:gap-8">
+            <TabsContent value="generate" className="m-0 px-4 pt-3 md:px-6 md:pt-4 lg:px-8 xl:px-10">
+              <div className="mx-auto grid w-full max-w-[1480px] grid-cols-1 items-start justify-center gap-4 lg:grid-cols-[minmax(380px,0.92fr)_minmax(430px,1.08fr)] lg:gap-6 xl:grid-cols-[minmax(500px,0.95fr)_minmax(560px,1.05fr)] xl:gap-9">
                 <CreationPanel />
                 <StudioGenerationFeed section="featured" />
               </div>

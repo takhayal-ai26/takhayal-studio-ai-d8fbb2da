@@ -195,6 +195,8 @@ export default function ToolPage() {
       }).format(new Date(dateModified))
     : null;
   const seoDescription = tool.description || tool.shortDesc;
+  const hasCondensedDetail = tool.slug === 'upscale' || tool.slug === 'logo' || tool.slug === 'remove-bg';
+  const shouldMatchPreviewHeight = tool.slug === 'remove-bg';
   const faqSchema = {
     '@context': 'https://schema.org',
     '@type': 'FAQPage',
@@ -299,7 +301,7 @@ export default function ToolPage() {
         image={tool.image}
         pageType="WebPage"
         dateModified={dateModified}
-        schemas={[breadcrumbSchema, softwareSchema, faqSchema]}
+        schemas={[breadcrumbSchema, softwareSchema, ...(!hasCondensedDetail ? [faqSchema] : [])]}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
 
@@ -307,11 +309,11 @@ export default function ToolPage() {
         <BackToImageTools />
 
         {/* ══════ 2-Column Desktop / Stacked Mobile ══════ */}
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+        <div className={`flex flex-col lg:flex-row gap-6 lg:gap-10 ${shouldMatchPreviewHeight ? 'lg:items-stretch' : ''}`}>
 
           {/* ── LEFT: Form Panel ── */}
-          <div className="w-full lg:w-[480px] xl:w-[520px] flex-shrink-0">
-            <div className="rounded-2xl bg-card border border-border/50 p-5 sm:p-7 space-y-5">
+          <div className={`w-full lg:w-[480px] xl:w-[520px] flex-shrink-0 ${shouldMatchPreviewHeight ? 'lg:self-stretch' : ''}`}>
+            <div className={`rounded-2xl bg-card border border-border/50 p-5 sm:p-7 ${shouldMatchPreviewHeight ? 'h-full flex flex-col gap-5' : 'space-y-5'}`}>
 
               {/* Header */}
               <div className="flex items-center gap-3">
@@ -326,7 +328,7 @@ export default function ToolPage() {
 
               {/* Upload or Prompt */}
               {isUpload ? (
-                <div>
+                <div className={shouldMatchPreviewHeight ? 'lg:flex-1 lg:flex lg:items-center' : undefined}>
                   {previewUrl ? (
                     <div className="relative rounded-xl overflow-hidden bg-muted/10">
                       <img src={previewUrl} alt={isRTL ? `معاينة ${tool.name}` : `${tool.name} preview`} className="w-full rounded-xl object-contain max-h-[280px]" />
@@ -402,15 +404,17 @@ export default function ToolPage() {
               )}
 
               {/* CTA Button */}
-              <GenerateButton
-                onClick={handleRun}
-                disabled={!canRun}
-                loading={submitting}
-                loadingLabel={t.toolPage.submitting}
-                credits={creditCost}
-              >
-                {isUpload ? (tool.slug === 'upscale' ? t.toolPage.enhance : t.toolPage.uploadProcess) : t.toolPage.generate}
-              </GenerateButton>
+              <div className={shouldMatchPreviewHeight ? 'lg:mt-auto' : undefined}>
+                <GenerateButton
+                  onClick={handleRun}
+                  disabled={!canRun}
+                  loading={submitting}
+                  loadingLabel={t.toolPage.submitting}
+                  credits={creditCost}
+                >
+                  {isUpload ? (tool.slug === 'upscale' ? t.toolPage.enhance : t.toolPage.uploadProcess) : t.toolPage.generate}
+                </GenerateButton>
+              </div>
             </div>
           </div>
 
@@ -427,16 +431,18 @@ export default function ToolPage() {
           </div>
         </div>
 
-        <section className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
-          {facts.map((fact) => (
-            <div key={fact.label} className="rounded-2xl bg-card border border-border/40 p-5">
-              <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70">{fact.label}</p>
-              <p className="text-[15px] font-semibold mt-2">{fact.value}</p>
-            </div>
-          ))}
-        </section>
+        {!hasCondensedDetail && (
+          <section className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-4">
+            {facts.map((fact) => (
+              <div key={fact.label} className="rounded-2xl bg-card border border-border/40 p-5">
+                <p className="text-[11px] uppercase tracking-wider text-muted-foreground/70">{fact.label}</p>
+                <p className="text-[15px] font-semibold mt-2">{fact.value}</p>
+              </div>
+            ))}
+          </section>
+        )}
 
-        <section className="mt-8 grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6">
+        <section className={`mt-8 ${hasCondensedDetail ? '' : 'grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6'}`}>
           <div className="rounded-2xl bg-card border border-border/40 p-6">
             <h2 className="text-xl font-bold">{isRTL ? `ما الذي تفعله ${tool.name}؟` : `What does ${tool.name} do?`}</h2>
             <p className="text-sm text-muted-foreground leading-7 mt-3">{seoDescription}</p>
@@ -447,29 +453,33 @@ export default function ToolPage() {
             </p>
           </div>
 
-          <div className="rounded-2xl bg-card border border-border/40 p-6">
-            <h2 className="text-xl font-bold">{isRTL ? 'معلومات التشغيل' : 'Run details'}</h2>
-            <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
-              <li>{isUpload ? (isRTL ? 'يبدأ من صورة مرفوعة من المستخدم.' : 'Starts from a user-uploaded image.') : (isRTL ? 'يبدأ من وصف أو إعدادات يحددها المستخدم.' : 'Starts from a user-provided prompt or options.')}</li>
-              <li>{isRTL ? `تكلفة التشغيل تبدأ من ${creditCost} رصيد.` : `Runs start from ${creditCost} credits.`}</li>
-              <li>{updatedLabel ? (isRTL ? `آخر تحديث: ${updatedLabel}.` : `Last updated: ${updatedLabel}.`) : null}</li>
-            </ul>
-          </div>
+          {!hasCondensedDetail && (
+            <div className="rounded-2xl bg-card border border-border/40 p-6">
+              <h2 className="text-xl font-bold">{isRTL ? 'معلومات التشغيل' : 'Run details'}</h2>
+              <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
+                <li>{isUpload ? (isRTL ? 'يبدأ من صورة مرفوعة من المستخدم.' : 'Starts from a user-uploaded image.') : (isRTL ? 'يبدأ من وصف أو إعدادات يحددها المستخدم.' : 'Starts from a user-provided prompt or options.')}</li>
+                <li>{isRTL ? `تكلفة التشغيل تبدأ من ${creditCost} رصيد.` : `Runs start from ${creditCost} credits.`}</li>
+                <li>{updatedLabel ? (isRTL ? `آخر تحديث: ${updatedLabel}.` : `Last updated: ${updatedLabel}.`) : null}</li>
+              </ul>
+            </div>
+          )}
         </section>
 
-        <section className="mt-8 rounded-2xl bg-card border border-border/40 p-6">
-          <h2 className="text-xl font-bold">{isRTL ? 'أسئلة شائعة' : 'Frequently asked questions'}</h2>
-          <Accordion type="single" collapsible className="mt-4">
-            {faqs.map((item, index) => (
-              <AccordionItem key={item.q} value={`faq-${index}`}>
-                <AccordionTrigger className="text-start font-medium">{item.q}</AccordionTrigger>
-                <AccordionContent className="text-sm text-muted-foreground leading-7">
-                  {item.a}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </section>
+        {!hasCondensedDetail && (
+          <section className="mt-8 rounded-2xl bg-card border border-border/40 p-6">
+            <h2 className="text-xl font-bold">{isRTL ? 'أسئلة شائعة' : 'Frequently asked questions'}</h2>
+            <Accordion type="single" collapsible className="mt-4">
+              {faqs.map((item, index) => (
+                <AccordionItem key={item.q} value={`faq-${index}`}>
+                  <AccordionTrigger className="text-start font-medium">{item.q}</AccordionTrigger>
+                  <AccordionContent className="text-sm text-muted-foreground leading-7">
+                    {item.a}
+                  </AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </section>
+        )}
       </div>
 
       {/* Bottom safe spacing for mobile nav */}

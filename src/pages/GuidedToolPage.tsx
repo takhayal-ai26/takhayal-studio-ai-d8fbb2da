@@ -10,7 +10,6 @@ import { useApp } from '@/context/AppContext';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { PageSeo, absoluteUrl } from '@/components/seo/PageSeo';
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 import { toDateOnly } from '@/lib/seo-helpers';
 import { GenerateButton, imageSizeError, isOversizedImage } from '@/lib/ux';
 
@@ -123,25 +122,6 @@ export default function GuidedToolPage() {
   const uploadInputId = `guided-tool-upload-${tool.slug}`;
   const dateModified = toDateOnly(tool.updatedAt);
   const seoDescription = tool.description || tool.shortDesc;
-  const faqSchema = {
-    '@context': 'https://schema.org',
-    '@type': 'FAQPage',
-    mainEntity: [
-      {
-        '@type': 'Question',
-        name: isRTL ? `ما الذي تفعله أداة ${tool.name}؟` : `What does the ${tool.name} tool do?`,
-        acceptedAnswer: { '@type': 'Answer', text: seoDescription },
-      },
-      {
-        '@type': 'Question',
-        name: isRTL ? 'هل أحتاج إلى رفع صورة؟' : 'Do I need to upload an image?',
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: isRTL ? 'نعم. هذا المسار يعتمد على صورة مرجعية يرفعها المستخدم.' : 'Yes. This workflow depends on a user-uploaded reference image.',
-        },
-      },
-    ],
-  };
   const breadcrumbSchema = {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
@@ -150,16 +130,6 @@ export default function GuidedToolPage() {
       { '@type': 'ListItem', position: 2, name: tool.name, item: absoluteUrl(`/tools/${tool.slug}`) },
     ],
   };
-  const faqs = [
-    {
-      q: isRTL ? `ما استخدام ${tool.name}؟` : `What is ${tool.name} used for?`,
-      a: seoDescription,
-    },
-    {
-      q: isRTL ? 'كيف أبدأ؟' : 'How do I start?',
-      a: isRTL ? 'ارفع الصورة المرجعية ثم شغّل الأداة لبدء المعالجة.' : 'Upload the reference image, then run the tool to start processing.',
-    },
-  ];
 
   return (
     <div className="flex-1 animate-page-enter" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
@@ -170,16 +140,16 @@ export default function GuidedToolPage() {
         image={tool.image}
         pageType="WebPage"
         dateModified={dateModified}
-        schemas={[breadcrumbSchema, faqSchema]}
+        schemas={[breadcrumbSchema]}
       />
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-10">
         {/* Back to Image Tools */}
         <BackToImageTools />
 
-        <div className="flex flex-col lg:flex-row gap-6 lg:gap-10">
+        <div className="flex flex-col items-stretch lg:flex-row gap-6 lg:gap-10">
           {/* LEFT: Form Panel */}
-          <div className="w-full lg:w-[480px] xl:w-[520px] flex-shrink-0">
-            <div className="rounded-2xl bg-card border border-border/50 p-5 sm:p-7 space-y-5">
+          <div className="w-full lg:w-[480px] xl:w-[520px] flex-shrink-0 lg:self-stretch">
+            <div className="h-full rounded-2xl bg-card border border-border/50 p-5 sm:p-7 flex flex-col gap-5">
               {/* Header */}
               <div>
                 <h1 className="typo-heading-card text-2xl font-bold">{tool.name}</h1>
@@ -191,9 +161,9 @@ export default function GuidedToolPage() {
               )}
 
               {/* Upload */}
-              <div>
+              <div className="lg:flex-1 lg:flex lg:items-center">
                 {previewUrl ? (
-                  <div className="relative rounded-xl overflow-hidden bg-muted/10">
+                  <div className="relative w-full rounded-xl overflow-hidden bg-muted/10">
                     <img src={previewUrl} alt={isRTL ? `معاينة ${tool.name}` : `${tool.name} preview`} className="w-full rounded-xl object-contain max-h-[280px]" />
                     <button
                       type="button"
@@ -226,16 +196,18 @@ export default function GuidedToolPage() {
               </div>
 
               {/* CTA Button */}
-              <GenerateButton
-                type="button"
-                onClick={handleGenerate}
-                disabled={!canRun}
-                loading={submitting}
-                loadingLabel={t.toolPage.submitting}
-                credits={tool.creditCost}
-              >
-                {tool.ctaLabel}
-              </GenerateButton>
+              <div className="lg:mt-auto">
+                <GenerateButton
+                  type="button"
+                  onClick={handleGenerate}
+                  disabled={!canRun}
+                  loading={submitting}
+                  loadingLabel={t.toolPage.submitting}
+                  credits={tool.creditCost}
+                >
+                  {tool.ctaLabel}
+                </GenerateButton>
+              </div>
             </div>
           </div>
 
@@ -251,20 +223,6 @@ export default function GuidedToolPage() {
             </div>
           </div>
         </div>
-
-        <section className="mt-8 rounded-2xl bg-card border border-border/40 p-6">
-          <h2 className="text-xl font-bold">{isRTL ? 'أسئلة شائعة' : 'Frequently asked questions'}</h2>
-          <Accordion type="single" collapsible className="mt-4">
-            {faqs.map((item, index) => (
-              <AccordionItem key={item.q} value={`faq-${index}`}>
-                <AccordionTrigger className="text-start font-medium">{item.q}</AccordionTrigger>
-                <AccordionContent className="text-sm text-muted-foreground leading-7">
-                  {item.a}
-                </AccordionContent>
-              </AccordionItem>
-            ))}
-          </Accordion>
-        </section>
       </div>
       <div className="h-24 lg:h-0" />
     </div>

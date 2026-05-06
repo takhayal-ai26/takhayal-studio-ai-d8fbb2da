@@ -59,7 +59,7 @@ function StudioJobCard({
   const hasImage = hasGeneratedImage(job);
   const isProcessing = job.status === 'queued' || job.status === 'generating' || job.status === 'processing' || (job.status === 'completed' && !hasImage);
   const isFailed = job.status === 'failed' && !hasImage;
-  const cardSizeClass = featured ? 'w-full max-w-[388px]' : 'w-full';
+  const cardSizeClass = featured ? 'w-full max-w-full lg:max-w-[560px] xl:max-w-[640px] 2xl:max-w-[700px]' : 'w-full';
   const cardStyle = { aspectRatio: featured ? '1/1' : cssRatio };
 
   if (isProcessing) {
@@ -154,7 +154,7 @@ function EmptyRecentSlot({ loading }: { loading: boolean }) {
   const isAr = lang === 'ar';
 
   return (
-    <div className="aspect-square w-full max-w-[388px] rounded-2xl bg-card/60 border border-border/10 relative overflow-hidden flex items-center justify-center text-center px-8">
+    <div className="aspect-square w-full max-w-full lg:max-w-[560px] xl:max-w-[640px] 2xl:max-w-[700px] rounded-2xl bg-card/60 border border-border/10 relative overflow-hidden flex items-center justify-center text-center px-8">
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,hsl(var(--primary)/0.08),transparent_42%)]" />
       <div className="relative flex flex-col items-center gap-3">
         <div className="w-12 h-12 rounded-full bg-background/60 border border-border/15 flex items-center justify-center">
@@ -259,7 +259,7 @@ export function StudioGenerationFeed({ section = 'full' }: { section?: StudioGen
   const showFeatured = section !== 'history';
   const showHistory = section !== 'featured';
   const frameClass = section === 'featured'
-    ? 'w-full flex flex-col overflow-visible md:pt-[68px]'
+    ? 'w-full flex flex-col overflow-visible lg:pt-[76px] xl:pt-[80px]'
     : 'w-full md:flex-1 flex flex-col overflow-visible md:overflow-hidden';
   const contentClass = section === 'featured'
     ? 'w-full'
