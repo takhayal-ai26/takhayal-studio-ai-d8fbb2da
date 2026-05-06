@@ -54,6 +54,7 @@ const AdminAnalytics = lazy(() => import("./pages/admin/AdminAnalytics"));
 const AdminSettingsMerged = lazy(() => import("./pages/admin/AdminSettingsMerged"));
 const AdminCommunity = lazy(() => import("./pages/admin/AdminCommunity"));
 const AdminBilling = lazy(() => import("./pages/admin/AdminBilling"));
+const AdminSupport = lazy(() => import("./pages/admin/AdminSupport"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -208,6 +209,7 @@ const RoutedApp = () => {
           <Route path="community" element={<AdminCommunity />} />
           <Route path="content" element={<AdminContentMerged />} />
           <Route path="analytics" element={<AdminAnalytics />} />
+          <Route path="support" element={<AdminSupport />} />
           <Route path="settings" element={<AdminSettingsMerged />} />
         </Route>
 
@@ -217,7 +219,6 @@ const RoutedApp = () => {
         <Route path="/admin/notifications" element={<Navigate to="/admin/settings" replace />} />
         <Route path="/admin/translations" element={<Navigate to="/admin/settings" replace />} />
         <Route path="/admin/roles" element={<Navigate to="/admin/settings" replace />} />
-        <Route path="/admin/support" element={<Navigate to="/admin/settings" replace />} />
         <Route path="/admin/integrations" element={<Navigate to="/admin/settings" replace />} />
 
           <Route path="/dashboard/admin" element={<Navigate to="/admin" replace />} />

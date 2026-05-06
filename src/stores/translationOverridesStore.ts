@@ -104,7 +104,7 @@ export const useTranslationOverridesStore = create<TranslationOverridesState>()(
           .order('key');
 
         if (error) throw error;
-        const merged = mergeTranslationOverrideRows(data as TranslationOverrideRow[], get().overrides);
+        const merged = mergeTranslationOverrideRows(data as unknown as TranslationOverrideRow[], get().overrides);
         set({ overrides: merged, isRemoteLoaded: true });
       },
 

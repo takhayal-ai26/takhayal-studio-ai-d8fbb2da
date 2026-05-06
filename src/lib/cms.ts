@@ -48,7 +48,7 @@ export type PlanFeatureBullet = {
 
 export type PlanWithJsonFeatures = {
   id: string;
-  features?: Array<Partial<PlanFeatureBullet>> | null;
+  features?: unknown;
 };
 
 export type LegacyPricingFeatureRow = {
@@ -66,10 +66,15 @@ export function getPlanFeatureBullets(
 ): PlanFeatureBullet[] {
   const jsonFeatures = Array.isArray(plan.features)
     ? plan.features
-        .map((feature) => ({
-          en: feature.en?.trim() || '',
-          ar: feature.ar?.trim() || '',
-        }))
+        .map((feature) => {
+          const row = feature && typeof feature === 'object'
+            ? feature as Partial<PlanFeatureBullet>
+            : {};
+          return {
+            en: row.en?.trim() || '',
+            ar: row.ar?.trim() || '',
+          };
+        })
         .filter((feature) => feature.en || feature.ar)
     : [];
 

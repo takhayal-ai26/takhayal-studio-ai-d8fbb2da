@@ -268,7 +268,7 @@ export default function ToolPage() {
     },
     {
       label: isRTL ? 'المزود' : 'Provider',
-      value: selectedProvider?.name || tool.providerName || 'Takhayal.ai',
+      value: selectedProvider?.display_name || tool.providerName || 'Takhayal.ai',
     },
   ];
   const faqs = [

@@ -93,7 +93,7 @@ async function fetchContentBlocks(location?: string): Promise<ContentBlock[]> {
 
   const { data, error } = await query;
   if (error) throw error;
-  return ((data as ContentBlock[]) || []).map((block) => ({
+  return ((data as unknown as ContentBlock[]) || []).map((block) => ({
     ...block,
     metadata_json: block.metadata_json || {},
   }));
@@ -113,7 +113,7 @@ async function fetchPublishedContentBlocks(location?: string): Promise<ContentBl
   if (error) throw error;
 
   const now = Date.now();
-  return ((data as ContentBlock[]) || [])
+  return ((data as unknown as ContentBlock[]) || [])
     .filter((block) => (!block.start_at || Date.parse(block.start_at) <= now) && (!block.end_at || Date.parse(block.end_at) >= now))
     .map((block) => ({ ...block, metadata_json: block.metadata_json || {} }));
 }
@@ -124,7 +124,7 @@ async function fetchSeoLandingPages(): Promise<SeoLandingPageRecord[]> {
     .select('*')
     .order('slug');
   if (error) throw error;
-  return (data as SeoLandingPageRecord[]) || [];
+  return (data as unknown as SeoLandingPageRecord[]) || [];
 }
 
 async function fetchSeoLandingPage(slug: string): Promise<SeoLandingPageRecord | null> {
@@ -135,7 +135,7 @@ async function fetchSeoLandingPage(slug: string): Promise<SeoLandingPageRecord |
     .eq('active', true)
     .maybeSingle();
   if (error) throw error;
-  return (data as SeoLandingPageRecord | null) || null;
+  return (data as unknown as SeoLandingPageRecord | null) || null;
 }
 
 export function useContentBlocks(location?: string) {
