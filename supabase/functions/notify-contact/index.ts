@@ -24,6 +24,67 @@ const escapeHtml = (value: string) =>
     .replaceAll('"', '&quot;')
     .replaceAll("'", '&#39;')
 
+async function sendResendEmail(resendApiKey: string, payload: Record<string, unknown>) {
+  const response = await fetch(RESEND_ENDPOINT, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${resendApiKey}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(payload),
+  })
+  const result = await response.json().catch(() => null)
+
+  return { response, result }
+}
+
+function buildCustomerConfirmationEmail(firstName: string, language?: string) {
+  const isArabic = language === 'ar'
+  const safeName = escapeHtml(firstName)
+  const heading = isArabic ? 'وصلتنا رسالتك' : 'We received your message'
+  const intro = isArabic
+    ? `مرحباً ${safeName}، شكراً لتواصلك مع تخيّل. وصلتنا رسالتك وسيقوم فريقنا بمراجعتها والرد عليك في أقرب وقت ممكن.`
+    : `Hi ${safeName}, thank you for contacting Takhayal. We received your message and our team will review it and get back to you as soon as possible.`
+  const note = isArabic
+    ? 'إذا أردت إضافة أي تفاصيل أخرى، يمكنك الرد على هذا البريد مباشرة.'
+    : 'If you want to add anything else, you can reply directly to this email.'
+  const signoff = isArabic ? 'فريق تخيّل' : 'Takhayal Support'
+
+  const html = `
+    <div dir="${isArabic ? 'rtl' : 'ltr'}" style="font-family:Arial,sans-serif;max-width:600px;margin:0 auto;padding:24px;color:#222;line-height:1.7">
+      <h2 style="color:#F03E1B;margin:0 0 16px">${heading}</h2>
+      <p style="margin:0 0 16px">${intro}</p>
+      <p style="margin:0 0 24px">${note}</p>
+      <p style="margin:0;color:#666">${signoff}</p>
+    </div>
+  `
+  const text = isArabic
+    ? [
+      'وصلتنا رسالتك',
+      '',
+      `مرحباً ${firstName}، شكراً لتواصلك مع تخيّل. وصلتنا رسالتك وسيقوم فريقنا بمراجعتها والرد عليك في أقرب وقت ممكن.`,
+      '',
+      'إذا أردت إضافة أي تفاصيل أخرى، يمكنك الرد على هذا البريد مباشرة.',
+      '',
+      'فريق تخيّل',
+    ].join('\n')
+    : [
+      'We received your message',
+      '',
+      `Hi ${firstName}, thank you for contacting Takhayal. We received your message and our team will review it and get back to you as soon as possible.`,
+      '',
+      'If you want to add anything else, you can reply directly to this email.',
+      '',
+      'Takhayal Support',
+    ].join('\n')
+
+  return {
+    subject: isArabic ? 'وصلتنا رسالتك - تخيّل' : 'We received your message - Takhayal',
+    html,
+    text,
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -84,23 +145,15 @@ Deno.serve(async (req) => {
       message,
     ].join('\n')
 
-    const resendResponse = await fetch(RESEND_ENDPOINT, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${resendApiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        from: supportFrom,
-        to: [supportTo],
-        reply_to: email,
-        subject: `New Takhayal support message from ${first_name}`,
-        html,
-        text,
-      }),
+    const { response: resendResponse, result: resendResult } = await sendResendEmail(resendApiKey, {
+      from: supportFrom,
+      to: [supportTo],
+      reply_to: email,
+      subject: `New Takhayal support message from ${first_name}`,
+      html,
+      text,
     })
 
-    const resendResult = await resendResponse.json().catch(() => null)
     if (!resendResponse.ok) {
       console.error('notify-contact Resend error:', resendResult)
       return new Response(
@@ -109,8 +162,27 @@ Deno.serve(async (req) => {
       )
     }
 
+    const confirmationEmail = buildCustomerConfirmationEmail(first_name, language)
+    const { response: confirmationResponse, result: confirmationResult } = await sendResendEmail(resendApiKey, {
+      from: supportFrom,
+      to: [email],
+      reply_to: supportTo,
+      subject: confirmationEmail.subject,
+      html: confirmationEmail.html,
+      text: confirmationEmail.text,
+    })
+
+    if (!confirmationResponse.ok) {
+      console.error('notify-contact confirmation Resend error:', confirmationResult)
+      return new Response(
+        JSON.stringify({ error: 'Customer confirmation failed' }),
+        { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      )
+    }
+
     console.log('Contact notification sent:', {
       email_id: resendResult?.id,
+      confirmation_id: confirmationResult?.id,
       recipient: supportTo,
       language,
       is_logged_in,
@@ -118,7 +190,7 @@ Deno.serve(async (req) => {
     })
 
     return new Response(
-      JSON.stringify({ success: true, id: resendResult?.id }),
+      JSON.stringify({ success: true, id: resendResult?.id, confirmation_id: confirmationResult?.id }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )
   } catch (err) {
