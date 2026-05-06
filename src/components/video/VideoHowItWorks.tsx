@@ -2,13 +2,13 @@ import { Clapperboard, CloudUpload, Expand, Lightbulb, Play, RotateCcw, Sparkles
 import { useLanguage } from '@/i18n/LanguageContext';
 
 type StepPreview = 'image' | 'prompt' | 'video';
-type VideoGuideVariant = 'generic' | 'motion-control';
+type VideoGuideVariant = 'generic' | 'motion-control' | 'video-upscale';
 type VideoGuideProps = {
   toolSlug?: string | null;
 };
 
 const getGuideVariant = (toolSlug?: string | null): VideoGuideVariant =>
-  toolSlug === 'motion-control' ? 'motion-control' : 'generic';
+  toolSlug === 'motion-control' || toolSlug === 'video-upscale' ? toolSlug : 'generic';
 
 export function VideoHowToUse({ toolSlug }: VideoGuideProps = {}) {
   const { lang } = useLanguage();
@@ -19,27 +19,39 @@ export function VideoHowToUse({ toolSlug }: VideoGuideProps = {}) {
     {
       title: variant === 'motion-control'
         ? (isAr ? 'ارفع الصورة الأساسية' : 'Upload the source image')
+        : variant === 'video-upscale'
+          ? (isAr ? 'ارفع الفيديو' : 'Upload the video')
         : (isAr ? 'أضف صورة' : 'Add an image'),
       desc: variant === 'motion-control'
         ? (isAr ? 'اختر الصورة أو الموضوع الذي تريد تحريكه بحركة دقيقة.' : 'Choose the frame or subject you want to animate with controlled motion.')
+        : variant === 'video-upscale'
+          ? (isAr ? 'ابدأ بفيديو واضح تريد تحسين دقته وتفاصيله.' : 'Start with the clearest video you want to sharpen and enhance.')
         : (isAr ? 'ارفع صورة بداية لتحريكها أو ابدأ من وصف نصي' : 'Upload a starting frame to animate, or begin with a text prompt'),
       preview: 'image',
     },
     {
       title: variant === 'motion-control'
         ? (isAr ? 'حدّد حركة الكاميرا' : 'Direct the camera move')
+        : variant === 'video-upscale'
+          ? (isAr ? 'صف التحسين المطلوب' : 'Describe the enhancement')
         : (isAr ? 'صف الحركة' : 'Describe the motion'),
       desc: variant === 'motion-control'
         ? (isAr ? 'اكتب حركة واضحة مثل اقتراب، دوران، بان، تلت، أو حركة بسيطة للموضوع.' : 'Describe one clear move: push in, orbit, pan, tilt, zoom, or subtle subject motion.')
+        : variant === 'video-upscale'
+          ? (isAr ? 'ركّز على الوضوح، الحدة، الملمس، وتقليل التشويش بدل تغيير المشهد.' : 'Focus on clarity, sharpness, texture, and noise cleanup rather than changing the scene.')
         : (isAr ? 'اكتب وصفاً لحركة الكاميرا والمشهد الذي تريده' : 'Write a prompt describing the camera movement and scene you want'),
       preview: 'prompt',
     },
     {
       title: variant === 'motion-control'
         ? (isAr ? 'ولّد حركة متحكم بها' : 'Generate controlled motion')
+        : variant === 'video-upscale'
+          ? (isAr ? 'ولّد النسخة المحسّنة' : 'Generate the upscale')
         : (isAr ? 'ولّد الفيديو' : 'Generate your video'),
       desc: variant === 'motion-control'
         ? (isAr ? 'حوّل الصورة إلى فيديو قصير بحركة طبيعية واتجاه كاميرا واضح.' : 'Turn the image into a short video with natural motion and a clear camera direction.')
+        : variant === 'video-upscale'
+          ? (isAr ? 'احصل على فيديو أوضح بتفاصيل أنظف ومظهر عالي الدقة.' : 'Create a cleaner, sharper video with a more polished high-resolution look.')
         : (isAr ? 'اضغط توليد وشاهد الذكاء الاصطناعي يحول وصفك إلى فيديو سينمائي' : 'Click generate and watch AI turn your description into a cinematic video'),
       preview: 'video',
     },
@@ -50,10 +62,22 @@ export function VideoHowToUse({ toolSlug }: VideoGuideProps = {}) {
       ar: 'حركة كاميرا بطيئة نحو الوجه، التفاتة خفيفة، إضاءة استوديو هادئة، بدون اهتزاز...',
       en: 'Slow camera push-in toward the face, subtle head turn, steady studio lighting, no shake...',
     }
+    : variant === 'video-upscale'
+      ? {
+        ar: 'حسّن هذا الفيديو بتفاصيل أوضح، ملمس أنظف، تقليل التشويش، ومظهر عالي الدقة...',
+        en: 'Enhance this video with sharper details, cleaner texture, reduced noise, and a high-resolution look...',
+      }
     : {
       ar: 'لقطة سينمائية بطائرة درون، الكاميرا تقترب ببطء، إضاءة ذهبية منخفضة، وغبار يتحرك في الهواء...',
       en: 'Cinematic drone shot, camera pushes in from wide to close, low angle, golden hour lighting, dust particles in the air...',
     };
+
+  const uploadLabel = variant === 'video-upscale'
+    ? (isAr ? 'ارفع فيديو' : 'Upload video')
+    : (isAr ? 'ارفع صورة' : 'Upload image');
+  const uploadHint = variant === 'video-upscale'
+    ? (isAr ? 'MP4 أو MOV' : 'MP4 or MOV')
+    : (isAr ? 'أو اسحبها هنا' : 'or drag and drop');
 
   const renderPreview = (type: StepPreview) => {
     if (type === 'image') {
@@ -67,10 +91,10 @@ export function VideoHowToUse({ toolSlug }: VideoGuideProps = {}) {
           <div className="flex aspect-[4/3] min-w-0 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-foreground/30 bg-background/35 px-3 text-center">
             <CloudUpload size={25} className="text-muted-foreground/75" />
             <span className="text-[12px] font-semibold text-foreground">
-              {isAr ? 'ارفع صورة' : 'Upload image'}
+              {uploadLabel}
             </span>
             <span className="text-[11px] leading-snug text-muted-foreground">
-              {isAr ? 'أو اسحبها هنا' : 'or drag and drop'}
+              {uploadHint}
             </span>
           </div>
         </div>
@@ -166,6 +190,25 @@ export function VideoProTips({ toolSlug }: VideoGuideProps = {}) {
         text: isAr ? 'تجنّب الخلفيات المزدحمة لنتيجة أنظف' : 'Avoid crowded backgrounds for cleaner motion',
       },
     ]
+    : variant === 'video-upscale'
+      ? [
+        {
+          icon: <Video size={17} />,
+          text: isAr ? 'ابدأ بأعلى جودة متاحة لديك' : 'Start with the highest-quality source you have',
+        },
+        {
+          icon: <Sparkles size={17} />,
+          text: isAr ? 'اطلب وضوحاً وحدّة وتقليل تشويش' : 'Ask for clarity, sharpness, and noise cleanup',
+        },
+        {
+          icon: <Clapperboard size={17} />,
+          text: isAr ? 'لا تطلب تغيير المشهد أو الحركة' : 'Do not ask to change the scene or motion',
+        },
+        {
+          icon: <RotateCcw size={17} />,
+          text: isAr ? 'راجع الوجوه والحواف والنصوص بعد التحسين' : 'Review faces, edges, and text after upscaling',
+        },
+      ]
     : [
       {
         icon: <Video size={17} />,
