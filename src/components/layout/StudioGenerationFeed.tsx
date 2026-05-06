@@ -64,14 +64,24 @@ function StudioJobCard({
 
   if (isProcessing) {
     return (
-      <div className={`rounded-2xl overflow-hidden bg-card/60 border border-border/10 relative ${cardSizeClass}`} style={cardStyle}>
+      <div className={`gen-card-processing rounded-2xl overflow-hidden bg-card/60 border border-border/10 relative ${cardSizeClass}`} style={cardStyle}>
         <div className="absolute inset-0 gen-shimmer" />
         <div className="absolute inset-0 gen-glow" />
-        <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-4 text-center">
+        <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-4 text-center">
           <div className={`${featured ? 'w-12 h-12' : 'w-10 h-10'} rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center`}>
             <Loader2 size={featured ? 20 : 18} className="text-primary animate-spin" />
           </div>
-          <span className="text-[13px] font-medium text-primary/70">{t.studio.generating}</span>
+          <div className="w-full max-w-[220px] space-y-2">
+            <span className="block text-[13px] font-medium text-primary/80">{t.studio.generating}</span>
+            <div
+              role="progressbar"
+              aria-label={isAr ? 'تقدم التوليد' : 'Generation progress'}
+              aria-valuetext={t.studio.generating}
+              className="h-1.5 w-full overflow-hidden rounded-full bg-background/70 border border-border/20"
+            >
+              <div className="gen-progress-meter h-full w-1/2 rounded-full bg-primary" />
+            </div>
+          </div>
         </div>
         <div className="absolute bottom-3 left-3 right-3">
           <p className="text-[11px] text-muted-foreground/40 line-clamp-2">{job.prompt}</p>
@@ -180,6 +190,15 @@ function QuickActionButton({ icon, onClick, label }: { icon: React.ReactNode; on
 }
 
 type StudioGenerationFeedSection = 'full' | 'featured' | 'history';
+type RecentJobEventDetail = {
+  jobId?: string;
+  prompt?: string;
+  ratio?: string;
+  resolution?: string;
+  qualityTier?: string;
+  modelId?: string | null;
+  creditCost?: number;
+};
 
 export function StudioGenerationFeed({ section = 'full' }: { section?: StudioGenerationFeedSection }) {
   const { jobs, loading, retryJob, refetch } = useGenerationJobs();
@@ -190,11 +209,12 @@ export function StudioGenerationFeed({ section = 'full' }: { section?: StudioGen
       ? null
       : sessionStorage.getItem('takhayal:studio:recentJobId')
   ));
+  const [announcedJob, setAnnouncedJob] = useState<GenerationJob | null>(null);
 
   const studioJobs = useMemo(() => jobs.filter(isImageStudioJob), [jobs]);
   const recentJob = useMemo(
-    () => recentJobId ? studioJobs.find(job => job.id === recentJobId) || null : null,
-    [recentJobId, studioJobs]
+    () => recentJobId ? studioJobs.find(job => job.id === recentJobId) || (announcedJob?.id === recentJobId ? announcedJob : null) : null,
+    [announcedJob, recentJobId, studioJobs]
   );
   const olderJobs = useMemo(
     () => studioJobs.filter(job => job.id !== recentJobId && hasGeneratedImage(job)),
@@ -203,9 +223,31 @@ export function StudioGenerationFeed({ section = 'full' }: { section?: StudioGen
 
   useEffect(() => {
     const handleRecentJob = (event: Event) => {
-    const jobId = (event as CustomEvent<{ jobId?: string }>).detail?.jobId;
+      const detail = (event as CustomEvent<RecentJobEventDetail>).detail;
+      const jobId = detail?.jobId;
       if (jobId) {
         setRecentJobId(jobId);
+        setAnnouncedJob({
+          id: jobId,
+          status: 'queued',
+          prompt: detail.prompt || '',
+          image_url: null,
+          error_message: null,
+          ratio: detail.ratio || '1:1',
+          resolution: detail.resolution || detail.qualityTier || null,
+          quality_tier: detail.qualityTier || detail.resolution || null,
+          model_id: detail.modelId || null,
+          credits_used: detail.creditCost || 0,
+          created_at: new Date().toISOString(),
+          tool_id: 'studio',
+          media_type: 'image',
+          video_url: null,
+          thumbnail_url: null,
+          duration: null,
+          source_mode: null,
+          used_image_input: false,
+          input_image_urls: [],
+        });
         void refetch();
       }
     };

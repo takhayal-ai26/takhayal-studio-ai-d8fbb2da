@@ -17,6 +17,7 @@ import { BackToImageTools } from '@/components/tools/BackToImageTools';
 import { GenerateButton, imageSizeError, isOversizedImage } from '@/lib/ux';
 import { localizePath } from '@/lib/localized-routes';
 import { toast } from 'sonner';
+import { isGenerationJobInProgress } from './creationPanelState';
 
 const CREDIT_VALUE = CREDIT_VALUE_USD;
 type OpenDropdown = 'model' | 'size' | 'resolution' | null;
@@ -26,8 +27,9 @@ export function CreationPanel() {
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
   const { prompt, setPrompt, selectedTemplate, setSelectedTemplate, aspectRatio, setAspectRatio, quality, setQuality, isGenerating, credits, getCreditCost, isAuthenticated, openAuthModal, openUpgradeModal, selectedModelId: contextModelId, setSelectedModelId: setContextModelId } = useApp();
-  const { submitJob } = useGenerationJobs();
+  const { jobs, submitJob } = useGenerationJobs();
   const [localGenerating, setLocalGenerating] = useState(false);
+  const [activeGenerationJobId, setActiveGenerationJobId] = useState<string | null>(null);
   const { t, lang: language } = useLanguage();
   const { activeModels, defaultModel } = useModels();
   const { getCreditsForModel } = usePricing();
@@ -164,7 +166,9 @@ export function CreationPanel() {
   }, []);
 
   const pendingUploads = uploadedImages.some(img => !img.url);
-  const canGenerate = prompt.trim().length > 0 && !isGenerating && !localGenerating && !!currentModel && !isUploading && !pendingUploads;
+  const activeGenerationInProgress = isGenerationJobInProgress(jobs, activeGenerationJobId);
+  const isGenerationBusy = isGenerating || localGenerating || activeGenerationInProgress;
+  const canGenerate = prompt.trim().length > 0 && !isGenerationBusy && !!currentModel && !isUploading && !pendingUploads;
   const toggleDropdown = (key: OpenDropdown) => setOpenDropdown(prev => prev === key ? null : key);
 
   useEffect(() => { const handler = (e: MouseEvent) => { if (openDropdown && panelRef.current && !panelRef.current.contains(e.target as Node)) { const target = e.target as HTMLElement; if (target.closest('[data-dropdown-portal]')) return; setOpenDropdown(null); } }; document.addEventListener('mousedown', handler); return () => document.removeEventListener('mousedown', handler); }, [openDropdown]);
@@ -204,8 +208,19 @@ export function CreationPanel() {
       return;
     }
 
+    setActiveGenerationJobId(jobId);
     sessionStorage.setItem('takhayal:studio:recentJobId', jobId);
-    window.dispatchEvent(new CustomEvent('takhayal:studio:recent-job', { detail: { jobId } }));
+    window.dispatchEvent(new CustomEvent('takhayal:studio:recent-job', {
+      detail: {
+        jobId,
+        prompt: fullPrompt,
+        ratio: aspectRatio,
+        resolution: selectedResolution,
+        qualityTier: selectedResolution,
+        modelId: currentModel?.id || null,
+        creditCost: cost,
+      },
+    }));
     setLocalGenerating(false);
 
     if (window.matchMedia('(max-width: 767px)').matches) {
@@ -381,7 +396,7 @@ export function CreationPanel() {
           <GenerateButton
             onClick={handleGenerate}
             disabled={!canGenerate}
-            loading={isGenerating || localGenerating}
+            loading={isGenerationBusy}
             loadingLabel={t.studio.generating}
             credits={cost}
             className="h-[52px]"
