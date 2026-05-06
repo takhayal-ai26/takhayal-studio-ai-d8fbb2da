@@ -1,5 +1,17 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.100.0";
+import { runFalQueue } from "../_shared/fal.ts";
+import {
+  GenerationJobError,
+  type GenerationJobRow,
+  assertUsableGenerationJob,
+  deductCredits,
+  loadGenerationJob,
+  makeCreditRefunder,
+  markJobCompleted,
+  markJobFailed,
+  markJobGenerating,
+} from "../_shared/jobs.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,65 +26,10 @@ function jsonResponse(body: Record<string, unknown>, status = 200) {
   });
 }
 
-type SupabaseClientInstance = ReturnType<typeof createClient>;
-type GenerationJobRow = {
-  id: string;
-  user_id: string | null;
-  status: string | null;
-  credits_charged_at?: string | null;
-};
-type DeductCreditsResult = {
-  success?: boolean;
-  error?: string;
-};
-
-async function falQueueRun(
-  endpoint: string,
-  payload: Record<string, unknown>,
-  falHeaders: Record<string, string>
-): Promise<{ data: any; error?: string }> {
-  const submitRes = await fetch(`https://queue.fal.run/${endpoint}`, {
-    method: "POST",
-    headers: falHeaders,
-    body: JSON.stringify(payload),
-  });
-  if (!submitRes.ok) {
-    const errorText = await submitRes.text();
-    console.error(`fal.ai error for ${endpoint}:`, submitRes.status, errorText);
-    return { data: null, error: `fal.ai API error ${submitRes.status}: ${errorText}` };
-  }
-  const submitData = await submitRes.json();
-  const { status_url, response_url } = submitData;
-  if (!status_url || !response_url) return { data: submitData };
-
-  const maxPolls = endpoint.includes("topaz") ? 45 : 60;
-  for (let i = 0; i < maxPolls; i++) {
-    await new Promise((r) => setTimeout(r, 2000));
-    const statusRes = await fetch(status_url, { headers: falHeaders });
-    const statusData = await statusRes.json();
-    console.log(`[${endpoint}] Poll ${i + 1}: ${statusData.status}`);
-    if (statusData.status === "COMPLETED") {
-      const resultRes = await fetch(response_url, { headers: falHeaders });
-      return { data: await resultRes.json() };
-    }
-    if (statusData.status === "FAILED")
-      return { data: null, error: `Processing failed: ${JSON.stringify(statusData)}` };
-  }
-  return { data: null, error: "Processing timed out" };
-}
-
 serve(async (req) => {
   if (req.method === "OPTIONS") return new Response(null, { headers: corsHeaders });
 
-  let chargedUserId: string | null = null;
-  let chargedCredits = 0;
-
-  const refundChargedCredits = async (supabase: SupabaseClientInstance) => {
-    if (!chargedUserId || chargedCredits <= 0) return;
-    await supabase.rpc("refund_credits", { p_user_id: chargedUserId, p_amount: chargedCredits });
-    chargedUserId = null;
-    chargedCredits = 0;
-  };
+  const creditRefunder = makeCreditRefunder();
 
   try {
     const FAL_AI_API_KEY = Deno.env.get("FAL_AI_API_KEY");
@@ -121,6 +78,11 @@ serve(async (req) => {
       Authorization: `Key ${FAL_AI_API_KEY}`,
       "Content-Type": "application/json",
     };
+    const runToolFalOptions = {
+      failureMessagePrefix: "Processing failed",
+      timeoutMessage: "Processing timed out",
+      logEvery: 1,
+    };
 
     // ── RESOLVE PROVIDER ──
     let endpoint = tool.provider_endpoint;
@@ -166,56 +128,41 @@ serve(async (req) => {
 
     let existingJob: GenerationJobRow | null = null;
     if (job_id) {
-      const { data: jobData, error: jobError } = await supabase
-        .from("generation_logs")
-        .select("id, user_id, status, credits_charged_at")
-        .eq("id", job_id)
-        .single();
-
-      if (jobError || !jobData) {
-        return jsonResponse({ error: "Generation job not found" }, 404);
+      existingJob = await loadGenerationJob(supabase, job_id);
+      try {
+        assertUsableGenerationJob(existingJob, user.id);
+      } catch (error) {
+        if (error instanceof GenerationJobError) {
+          return jsonResponse({ error: error.message }, error.status);
+        }
+        throw error;
       }
-      if (jobData.user_id !== user.id) {
-        return jsonResponse({ error: "Forbidden" }, 403);
-      }
-      if (jobData.status === "completed") {
-        return jsonResponse({ error: "Generation job already completed" }, 409);
-      }
-      existingJob = jobData as GenerationJobRow;
     }
 
     if (!existingJob?.credits_charged_at) {
-      const { data: deductResult } = await supabase.rpc("deduct_credits", {
-        p_user_id: user.id,
-        p_amount: creditCost,
-        p_model_id: null,
-        p_resolution: options?.ratio || "1K",
-        p_tool_id: tool_slug,
+      const deductData = await deductCredits(supabase, {
+        userId: user.id,
+        amount: creditCost,
+        modelId: null,
+        resolution: options?.ratio || "1K",
+        toolId: tool_slug,
       });
 
-      const deductData = deductResult as DeductCreditsResult | null;
       if (!deductData?.success) {
-        if (job_id) {
-          await supabase.from("generation_logs").update({
-            status: "failed",
-            error_message: deductData?.error || "Credit deduction failed",
-          }).eq("id", job_id);
-        }
+        await markJobFailed(supabase, job_id, deductData?.error || "Credit deduction failed");
         return jsonResponse({ error: deductData?.error || "Credit deduction failed" }, 400);
       }
 
-      chargedUserId = user.id;
-      chargedCredits = creditCost;
+      creditRefunder.trackCharge(user.id, creditCost);
 
       if (job_id) {
-        await supabase.from("generation_logs").update({
-          status: "generating",
+        await markJobGenerating(supabase, job_id, {
           credits_used: creditCost,
           credits_charged_at: new Date().toISOString(),
-        }).eq("id", job_id);
+        });
       }
     } else {
-      await supabase.from("generation_logs").update({ status: "generating" }).eq("id", job_id);
+      await markJobGenerating(supabase, job_id);
     }
 
     // Create tool_run record as "processing"
@@ -257,7 +204,7 @@ serve(async (req) => {
         };
         payload.image_size = presetMap[ratio] || "square_hd";
 
-        resultData = await falQueueRun(endpoint, payload, falHeaders);
+        resultData = await runFalQueue(endpoint, payload, falHeaders, runToolFalOptions);
         if (resultData.error) throw new Error(resultData.error);
 
         outputImages = resultData.data?.images || [];
@@ -302,7 +249,10 @@ serve(async (req) => {
           payload = { image_url, scale_factor: 2 };
         }
 
-        resultData = await falQueueRun(endpoint, payload, falHeaders);
+        resultData = await runFalQueue(endpoint, payload, falHeaders, {
+          ...runToolFalOptions,
+          maxAttempts: endpoint.includes("topaz") ? 45 : 60,
+        });
         if (resultData.error) throw new Error(resultData.error);
 
         outputUrl = resultData.data?.image?.url || resultData.data?.images?.[0]?.url || null;
@@ -322,7 +272,7 @@ serve(async (req) => {
           delete payload.style;
         }
 
-        resultData = await falQueueRun(endpoint, payload, falHeaders);
+        resultData = await runFalQueue(endpoint, payload, falHeaders, runToolFalOptions);
         if (resultData.error) throw new Error(resultData.error);
 
         outputImages = resultData.data?.images || [];
@@ -331,7 +281,7 @@ serve(async (req) => {
       } else if (tool_slug === "remove-bg") {
         if (!image_url) throw new Error("image_url is required for background removal");
 
-        resultData = await falQueueRun(endpoint, { image_url }, falHeaders);
+        resultData = await runFalQueue(endpoint, { image_url }, falHeaders, runToolFalOptions);
         if (resultData.error) throw new Error(resultData.error);
 
         outputUrl = resultData.data?.image?.url || null;
@@ -362,8 +312,7 @@ serve(async (req) => {
 
       // Update generation_logs if job_id was provided
       if (job_id && outputUrl) {
-        await supabase.from("generation_logs").update({
-          status: "completed",
+        await markJobCompleted(supabase, job_id, {
           image_url: outputUrl,
           credits_used: creditCost,
           credits_charged_at: existingJob?.credits_charged_at || new Date().toISOString(),
@@ -373,7 +322,7 @@ serve(async (req) => {
           margin: margin,
           profit_usd: margin,
           actual_api_cost: actualCost,
-        }).eq("id", job_id);
+        });
       }
 
       console.log(`[run-tool] ${tool_slug} completed via ${endpoint}. output=${outputUrl} cost=$${actualCost} revenue=$${revenue}`);
@@ -393,7 +342,7 @@ serve(async (req) => {
 
     } catch (toolError) {
       const errorMsg = toolError instanceof Error ? toolError.message : "Unknown error";
-      await refundChargedCredits(supabase);
+      await creditRefunder.refund(supabase);
 
       if (runId) {
         await supabase.from("tool_runs").update({
@@ -406,10 +355,7 @@ serve(async (req) => {
 
       // Update generation_logs if job_id was provided
       if (job_id) {
-        await supabase.from("generation_logs").update({
-          status: "failed",
-          credits_used: 0,
-        }).eq("id", job_id);
+        await markJobFailed(supabase, job_id, undefined, { credits_used: 0 });
       }
 
       console.error(`[run-tool] ${tool_slug} failed:`, toolError);
