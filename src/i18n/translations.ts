@@ -459,7 +459,8 @@ export const translations = {
       supportEmail: 'support@takhayal.ai',
       instagramUrl: 'https://instagram.com/takhayal.ai',
       xUrl: 'https://x.com/takhayal_ai',
-      linkedinUrl: 'https://linkedin.com/company/takhayal',
+      linkedinUrl: 'https://www.linkedin.com/company/takhayal-ai',
+      tiktokUrl: 'https://www.tiktok.com/@takhayal.ai',
       copyright: '© 2026 Takhayal.ai. All rights reserved.',
     },
     homeSections: {
@@ -922,7 +923,8 @@ export const translations = {
       supportEmail: 'support@takhayal.ai',
       instagramUrl: 'https://instagram.com/takhayal.ai',
       xUrl: 'https://x.com/takhayal_ai',
-      linkedinUrl: 'https://linkedin.com/company/takhayal',
+      linkedinUrl: 'https://www.linkedin.com/company/takhayal-ai',
+      tiktokUrl: 'https://www.tiktok.com/@takhayal.ai',
       copyright: '© 2026 تخيّل. جميع الحقوق محفوظة.',
     },
     homeSections: {
