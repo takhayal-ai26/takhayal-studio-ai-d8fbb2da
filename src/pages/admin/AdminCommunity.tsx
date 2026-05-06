@@ -12,6 +12,15 @@ import { Textarea } from '@/components/ui/textarea';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import { formatDate } from '@/lib/utils';
+import type { CommunityPostMutationClient } from './communityModeration';
+import {
+  approveCommunityPost,
+  rejectCommunityPost,
+  removeCommunityPost,
+  restoreCommunityPost,
+  toggleCommunityPostFeatured,
+  validateManualCommunityPost,
+} from './communityModeration';
 
 interface CommunityPostRow {
   id: string;
@@ -74,6 +83,7 @@ function detectRatio(w: number, h: number): string {
 export default function AdminCommunity() {
   const { userName } = useApp();
   const { activeModels } = useModels();
+  const communityClient = supabase as unknown as CommunityPostMutationClient;
   const [tab, setTab] = useState<Tab>('pending');
   const [posts, setPosts] = useState<CommunityPostRow[]>([]);
   const [loading, setLoading] = useState(true);
@@ -149,73 +159,66 @@ export default function AdminCommunity() {
 
   const handleApprove = async (post: CommunityPostRow) => {
     setActionLoading(post.id);
-    const { error } = await supabase
-      .from('community_posts')
-      .update({
-        status: 'approved',
-        approved_at: new Date().toISOString(),
-        approved_by: userName || 'admin',
-        rejection_reason: null,
-        rejected_at: null,
-        rejected_by: null,
-      } as any)
-      .eq('id', post.id);
-    if (!error) {
-      toast.success('Approved successfully');
-      fetchPosts();
-    } else toast.error('Failed to approve');
+    await approveCommunityPost({
+      client: communityClient,
+      postId: post.id,
+      actor: userName,
+      toast,
+      refetch: fetchPosts,
+    });
     setActionLoading(null);
   };
 
   const handleReject = async () => {
     if (!rejectPost) return;
     setActionLoading(rejectPost.id);
-    const { error } = await supabase
-      .from('community_posts')
-      .update({
-        status: 'rejected',
-        rejected_at: new Date().toISOString(),
-        rejected_by: userName || 'admin',
-        rejection_reason: rejectReason || null,
-        approved_at: null,
-        approved_by: null,
-      } as any)
-      .eq('id', rejectPost.id);
-    if (!error) {
-      toast.success('Rejected successfully');
+    const ok = await rejectCommunityPost({
+      client: communityClient,
+      postId: rejectPost.id,
+      actor: userName,
+      reason: rejectReason,
+      toast,
+      refetch: fetchPosts,
+    });
+    if (ok) {
       setRejectPost(null);
       setRejectReason('');
-      fetchPosts();
-    } else toast.error('Failed to reject');
+    }
     setActionLoading(null);
   };
 
   const handleRestore = async (post: CommunityPostRow) => {
     setActionLoading(post.id);
-    await supabase
-      .from('community_posts')
-      .update({ status: 'pending', rejection_reason: null, rejected_at: null, rejected_by: null, approved_at: null, approved_by: null } as any)
-      .eq('id', post.id);
-    toast.success('Restored to pending');
-    fetchPosts();
+    await restoreCommunityPost({
+      client: communityClient,
+      postId: post.id,
+      toast,
+      refetch: fetchPosts,
+    });
     setActionLoading(null);
   };
 
   const handleRemove = async (post: CommunityPostRow) => {
     setActionLoading(post.id);
-    await supabase
-      .from('community_posts')
-      .update({ status: 'rejected', rejected_at: new Date().toISOString(), rejected_by: userName || 'admin' } as any)
-      .eq('id', post.id);
-    toast.success('Removed from community');
-    fetchPosts();
+    await removeCommunityPost({
+      client: communityClient,
+      postId: post.id,
+      actor: userName,
+      toast,
+      refetch: fetchPosts,
+    });
     setActionLoading(null);
   };
 
   const handleToggleFeatured = async (post: CommunityPostRow) => {
-    await supabase.from('community_posts').update({ is_featured: !post.is_featured } as any).eq('id', post.id);
-    toast.success(post.is_featured ? 'Unfeatured' : 'Featured');
-    fetchPosts();
+    setActionLoading(post.id);
+    await toggleCommunityPostFeatured({
+      client: communityClient,
+      post,
+      toast,
+      refetch: fetchPosts,
+    });
+    setActionLoading(null);
   };
 
   const processImageFile = (file: File) => {
@@ -255,7 +258,8 @@ export default function AdminCommunity() {
   };
 
   const handleSubmitTest = async () => {
-    if (!testFile && !testForm.image_url) { toast.error('Please provide an image'); return; }
+    const validationError = validateManualCommunityPost({ file: testFile, imageUrl: testForm.image_url });
+    if (validationError) { toast.error(validationError); return; }
     setSubmitting(true);
     let imageUrl = testForm.image_url;
     if (testFile) {
@@ -329,7 +333,7 @@ export default function AdminCommunity() {
           )}
           {tab === 'approved' && (
             <>
-              <button onClick={() => handleToggleFeatured(post)} className="h-7 px-2 rounded-lg bg-muted/30 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 flex items-center justify-center gap-1 transition-colors">{post.is_featured ? <StarOff size={12} /> : <Star size={12} />}</button>
+              <button onClick={() => handleToggleFeatured(post)} disabled={actionLoading === post.id} className="h-7 px-2 rounded-lg bg-muted/30 text-[11px] font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 flex items-center justify-center gap-1 transition-colors disabled:opacity-50">{actionLoading === post.id ? <Loader2 size={12} className="animate-spin" /> : post.is_featured ? <StarOff size={12} /> : <Star size={12} />}</button>
               <button onClick={() => handleRemove(post)} disabled={actionLoading === post.id} className="flex-1 h-7 rounded-lg bg-destructive/10 text-destructive text-[11px] font-medium hover:bg-destructive/20 flex items-center justify-center gap-1 transition-colors disabled:opacity-50"><X size={12} /> Remove</button>
             </>
           )}
