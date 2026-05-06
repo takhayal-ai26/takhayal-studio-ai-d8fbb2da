@@ -50,6 +50,26 @@ function relativeDate(value: string) {
   }
 }
 
+function buildGmailReplyUrl(message: ContactMessage) {
+  const subject = `Re: Takhayal support`;
+  const body = [
+    `Hi ${message.first_name},`,
+    '',
+    '',
+    'Best,',
+    'Takhayal Support',
+  ].join('\n');
+  const params = new URLSearchParams({
+    view: 'cm',
+    fs: '1',
+    to: message.email,
+    su: subject,
+    body,
+  });
+
+  return `https://mail.google.com/mail/?${params.toString()}`;
+}
+
 export default function AdminSupport() {
   const { toast } = useToast();
   const [messages, setMessages] = useState<ContactMessage[]>([]);
@@ -324,7 +344,7 @@ export default function AdminSupport() {
                 </div>
 
                 <Button asChild className="w-full gap-2">
-                  <a href={`mailto:${selectedMessage.email}?subject=${encodeURIComponent('Re: Takhayal support')}`}>
+                  <a href={buildGmailReplyUrl(selectedMessage)} target="_blank" rel="noreferrer">
                     <Mail size={14} />
                     Reply by email
                   </a>
