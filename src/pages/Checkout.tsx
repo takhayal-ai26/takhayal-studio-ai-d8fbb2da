@@ -95,7 +95,7 @@ export default function Checkout() {
       setPaymentUnavailable(true);
       setGatewayMessage(
         isAr
-          ? 'الدفع غير متاح حالياً لأن إعدادات الاتصال الأساسية غير مكتملة. الرجاء المحاولة لاحقاً أو التواصل معنا.'
+          ? 'الدفع غير متاح حالياً بسبب نقص في إعدادات الاتصال. حاول لاحقاً أو تواصل معنا.'
           : 'Checkout is not available yet because the platform connection is not configured. Please try again later or contact us.'
       );
       return;
@@ -140,7 +140,7 @@ export default function Checkout() {
         setPaymentUnavailable(true);
         setGatewayMessage(
           isAr
-            ? 'الدفع غير متاح حالياً. لن يتم تحصيل أي مبلغ، وسنفعّل checkout بمجرد اكتمال ربط بوابة الدفع.'
+            ? 'الدفع غير متاح حالياً. لن يُخصم أي مبلغ، وسنفعّل صفحة الدفع فور اكتمال ربط البوابة.'
             : 'Checkout is not available yet. You have not been charged, and payment will be enabled once the gateway connection is complete.'
         );
         return;
@@ -164,7 +164,7 @@ export default function Checkout() {
           <div className="animate-pulse"><LogoMark size={48} /></div>
           <div>
             <p className="text-foreground text-lg font-medium">{isAr ? 'جاري تجهيز الدفع...' : 'Preparing secure payment...'}</p>
-            <p className="text-muted-foreground text-sm mt-1">{isAr ? 'سيتم تحويلك إلى بوابة الدفع' : 'You will be redirected to the payment gateway'}</p>
+            <p className="text-muted-foreground text-sm mt-1">{isAr ? 'سنحوّلك إلى بوابة الدفع' : 'You will be redirected to the payment gateway'}</p>
           </div>
           <div className="w-64 mx-auto h-1.5 bg-muted rounded-full overflow-hidden">
             <div className="h-full w-2/3 bg-primary rounded-full animate-pulse" />
@@ -179,7 +179,7 @@ export default function Checkout() {
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8">
         <button onClick={() => navigate('/pricing')} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-8">
           <ArrowLeft size={16} />
-          {isAr ? 'العودة للأسعار' : 'Back to Pricing'}
+          {isAr ? 'العودة إلى الأسعار' : 'Back to Pricing'}
         </button>
 
         <div className="grid grid-cols-1 lg:grid-cols-5 gap-8 lg:gap-12">
@@ -281,10 +281,10 @@ export default function Checkout() {
               <div className="flex items-start gap-3">
                 <Shield size={18} className="mt-0.5 text-primary" />
                 <div>
-                  <p className="text-sm font-medium text-foreground">{isAr ? 'سيتم الدفع خارج تخيّل' : 'Payment will happen off-site'}</p>
+                  <p className="text-sm font-medium text-foreground">{isAr ? 'يتم الدفع خارج تخيّل' : 'Payment will happen off-site'}</p>
                   <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
                     {isAr
-                      ? 'لن نجمع أو نخزن بيانات البطاقة داخل التطبيق. بعد ربط بوابة الدفع سيتم تحويلك إلى صفحة دفع آمنة.'
+                      ? 'لا نحفظ أو نخزّن بيانات البطاقة داخل التطبيق. بعد ربط البوابة، سنحوّلك إلى صفحة دفع آمنة.'
                       : 'We do not collect or store card details in the app. After the gateway is connected, you will be redirected to a secure hosted payment page.'}
                   </p>
                 </div>
@@ -325,12 +325,12 @@ export default function Checkout() {
               disabled={!city.trim() || paymentUnavailable}
               className="w-full h-[52px] rounded-[10px] bg-primary text-primary-foreground text-base font-medium hover:brightness-90 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             >
-              {paymentUnavailable ? (isAr ? 'الدفع غير متاح حالياً' : 'Checkout unavailable') : (isAr ? 'المتابعة للدفع' : 'Continue to payment')}
+              {paymentUnavailable ? (isAr ? 'الدفع غير متاح حالياً' : 'Checkout unavailable') : (isAr ? 'المتابعة إلى الدفع' : 'Continue to payment')}
             </button>
 
             <p className="text-[11px] text-muted-foreground text-center flex items-center justify-center gap-1">
               <Shield size={12} />
-              {isAr ? 'تتم معالجة الدفع عبر بوابة دفع آمنة' : 'Payments are processed by a secure payment gateway'}
+              {isAr ? 'يُعالَج الدفع عبر بوابة آمنة.' : 'Payments are processed by a secure payment gateway'}
             </p>
           </div>
         </div>

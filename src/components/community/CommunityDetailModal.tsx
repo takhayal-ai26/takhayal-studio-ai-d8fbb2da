@@ -48,7 +48,7 @@ export function CommunityDetailModal({
     if (!post?.prompt) return;
     await navigator.clipboard.writeText(post.prompt);
     setCopied(true);
-    toast.success(isAr ? 'تم نسخ الأمر' : 'Prompt copied!');
+    toast.success(isAr ? 'تم النسخ' : 'Prompt copied!');
     setTimeout(() => setCopied(false), 2000);
   }, [post, isAr]);
 
@@ -103,10 +103,10 @@ export function CommunityDetailModal({
             <X size={16} />
           </button>
           <div className="flex items-center gap-2">
-            <button onClick={() => onShare(post)} className="min-h-11 min-w-11 rounded-full bg-muted/50 flex items-center justify-center text-foreground" aria-label={isAr ? 'مشاركة العمل' : 'Share work'}>
+            <button onClick={() => onShare(post)} className="min-h-11 min-w-11 rounded-full bg-muted/50 flex items-center justify-center text-foreground" aria-label={isAr ? 'مشاركة' : 'Share work'}>
               <Share2 size={14} />
             </button>
-            <button onClick={handleDownload} className="min-h-11 min-w-11 rounded-full bg-muted/50 flex items-center justify-center text-foreground" aria-label={isAr ? 'تنزيل العمل' : 'Download work'}>
+            <button onClick={handleDownload} className="min-h-11 min-w-11 rounded-full bg-muted/50 flex items-center justify-center text-foreground" aria-label={isAr ? 'تحميل' : 'Download work'}>
               <Download size={14} />
             </button>
           </div>

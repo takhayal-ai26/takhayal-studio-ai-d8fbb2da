@@ -33,12 +33,12 @@ const CREDIT_COST_DATA = [
 ];
 
 const FAQ_DATA = [
-  { q_en: 'What is a credit?', q_ar: 'ما هو الرصيد؟', a_en: 'Credits are deducted per generation based on the model, duration, and resolution you choose. You always see the cost before generating.', a_ar: 'يتم خصم الأرصدة لكل عملية توليد بناءً على النموذج والمدة والدقة التي تختارها، وتظهر التكلفة قبل الإنشاء.' },
-  { q_en: 'How should I choose a top-up?', q_ar: 'كيف أختار باقة الشحن؟', a_en: 'Pick Starter for occasional image edits, Creator or Pro for weekly image campaigns, and Studio or Power when video generation is part of your workflow.', a_ar: 'اختر مبتدئ للاستخدام الخفيف، وصانع محتوى أو محترف للحملات الأسبوعية، واستوديو أو مكثف عندما يكون الفيديو جزءاً من عملك.' },
-  { q_en: 'Can I change my plan?', q_ar: 'هل يمكنني تغيير خطتي؟', a_en: 'Yes, upgrade or downgrade anytime. Changes take effect immediately.', a_ar: 'نعم، يمكنك الترقية أو التخفيض في أي وقت. التغييرات تسري فوراً.' },
+  { q_en: 'What is a credit?', q_ar: 'ما هو الرصيد؟', a_en: 'Credits are deducted per generation based on the model, duration, and resolution you choose. You always see the cost before generating.', a_ar: 'تُخصم الأرصدة من كل عملية إنشاء بناءً على النموذج والمدة والدقة، وتظهر التكلفة قبل البدء.' },
+  { q_en: 'How should I choose a top-up?', q_ar: 'كيف أختار باقة الشحن؟', a_en: 'Pick Starter for occasional image edits, Creator or Pro for weekly image campaigns, and Studio or Power when video generation is part of your workflow.', a_ar: 'اختر «مبتدئ» للاستخدام الخفيف، و«صانع محتوى» أو «محترف» للحملات الأسبوعية، و«استوديو» أو «مكثف» إذا كان الفيديو جزءاً من عملك.' },
+  { q_en: 'Can I change my plan?', q_ar: 'هل يمكنني تغيير خطتي؟', a_en: 'Yes, upgrade or downgrade anytime. Changes take effect immediately.', a_ar: 'نعم. ارفع خطتك أو خفّضها في أي وقت، والتغيير يسري فوراً.' },
   { q_en: 'What payment methods are accepted?', q_ar: 'ما طرق الدفع المقبولة؟', a_en: 'We accept Visa, Mastercard, KNET, Mada, and Apple Pay.', a_ar: 'نقبل Visa و Mastercard و KNET و مدى و Apple Pay.' },
-  { q_en: 'Is there a free trial?', q_ar: 'هل يوجد تجربة مجانية؟', a_en: 'Yes — sign up free and get 15 credits instantly. No card required.', a_ar: 'نعم — سجل مجاناً واحصل على 15 رصيداً فوراً. لا حاجة لبطاقة.' },
-  { q_en: 'Can I get a refund?', q_ar: 'هل يمكنني استرداد المبلغ؟', a_en: 'Annual subscriptions are eligible for refund within 7 days if fewer than 100 credits have been used. See our Refund Policy for details.', a_ar: 'الاشتراكات السنوية مؤهلة للاسترداد خلال 7 أيام إذا تم استخدام أقل من 100 رصيد.' },
+  { q_en: 'Is there a free trial?', q_ar: 'هل توجد تجربة مجانية؟', a_en: 'Yes — sign up free and get 15 credits instantly. No card required.', a_ar: 'نعم — سجل مجاناً واحصل على 15 رصيداً فوراً. لا حاجة لبطاقة.' },
+  { q_en: 'Can I get a refund?', q_ar: 'هل يمكنني استرداد المبلغ؟', a_en: 'Annual subscriptions are eligible for refund within 7 days if fewer than 100 credits have been used. See our Refund Policy for details.', a_ar: 'الاشتراكات السنوية قابلة للاسترداد خلال 7 أيام، إذا لم يتجاوز الاستخدام 100 رصيد.' },
 ];
 
 interface PlanCardProps {
@@ -112,7 +112,7 @@ function PlanCard({ p, isAr, billing, isAuthenticated, authLoading, userPlan, sl
 
       {billing === 'annual' && p.price_annual_usd > 0 && (
         <p className="text-[11px] text-muted-foreground mt-1">
-          {isAr ? `يُفوتر سنوياً بمبلغ ${fmt(p.price_annual_usd)}` : `Billed as ${fmt(p.price_annual_usd)}/year`}
+          {isAr ? `فاتورة سنوية بمبلغ ${fmt(p.price_annual_usd)}` : `Billed as ${fmt(p.price_annual_usd)}/year`}
         </p>
       )}
 
@@ -435,7 +435,7 @@ const Pricing = () => {
   const faqs = dbFaqs.length > 0 ? dbFaqs.filter((f: any) => f.active) : FAQ_DATA.map((f, i) => ({ id: `faq-${i}`, question_en: f.q_en, question_ar: f.q_ar, answer_en: f.a_en, answer_ar: f.a_ar }));
   const seoTitle = isAr ? 'الأسعار' : 'Pricing';
   const seoDescription = isAr
-    ? 'خطط وأسعار تخيّل مع أرصدة واضحة، شحن إضافي، وأسئلة شائعة للمبدعين والفرق في الخليج.'
+    ? 'خطط تخيّل وأسعارها: أرصدة شفافة، شحن إضافي، وإجابات لأهم أسئلة المبدعين والفرق في الخليج.'
     : 'Explore Takhayal pricing plans, credit top-ups, and FAQs for creators and teams building with AI in the Gulf.';
   const selectedPlanCredits = activePlans.find((p: any) => p.slug === selectedPlanPill)?.credits_monthly || 5000;
   const creditCostData = activeModels.length > 0
@@ -530,7 +530,7 @@ const Pricing = () => {
           {pageText('hero', 'title', isAr ? 'أسعار بسيطة وشفافة' : 'Simple, transparent pricing')}
         </h1>
         <p className="text-[16px] text-muted-foreground mt-4 max-w-md mx-auto font-light">
-          {pageText('hero', 'subtitle', isAr ? 'ابدأ مجاناً. قم بالترقية عندما تكون جاهزاً.' : 'Start free. Upgrade when you\'re ready.')}
+          {pageText('hero', 'subtitle', isAr ? 'ابدأ مجاناً، وارتقِ متى شئت.' : 'Start free. Upgrade when you\'re ready.')}
         </p>
       </section>
       <CmsContentBlocks location="pricing" className="pb-10" />
@@ -604,8 +604,8 @@ const Pricing = () => {
                   <span className={oi === 0 ? 'font-medium text-foreground' : 'text-transparent select-none'}>
                     {model.model}
                   </span>
-                  <span className="text-muted-foreground">{opt.label} {pageText('credit_costs', 'resolution_label', isAr ? 'دقة' : 'resolution')}</span>
-                  <span className="text-foreground">{opt.credits} {pageText('credit_costs', 'credits_label', isAr ? 'أرصدة' : 'credits')}</span>
+                  <span className="text-muted-foreground">{opt.label} {pageText('credit_costs', 'resolution_label', isAr ? 'الالدقة' : 'resolution')}</span>
+                  <span className="text-foreground">{opt.credits} {pageText('credit_costs', 'credits_label', isAr ? 'الالأرصدة' : 'credits')}</span>
                   <span className="text-right text-primary font-medium">~{Math.floor(selectedPlanCredits / opt.credits).toLocaleString()} {pageText('credit_costs', 'image_unit', isAr ? 'صورة' : 'images')}</span>
                 </div>
               ))}
@@ -619,7 +619,7 @@ const Pricing = () => {
       <section className="max-w-5xl mx-auto px-6 pb-20">
         <div className="text-center mb-8">
           <h2 className="typo-heading-section">{pageText('topups', 'title', isAr ? 'اشحن في أي وقت' : 'Top up anytime')}</h2>
-          <p className="text-sm text-muted-foreground mt-2">{pageText('topups', 'subtitle', isAr ? 'اختر باقة تناسب وتيرة الصور والفيديو لديك.' : 'Choose a package that matches your image and video pace.')}</p>
+          <p className="text-sm text-muted-foreground mt-2">{pageText('topups', 'subtitle', isAr ? 'اختر باقة تناسب إيقاعك في إنتاج الصور والفيديو.' : 'Choose a package that matches your image and video pace.')}</p>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -635,7 +635,7 @@ const Pricing = () => {
                 )}
                 <p className="text-sm font-medium text-foreground mt-1">{name}</p>
                 <p className="text-[32px] font-extralight text-foreground mt-2">{pkg.credits.toLocaleString()}</p>
-                <p className="text-xs text-muted-foreground">{pageText('topups', 'credits_label', isAr ? 'أرصدة' : 'credits')}</p>
+                <p className="text-xs text-muted-foreground">{pageText('topups', 'credits_label', isAr ? 'الالأرصدة' : 'credits')}</p>
                 {pkg.bonus_credits > 0 && (
                   <span className="mt-2 px-2 py-0.5 rounded-full text-[10px] font-medium bg-primary/10 text-primary">
                     +{pkg.bonus_credits} {pageText('topups', 'bonus_label', isAr ? 'مكافأة' : 'bonus')}
@@ -687,7 +687,7 @@ const Pricing = () => {
       {/* Legal */}
       <section className="max-w-2xl mx-auto px-6 pb-16 text-center">
         <p className="text-[12px] text-muted-foreground">
-          {pageText('legal', 'prefix', isAr ? 'بالاشتراك أنت توافق على ' : 'By subscribing you agree to our ')}
+          {pageText('legal', 'prefix', isAr ? 'بالاشتراك، فإنك توافق على ' : 'By subscribing you agree to our ')}
           <Link to={localizePath('/terms', lang)} className="inline-flex min-h-11 items-center hover:text-foreground transition-colors">{pageText('legal', 'terms', isAr ? 'الشروط والأحكام' : 'Terms & Conditions')}</Link>
           {pageText('legal', 'joiner', isAr ? ' و' : ' and ')}
           <Link to={localizePath('/privacy', lang)} className="inline-flex min-h-11 items-center hover:text-foreground transition-colors">{pageText('legal', 'privacy', isAr ? 'سياسة الخصوصية' : 'Privacy Policy')}</Link>

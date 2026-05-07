@@ -159,7 +159,7 @@ export default function TemplateDetail() {
     if (!template) return;
     if (!user) { openAuthModal('signup'); return; }
     if (!uploadedImage) {
-      toast({ title: isAr ? 'مطلوب صورة' : 'Image required', description: isAr ? 'يرجى رفع صورة أولاً' : 'Please upload an image first', variant: 'destructive' });
+      toast({ title: isAr ? 'ارفع صورة أولاً.' : 'Image required', description: isAr ? 'ارفع صورة أولاً.' : 'Please upload an image first', variant: 'destructive' });
       return;
     }
 
@@ -191,7 +191,7 @@ export default function TemplateDetail() {
     });
 
     if (!jobId) {
-      toast({ title: isAr ? 'حدث خطأ' : 'Error', description: isAr ? 'فشل في بدء التوليد' : 'Failed to start generation', variant: 'destructive' });
+      toast({ title: isAr ? 'حدث خطأ' : 'Error', description: isAr ? 'فشل بدء الإنشاء' : 'Failed to start generation', variant: 'destructive' });
       setGenerating(false);
       return;
     }
@@ -212,7 +212,7 @@ export default function TemplateDetail() {
       <div className="flex-1 flex flex-col items-center justify-center gap-4 min-h-screen">
         <p className="text-muted-foreground">{isAr ? 'القالب غير موجود' : 'Template not found'}</p>
         <Button variant="outline" onClick={() => navigate('/templates')}>
-          {isAr ? 'العودة للقوالب' : 'Back to Templates'}
+          {isAr ? 'العودة إلى القوالب' : 'Back to Templates'}
         </Button>
       </div>
     );
@@ -251,7 +251,7 @@ export default function TemplateDetail() {
         acceptedAnswer: {
           '@type': 'Answer',
           text: isAr
-            ? 'نعم. هذا المسار يبدأ من رفع صورة مرجعية ثم يطبّق القالب لتوليد نتيجة أسرع وأكثر اتساقاً.'
+            ? 'نعم. ارفع صورة مرجعية، فيطبّق القالب اتجاهه لإنشاء نتيجة أسرع وأكثر اتساقاً.'
             : 'Yes. This flow starts with a reference upload, then applies the template to generate a faster, more consistent result.',
         },
       },
@@ -299,17 +299,17 @@ export default function TemplateDetail() {
   };
 
   const bestResultsNote = isAr
-    ? template.best_results_ar || 'استخدم صورة واضحة بإضاءة جيدة وخلفية غير مزدحمة للحصول على نتيجة أدق.'
+    ? template.best_results_ar || 'استخدم صورة واضحة، بإضاءة جيدة، وخلفية بسيطة، لنتيجة أدق.'
     : template.best_results_en || 'Use a clear photo with good lighting and a simple background for the best result.';
   const inputRequirementsNote = isAr
-    ? template.input_requirements_ar || 'تجنب الصور الضبابية أو المقتصة بشدة أو التي تحتوي على عناصر كثيرة تحجب الهدف الأساسي.'
+    ? template.input_requirements_ar || 'تجنّب الصور الضبابية، أو المقتصّة بشدة، أو المزدحمة بعناصر تحجب الهدف.'
     : template.input_requirements_en || 'Avoid blurry, heavily cropped, or overly busy images that hide the main subject.';
   const exampleCaption = isAr
-    ? template.example_caption_ar || 'مثال على التحويل المتوقع من الصورة الأصلية إلى النتيجة النهائية.'
+    ? template.example_caption_ar || 'مثال على التحويل المتوقع: من الصورة الأصلية إلى النتيجة النهائية.'
     : template.example_caption_en || 'A quick preview of the expected transformation from input to final output.';
   const faqs = [
     {
-      q: isAr ? `ما الذي يقدمه قالب ${title}؟` : `What does the ${title} template do?`,
+      q: isAr ? `ماذا يقدّم قالب ${title}؟` : `What does the ${title} template do?`,
       a: isAr
         ? `${title} يختصر وقت البدء من الصفر ويعطيك اتجاهاً بصرياً جاهزاً لإنتاج محتوى ${template.category || 'إبداعي'} أسرع.`
         : `${title} reduces setup time and gives you a ready visual direction for faster ${template.category || 'creative'} production.`,
@@ -317,13 +317,13 @@ export default function TemplateDetail() {
     {
       q: isAr ? 'متى أستخدم هذا القالب؟' : 'When should I use this template?',
       a: isAr
-        ? 'استخدمه عندما يكون لديك صورة مرجعية وتريد نتيجة أسرع وأكثر اتساقاً للحملات أو المحتوى الاجتماعي أو صور المنتجات.'
+        ? 'استخدمه عندما تكون لديك صورة مرجعية وتريد نتيجة أسرع وأكثر اتساقاً — للحملات أو المحتوى الاجتماعي أو صور المنتجات.'
         : 'Use it when you already have a reference image and want a faster, more consistent result for campaigns, social posts, or product visuals.',
     },
     {
       q: isAr ? 'هل أستطيع تعديل النتيجة لاحقاً؟' : 'Can I refine the result later?',
       a: isAr
-        ? 'نعم. القالب يسرّع نقطة البداية، وبعد التوليد يمكنك متابعة العمل داخل بقية مسارات تخيّل.'
+        ? 'نعم. القالب يسرّع البداية، وبعد الإنشاء يمكنك متابعة العمل عبر بقية مسارات تخيّل.'
         : 'Yes. The template accelerates the starting point, and you can continue refining the output in the rest of the Takhayal workflow.',
     },
   ];
@@ -443,7 +443,7 @@ export default function TemplateDetail() {
               onClick={handleGenerate}
               disabled={generating || !uploadedImage}
               loading={generating}
-              loadingLabel={isAr ? 'جارِ التوليد...' : 'Generating...'}
+              loadingLabel={isAr ? 'جارِ الإنشاء...' : 'Generating...'}
               credits={2}
             >
               {isAr ? 'إنشاء الآن' : 'Generate Now'}
@@ -477,12 +477,12 @@ export default function TemplateDetail() {
             </h2>
             <p className="text-sm text-muted-foreground leading-7 mt-3">
               {isAr
-                ? `${title} هو قالب جاهز داخل تخيّل يسرّع إنتاج محتوى ${template.category || 'إبداعي'} عندما تريد الانطلاق من صورة مرجعية بدلاً من البدء من الصفر.`
+                ? `${title} قالب جاهز داخل تخيّل يسرّع إنتاج محتوى ${template.category || 'إبداعي'} للانطلاق من صورة مرجعية بدلاً من الصفر.`
                 : `${title} is a ready-made Takhayal template that speeds up ${template.category || 'creative'} production when you want to start from a reference image instead of starting from scratch.`}
             </p>
             <p className="text-sm text-muted-foreground leading-7 mt-3">
               {isAr
-                ? `هذا القالب مناسب عندما تريد نتيجة أسرع وأكثر اتساقاً بنسبة ${template.ratio || '1:1'} مع تكلفة واضحة قبل التشغيل.`
+                ? `مناسب عندما تريد نتيجة أسرع وأكثر اتساقاً بنسبة ${template.ratio || '1:1'}، مع تكلفة واضحة قبل التشغيل.`
                 : `It is a good fit when you want a faster, more consistent output in ${template.ratio || '1:1'} format with a clear cost before generation.`}
             </p>
           </div>
@@ -493,7 +493,7 @@ export default function TemplateDetail() {
               {[
                 isAr ? 'ارفع صورة مرجعية مناسبة للمشهد أو المنتج.' : 'Upload a reference image that matches the scene or product.',
                 isAr ? 'شغّل القالب لتطبيق الاتجاه البصري الجاهز.' : 'Run the template to apply the prebuilt visual direction.',
-                isAr ? 'تابع التعديل أو التوليد الإضافي داخل تخيّل عند الحاجة.' : 'Continue refining or generating inside Takhayal if needed.',
+                isAr ? 'تابع التعديل أو الإنشاء داخل تخيّل عند الحاجة.' : 'Continue refining or generating inside Takhayal if needed.',
               ].map((step, index) => (
                 <div key={step} className="flex gap-3 rounded-xl bg-background/50 p-3">
                   <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-primary text-xs font-bold text-primary-foreground">{index + 1}</span>

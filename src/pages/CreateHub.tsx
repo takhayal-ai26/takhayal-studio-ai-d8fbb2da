@@ -45,7 +45,7 @@ export default function CreateHub() {
       <PageSeo
         title={isAr ? 'إنشاء | تخيّل' : 'Create | Takhayal.ai'}
         description={isAr
-          ? 'ابدأ إنشاء الصور أو الفيديوهات بالذكاء الاصطناعي فوراً من مركز الإنشاء في تخيّل.'
+          ? 'ابدأ إنشاء الصور والفيديو بالذكاء الاصطناعي فوراً من مركز الإنشاء في تخيّل.'
           : 'Start generating AI images and videos instantly from the Takhayal create hub.'}
         canonicalPath="/create"
         pageType="CollectionPage"

@@ -200,7 +200,7 @@ export default function Community() {
             {isAr ? 'إلهام المجتمع' : 'Community Inspiration'}
           </h1>
           <p className="text-sm text-muted-foreground/60 mt-2 max-w-md mx-auto">
-            {isAr ? 'اكتشف أعمال المبدعين واستلهم من أوامرهم' : 'Discover what creators are making and get inspired by their prompts'}
+            {isAr ? 'اكتشف أعمال المبدعين واستلهم من برومبتاتهم' : 'Discover what creators are making and get inspired by their prompts'}
           </p>
         </section>
 

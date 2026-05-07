@@ -384,7 +384,7 @@ function EditControlsPanel({ tool, inSheet = false, onAfterGenerate, uploaded, s
         </GenerateButton>
         {!isAuthenticated && (
           <p className="text-[11px] text-muted-foreground text-center mt-2">
-            {isAr ? 'يجب تسجيل الدخول للتعديل' : 'Sign in to start editing'}
+            {isAr ? 'سجّل الدخول لتبدأ التعديل.' : 'Sign in to start editing'}
           </p>
         )}
       </div>
@@ -482,7 +482,7 @@ export default function EditImagePage() {
 
   const tool = tools.find(t => t.slug === 'edit-image');
   const coverUrl = tool?.image || FALLBACK_COVER;
-  const seoDescription = tool?.description || tool?.shortDesc || (isAr ? 'أداة تعديل صور بالذكاء الاصطناعي داخل تخيّل.' : 'AI image editing tool inside Takhayal.');
+  const seoDescription = tool?.description || tool?.shortDesc || (isAr ? 'أداة تعديل الصور بالذكاء الاصطناعي داخل تخيّل.' : 'AI image editing tool inside Takhayal.');
   const dateModified = toDateOnly(tool?.updatedAt);
   const faqSchema = tool ? {
     '@context': 'https://schema.org',
@@ -490,7 +490,7 @@ export default function EditImagePage() {
     mainEntity: [
       {
         '@type': 'Question',
-        name: isAr ? `ما الذي تفعله أداة ${tool.name}؟` : `What does the ${tool.name} tool do?`,
+        name: isAr ? `ماذا تفعل أداة ${tool.name}؟` : `What does the ${tool.name} tool do?`,
         acceptedAnswer: { '@type': 'Answer', text: seoDescription },
       },
       {

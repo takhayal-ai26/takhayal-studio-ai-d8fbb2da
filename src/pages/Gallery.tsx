@@ -58,7 +58,7 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
   const getFailureMessage = () => {
     const raw = (job.error_message || '').toLowerCase();
     if (!raw) {
-      return isAr ? 'حدث خطأ أثناء التوليد. حاول مرة أخرى.' : 'Something went wrong during generation. Please try again.';
+      return isAr ? 'حدث خطأ أثناء الإنشاء. حاول مرة أخرى.' : 'Something went wrong during generation. Please try again.';
     }
 
     if (raw.includes('exhausted balance') || raw.includes('top up your balance') || raw.includes('user is locked')) {
@@ -66,10 +66,10 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
     }
 
     if (raw.includes('timed out')) {
-      return isAr ? 'استغرقت العملية وقتاً أطول من المتوقع. أعد المحاولة بعد قليل.' : 'The generation timed out. Please try again in a moment.';
+      return isAr ? 'استغرقت العملية وقتاً أطول من المتوقع. حاول بعد قليل.' : 'The generation timed out. Please try again in a moment.';
     }
 
-    return job.error_message || (isAr ? 'حدث خطأ أثناء التوليد. حاول مرة أخرى.' : 'Something went wrong during generation. Please try again.');
+    return job.error_message || (isAr ? 'حدث خطأ أثناء الإنشاء. حاول مرة أخرى.' : 'Something went wrong during generation. Please try again.');
   };
 
   // Treat "completed" with no image as still processing (prevents blank white cards)
@@ -153,10 +153,10 @@ function GalleryCard({ job, isAr, onRetry, onReuse, onTap, onShare, isMobile, mo
               <Loader2 size={24} className="animate-spin" />
             </div>
             <span className="text-sm font-bold text-foreground">
-              {isAr ? 'جاري التوليد' : 'Generating'}
+              {isAr ? 'جاري الإنشاء' : 'Generating'}
             </span>
             <p className="text-xs text-muted-foreground/60 max-w-[200px]">
-              {isAr ? 'سيتم عرض النتيجة هنا فور اكتمالها' : 'Your result will appear here shortly'}
+              {isAr ? 'ستظهر النتيجة هنا فور اكتمالها' : 'Your result will appear here shortly'}
             </p>
           </div>
         </div>

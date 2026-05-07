@@ -293,8 +293,8 @@ export default function ModelDetail() {
         acceptedAnswer: {
           '@type': 'Answer',
           text: isVideo
-            ? (isAr ? 'ابدأ من صفحة الفيديو ثم اختر النموذج المناسب ومدة التوليد.' : 'Start from the video page, then choose the model and generation duration.')
-            : (isAr ? 'ابدأ من الاستوديو، ثم اختر النموذج وابدأ التوليد أو التعديل حسب المهمة.' : 'Start from the studio, choose the model, then generate or edit based on your workflow.'),
+            ? (isAr ? 'ابدأ من صفحة الفيديو، ثم اختر النموذج المناسب ومدة الإنشاء.' : 'Start from the video page, then choose the model and generation duration.')
+            : (isAr ? 'ابدأ من الاستوديو، ثم اختر النموذج وابدأ الإنشاء أو التعديل حسب المهمة.' : 'Start from the studio, choose the model, then generate or edit based on your workflow.'),
         },
       },
     ],
@@ -331,13 +331,13 @@ export default function ModelDetail() {
   };
   const faqs = [
     {
-      q: isAr ? `ما الذي يميز ${displayName}؟` : `What makes ${displayName} different?`,
+      q: isAr ? `ما يميّز ${displayName}؟` : `What makes ${displayName} different?`,
       a: seoDescription,
     },
     {
       q: isAr ? 'متى أختار هذا النموذج؟' : 'When should I choose this model?',
       a: isAr
-        ? `اختره عندما يكون هدفك الأساسي هو ${bestForLine || 'الحصول على نتيجة إبداعية مناسبة'}.`
+        ? `اختره عندما يكون هدفك ${bestForLine || 'الحصول على نتيجة إبداعية مناسبة'}.`
         : `Choose it when your main goal is ${bestForLine || 'getting the right creative output'}.`,
     },
     {
@@ -460,7 +460,7 @@ export default function ModelDetail() {
 
         <section className="my-20 text-center">
           <h2 className="text-2xl md:text-3xl font-extrabold">
-            {isAr ? `جاهز للإبداع باستخدام ${guide.name_ar}؟` : `Ready to create with ${guide.name_en}?`}
+            {isAr ? `جاهز للإبداع مع ${guide.name_ar}؟` : `Ready to create with ${guide.name_en}?`}
           </h2>
           <div className="mt-7">
             <button

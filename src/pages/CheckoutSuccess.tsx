@@ -84,9 +84,9 @@ export default function CheckoutSuccess() {
               ? (isAr ? 'لحظة واحدة...' : 'One moment...')
               : isVerified
                 ? (order?.product_type === 'credits'
-                    ? (isAr ? `تم إضافة ${order.credits.toLocaleString()} رصيد إلى حسابك` : `${order.credits.toLocaleString()} credits have been added to your account`)
+                    ? (isAr ? `أُضيف ${order.credits.toLocaleString()} رصيد إلى حسابك` : `${order.credits.toLocaleString()} credits have been added to your account`)
                     : (isAr ? `خطة ${order?.plan_slug || ''} أصبحت مفعّلة` : `Your ${order?.plan_slug || ''} plan is now active.`))
-                : (isAr ? 'سيتم تفعيل الطلب بعد تأكيد بوابة الدفع عبر الخادم.' : 'The order will activate only after the gateway confirms payment server-side.')}
+                : (isAr ? 'سيُفعَّل الطلب فور تأكيد بوابة الدفع.' : 'The order will activate only after the gateway confirms payment server-side.')}
           </p>
         </div>
 
@@ -108,12 +108,12 @@ export default function CheckoutSuccess() {
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">
-              {isAr ? 'لا يوجد رقم طلب صالح في الرابط.' : 'No valid order ID was provided.'}
+              {isAr ? 'رقم الطلب في الرابط غير صالح.' : 'No valid order ID was provided.'}
             </p>
           )}
           {profile?.email && isVerified && (
             <p className="text-xs text-muted-foreground pt-2 border-t border-border">
-              {isAr ? `سيتم إرسال الإيصال إلى ${profile.email}` : `A receipt will be sent to ${profile.email}`}
+              {isAr ? `سنرسل الإيصال إلى ${profile.email}` : `A receipt will be sent to ${profile.email}`}
             </p>
           )}
         </div>
@@ -122,7 +122,7 @@ export default function CheckoutSuccess() {
           onClick={() => navigate('/studio')}
           className="w-full h-12 rounded-full bg-primary text-primary-foreground text-[15px] font-medium hover:brightness-90 transition-all flex items-center justify-center gap-2"
         >
-          {isAr ? 'العودة للاستوديو' : 'Back to Studio'} <ArrowRight size={16} />
+          {isAr ? 'العودة إلى الاستوديو' : 'Back to Studio'} <ArrowRight size={16} />
         </button>
       </div>
     </div>
