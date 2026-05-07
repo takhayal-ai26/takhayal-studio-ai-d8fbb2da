@@ -196,7 +196,7 @@ export default function ModelsDirectory() {
             {showImage && (
               <section className="mb-12">
                 <p className="text-[12px] uppercase tracking-widest font-semibold text-primary mb-5">
-                  {isAr ? 'توليد الصور' : 'IMAGE GENERATION'}
+                  {isAr ? 'إنشاء الصور' : 'IMAGE GENERATION'}
                 </p>
                 {imageGuides.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">

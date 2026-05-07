@@ -53,12 +53,12 @@ const seoLandingDefinitions = [
       en: "AI tools for Arabic brands | Takhayal.ai",
     },
     description: {
-      ar: "دليل عملي لاستخدام تخيّل لإنتاج صور وحملات ومحتوى اجتماعي للعلامات العربية في الكويت والخليج.",
+      ar: "دليل عملي لإنتاج صور وحملات ومحتوى اجتماعي بالذكاء الاصطناعي للعلامات العربية في الكويت والخليج.",
       en: "A practical guide to using Takhayal for images, campaigns, and social content for Arabic brands in Kuwait and the GCC.",
     },
     h1: { ar: "أدوات ذكاء اصطناعي للعلامات العربية", en: "AI tools for Arabic brands" },
     answer: {
-      ar: "تخيّل.ai هو استوديو ذكاء اصطناعي عربي أولاً يساعد العلامات العربية على إنشاء الصور، تعديل الأصول، اختيار النماذج، والانطلاق من قوالب جاهزة مع تجربة مهيأة للكويت والخليج.",
+      ar: "تخيّل.ai استوديو ذكاء اصطناعي عربي أولاً، يساعد العلامات على إنشاء الصور، تعديل الأصول، اختيار النماذج، والانطلاق من قوالب جاهزة — كل ذلك بتجربة مهيّأة للكويت والخليج.",
       en: "Takhayal.ai is an Arabic-first AI creative studio that helps Arabic brands generate images, edit assets, compare models, and start from ready templates with workflows built for Kuwait and the GCC.",
     },
     rows: {
@@ -66,7 +66,7 @@ const seoLandingDefinitions = [
       en: [["Fast campaign production", "Templates and create hub"], ["Product or ad visuals", "Image tools and models"], ["Improve existing assets", "Editing and restoration tools"]],
     },
     faqs: {
-      ar: [["هل تخيّل مناسب للعلامات العربية؟", "نعم، تخيّل مصمم كتجربة عربية أولاً للفرق والمبدعين في الكويت والخليج."], ["هل يدعم العربية والإنجليزية؟", "يدعم تخيّل تجربة عربية وإنجليزية عبر الصفحات وسير العمل."]],
+      ar: [["هل تخيّل مناسب للعلامات العربية؟", "نعم. تخيّل تجربة عربية أولاً، مصمَّمة للفرق والمبدعين في الكويت والخليج."], ["هل يدعم العربية والإنجليزية؟", "يدعم تخيّل التجربتين العربية والإنجليزية عبر الصفحات وسير العمل."]],
       en: [["Is Takhayal suitable for Arabic brands?", "Yes. Takhayal is designed as an Arabic-first experience for teams and creators in Kuwait and the GCC."], ["Does it support Arabic and English?", "Takhayal supports Arabic and English experiences across pages and workflows."]],
     },
   },
@@ -77,12 +77,12 @@ const seoLandingDefinitions = [
       en: "AI image tools for Kuwait businesses | Takhayal.ai",
     },
     description: {
-      ar: "استخدم تخيّل لإنتاج صور منتجات وحملات ومحتوى اجتماعي للشركات والمبدعين في الكويت.",
+      ar: "أنتج صور منتجات وحملات ومحتوى اجتماعي بالذكاء الاصطناعي — لشركات الكويت ومبدعيها.",
       en: "Use Takhayal to produce product images, campaign visuals, and social content for businesses and creators in Kuwait.",
     },
     h1: { ar: "أدوات صور بالذكاء الاصطناعي في الكويت", en: "AI image tools for Kuwait businesses" },
     answer: {
-      ar: "تخيّل يساعد الشركات والمبدعين في الكويت على إنشاء صور وتعديلها باستخدام أدوات ذكاء اصطناعي واضحة للأعمال اليومية مثل المنتجات، الإعلانات، الخلفيات، والترميم.",
+      ar: "يساعد تخيّل شركات الكويت ومبدعيها على إنشاء الصور وتعديلها بأدوات ذكاء اصطناعي واضحة، لأعمال يومية مثل المنتجات، الإعلانات، الخلفيات، والترميم.",
       en: "Takhayal helps Kuwait businesses and creators generate and edit images with AI tools for production tasks such as products, ads, backgrounds, and restoration.",
     },
     rows: {
@@ -90,7 +90,7 @@ const seoLandingDefinitions = [
       en: [["Shop or restaurant", "Product visuals and offer content"], ["Marketing agency", "Multiple visual directions quickly"], ["Brand team", "Improve existing assets"]],
     },
     faqs: {
-      ar: [["ما أفضل استخدام لتخيّل في الكويت؟", "إنتاج صور حملات ومنتجات ومحتوى اجتماعي بسرعة مع سياق عربي وخليجي واضح."], ["هل يناسب الفرق الصغيرة؟", "نعم، نظام الأرصدة والقوالب والأدوات المنفصلة يناسب الفرق الصغيرة."]],
+      ar: [["ما أفضل استخدام لتخيّل في الكويت؟", "إنتاج صور الحملات والمنتجات والمحتوى الاجتماعي بسرعة، بسياق عربي وخليجي واضح."], ["هل يناسب الفرق الصغيرة؟", "نعم. نظام الأرصدة والقوالب والأدوات المنفصلة مصمَّم للفرق الصغيرة."]],
       en: [["What is the best use in Kuwait?", "Producing campaign, product, and social visuals quickly with clear Arabic and GCC context."], ["Can small teams use it?", "Yes. Credits, templates, and focused tools make Takhayal suitable for small teams."]],
     },
   },
@@ -101,20 +101,20 @@ const seoLandingDefinitions = [
       en: "Arabic-first AI design tool | Takhayal.ai",
     },
     description: {
-      ar: "تخيّل هو استوديو إبداعي بالذكاء الاصطناعي يركز على تجربة عربية أولاً للصور والقوالب والنماذج.",
+      ar: "تخيّل استوديو إبداعي بالذكاء الاصطناعي، عربي أولاً للصور والقوالب والنماذج.",
       en: "Takhayal is an AI creative studio focused on an Arabic-first experience for images, templates, and model workflows.",
     },
     h1: { ar: "أداة تصميم بالذكاء الاصطناعي عربية أولاً", en: "Arabic-first AI design tool" },
     answer: {
-      ar: "تخيّل ليس مجرد مولد صور. هو تجربة إبداعية عربية أولاً تجمع بين الأدوات، القوالب، النماذج، والأسعار المعتمدة على الأرصدة لمساعدة الفرق على إنتاج أصول بصرية أسرع.",
+      ar: "تخيّل ليس مجرد منشئ صور. إنه تجربة إبداعية عربية أولاً تجمع الأدوات والقوالب والنماذج وتسعيراً بالأرصدة، لتمنح الفرق إنتاجاً بصرياً أسرع.",
       en: "Takhayal is more than an image generator. It combines tools, templates, models, and credit-based pricing to help teams produce visual assets faster.",
     },
     rows: {
-      ar: [["اللغة", "تجربة عربية وإنجليزية"], ["المهام", "توليد وتعديل وقوالب ونماذج"], ["التكلفة", "أرصدة معروضة قبل الاستخدام"]],
+      ar: [["اللغة", "تجربة عربية وإنجليزية"], ["المهام", "إنشاء، تعديل، قوالب، نماذج"], ["التكلفة", "أرصدة معروضة قبل الاستخدام"]],
       en: [["Language", "Arabic and English experience"], ["Tasks", "Generation, editing, templates, and models"], ["Cost", "Credits shown before usage"]],
     },
     faqs: {
-      ar: [["ما معنى عربي أولاً؟", "يعني أن تجربة المنتج والتموضع والمحتوى موجهة منذ البداية للمستخدم العربي والخليجي."], ["هل تخيّل أداة تصميم كاملة؟", "يركز تخيّل على إنتاج الصور والأصول الإبداعية بالذكاء الاصطناعي."]],
+      ar: [["ما معنى عربي أولاً؟", "يعني أن تجربة المنتج وتموضعه ومحتواه موجَّهة منذ البداية للمستخدم العربي والخليجي."], ["هل تخيّل أداة تصميم كاملة؟", "يركز تخيّل على إنتاج الصور والأصول الإبداعية بالذكاء الاصطناعي."]],
       en: [["What does Arabic-first mean?", "The product experience, positioning, and content are designed from the start for Arabic and GCC users."], ["Is Takhayal a full design suite?", "Takhayal focuses on AI image and creative-asset production."]],
     },
   },
@@ -125,20 +125,20 @@ const seoLandingDefinitions = [
       en: "Canva AI alternative for GCC teams | Takhayal.ai",
     },
     description: {
-      ar: "مقارنة عملية بين استخدام Canva AI وتخيّل للفرق التي تحتاج إنتاج صور عربية وخليجية بسرعة.",
+      ar: "مقارنة عملية بين Canva AI وتخيّل للفرق التي تحتاج إنتاج صور عربية وخليجية بسرعة.",
       en: "A practical comparison of Canva AI and Takhayal for teams that need Arabic and GCC-focused image production.",
     },
     h1: { ar: "بديل Canva AI للفرق في الخليج", en: "Canva AI alternative for GCC teams" },
     answer: {
-      ar: "Canva منصة تصميم واسعة، بينما يركز تخيّل على إنتاج الصور والأصول بالذكاء الاصطناعي لتجارب عربية وخليجية. الاختيار يعتمد على ما إذا كنت تحتاج محرر تصميم شامل أو مسارات AI مركزة.",
+      ar: "Canva منصة تصميم واسعة، بينما يركّز تخيّل على إنتاج الصور والأصول بالذكاء الاصطناعي لتجارب عربية وخليجية. الاختيار يعتمد إن كنت تحتاج محرر تصميم شامل، أم مسارات ذكاء اصطناعي مركّزة.",
       en: "Canva is a broad design platform, while Takhayal focuses on AI image and asset production for Arabic and GCC workflows.",
     },
     rows: {
-      ar: [["الاستخدام الرئيسي", "Canva للتصميم العام، وتخيّل لصور AI عربية"], ["السياق الإقليمي", "تخيّل موجه للكويت والخليج"], ["أفضل للفرق التي تريد", "مسارات صور ونماذج وقوالب AI بسرعة"]],
+      ar: [["الاستخدام الرئيسي", "Canva للتصميم العام، وتخيّل لصور الذكاء الاصطناعي العربية."], ["السياق الإقليمي", "تخيّل موجَّه للكويت والخليج"], ["أفضل للفرق التي تريد", "مسارات صور ونماذج وقوالب بالذكاء الاصطناعي، بسرعة"]],
       en: [["Primary use", "Canva for broad design, Takhayal for Arabic AI images"], ["Regional context", "Takhayal is focused on Kuwait and the GCC"], ["Best for teams that need", "Fast AI image, model, and template workflows"]],
     },
     faqs: {
-      ar: [["هل تخيّل بديل مباشر لـ Canva؟", "ليس دائماً. تخيّل بديل أو مكمل عندما تكون الأولوية لإنتاج صور AI عربية وخليجية."], ["متى أختار تخيّل؟", "عندما تحتاج أدوات صور ونماذج وقوالب موجهة للفرق العربية في الكويت والخليج."]],
+      ar: [["هل تخيّل بديل مباشر لـ Canva؟", "ليس دائماً. تخيّل بديل أو مكمِّل حين تكون الأولوية لإنتاج صور عربية وخليجية بالذكاء الاصطناعي."], ["متى أختار تخيّل؟", "حين تحتاج أدوات صور ونماذج وقوالب موجَّهة للفرق العربية في الكويت والخليج."]],
       en: [["Is Takhayal a direct Canva replacement?", "Not always. Takhayal is an alternative or complement for Arabic and GCC AI image production."], ["When should I choose Takhayal?", "Choose it when you need image tools, models, and templates for Arabic teams in Kuwait and the GCC."]],
     },
   },
@@ -149,20 +149,20 @@ const seoLandingDefinitions = [
       en: "Canva AI alternative for Arabic images and templates | Takhayal.ai",
     },
     description: {
-      ar: "قارن بين Canva AI وتخيّل من حيث استخدام الصور والقوالب وسير العمل للعلامات العربية.",
+      ar: "قارن بين Canva AI وتخيّل في الصور والقوالب وسير العمل للعلامات العربية.",
       en: "Compare Canva AI and Takhayal for image, template, and workflow needs for Arabic brands.",
     },
     h1: { ar: "بديل Canva AI للصور والقوالب العربية", en: "Canva AI alternative for Arabic images and templates" },
     answer: {
-      ar: "إذا كان هدفك تحرير تصميمات كثيرة، قد يكون Canva مناسباً. إذا كان هدفك إنتاج صور وأصول AI عربية أولاً مع أدوات ونماذج وقوالب مركزة، فإن تخيّل يوفر مساراً أكثر تخصصاً.",
+      ar: "إن كان هدفك تحرير تصميمات كثيرة، فقد يناسبك Canva. وإن كان هدفك إنتاج صور وأصول بالذكاء الاصطناعي عربية أولاً، مع أدوات ونماذج وقوالب مركّزة، فتخيّل مسار أكثر تخصصاً.",
       en: "If your goal is broad design editing, Canva may fit well. If your goal is Arabic-first AI image and asset production, Takhayal provides a more specialized path.",
     },
     rows: {
-      ar: [["محرر تصميم عام", "Canva أقوى لهذا الاستخدام"], ["صور AI عربية أولاً", "تخيّل هو مجال التركيز"], ["مقارنة نماذج", "تخيّل يتضمن دليل نماذج"]],
+      ar: [["محرر تصميم عام", "Canva أقوى لهذا الاستخدام"], ["صور بالذكاء الاصطناعي، عربية أولاً", "تخيّل مجال التركيز"], ["مقارنة نماذج", "يتضمّن تخيّل دليل نماذج"]],
       en: [["General design editor", "Canva is stronger for this use"], ["Arabic-first AI images", "Takhayal focuses on this"], ["Model comparison", "Takhayal includes model guidance"]],
     },
     faqs: {
-      ar: [["هل يمكن استخدام تخيّل مع Canva؟", "نعم، يمكن إنتاج الصور في تخيّل ثم استخدامها داخل Canva أو أي أداة تصميم."], ["ما الفرق الرئيسي؟", "Canva منصة تصميم عامة، بينما تخيّل يركز على صور وقوالب ونماذج AI عربية أولاً."]],
+      ar: [["هل يمكن استخدام تخيّل مع Canva؟", "نعم. أنتج الصور في تخيّل، ثم استخدمها داخل Canva أو أي أداة تصميم."], ["ما الفرق الرئيسي؟", "Canva منصة تصميم عامة، بينما يركّز تخيّل على صور وقوالب ونماذج بالذكاء الاصطناعي، عربية أولاً."]],
       en: [["Can Takhayal be used with Canva?", "Yes. Produce images in Takhayal, then use them in Canva or another design tool."], ["What is the main difference?", "Canva is broad design software; Takhayal focuses on Arabic-first AI image, template, and model workflows."]],
     },
   },
@@ -178,15 +178,15 @@ const seoLandingDefinitions = [
     },
     h1: { ar: "بديل Midjourney للعلامات العربية", en: "Midjourney alternative for Arabic brands" },
     answer: {
-      ar: "Midjourney مولد صور قوي ومناسب للاستكشاف البصري. تخيّل يركز على جعل إنتاج الصور أسهل للعلامات العربية عبر أدوات موجهة، قوالب، دليل نماذج، وتسعير بالأرصدة.",
+      ar: "Midjourney منشئ صور قوي للاستكشاف البصري. أما تخيّل فيركّز على تسهيل إنتاج الصور للعلامات العربية عبر أدوات موجَّهة، قوالب، دليل نماذج، وتسعير بالأرصدة.",
       en: "Midjourney is a strong image generator for visual exploration. Takhayal focuses on guided tools, templates, model guidance, and credit-based pricing for Arabic brands.",
     },
     rows: {
-      ar: [["نمط الاستخدام", "Midjourney للطلبات الحرة، وتخيّل لمسارات موجهة"], ["مناسب لـ", "تخيّل للحملات وصور المنتجات والمهام المتكررة"], ["اللغة والسياق", "تخيّل عربي أولاً للكويت والخليج"]],
+      ar: [["نمط الاستخدام", "Midjourney للبرومبتات الحرة، وتخيّل لمسارات موجَّهة"], ["مناسب لـ", "تخيّل للحملات وصور المنتجات والمهام المتكررة"], ["اللغة والسياق", "تخيّل عربي أولاً للكويت والخليج"]],
       en: [["Usage style", "Midjourney for free-form prompting, Takhayal for guided workflows"], ["Best for", "Takhayal for campaigns, product visuals, and recurring tasks"], ["Language and context", "Takhayal is Arabic-first for Kuwait and the GCC"]],
     },
     faqs: {
-      ar: [["هل تخيّل أفضل من Midjourney؟", "الأفضلية تعتمد على الاستخدام. Midjourney قوي للاستكشاف الفني، وتخيّل مناسب لسير عمل عربي منظم."], ["هل يمكن استخدام الاثنين معاً؟", "نعم، يمكن استخدام Midjourney للاستكشاف وتخيّل للإنتاج المنظم."]],
+      ar: [["هل تخيّل أفضل من Midjourney؟", "تعتمد الأفضلية على الاستخدام. Midjourney قوي للاستكشاف الفني، وتخيّل مناسب لسير عمل عربي منظَّم."], ["هل يمكن استخدام الاثنين معاً؟", "نعم. استخدم Midjourney للاستكشاف، وتخيّل للإنتاج المنظَّم."]],
       en: [["Is Takhayal better than Midjourney?", "It depends on the use case. Midjourney is strong for exploration; Takhayal fits structured Arabic workflows."], ["Can both tools be used together?", "Yes. Use Midjourney for exploration and Takhayal for more structured production paths."]],
     },
   },
@@ -572,27 +572,27 @@ function staticRoutes() {
       route: "/",
       title: "تخيّل | استوديو ذكاء اصطناعي عربي أولاً",
       description:
-        "تخيّل هو استوديو ذكاء اصطناعي عربي أولاً للمبدعين والعلامات التجارية في الكويت والخليج. يساعدك على توليد الصور، تعديل الأصول، اختيار النماذج، والبدء من قوالب جاهزة.",
+        "تخيّل استوديو ذكاء اصطناعي عربي أولاً، للمبدعين والعلامات التجارية في الكويت والخليج. يساعدك على إنشاء الصور، تعديل الأصول، اختيار النماذج، والبدء من قوالب جاهزة.",
       pageType: "CollectionPage",
       priority: "1.0",
       changefreq: "daily",
       snapshot: buildSnapshot({
         eyebrow: "Arabic-first AI studio",
-        heroTitle: "تخيّل يساعد فرق الخليج على إنتاج صور ومواد إبداعية أسرع",
+        heroTitle: "تخيّل: إنتاج صور ومواد إبداعية أسرع لفرق الخليج",
         heroDescription:
-          "بدل التنقل بين أدوات كثيرة، يجمع تخيّل التوليد والتعديل والقوالب ودليل النماذج في منصة واحدة مهيأة للمحتوى العربي أولاً.",
+          "بدلاً من التنقّل بين أدوات كثيرة، يجمع تخيّل الإنشاء والتعديل والقوالب ودليل النماذج في منصة واحدة، عربية أولاً.",
         sections: [
           {
-            title: "ما الذي يقدمه تخيّل؟",
+            title: "ماذا يقدّم تخيّل؟",
             description:
-              "المنصة تجمع بين أدوات الصور، مركز إنشاء سريع، دليل نماذج، وقوالب عملية تساعد العلامات التجارية على الانتقال من الفكرة إلى الأصول الجاهزة للنشر.",
+              "تجمع المنصة أدوات الصور، ومركز إنشاء سريع، ودليل نماذج، وقوالب عملية — لتنتقل العلامة من الفكرة إلى أصول جاهزة للنشر.",
           },
           {
             title: "الأفضل لـ",
             items: [
               "الإعلانات والمحتوى العربي أولاً",
               "صور المنتجات والعطور والطعام والجمال",
-              "الفرق الصغيرة التي تريد إنتاجاً أسرع بميزانية أوضح",
+              "الفرق الصغيرة التي تريد إنتاجاً أسرع وميزانية أوضح",
             ],
           },
         ],
@@ -608,7 +608,7 @@ function staticRoutes() {
       route: "/pricing",
       title: "الأسعار | Takhayal.ai",
       description:
-        "خطط واضحة مع أرصدة شفافة وشحن إضافي عند الحاجة. صفحة الأسعار تشرح الفرق بين البداية المجانية والخطط المدفوعة وكيفية تقدير حجم الاستخدام.",
+        "خطط واضحة، أرصدة شفافة، وشحن إضافي عند الحاجة. تشرح هذه الصفحة الفرق بين البداية المجانية والخطط المدفوعة، وكيفية تقدير حجم استخدامك.",
       pageType: "CollectionPage",
       priority: "0.9",
       changefreq: "weekly",
@@ -616,12 +616,12 @@ function staticRoutes() {
         eyebrow: "Pricing and credits",
         heroTitle: "أسعار تخيّل مبنية على أرصدة واضحة",
         heroDescription:
-          "يمكنك البدء مجاناً ثم الترقية إلى خطة شهرية أو سنوية، مع معرفة تكلفة التوليد قبل التشغيل وإمكانية شحن أرصدة إضافية وقت الحاجة.",
+          "ابدأ مجاناً ثم ارتقِ إلى خطة شهرية أو سنوية، مع معرفة تكلفة الإنشاء قبل التشغيل، وإمكانية شحن أرصدة إضافية متى احتجت.",
         sections: [
           {
             title: "كيف تختار الخطة المناسبة؟",
             table: {
-              columns: ["ما الذي تقارنه", "لماذا يهم"],
+              columns: ["ما تقارنه", "لماذا يهم"],
               rows: [
                 ["الخطة المجانية مقابل المدفوعة", "لفهم الفرق بين التجربة الأولى والاستخدام الإنتاجي"],
                 ["عدد الأرصدة", "لتقدير حجم العمل الشهري الذي تغطيه الباقة"],
@@ -633,19 +633,19 @@ function staticRoutes() {
             title: "أسئلة سريعة",
             faqs: [
               {
-                question: "ما هو الرصيد في تخيّل؟",
+                question: "ما الرصيد في تخيّل؟",
                 answer:
-                  "الرصيد هو وحدة الاستخدام التي تُخصم عند تشغيل الأدوات أو النماذج، ويختلف الاستهلاك حسب المهمة والجودة المطلوبة.",
+                  "الرصيد وحدة الاستخدام التي تُخصم عند تشغيل الأدوات أو النماذج. يختلف الاستهلاك حسب المهمة والجودة المطلوبة.",
               },
               {
                 question: "هل يمكن البدء بدون بطاقة؟",
                 answer:
-                  "نعم، تتيح البداية المجانية تجربة المنصة قبل الانتقال إلى خطة مدفوعة.",
+                  "نعم. البداية المجانية تتيح تجربة المنصة قبل الانتقال إلى خطة مدفوعة.",
               },
               {
                 question: "هل يمكن الترقية لاحقاً؟",
                 answer:
-                  "نعم، يمكنك البدء بخطة صغيرة ثم الترقية عندما تحتاج إلى حجم عمل أكبر.",
+                  "نعم. ابدأ بخطة صغيرة، ثم ارتقِ حين تحتاج إلى حجم عمل أكبر.",
               },
             ],
           },
@@ -667,26 +667,26 @@ function staticRoutes() {
       changefreq: "weekly",
       snapshot: buildSnapshot({
         eyebrow: "AI tools directory",
-        heroTitle: "دليل أدوات تخيّل للمهمات الإبداعية المتكررة",
+        heroTitle: "دليل أدوات تخيّل للمهام الإبداعية المتكرِّرة",
         heroDescription:
-          "سواء كنت تحتاج إلى توليد صورة جديدة أو ترميم أصل قديم أو إزالة خلفية منتج، يقدم تخيّل أدوات مخصصة لكل مهمة مع تكلفة واضحة قبل التنفيذ.",
+          "سواء أكنت تحتاج إنشاء صورة جديدة، أو ترميم أصل قديم، أو إزالة خلفية منتج — يقدّم تخيّل أداة مخصَّصة لكل مهمة، بتكلفة واضحة قبل التنفيذ.",
         sections: [
           {
             title: "ما أنواع الأدوات المتاحة؟",
             table: {
               columns: ["نوع الأداة", "أفضل استخدام"],
               rows: [
-                ["توليد الصور", "تحويل الفكرة أو الطلب إلى صورة جديدة"],
+                ["إنشاء الصور", "تحويل الفكرة أو البرومبت إلى صورة جديدة"],
                 ["التعديل والتحسين", "رفع جودة الأصول الحالية أو إعادة صياغتها"],
                 ["الترميم والتنظيف", "الصور القديمة أو الخلفيات أو التفاصيل المتضررة"],
               ],
             },
           },
           {
-            title: "لماذا يفيد هذا الدليل؟",
+            title: "ما فائدة هذا الدليل؟",
             items: [
               "يساعدك على الوصول إلى الأداة المناسبة بسرعة",
-              "يقلل تجربة الخطأ عبر توضيح أفضل استخدام لكل مسار",
+              "يقلِّل التجربة والخطأ بتوضيح أفضل استخدام لكل مسار",
               "يبني صفحات قابلة للفهرسة حول مهام واضحة يبحث عنها المستخدمون",
             ],
           },
@@ -702,7 +702,7 @@ function staticRoutes() {
       route: "/models",
       title: "النماذج | Takhayal.ai",
       description:
-        "يقارن دليل النماذج في تخيّل بين السرعة والجودة وأفضل استخدام لكل نموذج صور أو فيديو، حتى تختار المحرك الأنسب قبل التوليد.",
+        "يقارن دليل النماذج في تخيّل السرعة والجودة وأفضل استخدام لكل نموذج صور أو فيديو، لتختار المحرك الأنسب قبل الإنشاء.",
       pageType: "CollectionPage",
       priority: "0.8",
       changefreq: "weekly",
@@ -710,7 +710,7 @@ function staticRoutes() {
         eyebrow: "Model directory",
         heroTitle: "قارن نماذج الصور والفيديو داخل تخيّل",
         heroDescription:
-          "الدليل يوضح الفروق بين السرعة والجودة وأفضل استخدام لكل نموذج، ويساعد الفرق على اختيار المحرك المناسب للحملات والمنتجات والتجارب السريعة.",
+          "يوضّح الدليل الفروق في السرعة والجودة وأفضل استخدام لكل نموذج، ويساعد الفرق على اختيار المحرك المناسب للحملات والمنتجات والتجارب السريعة.",
         sections: [
           {
             title: "كيف تستخدم دليل النماذج؟",
@@ -727,7 +727,7 @@ function staticRoutes() {
             title: "لماذا هذا مهم؟",
             items: [
               "يمنع اختيار نموذج غير مناسب للمهمة",
-              "يوضح نقاط القوة قبل بدء التوليد",
+              "يوضّح نقاط القوة قبل بدء الإنشاء",
               "يدعم استعلامات المقارنة والاختيار التي تبحث عنها فرق التسويق",
             ],
           },
@@ -743,7 +743,7 @@ function staticRoutes() {
       route: "/templates",
       title: "القوالب | Takhayal.ai",
       description:
-        "ابدأ من قوالب جاهزة مناسبة لحملات الخليج، وإعلانات المنتجات، والمحتوى الاجتماعي، بدل البدء من صفحة فارغة.",
+        "ابدأ من قوالب جاهزة لحملات الخليج، وإعلانات المنتجات، والمحتوى الاجتماعي — بدلاً من صفحة فارغة.",
       pageType: "CollectionPage",
       priority: "0.8",
       changefreq: "weekly",
@@ -751,7 +751,7 @@ function staticRoutes() {
         eyebrow: "Template library",
         heroTitle: "قوالب جاهزة لتسريع إنتاج المحتوى البصري",
         heroDescription:
-          "تساعد قوالب تخيّل الفرق على الانطلاق من اتجاه بصري واضح يناسب الحملات والمنتجات والمواسم، مع إمكانية الرفع والتوليد مباشرة من نفس الصفحة.",
+          "تنطلق الفرق من اتجاه بصري واضح يناسب الحملات والمنتجات والمواسم، مع إمكانية الرفع والإنشاء مباشرة من الصفحة نفسها.",
         sections: [
           {
             title: "ما فائدة القوالب؟",
@@ -781,22 +781,22 @@ function staticRoutes() {
       route: "/create",
       title: "إنشاء | Takhayal.ai",
       description:
-        "مركز الإنشاء في تخيّل يوجّهك إلى أسرع مسار لتوليد صورة أو فيديو أو استخدام أداة أو البدء من قالب.",
+        "يوجّهك مركز الإنشاء في تخيّل إلى أسرع مسار: إنشاء صورة، أو فيديو، أو استخدام أداة، أو البدء من قالب.",
       pageType: "CollectionPage",
       priority: "0.7",
       changefreq: "weekly",
       snapshot: buildSnapshot({
         eyebrow: "Create hub",
-        heroTitle: "مركز الإنشاء هو أسرع نقطة بداية داخل تخيّل",
+        heroTitle: "مركز الإنشاء أسرع نقطة بداية داخل تخيّل",
         heroDescription:
-          "يعرض لك المسار الأنسب حسب حاجتك: توليد جديد، تعديل أصل موجود، استخدام أداة مخصصة، أو بدء سريع من قالب.",
+          "يعرض لك المسار الأنسب لحاجتك: إنشاء جديد، تعديل أصل موجود، استخدام أداة مخصَّصة، أو بدء سريع من قالب.",
         sections: [
           {
             title: "متى تستخدم مركز الإنشاء؟",
             items: [
-              "عندما تريد الوصول سريعاً للمسار المناسب",
-              "عندما لا تزال تقارن بين التوليد والأدوات والقوالب",
-              "عندما تريد تقليل عدد الخطوات قبل بدء العمل",
+              "حين تريد الوصول السريع للمسار المناسب",
+              "حين لا تزال تقارن بين الإنشاء والأدوات والقوالب",
+              "حين تريد تقليل عدد الخطوات قبل بدء العمل",
             ],
           },
         ],
@@ -811,7 +811,7 @@ function staticRoutes() {
       route: "/about",
       title: "من نحن | تخيّل",
       description:
-        "تخيّل هو استوديو ذكاء اصطناعي مبني في الكويت لمساعدة العلامات التجارية والمبدعين في الخليج على إنتاج أصول بصرية عربية أولاً بسرعة أكبر.",
+        "تخيّل استوديو ذكاء اصطناعي مبنيّ في الكويت، يساعد العلامات والمبدعين في الخليج على إنتاج أصول بصرية عربية أولاً، أسرع.",
       pageType: "AboutPage",
       priority: "0.7",
       changefreq: "monthly",
@@ -819,13 +819,13 @@ function staticRoutes() {
         eyebrow: "About Takhayal",
         heroTitle: "تخيّل منصة كويتية تركّز على الإنتاج الإبداعي العربي أولاً",
         heroDescription:
-          "نحن نبني تجربة تساعد الشركات والمبدعين في الخليج على إنتاج الصور والقوالب والمواد التسويقية بسرعة، مع أدوات أوضح ومسارات أسهل للاستخدام اليومي.",
+          "نبني تجربة تساعد الشركات والمبدعين في الخليج على إنتاج الصور والقوالب والمواد التسويقية بسرعة — بأدوات أوضح ومسارات أسهل للاستخدام اليومي.",
         sections: [
           {
-            title: "ماذا يميز تخيّل؟",
+            title: "ما يميّز تخيّل؟",
             items: [
               "تموضع واضح للكويت والخليج",
-              "دعم اللغة العربية داخل تجربة الاستخدام",
+              "دعم اللغة العربية داخل تجربة المستخدم",
               "جمع الأدوات والنماذج والقوالب ضمن منصة واحدة",
             ],
           },
@@ -840,7 +840,7 @@ function staticRoutes() {
       route: "/contact",
       title: "تواصل معنا | تخيّل",
       description:
-        "تواصل مع فريق تخيّل بخصوص الدعم أو الشراكات أو الاستفسارات العامة، مع هوية دعم واضحة للفرق العربية والإنجليزية.",
+        "تواصل مع فريق تخيّل لطلب الدعم، أو الشراكات، أو الاستفسارات العامة — بدعم واضح للفرق العربية والإنجليزية.",
       pageType: "ContactPage",
       priority: "0.6",
       changefreq: "monthly",
@@ -848,7 +848,7 @@ function staticRoutes() {
         eyebrow: "Contact and support",
         heroTitle: "تواصل مع فريق تخيّل",
         heroDescription:
-          "إذا كنت تحتاج إلى دعم أو لديك سؤال تجاري أو ترغب في الشراكة، يمكنك الوصول إلى الفريق عبر قنوات الدعم الرسمية داخل صفحة التواصل.",
+          "إن احتجت دعماً، أو كان لديك سؤال تجاري، أو رغبت في شراكة — تصل إلى الفريق عبر قنوات الدعم الرسمية داخل صفحة التواصل.",
         sections: [
           {
             title: "كيف يساعدك فريق الدعم؟",
@@ -869,7 +869,7 @@ function staticRoutes() {
       route: "/privacy",
       title: "سياسة الخصوصية | تخيّل",
       description:
-        "صفحة سياسة الخصوصية تشرح كيفية تعامل تخيّل مع البيانات والحسابات واستخدام المنصة.",
+        "تشرح هذه الصفحة كيفية تعامل تخيّل مع البيانات والحسابات واستخدام المنصة.",
       pageType: "WebPage",
       priority: "0.3",
       changefreq: "yearly",
@@ -877,7 +877,7 @@ function staticRoutes() {
         eyebrow: "Privacy policy",
         heroTitle: "سياسة الخصوصية في تخيّل",
         heroDescription:
-          "توضح هذه الصفحة المبادئ الأساسية المتعلقة بكيفية تعامل المنصة مع البيانات والحسابات واستخدام الخدمات.",
+          "توضّح هذه الصفحة المبادئ الأساسية لتعامل المنصة مع البيانات والحسابات واستخدام الخدمات.",
         sections: [
           {
             title: "لماذا هذه الصفحة مهمة؟",
@@ -894,7 +894,7 @@ function staticRoutes() {
       route: "/terms",
       title: "الشروط والأحكام | تخيّل",
       description:
-        "تراجع هذه الصفحة شروط استخدام تخيّل، والالتزامات الأساسية، وحدود الخدمة.",
+        "تستعرض هذه الصفحة شروط استخدام تخيّل، والالتزامات الأساسية، وحدود الخدمة.",
       pageType: "WebPage",
       priority: "0.3",
       changefreq: "yearly",
@@ -905,7 +905,7 @@ function staticRoutes() {
           "تشرح هذه الصفحة الشروط الأساسية لاستخدام تخيّل وما يتعلق بالاشتراكات والأرصدة وحدود الاستخدام.",
         sections: [
           {
-            title: "ما الذي تغطيه الشروط؟",
+            title: "ماذا تغطي الشروط؟",
             items: [
               "استخدام المنصة والحسابات",
               "الاشتراكات والأرصدة",
@@ -927,7 +927,7 @@ function staticRoutes() {
         eyebrow: "Refund policy",
         heroTitle: "سياسة الاسترجاع",
         heroDescription:
-          "توضح هذه الصفحة الحالات الأساسية المرتبطة باسترداد الاشتراكات أو الأرصدة الإضافية ضمن شروط الخدمة.",
+          "توضّح هذه الصفحة الحالات الأساسية لاسترداد الاشتراكات أو الأرصدة الإضافية، ضمن شروط الخدمة.",
         sections: [
           {
             title: "ماذا ستجد هنا؟",
@@ -943,7 +943,7 @@ function staticRoutes() {
     {
       route: "/gallery",
       title: "المعرض | Takhayal.ai",
-      description: "معرض شخصي لنتائج المستخدم داخل تخيّل.",
+      description: "المعرض الشخصي لنتائج المستخدم داخل تخيّل.",
       pageType: "WebPage",
       priority: "0.1",
       changefreq: "weekly",
@@ -952,14 +952,14 @@ function staticRoutes() {
         eyebrow: "Personal gallery",
         heroTitle: "المعرض صفحة شخصية وليست صفحة فهرسة عامة",
         heroDescription:
-          "يعرض المعرض نتائج المستخدم الخاصة داخل الحساب، لذلك لا يُقصد به الظهور في نتائج البحث أو الفهرسة العامة.",
+          "يعرض المعرض نتائج المستخدم داخل حسابه؛ لذا لا يُقصد به الظهور في نتائج البحث أو الفهرسة العامة.",
         sections: [
           {
             title: "سبب عدم الفهرسة",
             items: [
               "المحتوى شخصي ومتغير حسب الحساب",
               "لا يقدم صفحة ثابتة مناسبة للفهرسة العامة",
-              "يخدم تجربة الاستخدام بعد تسجيل الدخول",
+              "يخدم تجربة المستخدم بعد تسجيل الدخول",
             ],
           },
         ],
@@ -975,9 +975,9 @@ function staticRoutes() {
       noIndex: true,
       snapshot: buildSnapshot({
         eyebrow: "Community inspiration",
-        heroTitle: "صفحة المجتمع مخصصة للاستلهام وليست هدفاً أساسياً للفهرسة",
+        heroTitle: "صفحة المجتمع للاستلهام، وليست هدفاً أساسياً للفهرسة",
         heroDescription:
-          "يعرض هذا المسار منشورات المجتمع والإلهام الداخلي، لكنه ليس ضمن مجموعة الصفحات الأساسية المستهدفة للفهرسة في الوقت الحالي.",
+          "يعرض هذا المسار منشورات المجتمع والإلهام الداخلي، لكنه ليس ضمن الصفحات الأساسية المستهدَفة للفهرسة حالياً.",
         sections: [
           {
             title: "سبب عدم الفهرسة",
@@ -1119,7 +1119,7 @@ function buildToolRoutes(tools) {
             title: "لماذا تختارها",
             items: [
               "تجربة عربية أولاً",
-              "واجهة مركزة على مهمة محددة",
+              "واجهة مركَّزة على مهمة محدَّدة",
               "تكلفة معروضة قبل التنفيذ",
             ],
           },
@@ -1181,16 +1181,16 @@ function buildModelRoutes(guides) {
         heroDescription: `${description} الأفضل له: ${bestFor}.`,
         sections: [
           {
-            title: `ما هو نموذج ${name}؟`,
-            description: `${name} هو نموذج داخل تخيّل يركز على ${bestFor}.`,
+            title: `ما نموذج ${name}؟`,
+            description: `${name} نموذج داخل تخيّل يركّز على ${bestFor}.`,
           },
           {
             title: "ملخص المقارنة",
             table: {
               columns: ["العامل", "القيمة"],
               rows: [
-                ["السرعة", toText(guide.speed, "غير محدد")],
-                ["الجودة", toText(guide.quality, "غير محدد")],
+                ["السرعة", toText(guide.speed, "غير محدَّد")],
+                ["الجودة", toText(guide.quality, "غير محدَّد")],
                 ["الأفضل لـ", bestFor],
               ],
             },
@@ -1244,9 +1244,9 @@ function buildTemplateRoutes(templates) {
           {
             title: "لماذا يفيدك هذا القالب",
             items: [
-              "يقلل وقت البدء من الصفر",
-              "يعطيك اتجاه بصري أوضح للحملة أو المنتج",
-              `يحافظ على تناسب مناسب مثل ${ratio}`,
+              "يقلِّل وقت البدء من الصفر",
+              "يعطيك اتجاهاً بصرياً أوضح للحملة أو المنتج",
+              `يحافظ على نسبة مناسبة مثل ${ratio}`,
             ],
           },
         ],
@@ -1280,7 +1280,7 @@ function build404Route() {
       eyebrow: "404",
       heroTitle: "الصفحة المطلوبة غير موجودة",
       heroDescription:
-        "قد يكون الرابط غير صحيح أو تم نقل الصفحة. يمكنك العودة إلى الصفحة الرئيسية أو استكشاف الأدوات والنماذج.",
+        "قد يكون الرابط غير صحيح، أو نُقلت الصفحة. يمكنك العودة إلى الصفحة الرئيسية، أو استكشاف الأدوات والنماذج.",
       sections: [
         {
           title: "روابط مفيدة",

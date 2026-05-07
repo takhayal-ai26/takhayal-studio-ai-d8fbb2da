@@ -203,7 +203,7 @@ export default function ToolPage() {
     mainEntity: [
       {
         '@type': 'Question',
-        name: isRTL ? `ما الذي تفعله أداة ${tool.name}؟` : `What does the ${tool.name} tool do?`,
+        name: isRTL ? `ماذا تفعل أداة ${tool.name}؟` : `What does the ${tool.name} tool do?`,
         acceptedAnswer: {
           '@type': 'Answer',
           text: seoDescription,
@@ -216,7 +216,7 @@ export default function ToolPage() {
           '@type': 'Answer',
           text: isUpload
             ? (isRTL ? 'استخدمها عندما تبدأ من صورة موجودة وتريد تحسينها أو تعديلها أو تنظيفها.' : 'Use it when you are starting from an existing image and want to improve, edit, or clean it.')
-            : (isRTL ? 'استخدمها عندما تريد بدء التوليد أو إنشاء أصل جديد من وصف أو إعدادات محددة.' : 'Use it when you want to generate a new asset from a prompt or predefined options.'),
+            : (isRTL ? 'استخدمها عندما تريد بدء الإنشاء من وصف أو إعدادات محددة.' : 'Use it when you want to generate a new asset from a prompt or predefined options.'),
         },
       },
       {
@@ -262,7 +262,7 @@ export default function ToolPage() {
   const facts = [
     {
       label: isRTL ? 'نوع الإدخال' : 'Input type',
-      value: isUpload ? (isRTL ? 'صورة مرفوعة' : 'Uploaded image') : (isRTL ? 'أمر أو وصف' : 'Prompt or text'),
+      value: isUpload ? (isRTL ? 'صورة مرفوعة' : 'Uploaded image') : (isRTL ? 'برومبت أو وصف' : 'Prompt or text'),
     },
     {
       label: isRTL ? 'التكلفة الابتدائية' : 'Starting cost',
@@ -275,20 +275,20 @@ export default function ToolPage() {
   ];
   const faqs = [
     {
-      q: isRTL ? `ما الذي تفعله أداة ${tool.name}؟` : `What does the ${tool.name} tool do?`,
+      q: isRTL ? `ماذا تفعل أداة ${tool.name}؟` : `What does the ${tool.name} tool do?`,
       a: seoDescription,
     },
     {
       q: isRTL ? 'متى أستخدم هذه الأداة؟' : 'When should I use this tool?',
       a: isUpload
-        ? (isRTL ? 'استخدمها عندما تبدأ من صورة قائمة وتريد نتيجة أسرع وأكثر اتساقاً من مسار مخصص.' : 'Use it when you are starting from an existing image and want a faster, more consistent result from a dedicated workflow.')
-        : (isRTL ? 'استخدمها عندما تريد إنشاء أصل جديد أو تشغيل مهمة إبداعية مباشرة من وصفك.' : 'Use it when you want to create a new asset or run a creative task directly from your prompt.'),
+        ? (isRTL ? 'استخدمها للبدء من صورة موجودة عبر مسار مخصص أسرع وأكثر اتساقاً.' : 'Use it when you are starting from an existing image and want a faster, more consistent result from a dedicated workflow.')
+        : (isRTL ? 'استخدمها لإنشاء أصل جديد أو تشغيل مهمة إبداعية مباشرة من وصفك.' : 'Use it when you want to create a new asset or run a creative task directly from your prompt.'),
     },
     {
       q: isRTL ? 'كيف أبدأ؟' : 'How do I get started?',
       a: isUpload
-        ? (isRTL ? 'ارفع الصورة، اختر الخيارات المطلوبة إن وجدت، ثم شغّل الأداة.' : 'Upload the image, choose any relevant options, then run the tool.')
-        : (isRTL ? 'اكتب الوصف، اضبط الخيارات إن وجدت، ثم شغّل الأداة.' : 'Write the prompt, adjust any relevant options, then run the tool.'),
+        ? (isRTL ? 'ارفع الصورة، اضبط الخيارات، ثم شغّل الأداة.' : 'Upload the image, choose any relevant options, then run the tool.')
+        : (isRTL ? 'اكتب الوصف، اضبط الخيارات، ثم شغّل الأداة.' : 'Write the prompt, adjust any relevant options, then run the tool.'),
     },
   ];
 
@@ -444,12 +444,12 @@ export default function ToolPage() {
 
         <section className={`mt-8 ${hasCondensedDetail ? '' : 'grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-6'}`}>
           <div className="rounded-2xl bg-card border border-border/40 p-6">
-            <h2 className="text-xl font-bold">{isRTL ? `ما الذي تفعله ${tool.name}؟` : `What does ${tool.name} do?`}</h2>
+            <h2 className="text-xl font-bold">{isRTL ? `ماذا تفعل ${tool.name}؟` : `What does ${tool.name} do?`}</h2>
             <p className="text-sm text-muted-foreground leading-7 mt-3">{seoDescription}</p>
             <p className="text-sm text-muted-foreground leading-7 mt-3">
               {isUpload
-                ? (isRTL ? 'هذا المسار مناسب للفرق التي تريد معالجة صورة موجودة بدون التنقل بين أدوات متعددة.' : 'This workflow is built for teams that want to process an existing image without jumping between multiple tools.')
-                : (isRTL ? 'هذا المسار مناسب عندما تريد الانتقال من الفكرة إلى أصل جديد بسرعة داخل تخيّل.' : 'This workflow is a good fit when you want to move from idea to new asset quickly inside Takhayal.')}
+                ? (isRTL ? 'مسار مناسب لمن يريد معالجة صورة موجودة بدون التنقل بين أدوات متعددة.' : 'This workflow is built for teams that want to process an existing image without jumping between multiple tools.')
+                : (isRTL ? 'مسار مناسب للانتقال من الفكرة إلى أصل جديد بسرعة داخل تخيّل.' : 'This workflow is a good fit when you want to move from idea to new asset quickly inside Takhayal.')}
             </p>
           </div>
 
@@ -457,7 +457,7 @@ export default function ToolPage() {
             <div className="rounded-2xl bg-card border border-border/40 p-6">
               <h2 className="text-xl font-bold">{isRTL ? 'معلومات التشغيل' : 'Run details'}</h2>
               <ul className="mt-4 space-y-3 text-sm text-muted-foreground">
-                <li>{isUpload ? (isRTL ? 'يبدأ من صورة مرفوعة من المستخدم.' : 'Starts from a user-uploaded image.') : (isRTL ? 'يبدأ من وصف أو إعدادات يحددها المستخدم.' : 'Starts from a user-provided prompt or options.')}</li>
+                <li>{isUpload ? (isRTL ? 'يبدأ من صورة يرفعها المستخدم.' : 'Starts from a user-uploaded image.') : (isRTL ? 'يبدأ من وصف أو إعدادات يحددها المستخدم.' : 'Starts from a user-provided prompt or options.')}</li>
                 <li>{isRTL ? `تكلفة التشغيل تبدأ من ${creditCost} رصيد.` : `Runs start from ${creditCost} credits.`}</li>
                 <li>{updatedLabel ? (isRTL ? `آخر تحديث: ${updatedLabel}.` : `Last updated: ${updatedLabel}.`) : null}</li>
               </ul>

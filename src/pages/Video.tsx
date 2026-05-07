@@ -279,7 +279,7 @@ export default function Video() {
     !(needsStartImage && !uploadedImage?.url);
 
   const handleGenerate = async () => {
-    if (!effectivePrompt.trim()) { toast.error(isAr ? 'يرجى إدخال وصف' : 'Please enter a prompt'); return; }
+    if (!effectivePrompt.trim()) { toast.error(isAr ? 'أدخل الوصف.' : 'Please enter a prompt'); return; }
     if (!isAuthenticated) { openAuthModal('signup'); return; }
     if (credits < totalCredits) { openUpgradeModal(); return; }
     if (!currentModel) return;
@@ -303,10 +303,10 @@ export default function Video() {
         generateAudio: audioEnabled && currentModel.supports_audio,
       });
       if (jobId) {
-        toast.success(isAr ? 'بدأ توليد الفيديو' : 'Video generation started');
+        toast.success(isAr ? 'بدأ إنشاء الفيديو' : 'Video generation started');
       }
     } catch {
-      toast.error(isAr ? 'فشل في بدء التوليد' : 'Failed to start generation');
+      toast.error(isAr ? 'فشل بدء الإنشاء' : 'Failed to start generation');
     }
     setIsGenerating(false);
   };

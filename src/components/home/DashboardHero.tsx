@@ -31,7 +31,7 @@ const DEFAULTS: Record<string, string> = {
   video_hero_subtitle_en: 'Create striking images and cinematic videos with AI built for modern creators.',
   video_hero_headline1_ar: 'تخيّل',
   video_hero_headline2_ar: 'أكثر',
-  video_hero_subtitle_ar: 'أنشئ صوراً مدهشة وفيديوهات سينمائية بالذكاء الاصطناعي، مصممة للمبدعين العصريين.',
+  video_hero_subtitle_ar: 'حوّل أفكارك إلى صور وفيديوهات مذهلة خلال ثوانٍ، واصنع محتوى يلفت الأنظار.',
   video_hero_overlay_intensity: '0.40',
   video_hero_text_align: 'center',
   video_hero_enabled: 'true',

@@ -26,7 +26,7 @@ export function VideoHowToUse({ toolSlug }: VideoGuideProps = {}) {
         ? (isAr ? 'اختر الصورة أو الموضوع الذي تريد تحريكه بحركة دقيقة.' : 'Choose the frame or subject you want to animate with controlled motion.')
         : variant === 'video-upscale'
           ? (isAr ? 'ابدأ بفيديو واضح تريد تحسين دقته وتفاصيله.' : 'Start with the clearest video you want to sharpen and enhance.')
-        : (isAr ? 'ارفع صورة بداية لتحريكها أو ابدأ من وصف نصي' : 'Upload a starting frame to animate, or begin with a text prompt'),
+        : (isAr ? 'ارفع صورة بداية لتحريكها، أو ابدأ من وصف نصي.' : 'Upload a starting frame to animate, or begin with a text prompt'),
       preview: 'image',
     },
     {
@@ -44,15 +44,15 @@ export function VideoHowToUse({ toolSlug }: VideoGuideProps = {}) {
     },
     {
       title: variant === 'motion-control'
-        ? (isAr ? 'ولّد حركة متحكم بها' : 'Generate controlled motion')
+        ? (isAr ? 'أنشئ حركة محكومة' : 'Generate controlled motion')
         : variant === 'video-upscale'
-          ? (isAr ? 'ولّد النسخة المحسّنة' : 'Generate the upscale')
-        : (isAr ? 'ولّد الفيديو' : 'Generate your video'),
+          ? (isAr ? 'أنشئ النسخة المحسّنة' : 'Generate the upscale')
+        : (isAr ? 'أنشئ الفيديو' : 'Generate your video'),
       desc: variant === 'motion-control'
         ? (isAr ? 'حوّل الصورة إلى فيديو قصير بحركة طبيعية واتجاه كاميرا واضح.' : 'Turn the image into a short video with natural motion and a clear camera direction.')
         : variant === 'video-upscale'
           ? (isAr ? 'احصل على فيديو أوضح بتفاصيل أنظف ومظهر عالي الدقة.' : 'Create a cleaner, sharper video with a more polished high-resolution look.')
-        : (isAr ? 'اضغط توليد وشاهد الذكاء الاصطناعي يحول وصفك إلى فيديو سينمائي' : 'Click generate and watch AI turn your description into a cinematic video'),
+        : (isAr ? 'اضغط «إنشاء» وشاهد الذكاء الاصطناعي يحوّل وصفك إلى فيديو سينمائي.' : 'Click generate and watch AI turn your description into a cinematic video'),
       preview: 'video',
     },
   ];

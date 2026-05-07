@@ -14,7 +14,7 @@ const PLANS = [
   {
     slug: 'studio', name: 'Studio', nameAr: 'الاستوديو', price: 29, credits: 1000,
     features: ['All models + early access', 'Up to 4K resolution', 'Brand kit & workspace'],
-    featuresAr: ['جميع النماذج + وصول مبكر', 'دقة تصل إلى 4K', 'مجموعة العلامة التجارية'],
+    featuresAr: ['جميع النماذج + وصول مبكر', 'دقة تصل إلى 4K', 'أدوات العلامة التجارية'],
     featured: true,
   },
 ];
@@ -39,7 +39,7 @@ export function UpgradeModal({ trigger = 'generic', modelName }: UpgradeModalPro
   if (!upgradeModalOpen) return null;
 
   const title = trigger === 'model'
-    ? (isAr ? `فتح ${modelName}` : `Unlock ${modelName}`)
+    ? (isAr ? `اافتح ${modelName}` : `Unlock ${modelName}`)
     : trigger === 'credits'
     ? (isAr ? 'نفدت أرصدتك' : "You're out of credits")
     : (isAr ? 'ترقية خطتك' : 'Upgrade your plan');
@@ -47,8 +47,8 @@ export function UpgradeModal({ trigger = 'generic', modelName }: UpgradeModalPro
   const subtitle = trigger === 'model'
     ? (isAr ? 'هذا النموذج متاح في خطة المبدع وأعلى.' : 'This model is available on Creator plan and above.')
     : trigger === 'credits'
-    ? (isAr ? 'أضف رصيداً أو قم بترقية خطتك لمواصلة الإبداع.' : 'Top up your balance or upgrade your plan to keep creating.')
-    : (isAr ? 'احصل على المزيد من الأرصدة والنماذج المتقدمة.' : 'Get more credits, faster generations, and premium models.');
+    ? (isAr ? 'أضف رصيداً أو ارفع خطتك لمواصلة الإبداع.' : 'Top up your balance or upgrade your plan to keep creating.')
+    : (isAr ? 'احصل على رصيد أكثر ونماذج متقدمة.' : 'Get more credits, faster generations, and premium models.');
 
   return (
     <div className="fixed inset-0 z-[80] flex items-center justify-center animate-fade-in p-4" onClick={closeUpgradeModal}>
@@ -91,7 +91,7 @@ export function UpgradeModal({ trigger = 'generic', modelName }: UpgradeModalPro
 
         <div className="px-6 pb-5 text-center">
           <button onClick={() => { closeUpgradeModal(); setActivePage('credits'); navigate('/studio'); }} className="text-xs text-primary hover:underline">
-            {isAr ? 'أو أضف رصيداً بدلاً من ذلك →' : 'Or top up credits instead →'}
+            {isAr ? 'أو أضف رصيداً فقط ←' : 'Or top up credits instead →'}
           </button>
         </div>
       </div>
