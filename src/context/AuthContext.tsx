@@ -35,6 +35,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<AuthState['profile']>(null);
   const { toast } = useToast();
 
+  useEffect(() => {
+    if (!supabaseConfigMissing) return;
+    toast({
+      title: 'Backend not configured',
+      description: 'Set VITE_SUPABASE_URL and VITE_SUPABASE_PUBLISHABLE_KEY in your .env.local to enable login, billing, and data.',
+    });
+  }, [toast]);
+
   const fetchProfile = useCallback(async (userId: string) => {
     if (supabaseConfigMissing) return;
     const { data } = await supabase
@@ -133,9 +141,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 export function useAuth(): AuthState {
   const ctx = useContext(AuthContext);
   if (!ctx) {
-    if (typeof window !== 'undefined') {
-      window.location.reload();
-    }
     throw new Error('useAuth must be used within AuthProvider');
   }
   return ctx;
