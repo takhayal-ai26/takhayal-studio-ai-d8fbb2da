@@ -5,6 +5,7 @@ import type { Database } from './types';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY;
+const isTestMode = import.meta.env.MODE === 'test';
 
 export const supabaseConfigMissing = !SUPABASE_URL || !SUPABASE_PUBLISHABLE_KEY;
 
@@ -103,12 +104,33 @@ function createNoopSupabaseClient() {
   } as unknown as SupabaseClient<Database>;
 }
 
+function getBrowserStorage() {
+  if (typeof window === 'undefined') return undefined;
+
+  try {
+    const storage = window.localStorage;
+    if (
+      typeof storage?.getItem === 'function' &&
+      typeof storage?.setItem === 'function' &&
+      typeof storage?.removeItem === 'function'
+    ) {
+      return storage;
+    }
+  } catch {
+    return undefined;
+  }
+
+  return undefined;
+}
+
+const authStorage = isTestMode ? undefined : getBrowserStorage();
+
 export const supabase = supabaseConfigMissing
   ? createNoopSupabaseClient()
   : createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
     auth: {
-      storage: typeof window !== 'undefined' ? window.localStorage : undefined,
-      persistSession: true,
-      autoRefreshToken: true,
+      storage: authStorage,
+      persistSession: !isTestMode && Boolean(authStorage),
+      autoRefreshToken: !isTestMode,
     },
   });
