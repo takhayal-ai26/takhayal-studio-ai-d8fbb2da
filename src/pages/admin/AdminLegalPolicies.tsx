@@ -8,6 +8,7 @@ import { Save, FileText, Shield, RefreshCw } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from '@/hooks/use-toast';
 import { formatDate } from '@/lib/utils';
+import { legalPolicyUpdatePayload } from '@/lib/cms';
 
 interface Policy {
   id: string;
@@ -36,14 +37,17 @@ function PolicyEditor({ policy, onSaved }: { policy: Policy; onSaved: () => void
 
   const handleSave = async () => {
     setSaving(true);
+    const payload = legalPolicyUpdatePayload(en, ar);
     const { error } = await supabase
       .from('legal_policies')
-      .update({ content_en: en, content_ar: ar, last_updated: new Date().toISOString() })
+      .update(payload)
       .eq('id', policy.id);
     setSaving(false);
     if (error) {
       toast({ title: 'Error', description: error.message, variant: 'destructive' });
     } else {
+      setEn(payload.content_en);
+      setAr(payload.content_ar);
       toast({ title: 'Saved', description: `${POLICY_META[policy.type]?.label} updated successfully.` });
       onSaved();
     }

@@ -7,6 +7,7 @@ import { ArrowLeft } from 'lucide-react';
 import { formatDate } from '@/lib/utils';
 import { PageSeo } from '@/components/seo/PageSeo';
 import { stripLocalePrefix, localizePath } from '@/lib/localized-routes';
+import { sanitizeLegalPolicyHtml } from '@/lib/cms';
 
 const TITLES: Record<string, { en: string; ar: string }> = {
   terms: { en: 'Terms & Conditions', ar: 'الشروط والأحكام' },
@@ -381,11 +382,11 @@ export default function LegalPage() {
       .then(({ data }) => {
         if (data) {
           const text = isAr && data.content_ar ? data.content_ar : data.content_en;
-          setContent(text || FALLBACK_CONTENT[type]?.[isAr ? 'ar' : 'en'] || '');
+          setContent(sanitizeLegalPolicyHtml(text || FALLBACK_CONTENT[type]?.[isAr ? 'ar' : 'en'] || ''));
           setLastUpdatedIso(data.last_updated || '');
           setLastUpdated(formatDate(data.last_updated, isAr));
         } else {
-          setContent(FALLBACK_CONTENT[type]?.[isAr ? 'ar' : 'en'] || '');
+          setContent(sanitizeLegalPolicyHtml(FALLBACK_CONTENT[type]?.[isAr ? 'ar' : 'en'] || ''));
         }
         setLoading(false);
       });

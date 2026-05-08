@@ -1,5 +1,6 @@
 import fs from "node:fs/promises";
 import path from "node:path";
+import { requirePrerenderRows } from "./prerender-data-guard.mjs";
 
 const SITE_URL = "https://takhayal.ai";
 const SITE_NAME = "Takhayal.ai";
@@ -1492,19 +1493,9 @@ async function main() {
     ),
   ]);
 
-  const tools = toolsResult.status === "fulfilled" ? toolsResult.value : [];
-  const guides = guidesResult.status === "fulfilled" ? guidesResult.value : [];
-  const templates = templatesResult.status === "fulfilled" ? templatesResult.value : [];
-
-  if (toolsResult.status === "rejected") {
-    console.warn("Skipping prerendered tool detail routes:", toolsResult.reason?.message || toolsResult.reason);
-  }
-  if (guidesResult.status === "rejected") {
-    console.warn("Skipping prerendered model detail routes:", guidesResult.reason?.message || guidesResult.reason);
-  }
-  if (templatesResult.status === "rejected") {
-    console.warn("Skipping prerendered template detail routes:", templatesResult.reason?.message || templatesResult.reason);
-  }
+  const tools = requirePrerenderRows(toolsResult, "tool detail");
+  const guides = requirePrerenderRows(guidesResult, "model detail");
+  const templates = requirePrerenderRows(templatesResult, "template detail");
 
   const routes = [
     ...staticRoutes(),
