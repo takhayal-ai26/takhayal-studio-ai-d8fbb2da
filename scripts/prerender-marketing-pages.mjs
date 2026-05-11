@@ -8,11 +8,20 @@ const DEFAULT_IMAGE = `${SITE_URL}/og-cover.jpg`;
 const LAST_MODIFIED = "2026-04-25";
 
 const SUPABASE_URL =
+  process.env.VITE_SUPABASE_URL ||
+  process.env.SUPABASE_URL ||
   process.env.PUBLIC_SUPABASE_URL ||
   "https://junmnibsurnslpcqhjle.supabase.co";
 const SUPABASE_ANON_KEY =
-  process.env.PUBLIC_SUPABASE_ANON_KEY ||
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imp1bm1uaWJzdXJuc2xwY3FoamxlIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzY5MzUyODAsImV4cCI6MjA5MjUxMTI4MH0.X-TlFTnDJuxSVaOUjwSM3I0XtcK32gVl7ghFNIomWKo";
+  process.env.VITE_SUPABASE_PUBLISHABLE_KEY ||
+  process.env.SUPABASE_PUBLISHABLE_KEY ||
+  process.env.PUBLIC_SUPABASE_ANON_KEY;
+
+if (!SUPABASE_ANON_KEY) {
+  throw new Error(
+    "Missing Supabase publishable key for prerendering. Set VITE_SUPABASE_PUBLISHABLE_KEY, SUPABASE_PUBLISHABLE_KEY, or PUBLIC_SUPABASE_ANON_KEY."
+  );
+}
 
 const organizationSchema = {
   "@context": "https://schema.org",
