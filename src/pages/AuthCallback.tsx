@@ -4,7 +4,7 @@ import { LogoMark } from '@/components/Logo';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
-const AUTH_CALLBACK_TIMEOUT_MS = 8000;
+const AUTH_CALLBACK_TIMEOUT_MS = 10000;
 
 export default function AuthCallback() {
   const navigate = useNavigate();
