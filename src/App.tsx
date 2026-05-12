@@ -1,4 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { Analytics } from "@vercel/analytics/react";
+import { SpeedInsights } from "@vercel/speed-insights/react";
 import { BrowserRouter, Navigate, Route, Routes, useLocation } from "react-router-dom";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as SonnerToaster } from "@/components/ui/sonner";
@@ -88,6 +90,17 @@ function LanguageUrlSync() {
   }, [lang, location.pathname, setLang]);
 
   return null;
+}
+
+function VercelInsights() {
+  const location = useLocation();
+
+  return (
+    <>
+      <Analytics />
+      <SpeedInsights route={location.pathname} />
+    </>
+  );
 }
 
 const RoutedApp = () => {
@@ -244,6 +257,7 @@ const App = () => (
               <AppProvider>
                 <Toaster />
                 <SonnerToaster position="top-center" richColors />
+                <VercelInsights />
                 <RoutedApp />
               </AppProvider>
             </AuthProvider>
