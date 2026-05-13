@@ -82,20 +82,25 @@ export function VideoHowToUse({ toolSlug }: VideoGuideProps = {}) {
   const renderPreview = (type: StepPreview) => {
     if (type === 'image') {
       return (
-        <div className="grid grid-cols-[1.15fr_0.85fr] gap-3">
-          <div className="relative aspect-[4/3] overflow-hidden rounded-xl border border-primary/35 bg-muted shadow-[0_18px_34px_hsl(var(--primary)/0.12)]">
-            <img src="/video-cover.jpg" alt="" className="h-full w-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-t from-background/50 via-transparent to-primary/10" />
-            <div className="absolute inset-2 rounded-lg border border-primary/40" />
-          </div>
-          <div className="flex aspect-[4/3] min-w-0 flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-foreground/30 bg-background/35 px-3 text-center">
-            <CloudUpload size={25} className="text-muted-foreground/75" />
-            <span className="text-[12px] font-semibold text-foreground">
+        <div className="space-y-4">
+          <div className="flex aspect-[1.55/1] min-w-0 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-black/15 bg-white/55 px-3 text-center dark:border-white/15 dark:bg-[#111113]/65">
+            <CloudUpload size={28} className="text-foreground/70" />
+            <span className="text-[14px] font-bold text-foreground">
               {uploadLabel}
             </span>
-            <span className="text-[11px] leading-snug text-muted-foreground">
+            <span className="text-[12px] leading-snug text-muted-foreground">
               {uploadHint}
             </span>
+          </div>
+          <div className="grid grid-cols-3 gap-2">
+            {['5s', '16:9', '720p'].map((value, index) => (
+              <div key={value} className="rounded-xl border border-black/5 bg-white/55 px-3 py-3 text-start shadow-sm dark:border-white/10 dark:bg-[#171717]/65">
+                <p className="text-[10px] font-medium text-muted-foreground">
+                  {index === 0 ? (isAr ? 'المدة' : 'Duration') : index === 1 ? (isAr ? 'النسبة' : 'Ratio') : (isAr ? 'الجودة' : 'Quality')}
+                </p>
+                <p className="mt-1 text-[13px] font-bold text-foreground" dir="ltr">{value}</p>
+              </div>
+            ))}
           </div>
         </div>
       );
@@ -103,12 +108,12 @@ export function VideoHowToUse({ toolSlug }: VideoGuideProps = {}) {
 
     if (type === 'prompt') {
       return (
-        <div className="rounded-xl border border-foreground/25 bg-background/35 p-4 shadow-inner">
-          <p className="min-h-[76px] text-[13px] leading-relaxed text-foreground/80">
+        <div className="rounded-2xl border border-black/10 bg-white/55 p-4 shadow-inner dark:border-white/15 dark:bg-[#111113]/65">
+          <p className="min-h-[145px] text-start text-[15px] leading-relaxed text-foreground/80">
             {isAr ? promptExample.ar : promptExample.en}
           </p>
           <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
-            <span>98 / 1000</span>
+            <span dir="ltr">98 / 1000</span>
             <WandSparkles size={16} className="text-primary/80" />
           </div>
         </div>
@@ -116,7 +121,7 @@ export function VideoHowToUse({ toolSlug }: VideoGuideProps = {}) {
     }
 
     return (
-      <div className="relative aspect-video overflow-hidden rounded-xl border border-foreground/25 bg-muted shadow-[0_18px_34px_hsl(var(--primary)/0.12)]">
+      <div className="relative aspect-[1.55/1] overflow-hidden rounded-2xl border border-black/10 bg-muted shadow-[0_18px_34px_hsl(var(--primary)/0.12)] dark:border-white/15">
         <img src="/video-cover.jpg" alt="" className="h-full w-full object-cover" />
         <div className="absolute inset-0 bg-gradient-to-t from-background/75 via-background/5 to-primary/10" />
         <div className="absolute inset-0 flex items-center justify-center">
@@ -138,20 +143,20 @@ export function VideoHowToUse({ toolSlug }: VideoGuideProps = {}) {
   };
 
   return (
-    <div className="relative grid grid-cols-1 gap-5 lg:grid-cols-3 xl:gap-6">
+    <div className="relative grid grid-cols-1 gap-5 lg:grid-cols-3 xl:gap-5">
       {steps.map((step, i) => (
         <div
           key={step.title}
-          className="group relative overflow-hidden rounded-2xl border border-border/80 bg-card/80 p-5 shadow-[0_18px_44px_hsl(var(--shadow-color))] transition-all hover:-translate-y-0.5 hover:border-primary/25 dark:bg-card/30"
+          className="group relative overflow-hidden rounded-[22px] border border-black/5 bg-white/70 p-5 shadow-[0_18px_44px_hsl(var(--shadow-color))] transition-all hover:-translate-y-0.5 hover:border-primary/25 dark:border-white/10 dark:bg-[#171717]/60"
         >
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/18 to-transparent" />
-          <div className="mb-4 flex items-start gap-4">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/12 text-base font-black text-primary shadow-[0_0_28px_hsl(var(--primary)/0.18)]">
+          <div className="mb-14 flex items-start gap-4">
+            <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-primary/20 bg-primary/8 text-base font-black text-primary shadow-[0_0_28px_hsl(var(--primary)/0.14)]">
               {i + 1}
             </span>
             <div className="min-w-0">
-              <h4 className="text-[16px] font-bold leading-tight text-foreground">{step.title}</h4>
-              <p className="mt-2 text-[13px] leading-relaxed text-muted-foreground">{step.desc}</p>
+              <h4 className="text-start text-[17px] font-bold leading-tight text-foreground">{step.title}</h4>
+              <p className="mt-3 text-start text-[14px] leading-relaxed text-muted-foreground">{step.desc}</p>
             </div>
           </div>
           {renderPreview(step.preview)}
@@ -229,11 +234,11 @@ export function VideoProTips({ toolSlug }: VideoGuideProps = {}) {
     ];
 
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border/70 bg-card/80 shadow-[0_16px_48px_hsl(var(--shadow-color))] dark:bg-card/25">
-      <div className="absolute inset-y-0 start-0 w-40 bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.24),transparent_66%)]" />
+    <div className="relative overflow-hidden rounded-[22px] border border-black/5 bg-white/70 shadow-[0_16px_48px_hsl(var(--shadow-color))] dark:border-white/10 dark:bg-[#171717]/50">
+      <div className="absolute inset-y-0 start-0 w-40 bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.18),transparent_66%)]" />
       <div className="relative grid items-center gap-5 px-6 py-5 lg:grid-cols-[minmax(260px,340px)_minmax(0,1fr)]">
         <div className="flex items-center gap-5">
-          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary shadow-[0_0_42px_hsl(var(--primary)/0.24)]">
+          <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary shadow-[0_0_42px_hsl(var(--primary)/0.18)]">
             <Lightbulb size={30} strokeWidth={1.8} />
           </div>
           <h4 className="text-sm font-bold text-foreground">

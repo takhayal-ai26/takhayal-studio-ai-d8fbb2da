@@ -45,7 +45,7 @@ function SettingSelector({ label, options, value, onSelect, icon, forceUpward = 
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-controls={open ? listboxId : undefined}
-        className="w-full flex items-center justify-between gap-2 px-3.5 py-3 rounded-2xl bg-card/60 dark:bg-card/40 active:scale-[0.97] transition-all"
+        className="w-full flex items-center justify-between gap-2 rounded-2xl border border-black/5 bg-white/80 px-3.5 py-3 shadow-sm transition-all active:scale-[0.97] hover:bg-white dark:border-white/10 dark:bg-[#171717]/80 dark:hover:bg-[#1c1c1e]"
       >
         <div className="flex items-center gap-2 min-w-0">
           {icon}
@@ -59,7 +59,7 @@ function SettingSelector({ label, options, value, onSelect, icon, forceUpward = 
 
       {open && (
         <div className={cn(
-          "absolute left-0 right-0 z-50 rounded-2xl bg-popover/95 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.15)] dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)] overflow-hidden animate-in fade-in duration-150",
+          "absolute inset-x-0 z-50 overflow-hidden rounded-2xl border border-black/5 bg-popover/95 shadow-[0_8px_30px_rgba(0,0,0,0.15)] animate-in fade-in duration-150 dark:border-white/10 dark:bg-[#171717]/95 dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]",
           forceUpward
             ? "bottom-full mb-2 slide-in-from-bottom-2"
             : "bottom-full md:bottom-auto md:top-full mb-2 md:mb-0 md:mt-2 slide-in-from-bottom-2 md:slide-in-from-top-2"
@@ -102,8 +102,8 @@ function DesktopModelPanel({ videoModels, selectedModelId, onSelect, onClose, is
   }, [onClose]);
 
   return (
-    <div ref={panelRef} className={cn("absolute top-0 z-50 w-[min(320px,calc(100vw-2rem))] animate-in fade-in duration-200", panelPlacement === 'before' ? "right-full mr-3 slide-in-from-right-2" : "left-full ml-3 slide-in-from-left-2")}>
-      <div className="rounded-[20px] overflow-hidden bg-popover/95 backdrop-blur-md shadow-[0_8px_40px_-4px_rgba(0,0,0,0.15),0_2px_12px_-2px_rgba(0,0,0,0.08)] dark:shadow-[0_8px_40px_-4px_rgba(0,0,0,0.5),0_2px_12px_-2px_rgba(0,0,0,0.3)]" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
+    <div ref={panelRef} className={cn("absolute top-0 z-50 w-[min(320px,calc(100vw-2rem))] animate-in fade-in duration-200", panelPlacement === 'before' ? "end-full me-3 slide-in-from-right-2" : "start-full ms-3 slide-in-from-left-2")}>
+      <div className="overflow-hidden rounded-[20px] border border-black/5 bg-popover/95 shadow-[0_8px_40px_-4px_rgba(0,0,0,0.15),0_2px_12px_-2px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#171717]/95 dark:shadow-[0_8px_40px_-4px_rgba(0,0,0,0.5),0_2px_12px_-2px_rgba(0,0,0,0.3)]" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
         <div className="px-4 pt-3.5 pb-2">
           <p className="text-[10px] uppercase tracking-[1.5px] font-semibold text-muted-foreground/40">{isAr ? 'نماذج الفيديو' : 'Video models'}</p>
         </div>
@@ -349,12 +349,12 @@ export default function Video() {
       aria-label={label}
       className={cn(
       "relative flex-1 min-w-[150px] rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all overflow-hidden aspect-[4/3]",
-      image ? "p-0" : "border border-dashed border-border/20 dark:border-border/10 bg-card/40 dark:bg-card/20 hover:bg-card/60 dark:hover:bg-card/30 active:scale-[0.97]"
+      image ? "p-0" : "border border-dashed border-black/10 bg-white/60 hover:bg-white active:scale-[0.97] dark:border-white/12 dark:bg-[#111113]/70 dark:hover:bg-[#171717]"
     )}>
       {image ? (
         <>
           <img src={image.preview} alt={label} className="w-full h-full object-cover rounded-2xl" />
-          <button onClick={e => { e.stopPropagation(); onRemove(); }} className="absolute top-2 right-2 min-h-11 min-w-11 rounded-full bg-black/60 backdrop-blur-sm flex items-center justify-center text-white active:scale-90 transition-transform" aria-label={type === 'start' ? (isAr ? 'إزالة إطار البداية' : 'Remove start frame') : (isAr ? 'إزالة إطار النهاية' : 'Remove end frame')}><X size={11} /></button>
+          <button onClick={e => { e.stopPropagation(); onRemove(); }} className="absolute end-2 top-2 flex min-h-11 min-w-11 items-center justify-center rounded-full bg-black/60 text-white transition-transform active:scale-90" aria-label={type === 'start' ? (isAr ? 'إزالة إطار البداية' : 'Remove start frame') : (isAr ? 'إزالة إطار النهاية' : 'Remove end frame')}><X size={11} /></button>
           {isUploading && <div className="absolute inset-0 bg-black/40 flex items-center justify-center rounded-2xl"><div className="w-5 h-5 border-2 border-white/40 border-t-white rounded-full animate-spin" /></div>}
         </>
       ) : (
@@ -384,7 +384,7 @@ export default function Video() {
             {!img.url && <div className="absolute inset-0 bg-background/60 flex items-center justify-center"><span className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" /></div>}
             <button
               onClick={() => setRefImages(prev => prev.filter((_, i) => i !== idx))}
-              className="absolute top-1 right-1 min-h-11 min-w-11 rounded-full bg-black/60 flex items-center justify-center text-white"
+              className="absolute end-1 top-1 flex min-h-11 min-w-11 items-center justify-center rounded-full bg-black/60 text-white"
               aria-label={isAr ? `إزالة الصورة المرجعية ${idx + 1}` : `Remove reference image ${idx + 1}`}
             >
               <X size={9} />
@@ -395,7 +395,7 @@ export default function Video() {
           <button
             type="button"
             onClick={() => refImageInputRef.current?.click()}
-            className="h-16 w-16 flex-none rounded-xl border border-dashed border-border/20 bg-card/40 text-muted-foreground/45 transition-all hover:bg-card/60 hover:text-primary active:scale-[0.97]"
+            className="h-16 w-16 flex-none rounded-xl border border-dashed border-black/10 bg-white/60 text-muted-foreground/45 transition-all hover:bg-white hover:text-primary active:scale-[0.97] dark:border-white/10 dark:bg-[#111113]/70 dark:hover:bg-[#171717]"
             aria-label={isAr ? 'رفع صورة مرجعية' : 'Upload reference image'}
           >
             <Image size={15} className="mx-auto" />
@@ -423,7 +423,7 @@ export default function Video() {
     if (!currentModel?.supports_audio) return null;
     const extraCost = (currentModel.credit_cost_per_second_with_audio - currentModel.credit_cost_per_second_no_audio);
     return (
-      <div className="flex items-center justify-between px-4 py-3 rounded-2xl bg-card/60 dark:bg-card/40">
+      <div className="flex items-center justify-between rounded-2xl border border-black/5 bg-white/75 px-4 py-3 shadow-sm dark:border-white/10 dark:bg-[#171717]/70">
         <div className="flex items-center gap-2.5">
           <Volume2 size={16} className={cn("transition-colors duration-200", audioEnabled ? "text-primary" : "text-muted-foreground/40")} />
           <span className="text-[13px] font-semibold text-foreground">{isAr ? 'صوت' : 'Audio'}</span>
@@ -578,40 +578,50 @@ export default function Video() {
   );
 
   const renderDesktopCreationPanel = () => (
-    <div className="relative overflow-visible rounded-[28px] border border-border/70 bg-card/45 p-5 shadow-[0_20px_60px_hsl(var(--shadow-color))] dark:bg-card/25 xl:p-6">
-      <div className="grid gap-5 xl:grid-cols-[minmax(280px,0.85fr)_minmax(420px,1.15fr)_minmax(300px,0.9fr)] 2xl:gap-6">
-        <div className="space-y-4">
-          {selectedTool && (
-            <div className="rounded-2xl bg-background/45 px-4 py-3 shadow-sm dark:bg-background/20">
-              <p className="text-[16px] font-black tracking-tight text-foreground">{selectedTool.name}</p>
-              <p className="mt-0.5 text-[12px] leading-relaxed text-muted-foreground/70">{selectedTool.shortDesc || selectedTool.description}</p>
-            </div>
-          )}
-
-          <div className="relative w-full overflow-hidden rounded-2xl shadow-sm">
-            <div className="relative aspect-[2.1/1] xl:aspect-[1.75/1] 2xl:aspect-[2/1]">
-              {currentModel?.preview_image_url ? (
-                <img src={currentModel.preview_image_url} alt={currentModel.display_name} className="h-full w-full object-cover" />
-              ) : (
-                <div className="h-full w-full bg-gradient-to-br from-muted/30 to-muted/10" />
-              )}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
-            </div>
-            <div className="absolute inset-x-0 bottom-0 p-4">
-              <div className="flex items-center gap-2">
-                <p className="text-[18px] font-black leading-tight tracking-tight text-white">{currentModel?.display_name}</p>
-                {currentModel?.badge && (
-                  <span className={cn("rounded-full px-2 py-0.5 text-[9px] font-bold", currentModel.badge === 'NEW' ? 'bg-emerald-500/20 text-emerald-300' : 'bg-amber-500/20 text-amber-300')}>
-                    {currentModel.badge}
-                  </span>
-                )}
-              </div>
-              <p className="mt-0.5 text-[11px] font-medium text-white/60">{currentModel?.provider}</p>
-            </div>
-          </div>
+    <div className="grid min-h-[calc(100vh-11rem)] gap-5 xl:grid-cols-[360px_minmax(0,1fr)] 2xl:grid-cols-[380px_minmax(0,1fr)]">
+      <aside className="relative overflow-visible rounded-[24px] border border-black/5 bg-white/80 p-5 shadow-[0_18px_50px_hsl(var(--shadow-color))] dark:border-white/10 dark:bg-[#111113]/80 xl:p-6">
+        <div className="mb-5 text-start">
+          <h1 className="text-[24px] font-black leading-tight tracking-tight text-foreground">
+            {selectedTool?.name || (isAr ? 'إنشاء فيديو' : 'Generate Video')}
+          </h1>
+          <p className="mt-2 text-[13px] font-medium leading-relaxed text-muted-foreground">
+            {selectedTool?.shortDesc || selectedTool?.description || (isAr ? 'أنشئ فيديوهات من نص أو صورة' : 'Create videos from text or image')}
+          </p>
         </div>
 
         <div className="space-y-4">
+          <div className="relative">
+            <p className="mb-2 px-1 text-start text-[12px] font-semibold text-muted-foreground">{isAr ? 'نموذج الفيديو' : 'AI Video Model'}</p>
+            <button
+              onClick={() => setShowModelPicker(p => !p)}
+              className="group flex w-full items-center justify-between gap-3 rounded-2xl border border-black/5 bg-white/85 px-4 py-3.5 shadow-sm transition-colors active:scale-[0.98] hover:bg-white dark:border-white/10 dark:bg-[#171717]/80 dark:hover:bg-[#1c1c1e]"
+              aria-expanded={showModelPicker}
+              aria-haspopup="listbox"
+              aria-label={isAr ? 'اختيار نموذج الفيديو' : 'Choose video model'}
+            >
+              <div className="flex min-w-0 items-center gap-3">
+                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted/20 dark:bg-[#202022]">
+                  {currentModel?.preview_image_url ? <img src={currentModel.preview_image_url} alt={currentModel.display_name} className="h-full w-full object-cover" loading="lazy" /> : <Film size={15} className="text-muted-foreground/40" />}
+                </div>
+                <div className="min-w-0 text-start">
+                  <p className="truncate text-[15px] font-bold text-foreground" dir="ltr">{currentModel?.display_name}</p>
+                  <p className="mt-0.5 truncate text-[11px] font-medium text-muted-foreground" dir="ltr">{currentModel?.provider}</p>
+                </div>
+              </div>
+              <ChevronRight size={16} className={cn("flex-shrink-0 text-muted-foreground/55 transition-transform", isAr ? "rotate-180" : "")} />
+            </button>
+            {showModelPicker && (
+              <DesktopModelPanel
+                videoModels={videoModels}
+                selectedModelId={selectedModelId}
+                onSelect={id => { setSelectedModelId(id); setShowModelPicker(false); }}
+                onClose={() => setShowModelPicker(false)}
+                isAr={isAr}
+                placement={isAr ? 'after' : 'before'}
+              />
+            )}
+          </div>
+
           {(currentModel?.supports_start_frame || toolRequiresStartImage) && (
             <div className={cn("grid gap-3", currentModel.supports_end_frame ? "grid-cols-2" : "grid-cols-1")}>
               <FrameCard type="start" image={uploadedImage} onRemove={() => setUploadedImage(null)} onUpload={() => startFrameRef.current?.click()} required={currentModel.start_frame_required} />
@@ -625,56 +635,13 @@ export default function Video() {
             <ReferenceImageStrip />
           )}
 
-          {!promptHidden && (
-            <div className="overflow-hidden rounded-2xl bg-background/45 shadow-sm transition-shadow focus-within:ring-1 focus-within:ring-primary/20 dark:bg-background/20">
-              <textarea
-                id="video-prompt"
-                aria-label={isAr ? 'وصف الفيديو' : 'Video prompt'}
-                value={prompt}
-                onChange={e => setPrompt(e.target.value)}
-                placeholder={isAr ? 'صف الفيديو الذي تريده...' : 'Describe your video...'}
-                rows={7}
-                className="min-h-[180px] w-full resize-none bg-transparent px-4 py-3.5 text-[14px] leading-relaxed text-foreground placeholder:text-muted-foreground/35 focus:outline-none"
-              />
-            </div>
-          )}
-        </div>
-
-        <div className="flex min-w-0 flex-col gap-4">
-          <AudioToggle />
-
-          <div className="relative">
-            <button onClick={() => setShowModelPicker(p => !p)} className="w-full flex items-center justify-between gap-3 px-4 py-3.5 rounded-2xl bg-background/45 dark:bg-background/20 hover:bg-background/60 dark:hover:bg-background/30 transition-colors group active:scale-[0.98] shadow-sm" aria-expanded={showModelPicker} aria-haspopup="listbox" aria-label={isAr ? 'اختيار نموذج الفيديو' : 'Choose video model'}>
-              <div className="flex min-w-0 items-center gap-3">
-                <div className="w-9 h-9 rounded-xl overflow-hidden bg-muted/20 dark:bg-muted/10 flex items-center justify-center flex-shrink-0">
-                  {currentModel?.preview_image_url ? <img src={currentModel.preview_image_url} alt={currentModel.display_name} className="w-full h-full object-cover" /> : <Film size={14} className="text-muted-foreground/30" />}
-                </div>
-                <div className="min-w-0 text-start">
-                  <p className="mb-0.5 text-[10px] font-medium leading-none text-muted-foreground/60">{isAr ? 'النموذج' : 'Model'}</p>
-                  <p className="truncate text-[14px] font-bold text-foreground">{currentModel?.display_name}</p>
-                </div>
-              </div>
-              <ChevronRight size={14} className={cn("flex-shrink-0 text-muted-foreground/40 transition-transform", isAr ? "rotate-180" : "")} />
-            </button>
-            {showModelPicker && (
-              <DesktopModelPanel
-                videoModels={videoModels}
-                selectedModelId={selectedModelId}
-                onSelect={id => { setSelectedModelId(id); setShowModelPicker(false); }}
-                onClose={() => setShowModelPicker(false)}
-                isAr={isAr}
-                placement="before"
-              />
-            )}
-          </div>
-
           <div className="grid grid-cols-3 gap-2">
             <SettingSelector
               label={isAr ? 'المدة' : 'Duration'}
               options={currentModel?.durations.map(d => ({ label: `${d}s` })) || []}
               value={`${selectedDuration}s`}
               onSelect={v => setSelectedDuration(parseInt(v))}
-              icon={<Clock size={13} className="text-muted-foreground/40 flex-shrink-0" />}
+              icon={<Clock size={13} className="flex-shrink-0 text-muted-foreground/50" />}
               forceUpward
             />
             <SettingSelector
@@ -689,18 +656,57 @@ export default function Video() {
               options={currentModel?.resolutions.map(r => ({ label: r })) || []}
               value={selectedQuality}
               onSelect={setSelectedQuality}
-              icon={<Diamond size={12} className="text-muted-foreground/40 flex-shrink-0" />}
+              icon={<Diamond size={12} className="flex-shrink-0 text-muted-foreground/50" />}
               forceUpward
             />
           </div>
 
-          <div className="mt-auto pt-1">
-            <GenerateButton onClick={handleGenerate} disabled={!canGenerate} loading={isGenerating} credits={totalCredits}>
-              {generateLabel}
-            </GenerateButton>
+          <AudioToggle />
+
+          {!promptHidden && (
+            <div className="overflow-hidden rounded-2xl border border-black/5 bg-white/80 shadow-sm transition-shadow focus-within:ring-1 focus-within:ring-primary/30 dark:border-white/10 dark:bg-[#171717]/70">
+              <textarea
+                id="video-prompt"
+                aria-label={isAr ? 'وصف الفيديو' : 'Video prompt'}
+                value={prompt}
+                onChange={e => setPrompt(e.target.value)}
+                placeholder={isAr ? 'صف الفيديو الذي تريده...' : 'Describe your video...'}
+                rows={7}
+                dir={isAr ? 'rtl' : 'ltr'}
+                className="min-h-[230px] w-full resize-none bg-transparent px-4 py-4 text-start text-[15px] leading-relaxed text-foreground placeholder:text-muted-foreground/45 focus:outline-none"
+              />
+              <div className="flex items-center justify-between px-4 pb-4 text-[12px] font-medium text-muted-foreground">
+                <span dir="ltr">{prompt.length} / 1000</span>
+                <span className="text-[11px] font-bold text-primary">AI</span>
+              </div>
+            </div>
+          )}
+
+          <GenerateButton onClick={handleGenerate} disabled={!canGenerate} loading={isGenerating} credits={totalCredits} className="h-[58px] rounded-[18px] bg-[#FF3B1F] text-[15px] shadow-[0_18px_42px_-18px_rgba(255,59,31,0.75)] hover:bg-[#FF4A2B]">
+            {generateLabel}
+          </GenerateButton>
+        </div>
+      </aside>
+
+      <section className="relative overflow-hidden rounded-[24px] border border-black/5 bg-white/75 p-6 shadow-[0_18px_50px_hsl(var(--shadow-color))] dark:border-white/10 dark:bg-[#111113]/75 xl:p-10">
+        <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/15 to-transparent" />
+        <div className="pointer-events-none absolute -top-20 end-12 h-72 w-72 rounded-full bg-primary/10 blur-3xl dark:bg-primary/8" />
+        <div className="relative flex h-full min-h-0 flex-col">
+          <div className="mb-10 max-w-4xl pt-20 text-start xl:pt-28">
+            <h2 className="max-w-4xl text-[clamp(40px,4vw,58px)] font-black uppercase leading-[0.95] tracking-normal text-foreground">
+              {isAr ? 'أنشئ فيديوهات بضغطة واحدة' : 'Make videos in one click'}
+            </h2>
+            <p className="mt-5 max-w-3xl text-[17px] font-medium leading-relaxed text-muted-foreground">
+              {isAr ? 'أنشئ فيديوهات مذهلة من النص أو الصور بالذكاء الاصطناعي. سريع، سهل، وسينمائي.' : 'Create stunning videos from text or images with AI. Fast, easy, and cinematic.'}
+            </p>
+          </div>
+
+          <div className="space-y-6">
+            <VideoHowToUse toolSlug={currentVideoToolSlug} />
+            <VideoProTips toolSlug={currentVideoToolSlug} />
           </div>
         </div>
-      </div>
+      </section>
     </div>
   );
 
@@ -743,36 +749,32 @@ export default function Video() {
 
   /* ─── DESKTOP LAYOUT ─── */
   return (
-    <div className="flex-1 flex flex-col" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
+    <div className="flex-1 flex flex-col bg-neutral-50 text-foreground dark:bg-[#090909]" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
       <div className="flex-1 overflow-y-auto">
         <Tabs defaultValue="generate" className="w-full">
-          <div className="sticky top-0 z-40 bg-background/90 px-5 py-3 backdrop-blur">
+          <div className="sticky top-0 z-40 bg-neutral-50/90 px-5 py-3 dark:bg-[#090909]/90">
             <div className="flex justify-center">
-              <TabsList className="bg-card/50 dark:bg-card/30 rounded-2xl p-1 w-auto inline-flex">
-                <TabsTrigger value="generate" className="rounded-xl px-5 py-2 text-[13px] font-semibold data-[state=active]:bg-background dark:data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all">
-                  <Play size={14} className={cn(isAr ? "ml-2" : "mr-2")} />{isAr ? 'توليد' : 'Generate'}
+              <TabsList className="inline-flex w-auto rounded-full border border-black/5 bg-white/75 p-1 shadow-sm dark:border-white/10 dark:bg-[#111113]/80">
+                <TabsTrigger value="generate" className="rounded-full px-5 py-2 text-[13px] font-semibold transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-[#171717]">
+                  <Play size={14} className="me-2" />{isAr ? 'توليد' : 'Generate'}
                 </TabsTrigger>
-                <TabsTrigger value="history" className="rounded-xl px-5 py-2 text-[13px] font-semibold data-[state=active]:bg-background dark:data-[state=active]:bg-background/80 data-[state=active]:shadow-sm transition-all">
-                  <Film size={14} className={cn(isAr ? "ml-2" : "mr-2")} />{isAr ? 'السجل' : 'History'}
+                <TabsTrigger value="history" className="rounded-full px-5 py-2 text-[13px] font-semibold transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-[#171717]">
+                  <Film size={14} className="me-2" />{isAr ? 'السجل' : 'History'}
                 </TabsTrigger>
               </TabsList>
             </div>
           </div>
 
           <TabsContent value="generate" className="m-0">
-            <div className="mx-auto w-full max-w-[1760px] px-5 py-6 lg:px-8 xl:px-10" dir={isAr ? 'rtl' : 'ltr'}>
+            <div className="mx-auto w-full max-w-[1920px] px-5 pb-8 pt-6 lg:px-8" dir={isAr ? 'rtl' : 'ltr'}>
               {renderDesktopCreationPanel()}
-              <section className="mt-8">
-                <VideoHowToUse toolSlug={currentVideoToolSlug} />
-              </section>
-              <section className="mt-6 pb-8">
-                <VideoProTips toolSlug={currentVideoToolSlug} />
-              </section>
             </div>
           </TabsContent>
 
           <TabsContent value="history" className="m-0 px-8 py-6">
-            <VideoHistoryPanel />
+            <div className="mx-auto max-w-[1440px] rounded-[24px] border border-black/5 bg-white/75 p-5 shadow-[0_18px_50px_hsl(var(--shadow-color))] dark:border-white/10 dark:bg-[#111113]/75">
+              <VideoHistoryPanel />
+            </div>
           </TabsContent>
         </Tabs>
       </div>
