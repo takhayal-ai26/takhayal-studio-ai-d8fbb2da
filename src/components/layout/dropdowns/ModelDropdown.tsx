@@ -97,19 +97,19 @@ export function ModelDropdown({ models, selectedModelId, language, anchorRect, o
   // Desktop: premium portal dropdown
   const panelW = 320;
   const panelMaxH = 460;
-  let top = 0, left = 0;
+  let top = 0, inlineStart = 0;
   if (anchorRect) {
     top = Math.max(8, anchorRect.top - panelMaxH + anchorRect.height + 60);
-    left = anchorRect.right + 8;
+    inlineStart = anchorRect.right + 8;
     if (top + panelMaxH > window.innerHeight - 16) top = window.innerHeight - panelMaxH - 16;
-    if (left + panelW > window.innerWidth - 16) left = anchorRect.left - panelW - 8;
+    if (inlineStart + panelW > window.innerWidth - 16) inlineStart = anchorRect.left - panelW - 8;
     if (top < 8) top = 8;
   }
 
   return createPortal(
-    <div data-dropdown-portal>
+    <div data-dropdown-portal dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <div className="fixed inset-0 z-[9998]" onClick={onClose} />
-      <div ref={panelRef} className="fixed z-[9999] animate-in fade-in slide-in-from-left-2 duration-200" style={{ top, left, width: panelW }}>
+      <div ref={panelRef} className="fixed z-[9999] animate-in fade-in duration-200" style={{ top, insetInlineStart: inlineStart, width: panelW }}>
         <div className="rounded-2xl overflow-hidden bg-popover" style={{ boxShadow: '0 12px 48px -8px rgba(0,0,0,0.25), 0 4px 16px -4px rgba(0,0,0,0.1)', maxHeight: panelMaxH, display: 'flex', flexDirection: 'column' }}>
           <div className="sticky top-0 z-[1] px-5 py-3.5 border-b border-border/40 bg-popover">
             <p className="text-[11px] uppercase tracking-[2px] font-medium text-muted-foreground/60">{t.studio.selectModel}</p>
