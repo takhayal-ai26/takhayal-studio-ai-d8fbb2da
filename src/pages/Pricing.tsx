@@ -41,6 +41,10 @@ const FAQ_DATA = [
   { q_en: 'Can I get a refund?', q_ar: 'هل يمكنني استرداد المبلغ؟', a_en: 'Annual subscriptions are eligible for refund within 7 days if fewer than 100 credits have been used. See our Refund Policy for details.', a_ar: 'الاشتراكات السنوية قابلة للاسترداد خلال 7 أيام، إذا لم يتجاوز الاستخدام 100 رصيد.' },
 ];
 
+type Currency = 'USD' | 'KWD';
+
+const KWD_RATE = 0.308;
+
 interface PlanCardProps {
   p: any;
   isAr: boolean;
@@ -418,8 +422,13 @@ const Pricing = () => {
 
   const [billing, setBilling] = useState<'monthly' | 'annual'>('monthly');
   const [selectedPlanPill, setSelectedPlanPill] = useState('creator');
+  const [currency, setCurrency] = useState<Currency>('USD');
 
   const fmt = (usd: number) => {
+    if (currency === 'KWD') {
+      const kwd = usd * KWD_RATE;
+      return `${kwd % 1 === 0 ? kwd.toFixed(0) : kwd.toFixed(2)} KD`;
+    }
     return `$${usd % 1 === 0 ? usd.toFixed(0) : usd.toFixed(2)}`;
   };
 
@@ -535,8 +544,8 @@ const Pricing = () => {
       </section>
       <CmsContentBlocks location="pricing" className="pb-10" />
 
-      {/* Billing toggle */}
-      <div className="flex justify-center mb-10">
+      {/* Billing and currency toggles */}
+      <div className="mb-10 flex flex-col items-center gap-3 px-4">
         <div className="flex p-1 rounded-full bg-muted">
           <button onClick={() => setBilling('monthly')} className={`min-h-11 px-6 py-2.5 rounded-full text-[13px] font-medium transition-all ${billing === 'monthly' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
             {pageText('billing_toggle', 'monthly', isAr ? 'شهري' : 'Monthly')}
@@ -544,6 +553,24 @@ const Pricing = () => {
           <button onClick={() => setBilling('annual')} className={`min-h-11 px-6 py-2.5 rounded-full text-[13px] font-medium transition-all flex items-center gap-2 ${billing === 'annual' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}>
             {pageText('billing_toggle', 'annual', isAr ? 'سنوي' : 'Annual')}
             <span className="text-[10px] bg-primary text-primary-foreground px-2 py-0.5 rounded-full">{pageText('billing_toggle', 'annual_badge', isAr ? 'وفر 20%' : 'Save 20%')}</span>
+          </button>
+        </div>
+        <div className="flex p-1 rounded-full bg-muted">
+          <button
+            type="button"
+            onClick={() => setCurrency('USD')}
+            aria-pressed={currency === 'USD'}
+            className={`min-h-11 px-4 py-2 rounded-full text-[12px] font-medium transition-all ${currency === 'USD' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            USD $
+          </button>
+          <button
+            type="button"
+            onClick={() => setCurrency('KWD')}
+            aria-pressed={currency === 'KWD'}
+            className={`min-h-11 px-4 py-2 rounded-full text-[12px] font-medium transition-all ${currency === 'KWD' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            KWD د.ك
           </button>
         </div>
       </div>
