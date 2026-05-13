@@ -1,6 +1,9 @@
 import { Clapperboard, CloudUpload, Expand, Lightbulb, Play, RotateCcw, Sparkles, Video, WandSparkles } from 'lucide-react';
 import { useLanguage } from '@/i18n/LanguageContext';
 
+const guideCardSurface = 'border border-black/10 bg-[#fffaf4] shadow-[0_18px_44px_rgba(20,16,12,0.08)] dark:border-white/10 dark:bg-[#171717] dark:shadow-[0_18px_44px_rgba(0,0,0,0.28)]';
+const guideInnerSurface = 'border border-black/10 bg-[#f8f1ea] dark:border-white/12 dark:bg-[#111113]';
+
 type StepPreview = 'image' | 'prompt' | 'video';
 type VideoGuideVariant = 'generic' | 'motion-control' | 'video-upscale';
 type VideoGuideProps = {
@@ -83,22 +86,22 @@ export function VideoHowToUse({ toolSlug }: VideoGuideProps = {}) {
     if (type === 'image') {
       return (
         <div className="space-y-4">
-          <div className="flex aspect-[1.55/1] min-w-0 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-black/15 bg-white/55 px-3 text-center dark:border-white/15 dark:bg-[#111113]/65">
-            <CloudUpload size={28} className="text-foreground/70" />
-            <span className="text-[14px] font-bold text-foreground">
+          <div className="flex aspect-[1.55/1] min-w-0 flex-col items-center justify-center gap-2 rounded-2xl border border-dashed border-black/15 bg-[#f8f1ea] px-3 text-center transition-colors duration-200 group-hover:border-[#FF3B1F]/30 dark:border-white/15 dark:bg-[#111113]">
+            <CloudUpload size={28} className="text-neutral-600 dark:text-white/70" />
+            <span className="text-[14px] font-bold text-neutral-950 dark:text-white">
               {uploadLabel}
             </span>
-            <span className="text-[12px] leading-snug text-muted-foreground">
+            <span className="text-[12px] leading-snug text-neutral-600 dark:text-white/58">
               {uploadHint}
             </span>
           </div>
           <div className="grid grid-cols-3 gap-2">
             {['5s', '16:9', '720p'].map((value, index) => (
-              <div key={value} className="rounded-xl border border-black/5 bg-white/55 px-3 py-3 text-start shadow-sm dark:border-white/10 dark:bg-[#171717]/65">
-                <p className="text-[10px] font-medium text-muted-foreground">
+              <div key={value} className="rounded-xl border border-black/10 bg-[#fffaf4] px-3 py-3 text-start shadow-sm dark:border-white/10 dark:bg-[#202022]">
+                <p className="text-[10px] font-medium text-neutral-600 dark:text-white/58">
                   {index === 0 ? (isAr ? 'المدة' : 'Duration') : index === 1 ? (isAr ? 'النسبة' : 'Ratio') : (isAr ? 'الجودة' : 'Quality')}
                 </p>
-                <p className="mt-1 text-[13px] font-bold text-foreground" dir="ltr">{value}</p>
+                <p className="mt-1 text-[13px] font-bold text-neutral-950 dark:text-white" dir="ltr">{value}</p>
               </div>
             ))}
           </div>
@@ -108,11 +111,11 @@ export function VideoHowToUse({ toolSlug }: VideoGuideProps = {}) {
 
     if (type === 'prompt') {
       return (
-        <div className="rounded-2xl border border-black/10 bg-white/55 p-4 shadow-inner dark:border-white/15 dark:bg-[#111113]/65">
-          <p className="min-h-[145px] text-start text-[15px] leading-relaxed text-foreground/80">
+        <div className={`${guideInnerSurface} rounded-2xl p-4 shadow-inner`}>
+          <p className="min-h-[145px] text-start text-[15px] leading-relaxed text-neutral-700 dark:text-white/78">
             {isAr ? promptExample.ar : promptExample.en}
           </p>
-          <div className="mt-3 flex items-center justify-between text-[11px] text-muted-foreground">
+          <div className="mt-3 flex items-center justify-between text-[11px] text-neutral-500 dark:text-white/48">
             <span dir="ltr">98 / 1000</span>
             <WandSparkles size={16} className="text-primary/80" />
           </div>
@@ -121,11 +124,11 @@ export function VideoHowToUse({ toolSlug }: VideoGuideProps = {}) {
     }
 
     return (
-      <div className="relative aspect-[1.55/1] overflow-hidden rounded-2xl border border-black/10 bg-muted shadow-[0_18px_34px_hsl(var(--primary)/0.12)] dark:border-white/15">
+      <div className="relative aspect-[1.55/1] overflow-hidden rounded-2xl border border-black/10 bg-neutral-200 shadow-[0_18px_34px_rgba(255,59,31,0.10)] dark:border-white/15 dark:bg-[#111113]">
         <img src="/video-cover.jpg" alt="" className="h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-background/75 via-background/5 to-primary/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/42 via-black/0 to-[#FF3B1F]/10" />
         <div className="absolute inset-0 flex items-center justify-center">
-          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-background/80 text-foreground shadow-[0_12px_36px_rgba(0,0,0,0.35)] backdrop-blur">
+          <span className="flex h-12 w-12 items-center justify-center rounded-full bg-white/90 text-neutral-950 shadow-[0_12px_36px_rgba(0,0,0,0.24)] dark:bg-[#111113]/90 dark:text-white">
             <Play size={18} fill="currentColor" className="ms-0.5" />
           </span>
         </div>
@@ -133,7 +136,7 @@ export function VideoHowToUse({ toolSlug }: VideoGuideProps = {}) {
           <div className="h-1 rounded-full bg-foreground/15">
             <div className="h-full w-3/5 rounded-full bg-primary" />
           </div>
-          <div className="mt-2 flex items-center justify-between text-[11px] text-foreground/80">
+          <div className="mt-2 flex items-center justify-between text-[11px] text-white">
             <span>00:04 / 00:05</span>
             <Expand size={13} />
           </div>
@@ -147,7 +150,7 @@ export function VideoHowToUse({ toolSlug }: VideoGuideProps = {}) {
       {steps.map((step, i) => (
         <div
           key={step.title}
-          className="group relative overflow-hidden rounded-[22px] border border-black/5 bg-white/70 p-5 shadow-[0_18px_44px_hsl(var(--shadow-color))] transition-all hover:-translate-y-0.5 hover:border-primary/25 dark:border-white/10 dark:bg-[#171717]/60"
+          className={`group relative overflow-hidden rounded-[22px] p-5 transition-transform duration-200 ease-out hover:-translate-y-0.5 hover:border-primary/25 ${guideCardSurface}`}
         >
           <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/18 to-transparent" />
           <div className="mb-14 flex items-start gap-4">
@@ -155,8 +158,8 @@ export function VideoHowToUse({ toolSlug }: VideoGuideProps = {}) {
               {i + 1}
             </span>
             <div className="min-w-0">
-              <h4 className="text-start text-[17px] font-bold leading-tight text-foreground">{step.title}</h4>
-              <p className="mt-3 text-start text-[14px] leading-relaxed text-muted-foreground">{step.desc}</p>
+              <h4 className="text-start text-[17px] font-bold leading-tight text-neutral-950 dark:text-white">{step.title}</h4>
+              <p className="mt-3 text-start text-[14px] leading-relaxed text-neutral-600 dark:text-white/64">{step.desc}</p>
             </div>
           </div>
           {renderPreview(step.preview)}
@@ -234,14 +237,14 @@ export function VideoProTips({ toolSlug }: VideoGuideProps = {}) {
     ];
 
   return (
-    <div className="relative overflow-hidden rounded-[22px] border border-black/5 bg-white/70 shadow-[0_16px_48px_hsl(var(--shadow-color))] dark:border-white/10 dark:bg-[#171717]/50">
-      <div className="absolute inset-y-0 start-0 w-40 bg-[radial-gradient(circle_at_center,hsl(var(--primary)/0.18),transparent_66%)]" />
+    <div className={`relative overflow-hidden rounded-[22px] ${guideCardSurface}`}>
+      <div className="absolute inset-y-0 start-0 w-40 bg-[radial-gradient(circle_at_center,rgba(255,59,31,0.16),transparent_66%)]" />
       <div className="relative grid items-center gap-5 px-6 py-5 lg:grid-cols-[minmax(260px,340px)_minmax(0,1fr)]">
         <div className="flex items-center gap-5">
           <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-primary/10 text-primary shadow-[0_0_42px_hsl(var(--primary)/0.18)]">
             <Lightbulb size={30} strokeWidth={1.8} />
           </div>
-          <h4 className="text-sm font-bold text-foreground">
+          <h4 className="text-sm font-bold text-neutral-950 dark:text-white">
             {isAr ? 'نصائح لنتائج أفضل' : 'Pro tips for better results'}
           </h4>
         </div>
@@ -255,7 +258,7 @@ export function VideoProTips({ toolSlug }: VideoGuideProps = {}) {
               <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary shadow-[0_0_22px_hsl(var(--primary)/0.12)]">
                 {tip.icon}
               </span>
-              <span className="text-[13px] font-medium leading-snug text-muted-foreground">
+              <span className="text-[13px] font-medium leading-snug text-neutral-600 dark:text-white/64">
                 {tip.text}
               </span>
             </div>

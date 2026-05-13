@@ -18,6 +18,10 @@ import { GenerateButton, imageSizeError, isOversizedImage } from '@/lib/ux';
 import { localizePath } from '@/lib/localized-routes';
 import { useToolsDB } from '@/hooks/useToolsDB';
 
+const videoFocusRing = 'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#FF3B1F]/35 focus-visible:ring-offset-2 focus-visible:ring-offset-[#f3eee7] dark:focus-visible:ring-offset-[#090909]';
+const videoControlSurface = 'border border-black/10 bg-[#fffaf4] text-neutral-950 shadow-[0_10px_30px_rgba(20,16,12,0.07)] hover:bg-white dark:border-white/10 dark:bg-[#171717] dark:text-white dark:shadow-none dark:hover:bg-[#1c1c1e]';
+const videoPanelSurface = 'border border-black/10 bg-[#fffaf4] shadow-[0_24px_70px_rgba(20,16,12,0.10)] dark:border-white/10 dark:bg-[#111113] dark:shadow-[0_24px_70px_rgba(0,0,0,0.32)]';
+
 /* ─── Drop-up Selector ─── */
 function SettingSelector({ label, options, value, onSelect, icon, forceUpward = false, creditInfo }: {
   label: string; options: { label: string; credits?: number }[]; value: string; onSelect: (v: string) => void; icon?: React.ReactNode; forceUpward?: boolean; creditInfo?: (v: string) => string;
@@ -45,21 +49,21 @@ function SettingSelector({ label, options, value, onSelect, icon, forceUpward = 
         aria-expanded={open}
         aria-haspopup="listbox"
         aria-controls={open ? listboxId : undefined}
-        className="w-full flex items-center justify-between gap-2 rounded-2xl border border-black/5 bg-white/80 px-3.5 py-3 shadow-sm transition-all active:scale-[0.97] hover:bg-white dark:border-white/10 dark:bg-[#171717]/80 dark:hover:bg-[#1c1c1e]"
+        className={cn("w-full flex items-center justify-between gap-2 rounded-2xl px-3.5 py-3 transition-all duration-200 ease-out active:scale-[0.97]", videoControlSurface, videoFocusRing)}
       >
         <div className="flex items-center gap-2 min-w-0">
           {icon}
           <div className="text-start min-w-0">
-            <p className="text-[10px] text-muted-foreground/60 font-medium leading-none mb-0.5">{label}</p>
-            <p className="text-[13px] font-bold text-foreground truncate">{value}</p>
+            <p className="text-[10px] text-neutral-600 dark:text-white/60 font-medium leading-none mb-0.5">{label}</p>
+            <p className="text-[13px] font-bold text-neutral-950 dark:text-white truncate">{value}</p>
           </div>
         </div>
-        <ChevronDown size={14} className={cn("text-muted-foreground transition-transform", open && "rotate-180")} />
+        <ChevronDown size={14} className={cn("text-neutral-500 transition-transform dark:text-white/55", open && "rotate-180")} />
       </button>
 
       {open && (
         <div className={cn(
-          "absolute inset-x-0 z-50 overflow-hidden rounded-2xl border border-black/5 bg-popover/95 shadow-[0_8px_30px_rgba(0,0,0,0.15)] animate-in fade-in duration-150 dark:border-white/10 dark:bg-[#171717]/95 dark:shadow-[0_8px_30px_rgba(0,0,0,0.4)]",
+          "absolute inset-x-0 z-50 overflow-hidden rounded-2xl border border-black/10 bg-[#fffaf4] shadow-[0_18px_44px_rgba(20,16,12,0.16)] animate-in fade-in duration-150 dark:border-white/10 dark:bg-[#171717] dark:shadow-[0_18px_44px_rgba(0,0,0,0.45)]",
           forceUpward
             ? "bottom-full mb-2 slide-in-from-bottom-2"
             : "bottom-full md:bottom-auto md:top-full mb-2 md:mb-0 md:mt-2 slide-in-from-bottom-2 md:slide-in-from-top-2"
@@ -74,8 +78,8 @@ function SettingSelector({ label, options, value, onSelect, icon, forceUpward = 
                 className={cn(
                   "w-full flex items-center justify-between px-3.5 py-2.5 rounded-xl text-[13px] font-semibold transition-colors",
                   opt.label === value
-                    ? "bg-primary/10 text-primary"
-                    : "text-foreground hover:bg-accent/40"
+                    ? "bg-[#FF3B1F]/10 text-[#E7351C] dark:text-[#FF4A2B]"
+                    : "text-neutral-800 hover:bg-black/[0.04] dark:text-white/85 dark:hover:bg-white/[0.06]"
                 )}
               >
                 <span>{opt.label}{creditInfo ? ` — ${creditInfo(opt.label)}` : ''}</span>
@@ -103,9 +107,9 @@ function DesktopModelPanel({ videoModels, selectedModelId, onSelect, onClose, is
 
   return (
     <div ref={panelRef} className={cn("absolute top-0 z-50 w-[min(320px,calc(100vw-2rem))] animate-in fade-in duration-200", panelPlacement === 'before' ? "end-full me-3 slide-in-from-right-2" : "start-full ms-3 slide-in-from-left-2")}>
-      <div className="overflow-hidden rounded-[20px] border border-black/5 bg-popover/95 shadow-[0_8px_40px_-4px_rgba(0,0,0,0.15),0_2px_12px_-2px_rgba(0,0,0,0.08)] dark:border-white/10 dark:bg-[#171717]/95 dark:shadow-[0_8px_40px_-4px_rgba(0,0,0,0.5),0_2px_12px_-2px_rgba(0,0,0,0.3)]" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
+      <div className="overflow-hidden rounded-[20px] border border-black/10 bg-[#fffaf4] shadow-[0_16px_50px_rgba(20,16,12,0.16)] dark:border-white/10 dark:bg-[#171717] dark:shadow-[0_16px_50px_rgba(0,0,0,0.55)]" style={{ maxHeight: 'calc(100vh - 8rem)' }}>
         <div className="px-4 pt-3.5 pb-2">
-          <p className="text-[10px] uppercase tracking-[1.5px] font-semibold text-muted-foreground/40">{isAr ? 'نماذج الفيديو' : 'Video models'}</p>
+          <p className="text-[10px] uppercase tracking-[1.5px] font-semibold text-neutral-500 dark:text-white/45">{isAr ? 'نماذج الفيديو' : 'Video models'}</p>
         </div>
         <div role="listbox" aria-label={isAr ? 'نماذج الفيديو' : 'Video models'} className="overflow-y-auto px-1.5 pb-2" style={{ maxHeight: 'calc(100vh - 12rem)' }}>
           {videoModels.map(model => {
@@ -113,14 +117,14 @@ function DesktopModelPanel({ videoModels, selectedModelId, onSelect, onClose, is
             return (
               <button key={model.id} onClick={() => onSelect(model.id)} className={cn(
                 "w-full flex items-center gap-3 px-3 py-3 rounded-[14px] transition-all duration-150 text-start group",
-                isSelected ? "bg-primary/[0.08] dark:bg-primary/[0.12]" : "hover:bg-foreground/[0.04] dark:hover:bg-foreground/[0.06]"
+                isSelected ? "bg-[#FF3B1F]/10" : "hover:bg-black/[0.04] dark:hover:bg-white/[0.06]"
               )} role="option" aria-selected={isSelected}>
                 <div className={cn("w-9 h-9 rounded-[10px] flex items-center justify-center flex-shrink-0 overflow-hidden", isSelected ? "ring-[1.5px] ring-primary/30" : "bg-muted/15 dark:bg-muted/10")}>
                   {model.preview_image_url ? <img src={model.preview_image_url} alt={model.display_name} className="w-full h-full object-cover" /> : <Film size={15} className={isSelected ? "text-primary" : "text-muted-foreground/30"} />}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2">
-                    <span className={cn("text-[13px] font-semibold truncate", isSelected ? "text-primary" : "text-foreground")}>{model.display_name}</span>
+                    <span className={cn("text-[13px] font-semibold truncate", isSelected ? "text-[#E7351C] dark:text-[#FF4A2B]" : "text-neutral-950 dark:text-white")}>{model.display_name}</span>
                     {model.badge && <span className={cn("text-[8px] px-1.5 py-0.5 rounded-md font-bold flex-shrink-0", model.badge === 'NEW' ? 'bg-emerald-500/15 text-emerald-600 dark:text-emerald-400' : 'bg-amber-500/15 text-amber-600 dark:text-amber-400')}>{model.badge}</span>}
                   </div>
                   <div className="flex items-center gap-1.5 mt-0.5 flex-wrap">
@@ -348,8 +352,9 @@ export default function Video() {
       onClick={onUpload}
       aria-label={label}
       className={cn(
-      "relative flex-1 min-w-[150px] rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all overflow-hidden aspect-[4/3]",
-      image ? "p-0" : "border border-dashed border-black/10 bg-white/60 hover:bg-white active:scale-[0.97] dark:border-white/12 dark:bg-[#111113]/70 dark:hover:bg-[#171717]"
+      "relative flex-1 min-w-[150px] rounded-2xl flex flex-col items-center justify-center gap-1.5 transition-all duration-200 ease-out overflow-hidden aspect-[4/3]",
+      image ? "p-0 shadow-[0_12px_28px_rgba(20,16,12,0.10)]" : "border border-dashed border-black/15 bg-[#fffaf4] hover:border-[#FF3B1F]/35 hover:bg-white active:scale-[0.97] dark:border-white/12 dark:bg-[#171717] dark:hover:bg-[#202022]",
+      videoFocusRing
     )}>
       {image ? (
         <>
@@ -359,9 +364,9 @@ export default function Video() {
         </>
       ) : (
         <>
-          <div className="w-9 h-9 rounded-full bg-muted/20 dark:bg-muted/10 flex items-center justify-center"><Image size={16} className="text-muted-foreground/30" /></div>
-          <span className="text-[11px] text-muted-foreground/50 font-medium">{label}</span>
-          <span className={cn("text-[9px] font-bold px-2 py-0.5 rounded-full", required ? "bg-destructive/15 text-destructive" : "bg-muted/30 text-muted-foreground/40")}>
+          <div className="w-9 h-9 rounded-full bg-black/[0.04] dark:bg-white/[0.06] flex items-center justify-center"><Image size={16} className="text-neutral-500 dark:text-white/45" /></div>
+          <span className="text-[12px] text-neutral-700 dark:text-white/70 font-semibold">{label}</span>
+          <span className={cn("text-[9px] font-bold px-2 py-0.5 rounded-full", required ? "bg-destructive/15 text-destructive" : "bg-black/[0.05] text-neutral-500 dark:bg-white/[0.07] dark:text-white/45")}>
             {required ? (isAr ? 'مطلوب' : 'Required') : (isAr ? 'اختياري' : 'Optional')}
           </span>
         </>
@@ -374,8 +379,8 @@ export default function Video() {
   const ReferenceImageStrip = () => (
     <div>
       <div className="mb-1.5 flex items-center justify-between px-1">
-        <p className="text-[10px] text-muted-foreground/50 font-medium">{isAr ? 'صور مرجعية' : 'Reference images'}</p>
-        <span className="text-[10px] text-muted-foreground/40">{refImages.length}/{maxReferenceImages}</span>
+        <p className="text-[10px] text-neutral-600 dark:text-white/55 font-medium">{isAr ? 'صور مرجعية' : 'Reference images'}</p>
+        <span className="text-[10px] text-neutral-500 dark:text-white/45">{refImages.length}/{maxReferenceImages}</span>
       </div>
       <div className="flex max-w-full gap-2 overflow-x-auto pb-1 scrollbar-thin">
         {refImages.map((img, idx) => (
@@ -395,7 +400,7 @@ export default function Video() {
           <button
             type="button"
             onClick={() => refImageInputRef.current?.click()}
-            className="h-16 w-16 flex-none rounded-xl border border-dashed border-black/10 bg-white/60 text-muted-foreground/45 transition-all hover:bg-white hover:text-primary active:scale-[0.97] dark:border-white/10 dark:bg-[#111113]/70 dark:hover:bg-[#171717]"
+            className={cn("h-16 w-16 flex-none rounded-xl border border-dashed border-black/15 bg-[#fffaf4] text-neutral-500 transition-all hover:border-[#FF3B1F]/35 hover:bg-white hover:text-[#FF3B1F] active:scale-[0.97] dark:border-white/10 dark:bg-[#171717] dark:text-white/45 dark:hover:bg-[#202022]", videoFocusRing)}
             aria-label={isAr ? 'رفع صورة مرجعية' : 'Upload reference image'}
           >
             <Image size={15} className="mx-auto" />
@@ -423,10 +428,10 @@ export default function Video() {
     if (!currentModel?.supports_audio) return null;
     const extraCost = (currentModel.credit_cost_per_second_with_audio - currentModel.credit_cost_per_second_no_audio);
     return (
-      <div className="flex items-center justify-between rounded-2xl border border-black/5 bg-white/75 px-4 py-3 shadow-sm dark:border-white/10 dark:bg-[#171717]/70">
+      <div className={cn("flex items-center justify-between rounded-2xl px-4 py-3", videoControlSurface)}>
         <div className="flex items-center gap-2.5">
-          <Volume2 size={16} className={cn("transition-colors duration-200", audioEnabled ? "text-primary" : "text-muted-foreground/40")} />
-          <span className="text-[13px] font-semibold text-foreground">{isAr ? 'صوت' : 'Audio'}</span>
+          <Volume2 size={16} className={cn("transition-colors duration-200", audioEnabled ? "text-[#FF3B1F]" : "text-neutral-500 dark:text-white/45")} />
+          <span className="text-[13px] font-semibold text-neutral-950 dark:text-white">{isAr ? 'صوت' : 'Audio'}</span>
         </div>
         <Switch checked={audioEnabled} onCheckedChange={setAudioEnabled} className="hover:bg-primary/35" />
       </div>
@@ -579,36 +584,36 @@ export default function Video() {
 
   const renderDesktopCreationPanel = () => (
     <div className="grid min-h-[calc(100vh-11rem)] gap-5 xl:grid-cols-[360px_minmax(0,1fr)] 2xl:grid-cols-[380px_minmax(0,1fr)]">
-      <aside className="relative overflow-visible rounded-[24px] border border-black/5 bg-white/80 p-5 shadow-[0_18px_50px_hsl(var(--shadow-color))] dark:border-white/10 dark:bg-[#111113]/80 xl:p-6">
+      <aside className={cn("relative overflow-visible rounded-[24px] p-5 xl:p-6", videoPanelSurface)}>
         <div className="mb-5 text-start">
-          <h1 className="text-[24px] font-black leading-tight tracking-tight text-foreground">
+          <h1 className="text-[24px] font-black leading-tight tracking-tight text-neutral-950 dark:text-white">
             {selectedTool?.name || (isAr ? 'إنشاء فيديو' : 'Generate Video')}
           </h1>
-          <p className="mt-2 text-[13px] font-medium leading-relaxed text-muted-foreground">
+          <p className="mt-2 text-[13px] font-medium leading-relaxed text-neutral-600 dark:text-white/68">
             {selectedTool?.shortDesc || selectedTool?.description || (isAr ? 'أنشئ فيديوهات من نص أو صورة' : 'Create videos from text or image')}
           </p>
         </div>
 
         <div className="space-y-4">
           <div className="relative">
-            <p className="mb-2 px-1 text-start text-[12px] font-semibold text-muted-foreground">{isAr ? 'نموذج الفيديو' : 'AI Video Model'}</p>
+            <p className="mb-2 px-1 text-start text-[12px] font-semibold text-neutral-600 dark:text-white/68">{isAr ? 'نموذج الفيديو' : 'AI Video Model'}</p>
             <button
               onClick={() => setShowModelPicker(p => !p)}
-              className="group flex w-full items-center justify-between gap-3 rounded-2xl border border-black/5 bg-white/85 px-4 py-3.5 shadow-sm transition-colors active:scale-[0.98] hover:bg-white dark:border-white/10 dark:bg-[#171717]/80 dark:hover:bg-[#1c1c1e]"
+              className={cn("group flex w-full items-center justify-between gap-3 rounded-2xl px-4 py-3.5 transition-all duration-200 ease-out active:scale-[0.98]", videoControlSurface, videoFocusRing)}
               aria-expanded={showModelPicker}
               aria-haspopup="listbox"
               aria-label={isAr ? 'اختيار نموذج الفيديو' : 'Choose video model'}
             >
               <div className="flex min-w-0 items-center gap-3">
-                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-muted/20 dark:bg-[#202022]">
+                <div className="flex h-11 w-11 flex-shrink-0 items-center justify-center overflow-hidden rounded-xl bg-black/[0.04] dark:bg-[#202022]">
                   {currentModel?.preview_image_url ? <img src={currentModel.preview_image_url} alt={currentModel.display_name} className="h-full w-full object-cover" loading="lazy" /> : <Film size={15} className="text-muted-foreground/40" />}
                 </div>
                 <div className="min-w-0 text-start">
-                  <p className="truncate text-[15px] font-bold text-foreground" dir="ltr">{currentModel?.display_name}</p>
-                  <p className="mt-0.5 truncate text-[11px] font-medium text-muted-foreground" dir="ltr">{currentModel?.provider}</p>
+                  <p className="truncate text-[15px] font-bold text-neutral-950 dark:text-white" dir="ltr">{currentModel?.display_name}</p>
+                  <p className="mt-0.5 truncate text-[11px] font-medium text-neutral-500 dark:text-white/55" dir="ltr">{currentModel?.provider}</p>
                 </div>
               </div>
-              <ChevronRight size={16} className={cn("flex-shrink-0 text-muted-foreground/55 transition-transform", isAr ? "rotate-180" : "")} />
+              <ChevronRight size={16} className={cn("flex-shrink-0 text-neutral-500 transition-transform dark:text-white/55", isAr ? "rotate-180" : "")} />
             </button>
             {showModelPicker && (
               <DesktopModelPanel
@@ -664,39 +669,40 @@ export default function Video() {
           <AudioToggle />
 
           {!promptHidden && (
-            <div className="overflow-hidden rounded-2xl border border-black/5 bg-white/80 shadow-sm transition-shadow focus-within:ring-1 focus-within:ring-primary/30 dark:border-white/10 dark:bg-[#171717]/70">
+            <div className="overflow-hidden rounded-2xl border border-black/10 bg-[#fffaf4] shadow-[0_10px_30px_rgba(20,16,12,0.07)] transition-shadow focus-within:ring-1 focus-within:ring-primary/30 dark:border-white/10 dark:bg-[#171717] dark:shadow-none">
               <textarea
                 id="video-prompt"
+                data-hero-input
                 aria-label={isAr ? 'وصف الفيديو' : 'Video prompt'}
                 value={prompt}
                 onChange={e => setPrompt(e.target.value)}
                 placeholder={isAr ? 'صف الفيديو الذي تريده...' : 'Describe your video...'}
                 rows={7}
                 dir={isAr ? 'rtl' : 'ltr'}
-                className="min-h-[230px] w-full resize-none bg-transparent px-4 py-4 text-start text-[15px] leading-relaxed text-foreground placeholder:text-muted-foreground/45 focus:outline-none"
+                className="min-h-[230px] w-full resize-none bg-transparent px-4 py-4 text-start text-[15px] leading-relaxed text-neutral-950 placeholder:text-neutral-500 focus:outline-none dark:text-white dark:placeholder:text-white/42"
               />
-              <div className="flex items-center justify-between px-4 pb-4 text-[12px] font-medium text-muted-foreground">
+              <div className="flex items-center justify-between px-4 pb-4 text-[12px] font-medium text-neutral-500 dark:text-white/48">
                 <span dir="ltr">{prompt.length} / 1000</span>
                 <span className="text-[11px] font-bold text-primary">AI</span>
               </div>
             </div>
           )}
 
-          <GenerateButton onClick={handleGenerate} disabled={!canGenerate} loading={isGenerating} credits={totalCredits} className="h-[58px] rounded-[18px] bg-[#FF3B1F] text-[15px] shadow-[0_18px_42px_-18px_rgba(255,59,31,0.75)] hover:bg-[#FF4A2B]">
+          <GenerateButton onClick={handleGenerate} disabled={!canGenerate} loading={isGenerating} credits={totalCredits} className="btn-primary h-[58px] rounded-[18px] bg-[#FF3B1F] text-[15px] text-white shadow-[0_18px_42px_-18px_rgba(255,59,31,0.75)] hover:bg-[#FF4A2B] focus-visible:ring-[#FF3B1F]/35">
             {generateLabel}
           </GenerateButton>
         </div>
       </aside>
 
-      <section className="relative overflow-hidden rounded-[24px] border border-black/5 bg-white/75 p-6 shadow-[0_18px_50px_hsl(var(--shadow-color))] dark:border-white/10 dark:bg-[#111113]/75 xl:p-10">
+      <section className={cn("relative overflow-hidden rounded-[24px] p-6 xl:p-10", videoPanelSurface)}>
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/15 to-transparent" />
-        <div className="pointer-events-none absolute -top-20 end-12 h-72 w-72 rounded-full bg-primary/10 blur-3xl dark:bg-primary/8" />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_8%_12%,rgba(255,59,31,0.08),transparent_32%)] dark:bg-[radial-gradient(circle_at_8%_12%,rgba(255,59,31,0.10),transparent_34%)]" />
         <div className="relative flex h-full min-h-0 flex-col">
           <div className="mb-10 max-w-4xl pt-20 text-start xl:pt-28">
-            <h2 className="max-w-4xl text-[clamp(40px,4vw,58px)] font-black uppercase leading-[0.95] tracking-normal text-foreground">
+            <h2 className="max-w-4xl text-[clamp(40px,4vw,58px)] font-black uppercase leading-[0.95] tracking-normal text-neutral-950 dark:text-white">
               {isAr ? 'أنشئ فيديوهات بضغطة واحدة' : 'Make videos in one click'}
             </h2>
-            <p className="mt-5 max-w-3xl text-[17px] font-medium leading-relaxed text-muted-foreground">
+            <p className="mt-5 max-w-3xl text-[17px] font-medium leading-relaxed text-neutral-600 dark:text-white/68">
               {isAr ? 'أنشئ فيديوهات مذهلة من النص أو الصور بالذكاء الاصطناعي. سريع، سهل، وسينمائي.' : 'Create stunning videos from text or images with AI. Fast, easy, and cinematic.'}
             </p>
           </div>
@@ -749,16 +755,16 @@ export default function Video() {
 
   /* ─── DESKTOP LAYOUT ─── */
   return (
-    <div className="flex-1 flex flex-col bg-neutral-50 text-foreground dark:bg-[#090909]" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
+    <div className="flex-1 flex flex-col bg-[#f3eee7] text-neutral-950 dark:bg-[#090909] dark:text-white" dir={isAr ? 'rtl' : 'ltr'} style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
       <div className="flex-1 overflow-y-auto">
         <Tabs defaultValue="generate" className="w-full">
-          <div className="sticky top-0 z-40 bg-neutral-50/90 px-5 py-3 dark:bg-[#090909]/90">
+          <div className="sticky top-0 z-40 bg-[#f3eee7]/95 px-5 py-3 dark:bg-[#090909]/92">
             <div className="flex justify-center">
-              <TabsList className="inline-flex w-auto rounded-full border border-black/5 bg-white/75 p-1 shadow-sm dark:border-white/10 dark:bg-[#111113]/80">
-                <TabsTrigger value="generate" className="rounded-full px-5 py-2 text-[13px] font-semibold transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-[#171717]">
+              <TabsList className="inline-flex w-auto rounded-full border border-black/10 bg-[#fffaf4] p-1 shadow-[0_10px_28px_rgba(20,16,12,0.08)] dark:border-white/10 dark:bg-[#111113] dark:shadow-none">
+                <TabsTrigger value="generate" className={cn("rounded-full px-5 py-2 text-[13px] font-semibold text-neutral-600 transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-neutral-950 data-[state=active]:shadow-sm dark:text-white/58 dark:data-[state=active]:bg-[#171717] dark:data-[state=active]:text-white", videoFocusRing)}>
                   <Play size={14} className="me-2" />{isAr ? 'توليد' : 'Generate'}
                 </TabsTrigger>
-                <TabsTrigger value="history" className="rounded-full px-5 py-2 text-[13px] font-semibold transition-all data-[state=active]:bg-white data-[state=active]:shadow-sm dark:data-[state=active]:bg-[#171717]">
+                <TabsTrigger value="history" className={cn("rounded-full px-5 py-2 text-[13px] font-semibold text-neutral-600 transition-all duration-200 data-[state=active]:bg-white data-[state=active]:text-neutral-950 data-[state=active]:shadow-sm dark:text-white/58 dark:data-[state=active]:bg-[#171717] dark:data-[state=active]:text-white", videoFocusRing)}>
                   <Film size={14} className="me-2" />{isAr ? 'السجل' : 'History'}
                 </TabsTrigger>
               </TabsList>
@@ -772,7 +778,7 @@ export default function Video() {
           </TabsContent>
 
           <TabsContent value="history" className="m-0 px-8 py-6">
-            <div className="mx-auto max-w-[1440px] rounded-[24px] border border-black/5 bg-white/75 p-5 shadow-[0_18px_50px_hsl(var(--shadow-color))] dark:border-white/10 dark:bg-[#111113]/75">
+            <div className={cn("mx-auto max-w-[1440px] rounded-[24px] p-5", videoPanelSurface)}>
               <VideoHistoryPanel />
             </div>
           </TabsContent>
