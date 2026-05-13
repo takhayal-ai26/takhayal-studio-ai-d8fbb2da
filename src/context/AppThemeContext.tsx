@@ -35,6 +35,8 @@ const THEME_MANAGED_VARS = [
 function applyTheme(mode: Mode) {
   const root = document.documentElement;
   root.setAttribute('data-theme', mode);
+  root.classList.toggle('dark', mode === 'dark');
+  root.classList.toggle('light', mode === 'light');
   // Clear any inline overrides so [data-theme] CSS rules take effect
   THEME_MANAGED_VARS.forEach(v => root.style.removeProperty(v));
 }
