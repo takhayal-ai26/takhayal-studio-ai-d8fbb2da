@@ -6,6 +6,10 @@ import { useQuery } from '@tanstack/react-query';
 import { ArrowRight, Check, Star } from 'lucide-react';
 import { getPlanFeatureBullets } from '@/lib/cms';
 
+type Currency = 'USD' | 'KWD';
+
+const KWD_RATE = 0.308;
+
 export function PricingPreview() {
   const navigate = useNavigate();
   const { lang, isRTL, t } = useLanguage();
@@ -13,6 +17,16 @@ export function PricingPreview() {
   const copy = t.homeSections;
   const scrollRef = useRef<HTMLDivElement>(null);
   const [billingPeriod, setBillingPeriod] = useState<'monthly' | 'annual'>('monthly');
+  const [currency, setCurrency] = useState<Currency>('USD');
+
+  const formatPrice = (usd: number) => {
+    if (currency === 'KWD') {
+      const kwd = usd * KWD_RATE;
+      return `${kwd % 1 === 0 ? kwd.toFixed(0) : kwd.toFixed(2)} KD`;
+    }
+
+    return `$${usd % 1 === 0 ? usd.toFixed(0) : usd.toFixed(2)}`;
+  };
 
   const { data: plans = [] } = useQuery({
     queryKey: ['pricing-plans-preview'],
@@ -66,16 +80,18 @@ export function PricingPreview() {
         {copy.pricingSubtitle}
       </p>
 
-      {/* Billing toggle */}
-      <div className="flex justify-center mb-6">
+      {/* Billing and currency toggles */}
+      <div className="mb-6 flex flex-col items-center gap-3 px-4">
         <div className="flex items-center gap-1 p-0.5 rounded-full bg-muted/60">
           <button
+            type="button"
             onClick={() => setBillingPeriod('monthly')}
             className={`min-h-11 px-4 py-2 rounded-full text-[12px] font-medium transition-all ${billingPeriod === 'monthly' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
           >
             {copy.pricingMonthly}
           </button>
           <button
+            type="button"
             onClick={() => setBillingPeriod('annual')}
             className={`min-h-11 px-4 py-2 rounded-full text-[12px] font-medium transition-all flex items-center gap-1.5 ${billingPeriod === 'annual' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
           >
@@ -85,6 +101,24 @@ export function PricingPreview() {
                 {copy.pricingSave} {plans.find(p => p.annual_discount_percent > 0)?.annual_discount_percent}%
               </span>
             )}
+          </button>
+        </div>
+        <div className="flex items-center gap-1 p-0.5 rounded-full bg-muted/60">
+          <button
+            type="button"
+            onClick={() => setCurrency('USD')}
+            aria-pressed={currency === 'USD'}
+            className={`min-h-11 px-4 py-2 rounded-full text-[12px] font-medium transition-all ${currency === 'USD' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            USD $
+          </button>
+          <button
+            type="button"
+            onClick={() => setCurrency('KWD')}
+            aria-pressed={currency === 'KWD'}
+            className={`min-h-11 px-4 py-2 rounded-full text-[12px] font-medium transition-all ${currency === 'KWD' ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+          >
+            KWD د.ك
           </button>
         </div>
       </div>
@@ -124,7 +158,7 @@ export function PricingPreview() {
 
               {/* Price */}
               <div className="flex items-baseline gap-1 mb-4">
-                <span className="text-3xl font-extrabold text-foreground">${price}</span>
+                <span className="text-3xl font-extrabold text-foreground">{formatPrice(price)}</span>
                 <span className="text-[12px] text-muted-foreground">/{copy.pricingPerMonth}</span>
               </div>
 
