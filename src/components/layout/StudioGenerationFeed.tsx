@@ -59,12 +59,12 @@ function StudioJobCard({
   const hasImage = hasGeneratedImage(job);
   const isProcessing = job.status === 'queued' || job.status === 'generating' || job.status === 'processing' || (job.status === 'completed' && !hasImage);
   const isFailed = job.status === 'failed' && !hasImage;
-  const cardSizeClass = featured ? 'w-full max-w-full lg:max-w-[560px] xl:max-w-[640px] 2xl:max-w-[700px]' : 'w-full';
-  const cardStyle = { aspectRatio: featured ? '1/1' : cssRatio };
+  const cardSizeClass = featured ? 'h-full w-full' : 'w-full';
+  const cardStyle = featured ? undefined : { aspectRatio: cssRatio };
 
   if (isProcessing) {
     return (
-      <div className={`gen-card-processing rounded-2xl overflow-hidden bg-card/60 border border-border/10 relative ${cardSizeClass}`} style={cardStyle}>
+      <div className={`image-preview-canvas gen-card-processing relative overflow-hidden rounded-[28px] ${cardSizeClass}`} style={cardStyle}>
         <div className="absolute inset-0 gen-shimmer" />
         <div className="absolute inset-0 gen-glow" />
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 px-4 text-center">
@@ -83,7 +83,7 @@ function StudioJobCard({
             </div>
           </div>
         </div>
-        <div className="absolute bottom-3 left-3 right-3">
+        <div className="absolute inset-x-3 bottom-3">
           <p className="text-[11px] text-muted-foreground/40 line-clamp-2">{job.prompt}</p>
         </div>
       </div>
@@ -92,7 +92,7 @@ function StudioJobCard({
 
   if (isFailed) {
     return (
-      <div className={`rounded-2xl overflow-hidden bg-card/60 border border-destructive/20 relative ${cardSizeClass}`} style={cardStyle}>
+      <div className={`image-preview-canvas relative overflow-hidden rounded-[28px] border-destructive/20 ${cardSizeClass}`} style={cardStyle}>
         <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 px-4 text-center">
           <div className={`${featured ? 'w-12 h-12' : 'w-10 h-10'} rounded-full bg-destructive/10 border border-destructive/20 flex items-center justify-center`}>
             <AlertCircle size={featured ? 20 : 18} className="text-destructive/70" />
@@ -107,7 +107,7 @@ function StudioJobCard({
             {t.studio.retry}
           </button>
         </div>
-        <div className="absolute bottom-3 left-3 right-3">
+        <div className="absolute inset-x-3 bottom-3">
           <p className="text-[11px] text-muted-foreground/30 line-clamp-2">{job.prompt}</p>
         </div>
       </div>
@@ -118,11 +118,11 @@ function StudioJobCard({
 
   return (
     <div
-      className={`rounded-2xl overflow-hidden bg-card/60 border border-border/10 relative group cursor-pointer transition-all duration-300 hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 ${cardSizeClass}`}
+      className={`image-preview-canvas relative group cursor-pointer overflow-hidden rounded-[28px] transition-all duration-300 hover:border-primary/25 ${cardSizeClass}`}
       style={cardStyle}
       onClick={() => onOpen(job)}
     >
-      <div className={featured ? 'aspect-square w-full' : 'h-full w-full'}>
+      <div className={featured ? 'h-full w-full' : 'h-full w-full'}>
         <img
           src={job.image_url}
           alt={job.prompt || ''}
@@ -131,7 +131,7 @@ function StudioJobCard({
       </div>
       <div className="absolute inset-0 bg-background/0 group-hover:bg-background/10 transition-colors duration-300 pointer-events-none" />
 
-      <div className={`quick-actions absolute ${isAr ? 'left-2.5' : 'right-2.5'} top-1/2 -translate-y-1/2 flex flex-col gap-2 opacity-0 translate-x-2 pointer-events-none group-hover:opacity-100 group-hover:translate-x-0 group-hover:pointer-events-auto transition-all duration-300`}>
+      <div className="quick-actions pointer-events-none absolute end-2.5 top-1/2 flex -translate-y-1/2 scale-95 flex-col gap-2 opacity-0 transition-all duration-300 group-hover:pointer-events-auto group-hover:scale-100 group-hover:opacity-100">
         <QuickActionButton icon={<Copy size={14} />} label={isAr ? 'نسخ الوصف' : 'Copy prompt'} onClick={() => {
           navigator.clipboard.writeText(job.prompt || '');
           toast({ title: isAr ? 'تم نسخ الوصف' : 'Prompt copied' });
@@ -154,20 +154,22 @@ function EmptyRecentSlot({ loading }: { loading: boolean }) {
   const isAr = lang === 'ar';
 
   return (
-    <div className="aspect-square w-full max-w-full lg:max-w-[560px] xl:max-w-[640px] 2xl:max-w-[700px] rounded-2xl bg-card/60 border border-border/10 relative overflow-hidden flex items-center justify-center text-center px-8">
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_30%,hsl(var(--primary)/0.08),transparent_42%)]" />
+    <div className="image-preview-canvas relative flex h-full w-full items-center justify-center overflow-hidden rounded-[28px] px-8 text-center">
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-foreground/15 to-transparent" />
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_16%,hsl(var(--primary)/0.11),transparent_34%),radial-gradient(circle_at_74%_50%,hsl(var(--primary)/0.075),transparent_35%)] dark:bg-[radial-gradient(circle_at_22%_16%,hsl(var(--primary)/0.16),transparent_34%),radial-gradient(circle_at_74%_50%,hsl(var(--primary)/0.095),transparent_35%)]" />
+      <div className="absolute inset-6 rounded-[24px] border border-black/[0.035] dark:border-white/[0.045]" />
       <div className="relative flex flex-col items-center gap-3">
-        <div className="w-12 h-12 rounded-full bg-background/60 border border-border/15 flex items-center justify-center">
+        <div className="image-empty-icon flex h-14 w-14 items-center justify-center rounded-2xl">
           {loading ? (
             <Loader2 size={19} className="text-primary animate-spin" />
           ) : (
-            <Wand2 size={19} className="text-muted-foreground/45" />
+            <Wand2 size={20} className="text-primary/80" />
           )}
         </div>
-        <p className="text-[15px] font-medium text-foreground/70">
+        <p className="text-[18px] font-bold">
           {isAr ? 'ستظهر صورتك الجديدة هنا' : 'Your generated image will show here'}
         </p>
-        <p className="max-w-[260px] text-[12px] leading-relaxed text-muted-foreground/45">
+        <p className="max-w-[340px] text-[13px] font-medium leading-relaxed text-muted-foreground">
           {isAr ? 'اكتب وصفك واضغط توليد لعرض النتيجة في هذه المساحة.' : 'Write a prompt and generate to see the latest result in this space.'}
         </p>
       </div>
@@ -259,10 +261,10 @@ export function StudioGenerationFeed({ section = 'full' }: { section?: StudioGen
   const showFeatured = section !== 'history';
   const showHistory = section !== 'featured';
   const frameClass = section === 'featured'
-    ? 'w-full flex flex-col overflow-visible lg:pt-[76px] xl:pt-[80px]'
+    ? 'h-full w-full overflow-hidden'
     : 'w-full md:flex-1 flex flex-col overflow-visible md:overflow-hidden';
   const contentClass = section === 'featured'
-    ? 'w-full'
+    ? 'h-full w-full'
     : 'md:flex-1 overflow-visible md:overflow-y-auto px-4 py-5 sm:px-6 lg:px-8 xl:px-10 space-y-5';
 
   const openGallery = (job: GenerationJob) => {
@@ -273,7 +275,7 @@ export function StudioGenerationFeed({ section = 'full' }: { section?: StudioGen
     <div className={frameClass}>
       <div className={contentClass}>
         {showFeatured && (
-          <div className="flex w-full justify-center">
+          <div className="h-full w-full">
             {recentJob ? (
               <StudioJobCard job={recentJob} onRetry={retryJob} onOpen={openGallery} featured />
             ) : (

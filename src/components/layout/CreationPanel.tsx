@@ -1,6 +1,6 @@
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef, useCallback, type ReactNode } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import { Upload, ChevronRight, X, Cpu, Maximize, Image as ImageIcon, Wand2, Zap } from 'lucide-react';
+import { Upload, ChevronDown, X, Cpu, Maximize, Image as ImageIcon, Wand2, Zap } from 'lucide-react';
 import { useApp, AspectRatio } from '@/context/AppContext';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { useModels } from '@/hooks/useModels';
@@ -14,10 +14,11 @@ import { BackToImageTools } from '@/components/tools/BackToImageTools';
 import { GenerateButton } from '@/lib/ux';
 import { useReferenceImageUploads } from './useReferenceImageUploads';
 import { useStudioGenerationSubmit } from './useStudioGenerationSubmit';
+import { cn } from '@/lib/utils';
 
 type OpenDropdown = 'model' | 'size' | 'resolution' | null;
 
-export function CreationPanel() {
+export function CreationPanel({ tabsControl }: { tabsControl?: ReactNode }) {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
@@ -146,18 +147,36 @@ export function CreationPanel() {
   };
 
   return (
-    <aside ref={panelRef} className="w-full lg:w-full flex flex-col bg-background flex-shrink-0 overflow-visible relative z-30">
-      <div className="md:flex-1 overflow-visible md:overflow-y-auto overflow-x-visible px-4 pt-4 pb-4 md:p-4 lg:p-5 xl:p-6 space-y-2 lg:space-y-3 scrollbar-thin">
-        {/* Back to Image Tools — keeps Generate Image consistent with all other tool pages */}
-        <BackToImageTools className="mb-2" />
+    <aside
+      ref={panelRef}
+      className={cn(
+        'image-creation-panel relative z-30 flex h-full w-[360px] flex-shrink-0 flex-col overflow-visible rounded-[26px]',
+        'xl:w-[390px] 2xl:w-[410px]'
+      )}
+    >
+      <div className="flex-1 space-y-2.5 overflow-y-auto overflow-x-visible px-4 pb-3 pt-3.5 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden xl:px-5 xl:pb-4">
+        <BackToImageTools className="mb-0 text-neutral-600 dark:text-white/58" />
+
+        <div className="space-y-2.5 text-start">
+          <div>
+            <h1 className="text-[25px] font-black leading-none tracking-tight">
+              {language === 'ar' ? 'إنشاء صورة' : 'Create Image'}
+            </h1>
+            <p className="mt-1.5 text-[12px] font-medium leading-relaxed text-muted-foreground">
+              {language === 'ar' ? 'حوّل الوصف إلى صورة جاهزة للإنتاج.' : 'Turn a prompt into a production-ready image.'}
+            </p>
+          </div>
+          {tabsControl}
+        </div>
+
         {/* Prompt */}
-        <div className="rounded-2xl bg-card/50 p-4 lg:p-5 border border-border/30 hover:border-border/50 transition-colors">
-          <div className="flex items-center justify-between mb-3">
+        <div className="image-control-surface rounded-2xl p-3 transition-colors">
+          <div className="mb-2.5 flex items-center justify-between">
             <div className="flex items-center gap-2">
               <div className="w-6 h-6 rounded-lg bg-primary/10 flex items-center justify-center">
                 <Wand2 size={12} className="text-primary" />
               </div>
-              <label htmlFor="studio-prompt" className="typo-label-strong text-[14px]">{t.studio.prompt}</label>
+              <label htmlFor="studio-prompt" className="text-[13px] font-bold">{t.studio.prompt}</label>
             </div>
             <div className="flex items-center gap-1.5">
               {prompt.length > 0 && (
@@ -174,12 +193,13 @@ export function CreationPanel() {
           <textarea
             id="studio-prompt"
             value={prompt}
-            onChange={e => setPrompt(e.target.value.slice(0, 500))}
+            dir={language === 'ar' ? 'rtl' : 'ltr'}
+            onChange={e => setPrompt(e.target.value.slice(0, 1000))}
             placeholder={t.studio.describeCreate}
-            className="w-full min-h-[120px] lg:min-h-[150px] xl:min-h-[170px] bg-foreground/[0.03] border border-border/20 rounded-xl p-3.5 lg:p-4 text-[15px] font-medium text-foreground placeholder:text-foreground/40 focus:border-primary/30 focus:bg-foreground/[0.04] focus:outline-none focus:ring-2 focus:ring-primary/10 resize-none leading-relaxed transition-all"
+            className="image-prompt-input w-full min-h-[104px] resize-none rounded-[16px] p-3 text-start text-[14px] font-medium leading-relaxed transition-all focus:outline-none focus:ring-2 focus:ring-primary/10 xl:min-h-[116px]"
           />
           <div className="flex items-center justify-between mt-1.5 px-0.5">
-            <span className="text-[12px] font-medium text-foreground/50 tabular-nums">{prompt.length}/500</span>
+            <span className="text-[12px] font-medium text-muted-foreground tabular-nums" dir="ltr">{prompt.length}/1000</span>
             {prompt.length > 0 && (
               <span className="text-[11px] text-primary/70 flex items-center gap-1">
                 <Zap size={8} />{t.studio.ready}
@@ -220,7 +240,7 @@ export function CreationPanel() {
                       )}
                       <button
                         onClick={() => removeImage(i)}
-                        className="absolute top-1 right-1 min-h-11 min-w-11 rounded-md bg-background/80 backdrop-blur-sm flex items-center justify-center text-muted-foreground hover:text-foreground transition-colors"
+                        className="absolute end-1 top-1 flex min-h-11 min-w-11 items-center justify-center rounded-md bg-background/80 text-muted-foreground backdrop-blur-sm transition-colors hover:text-foreground"
                         aria-label={language === 'ar' ? `إزالة الصورة ${i + 1}` : `Remove image ${i + 1}`}
                       >
                         <X size={12} />
@@ -250,7 +270,7 @@ export function CreationPanel() {
             ) : (
               <button
                 onClick={() => fileInputRef.current?.click()}
-                className="w-full rounded-2xl bg-foreground/[0.03] border border-dashed border-border/30 p-4 lg:min-h-[150px] lg:p-6 flex flex-col items-center justify-center gap-1.5 lg:gap-2 text-muted-foreground hover:text-foreground/80 hover:border-primary/20 hover:bg-primary/[0.02] transition-all duration-300 group"
+                className="image-upload-surface group flex w-full flex-col items-center justify-center gap-1.5 rounded-2xl p-3.5 text-muted-foreground transition-all duration-300 hover:text-foreground/80 active:scale-[0.985] lg:min-h-[96px]"
                 aria-label={language === 'ar' ? 'رفع صور مرجعية' : 'Upload reference images'}
               >
                 <div className="w-9 h-9 rounded-xl bg-foreground/[0.04] flex items-center justify-center group-hover:bg-primary/10 transition-colors">
@@ -279,34 +299,34 @@ export function CreationPanel() {
             onClick={() => toggleDropdown(item.key)}
             aria-expanded={openDropdown === item.key}
             aria-haspopup="listbox"
-            className={`w-full flex items-center justify-between h-[46px] lg:h-[54px] px-3.5 lg:px-4 rounded-xl bg-card/40 border transition-all duration-200 ${
-              openDropdown === item.key ? 'border-primary/30 bg-card/60' : 'border-border/20 hover:border-border/30'
+            className={`image-control-row w-full flex items-center justify-between gap-3 h-[44px] px-3.5 rounded-2xl transition-all duration-200 active:scale-[0.985] ${
+              openDropdown === item.key ? 'is-open' : ''
             }`}
           >
-            <div className="flex items-center gap-2.5">
-              <span className="text-foreground/60">{item.icon}</span>
-              <span className="text-[12px] text-foreground/60 uppercase tracking-[0.5px] font-semibold">{item.label}</span>
+            <div className="flex min-w-0 items-center gap-2.5">
+              <span className="text-muted-foreground">{item.icon}</span>
+              <span className="truncate text-start text-[11px] font-bold uppercase tracking-[0.5px] text-muted-foreground">{item.label}</span>
             </div>
-            <div className="flex items-center gap-2">
-              <span className="text-[14px] font-semibold text-foreground">{item.value}</span>
-              <ChevronRight size={13} className={`text-muted-foreground transition-transform duration-200 ${openDropdown === item.key ? 'rotate-90' : ''}`} />
+            <div className="flex min-w-0 items-center gap-2">
+              <span className="truncate text-end text-[13px] font-bold" dir={item.key === 'model' ? 'ltr' : undefined}>{item.value}</span>
+              <ChevronDown size={13} className={`flex-shrink-0 text-muted-foreground transition-transform duration-200 ${openDropdown === item.key ? 'rotate-180' : ''}`} />
             </div>
           </button>
         ))}
+      </div>
 
-        {/* Generate button */}
-        <div className="pt-2">
-          <GenerateButton
-            onClick={handleGenerate}
-            disabled={!canGenerate}
-            loading={isGenerationBusy}
-            loadingLabel={t.studio.generating}
-            credits={cost}
-            className="h-[52px] lg:h-[56px]"
-          >
-            {uploadedImages.length > 0 ? (language === 'ar' ? 'تعديل الصورة' : 'Edit Image') : t.toolPage.generate}
-          </GenerateButton>
-        </div>
+      {/* Generate button */}
+      <div className="image-generate-footer flex-shrink-0 px-4 py-3.5 backdrop-blur xl:px-5">
+        <GenerateButton
+          onClick={handleGenerate}
+          disabled={!canGenerate}
+          loading={isGenerationBusy}
+          loadingLabel={t.studio.generating}
+          credits={cost}
+          className="h-[52px] rounded-[18px] bg-[#FF3B1F] text-[15px] text-white shadow-[0_18px_42px_-18px_rgba(255,59,31,0.75)] hover:bg-[#FF4A2B] focus-visible:ring-[#FF3B1F]/35"
+        >
+          {uploadedImages.length > 0 ? (language === 'ar' ? 'تعديل الصورة' : 'Edit Image') : t.toolPage.generate}
+        </GenerateButton>
       </div>
 
       {openDropdown === 'model' && (

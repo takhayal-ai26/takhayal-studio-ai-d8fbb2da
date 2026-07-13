@@ -85,19 +85,19 @@ export function SizeDropdown({ availableRatios, selectedRatio, anchorRect, onSel
   // Desktop
   const panelW = 160;
   const panelMaxH = 400;
-  let top = 0, left = 0;
+  let top = 0, inlineStart = 0;
   if (anchorRect) {
     top = anchorRect.top;
-    left = anchorRect.right + 8;
+    inlineStart = anchorRect.right + 8;
     if (top + panelMaxH > window.innerHeight - 16) top = window.innerHeight - panelMaxH - 16;
-    if (left + panelW > window.innerWidth - 16) left = anchorRect.left - panelW - 8;
+    if (inlineStart + panelW > window.innerWidth - 16) inlineStart = anchorRect.left - panelW - 8;
     if (top < 8) top = 8;
   }
 
   return createPortal(
-    <div data-dropdown-portal>
+    <div data-dropdown-portal dir={lang === 'ar' ? 'rtl' : 'ltr'}>
       <div className="fixed inset-0 z-[9998]" onClick={onClose} />
-      <div className="fixed z-[9999] animate-in fade-in slide-in-from-left-2 duration-150" style={{ top, left, width: panelW }}>
+      <div className="fixed z-[9999] animate-in fade-in duration-150" style={{ top, insetInlineStart: inlineStart, width: panelW }}>
         <div className="rounded-xl border border-border overflow-hidden overflow-y-auto" style={{ background: 'var(--dropdown-bg)', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', maxHeight: panelMaxH }}>
           {availableRatios.map((r, i) => {
             const isActive = selectedRatio === r;
@@ -111,7 +111,7 @@ export function SizeDropdown({ availableRatios, selectedRatio, anchorRect, onSel
                 style={{
                   padding: '10px 14px', height: 44,
                   borderBottom: isLast ? 'none' : `1px solid var(--dropdown-divider)`,
-                  borderLeft: isActive ? '2px solid hsl(var(--primary))' : '2px solid transparent',
+                  borderInlineStart: isActive ? '2px solid hsl(var(--primary))' : '2px solid transparent',
                   background: isActive ? 'hsla(var(--primary) / 0.06)' : 'transparent',
                 }}
                 onMouseEnter={e => { if (!isActive) (e.currentTarget.style.background = 'hsl(var(--muted))'); }}

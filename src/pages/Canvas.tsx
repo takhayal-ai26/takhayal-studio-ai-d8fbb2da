@@ -10,45 +10,67 @@ import { TemplatesView } from '@/components/views/TemplatesView';
 import { useLanguage } from '@/i18n/LanguageContext';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Clock, Wand2 } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export function GenerateImageCanvasPage() {
   const { lang } = useLanguage();
   const isAr = lang === 'ar';
+  const direction = isAr ? 'rtl' : 'ltr';
+
+  const tabsControl = (
+    <TabsList
+      dir={direction}
+      className="grid h-10 w-full grid-cols-2 rounded-2xl border border-black/10 bg-black/[0.035] p-1 shadow-none dark:border-white/10 dark:bg-white/[0.055]"
+    >
+      <TabsTrigger
+        value="generate"
+        className={cn(
+          'h-8 rounded-xl px-3 text-[12px] font-bold text-muted-foreground transition-all duration-200',
+          'data-[state=active]:bg-white data-[state=active]:text-neutral-950 data-[state=active]:shadow-sm',
+          'dark:data-[state=active]:bg-[#202023] dark:data-[state=active]:text-white'
+        )}
+      >
+        <Wand2 size={13} className="me-1.5" />
+        {isAr ? 'توليد' : 'Generate'}
+      </TabsTrigger>
+      <TabsTrigger
+        value="history"
+        className={cn(
+          'h-8 rounded-xl px-3 text-[12px] font-bold text-muted-foreground transition-all duration-200',
+          'data-[state=active]:bg-white data-[state=active]:text-neutral-950 data-[state=active]:shadow-sm',
+          'dark:data-[state=active]:bg-[#202023] dark:data-[state=active]:text-white'
+        )}
+      >
+        <Clock size={13} className="me-1.5" />
+        {isAr ? 'السجل' : 'History'}
+      </TabsTrigger>
+    </TabsList>
+  );
 
   return (
     <>
-      <div className="flex flex-1 min-h-0 overflow-visible" style={{ paddingTop: 'calc(3.5rem + var(--banner-h, 0px))' }}>
-        <div className="flex flex-col flex-1 min-h-0 relative overflow-y-auto pb-24 md:pb-0">
-          <Tabs defaultValue="generate" className="w-full">
-            <div className="sticky top-0 z-20 bg-background/90 px-4 py-3 backdrop-blur md:px-6 lg:px-8">
-              <div className="mx-auto flex w-full max-w-[1480px] justify-center">
-                <TabsList className="h-11 rounded-2xl bg-card/50 p-1">
-                  <TabsTrigger value="generate" className="h-9 rounded-xl px-4 text-[13px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                    <Wand2 size={14} className={isAr ? 'ml-2' : 'mr-2'} />
-                    {isAr ? 'توليد' : 'Generate'}
-                  </TabsTrigger>
-                  <TabsTrigger value="history" className="h-9 rounded-xl px-4 text-[13px] font-semibold data-[state=active]:bg-background data-[state=active]:shadow-sm">
-                    <Clock size={14} className={isAr ? 'ml-2' : 'mr-2'} />
-                    {isAr ? 'السجل' : 'History'}
-                  </TabsTrigger>
-                </TabsList>
-              </div>
-            </div>
+      <div
+        className="image-generation-workspace flex h-full min-h-0 overflow-hidden"
+        dir={direction}
+        style={{ paddingTop: 'calc(2.75rem + var(--banner-h, 0px))' }}
+      >
+        <Tabs defaultValue="generate" className="flex h-full min-h-0 w-full overflow-hidden">
+          <div className={cn('flex h-full min-h-0 w-full gap-4 overflow-hidden p-4 lg:gap-5 lg:p-5 xl:gap-6 xl:p-6', isAr && 'flex-row-reverse')}>
+            <CreationPanel tabsControl={tabsControl} />
 
-            <TabsContent value="generate" className="m-0 px-4 pt-3 md:px-6 md:pt-4 lg:px-8 xl:px-10">
-              <div className="mx-auto grid w-full max-w-[1480px] grid-cols-1 items-start justify-center gap-4 lg:grid-cols-[minmax(380px,0.92fr)_minmax(430px,1.08fr)] lg:gap-6 xl:grid-cols-[minmax(500px,0.95fr)_minmax(560px,1.05fr)] xl:gap-9">
-                <CreationPanel />
+            <main className="min-w-0 flex-1">
+              <TabsContent value="generate" className="m-0 h-full">
                 <StudioGenerationFeed section="featured" />
-              </div>
-            </TabsContent>
+              </TabsContent>
 
-            <TabsContent value="history" className="m-0">
-              <div className="mx-auto w-full max-w-[1900px]">
-                <StudioGenerationFeed section="history" />
-              </div>
-            </TabsContent>
-          </Tabs>
-        </div>
+              <TabsContent value="history" className="m-0 h-full">
+                <section className="image-preview-canvas h-full overflow-hidden rounded-[28px]">
+                  <StudioGenerationFeed section="history" />
+                </section>
+              </TabsContent>
+            </main>
+          </div>
+        </Tabs>
       </div>
       <UpgradeModal />
     </>
