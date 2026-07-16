@@ -81,7 +81,7 @@ export default function VideoHistoryPanel() {
     return (
       <div className="flex flex-col items-center justify-center py-24 px-8 text-center">
         <div className="w-20 h-20 rounded-full bg-muted/10 flex items-center justify-center mb-6">
-          <Play size={28} className="text-muted-foreground/25 ml-1" />
+          <Play size={28} className="text-muted-foreground/25 ms-1" />
         </div>
         <h3 className="text-lg font-bold text-foreground mb-2">
           {isAr ? 'ستظهر فيديوهاتك هنا' : 'Your videos will appear here'}
@@ -111,12 +111,12 @@ export default function VideoHistoryPanel() {
             {item.status === 'completed' && item.video_url && (
               <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                 <div className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center">
-                  <Play size={18} className="text-white ml-0.5" />
+                  <Play size={18} className="text-white ms-0.5" />
                 </div>
               </div>
             )}
             {item.duration && (
-              <span className="absolute bottom-2 right-2 text-[10px] font-bold bg-black/60 text-white px-1.5 py-0.5 rounded-md backdrop-blur-sm flex items-center gap-1">
+              <span className="absolute bottom-2 end-2 flex items-center gap-1 rounded-md bg-black/60 px-1.5 py-0.5 text-[10px] font-bold text-white">
                 <Clock size={9} /> {item.duration}
               </span>
             )}

@@ -55,6 +55,8 @@
         var s=localStorage.getItem('takhayal-theme')||'dark';
         if(p.startsWith('/admin')){s='dark'}
         document.documentElement.setAttribute('data-theme',s);
+        document.documentElement.classList.toggle('dark',s==='dark');
+        document.documentElement.classList.toggle('light',s==='light');
       })()
     </script>
     <div id="root"></div>
